@@ -126,8 +126,10 @@ this contains raw CIL byte-code, and the only flow-control structures are goto s
 modelled as continuations in the AST.
 
 This is iteratively transformed to the final AST in in two steps:
+
 1. All continuations (gotos) are transformed into ifs and loops.
 2. The resulting AST is simplified as much as possible.
+
 These steps are carried out using a collection of AST visitors that are each
 capable of altering the AST in a specific manner.
 
