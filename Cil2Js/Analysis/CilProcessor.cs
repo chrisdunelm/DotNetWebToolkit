@@ -52,6 +52,8 @@ namespace Cil2Js.Analysis {
                 return this.Const((int)(sbyte)inst.Operand, this.typeSystem.Int32);
             case Code.Ldc_I4:
                 return this.Const((int)inst.Operand, this.typeSystem.Int32);
+            case Code.Ldstr:
+                return this.Const((string)inst.Operand, this.typeSystem.String);
             case Code.Ldarg_0:
                 return this.LdArg(0);
             case Code.Ldarg_1:
@@ -120,8 +122,25 @@ namespace Cil2Js.Analysis {
                 return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.GreaterThanOrEqual));
             case Code.Ret:
                 return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.stack.Pop());
+            case Code.Call:
+                return this.Call(inst);
             default:
                 throw new NotImplementedException("Cannot handle: " + inst.OpCode);
+            }
+        }
+
+        private Stmt Call(Instruction inst) {
+            var calling = (MethodReference)inst.Operand;
+            var args = new List<Expr>();
+            for (int i = 0; i < calling.Parameters.Count; i++) {
+                var expr = this.stack.Pop();
+                args.Add(expr);
+            }
+            args.Reverse();
+            if (calling.ReturnType.IsVoid()) {
+                return new StmtCall(calling, args);
+            } else {
+                return this.SsaLocalAssignment(new ExprCall(calling, args));
             }
         }
 

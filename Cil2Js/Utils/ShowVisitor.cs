@@ -165,7 +165,11 @@ namespace Cil2Js.Utils {
         }
 
         protected override ICode VisitLiteral(ExprLiteral e) {
-            this.code.Append(e.Value);
+            if (e.Type.IsString()) {
+                this.code.Append("\"" + e.Value + "\"");
+            } else {
+                this.code.Append(e.Value);
+            }
             return e;
         }
 
@@ -221,6 +225,28 @@ namespace Cil2Js.Utils {
             this.code.Append("} while (");
             this.Visit(s.While);
             this.code.Append(")");
+            return s;
+        }
+
+        private void VisitCall(ICall call) {
+            this.code.Append(call.Calling.FullName);
+            this.code.Append("(");
+            foreach (var arg in call.Args) {
+                this.Visit(arg);
+                this.code.Append(", ");
+            }
+            this.code.Length -= 2;
+            this.code.Append(")");
+        }
+
+        protected override ICode VisitCall(ExprCall e) {
+            this.VisitCall(e);
+            return e;
+        }
+
+        protected override ICode VisitCall(StmtCall s) {
+            this.NewLine();
+            this.VisitCall(s);
             return s;
         }
 

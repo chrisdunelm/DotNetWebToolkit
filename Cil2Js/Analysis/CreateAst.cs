@@ -45,17 +45,6 @@ namespace Cil2Js.Analysis {
             private int StackSizeAnalysis(IEnumerable<Instruction> insts, int startStackSize) {
                 int stackSize = startStackSize;
                 foreach (var inst in insts) {
-                    switch (inst.OpCode.StackBehaviourPush) {
-                    case StackBehaviour.Push0: break;
-                    case StackBehaviour.Pushi8:
-                    case StackBehaviour.Pushr4:
-                    case StackBehaviour.Pushr8:
-                    case StackBehaviour.Pushref:
-                    case StackBehaviour.Pushi:
-                    case StackBehaviour.Push1: stackSize++; break;
-                    case StackBehaviour.Push1_push1: stackSize += 2; break;
-                    default: throw new NotImplementedException("Cannot handle: " + inst.OpCode.StackBehaviourPush);
-                    }
                     switch (inst.OpCode.StackBehaviourPop) {
                     case StackBehaviour.Pop0: break;
                     case StackBehaviour.Popi:
@@ -79,10 +68,28 @@ namespace Cil2Js.Analysis {
                     case StackBehaviour.Varpop:
                         switch (inst.OpCode.Code) {
                         case Code.Ret: stackSize = 0; break;
+                        case Code.Call: stackSize -= ((MethodReference)inst.Operand).Parameters.Count; break;
                         default: throw new NotImplementedException("Cannot handle: " + inst.OpCode);
                         }
                         break;
                     default: throw new NotImplementedException("Cannot handle: " + inst.OpCode.StackBehaviourPop);
+                    }
+                    switch (inst.OpCode.StackBehaviourPush) {
+                    case StackBehaviour.Push0: break;
+                    case StackBehaviour.Pushi8:
+                    case StackBehaviour.Pushr4:
+                    case StackBehaviour.Pushr8:
+                    case StackBehaviour.Pushref:
+                    case StackBehaviour.Pushi:
+                    case StackBehaviour.Push1: stackSize++; break;
+                    case StackBehaviour.Push1_push1: stackSize += 2; break;
+                    case StackBehaviour.Varpush:
+                        switch (inst.OpCode.Code) {
+                        case Code.Call: stackSize += ((MethodReference)inst.Operand).ReturnType.IsVoid() ? 0 : 1; break;
+                        default: throw new NotImplementedException("Cannot handle: " + inst.OpCode);
+                        }
+                        break;
+                    default: throw new NotImplementedException("Cannot handle: " + inst.OpCode.StackBehaviourPush);
                     }
                 }
                 return stackSize;

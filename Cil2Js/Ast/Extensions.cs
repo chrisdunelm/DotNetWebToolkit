@@ -24,6 +24,10 @@ namespace Cil2Js.Ast {
             return type.FullName == "System.Int32";
         }
 
+        public static bool IsString(this TypeReference type) {
+            return type.FullName == "System.String";
+        }
+
         public static bool DoesEqual(this Expr a, Expr b) {
             return VisitorSameExpr.AreSame(a, b);
         }

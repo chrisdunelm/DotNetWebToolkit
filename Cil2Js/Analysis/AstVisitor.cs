@@ -55,6 +55,8 @@ namespace Cil2Js.Analysis {
                 return this.VisitDoLoop((StmtDoLoop)s);
             case Stmt.NodeType.Return:
                 return this.VisitReturn((StmtReturn)s);
+            case Stmt.NodeType.Call:
+                return this.VisitCall((StmtCall)s);
             default:
                 throw new NotImplementedException("Cannot handle: " + s.StmtType);
             }
@@ -173,8 +175,40 @@ namespace Cil2Js.Analysis {
             return expr == s.Expr ? s : new StmtReturn((Expr)expr);
         }
 
+        protected virtual ICode VisitCall(StmtCall s) {
+            return this.VisitCall((ICall)s);
+        }
+
+        private ICode VisitCall(ICall call) {
+            this.ThrowOnNoOverride();
+            List<Expr> argsNew = null;
+            foreach (var arg in call.Args) {
+                var o = (Expr)this.Visit(arg);
+                if (o != arg && argsNew == null) {
+                    argsNew = new List<Expr>(call.Args.TakeWhile(x => x != arg));
+                }
+                if (argsNew != null) {
+                    argsNew.Add(o);
+                }
+            }
+            if (argsNew == null) {
+                return call;
+            } else {
+                switch (call.CodeType) {
+                case CodeType.Expression:
+                    return new ExprCall(call.Calling, argsNew);
+                case CodeType.Statement:
+                    return new StmtCall(call.Calling, argsNew);
+                default:
+                    throw new NotImplementedException("Cannot handle: " + call.CodeType);
+                }
+            }
+        }
+
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {
+            case Expr.NodeType.Call:
+                return this.VisitCall((ExprCall)e);
             case Expr.NodeType.VarExprInstResult:
             case Expr.NodeType.VarLocal:
             case Expr.NodeType.VarParameter:
@@ -191,6 +225,10 @@ namespace Cil2Js.Analysis {
             default:
                 throw new NotImplementedException("Cannot handle: " + e.ExprType);
             }
+        }
+
+        protected virtual ICode VisitCall(ExprCall e) {
+            return this.VisitCall((ICall)e);
         }
 
         protected virtual ICode VisitVar(ExprVar e) {

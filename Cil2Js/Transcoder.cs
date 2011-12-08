@@ -18,14 +18,14 @@ namespace Cil2Js {
             return finalAst;
         }
 
-        public static string ToJs(MethodDefinition method, string jsMethodName, bool verbose = false) {
+        public static string ToJs(MethodDefinition method, string jsMethodName, Func<MethodReference, string> methodNameResolver, bool verbose = false) {
             var ast = ToAst(method, verbose);
-            return Js.Create(method, jsMethodName, ast);
+            return Js.Create(method, jsMethodName, methodNameResolver, ast);
         }
 
-        public static string ToJs(MethodInfo methodInfo, string jsMethodName, bool verbose = false) {
+        public static string ToJs(MethodInfo methodInfo, string jsMethodName, Func<MethodReference, string> methodNameResolver, bool verbose = false) {
             var method = GetMethod(methodInfo);
-            return ToJs(method, jsMethodName, verbose);
+            return ToJs(method, jsMethodName, methodNameResolver, verbose);
         }
 
         public static MethodDefinition GetMethod(MethodInfo mi) {

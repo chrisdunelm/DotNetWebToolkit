@@ -109,9 +109,12 @@ namespace Cil2Js.Output {
 
         private const int tabSize = 4;
 
-        public static string Create(MethodDefinition method, string methodName, ICode ast) {
+        public static string Create(MethodDefinition method, string methodName, Func<MethodReference, string> methodNameResolver, ICode ast) {
+            if (methodNameResolver == null) {
+                methodNameResolver = mr => mr.Name;
+            }
             var varNames = VarNamer.V(ast);
-            var v = new Js(varNames);
+            var v = new Js(varNames, methodNameResolver);
             v.Visit(ast);
             var js = v.js.ToString();
             var sb = new StringBuilder();
@@ -132,12 +135,14 @@ namespace Cil2Js.Output {
             return sb.ToString();
         }
 
-        private Js(Dictionary<ExprVar, string> varNames)
+        private Js(Dictionary<ExprVar, string> varNames, Func<MethodReference, string> methodNameResolver)
             : base(true) {
             this.varNames = varNames;
+            this.methodNameResolver = methodNameResolver;
         }
 
         private Dictionary<ExprVar, string> varNames;
+        private Func<MethodReference, string> methodNameResolver;
 
         private Dictionary<ParameterDefinition, ExprVar> parameters = new Dictionary<ParameterDefinition, ExprVar>();
         private StringBuilder js = new StringBuilder();
@@ -281,6 +286,30 @@ namespace Cil2Js.Output {
                 this.js.Append(" ");
                 this.Visit(s.Expr);
             }
+            this.js.Append(";");
+            return s;
+        }
+
+        private void VisitCall(ICall call) {
+            var name = this.methodNameResolver(call.Calling);
+            this.js.Append(name);
+            this.js.Append("(");
+            foreach (var arg in call.Args) {
+                this.Visit(arg);
+                this.js.Append(", ");
+            }
+            this.js.Length -= 2;
+            this.js.Append(")");
+        }
+
+        protected override ICode VisitCall(ExprCall e) {
+            this.VisitCall(e);
+            return e;
+        }
+
+        protected override ICode VisitCall(StmtCall s) {
+            this.NewLine();
+            this.VisitCall(s);
             this.js.Append(";");
             return s;
         }

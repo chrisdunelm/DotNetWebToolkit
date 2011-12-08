@@ -17,6 +17,7 @@ namespace Cil2Js.Ast {
             This,
             VarPhi,
             Ternary,
+            Call,
         }
 
         public abstract Expr.NodeType ExprType { get; }

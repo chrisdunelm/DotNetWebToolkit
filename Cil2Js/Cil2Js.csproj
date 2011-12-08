@@ -89,6 +89,9 @@
     <Compile Include="Analysis\VisitorPhiSimplifier.cs" />
     <Compile Include="Analysis\VisitorReplace.cs" />
     <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
+    <Compile Include="Ast\ExprCall.cs" />
+    <Compile Include="Ast\ICall.cs" />
+    <Compile Include="Ast\StmtCall.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
     <Compile Include="Ast\ExprVarPhi.cs" />

@@ -33,10 +33,23 @@ namespace Test {
             }
         }
 
+        public static string T0(string a) {
+            if (a == "abc") {
+                return "abcd";
+            } else {
+                return a;
+            }
+        }
+
         static void Main(string[] args) {
 
-            var t = new TestLogic() { Verbose = true };
-            t.Test1IfInt();
+            //var t = new TestLogic() { Verbose = true };
+            //t.Test1IfInt();
+
+            var mi = typeof(Program).GetMethod("T0");
+            var method  = Transcoder.GetMethod(mi);
+            var ast = Transcoder.ToAst(method, true);
+            Console.WriteLine(Js.Create(method, "js", null, ast));
 
             Console.WriteLine();
             Console.WriteLine("*** DONE ***");

@@ -9,8 +9,8 @@ namespace Cil2Js.Ast {
         public enum NodeType {
             Continuation,
             Cil,
-            //Illegal,
 
+            Call,
             Block,
             Try,
             Throw,
