@@ -125,9 +125,11 @@ The initial AST is a direct representation of the .NET binary;
 this contains raw CIL byte-code, and the only flow-control structures are goto statements, which are
 modelled as continuations in the AST.
 
-This is iteratively transformed to the final AST using a collection of AST visitors that are each
-capable of altering the AST in a specific manner, until the simplest AST possible, that contains no
-continuations (goto's) is produced.
+This is iteratively transformed to the final AST in in two steps:
+1. All continuations (gotos) are transformed into ifs and loops.
+2. The resulting AST is simplified as much as possible.
+These steps are carried out using a collection of AST visitors that are each
+capable of altering the AST in a specific manner.
 
 If you are curious about how the AST is generated, call Transcoder.ToAst() or Transcoder.ToJs()
 with the 'verbose' argument set to true. This will print to the console every step on the way to
