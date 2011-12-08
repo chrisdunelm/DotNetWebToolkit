@@ -17,7 +17,7 @@ namespace Test.ExecutionTests {
                 }
                 return b;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace Test.ExecutionTests {
                 } while (a > 0);
                 return b;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Test.ExecutionTests {
                 }
                 return b;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace Test.ExecutionTests {
                 }
                 return r;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace Test.ExecutionTests {
                 }
                 return r;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace Test.ExecutionTests {
                 }
                 return r;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -121,7 +121,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -135,7 +135,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -152,7 +152,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -180,7 +180,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -209,7 +209,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -255,7 +255,7 @@ namespace Test.ExecutionTests {
                 }
                 return a;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
     }

@@ -40,7 +40,7 @@ namespace Test.ExecutionTests {
             return args.ToArray();
         }
 
-        protected void Run(Delegate d) {
+        protected void Test(Delegate d) {
             var mi = d.Method;
             var fn = Assembly.GetExecutingAssembly().Location;
             var module = ModuleDefinition.ReadModule(fn);

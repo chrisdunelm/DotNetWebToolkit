@@ -18,7 +18,7 @@ namespace Test.ExecutionTests {
                     return false;
                 }
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -30,7 +30,7 @@ namespace Test.ExecutionTests {
                     return false;
                 }
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace Test.ExecutionTests {
                 }
                 return b;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace Test.ExecutionTests {
                 }
                 return a + 1;
             };
-            this.Run(f);
+            this.Test(f);
         }
 
     }

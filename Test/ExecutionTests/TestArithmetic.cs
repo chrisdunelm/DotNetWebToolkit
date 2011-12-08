@@ -17,31 +17,31 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestAdd() {
             Func<int, int, int> f = (a, b) => a + b;
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
         public void TestSub() {
             Func<int, int, int> f = (a, b) => a - b;
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
         public void TestMul() {
             Func<int, int, int> f = (a, b) => a * b;
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test, Ignore("Integer division not yet supported - currently performs floating point division")]
         public void TestDiv() {
             Func<int, int, int> f = (a, b) => a / b;
-            this.Run(f);
+            this.Test(f);
         }
 
         [Test]
         public void TestDiv2() {
             Func<double, double, double> f = (a, b) => a / b;
-            this.Run(f);
+            this.Test(f);
         }
 
     }

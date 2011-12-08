@@ -33,23 +33,7 @@ namespace Test {
             }
         }
 
-        static int T0(int a, int b) {
-            if (a == b) {
-                b++;
-            }
-            return b;
-        }
-
         static void Main(string[] args) {
-
-            MethodInfo methodInfo = typeof(Program).GetMethod("T0", BindingFlags.NonPublic|BindingFlags.Static);
-            MethodDefinition method = Transcoder.GetMethod(methodInfo);
-            ICode ast = Transcoder.ToAst(method, true);
-            var show = ShowVisitor.V(method, ast);
-            Console.WriteLine(show);
-            return;
-
-            //RunAllTests<TestLoops>(true);
 
             var t = new TestLogic() { Verbose = true };
             t.Test1IfInt();
