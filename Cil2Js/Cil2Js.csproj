@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1BC431AB-58C6-4D60-95C2-885FDD784CE0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Cil2Js</RootNamespace>
+    <AssemblyName>Cil2Js</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Analysis\AstRecursiveVisitor.cs" />
+    <Compile Include="Analysis\AstVisitor.cs" />
+    <Compile Include="Analysis\CilProcessor.cs" />
+    <Compile Include="Analysis\CilStackAnalysis.cs" />
+    <Compile Include="Analysis\CreateAst.cs" />
+    <Compile Include="Analysis\FlowAnalyser.cs" />
+    <Compile Include="Analysis\IInstructionMappable.cs" />
+    <Compile Include="Analysis\StmtCil.cs" />
+    <Compile Include="Analysis\StmtContinuation.cs" />
+    <Compile Include="Analysis\TypeCombiner.cs" />
+    <Compile Include="Analysis\VisitorBooleanSimplification.cs" />
+    <Compile Include="Analysis\VisitorConditionRemoval.cs" />
+    <Compile Include="Analysis\VisitorConvertCilToSsa.cs" />
+    <Compile Include="Analysis\VisitorDoLoopSimplification.cs" />
+    <Compile Include="Analysis\VisitorExpressionSimplifier.cs" />
+    <Compile Include="Analysis\VisitorFindContinuations.cs" />
+    <Compile Include="Analysis\VisitorIfSimplification.cs" />
+    <Compile Include="Analysis\VisitorPhiClusters.cs" />
+    <Compile Include="Analysis\VisitorPhiSimplifier.cs" />
+    <Compile Include="Analysis\VisitorReplace.cs" />
+    <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
+    <Compile Include="Transcoder.cs" />
+    <Compile Include="Ast\ExprTernary.cs" />
+    <Compile Include="Ast\ExprVarPhi.cs" />
+    <Compile Include="Ast\ExprThis.cs" />
+    <Compile Include="Ast\Extensions.cs" />
+    <Compile Include="Ast\VisitorSameExpr.cs" />
+    <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="Ast\Expr.cs" />
+    <Compile Include="Ast\ExprBinary.cs" />
+    <Compile Include="Ast\ExprVarInstResult.cs" />
+    <Compile Include="Ast\ExprLiteral.cs" />
+    <Compile Include="Ast\ExprUnary.cs" />
+    <Compile Include="Ast\ExprVarParameter.cs" />
+    <Compile Include="Ast\ExprVar.cs" />
+    <Compile Include="Ast\ExprVarLocal.cs" />
+    <Compile Include="Ast\ICode.cs" />
+    <Compile Include="Ast\Stmt.cs" />
+    <Compile Include="Ast\StmtAssignment.cs" />
+    <Compile Include="Ast\StmtBlock.cs" />
+    <Compile Include="Ast\StmtIf.cs" />
+    <Compile Include="Ast\StmtLoop.cs" />
+    <Compile Include="Ast\StmtReturn.cs" />
+    <Compile Include="Ast\StmtThrow.cs" />
+    <Compile Include="Ast\StmtTry.cs" />
+    <Compile Include="Output\Js.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\AstRunner.cs" />
+    <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\ShowVisitor.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\cecil\Mono.Cecil.csproj">
+      <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
+      <Name>Mono.Cecil</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

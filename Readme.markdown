@@ -4,8 +4,6 @@ Cil2Js
 The project aim is to convert libraries/executables written C#, F#, VB, *(...add your own .NET langauge here)*
 to JavaScript.
 
-.NET types to support browser
-
 Tooling support for Visual Studio may one day be provided that allows a project to be automatically converted to JavaScript
 during a build, with the JavaScript output automatically being updated in a web project.
 
