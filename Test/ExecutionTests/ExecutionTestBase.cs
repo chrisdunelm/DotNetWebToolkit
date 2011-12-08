@@ -51,7 +51,7 @@ namespace Test.ExecutionTests {
             var show = ShowVisitor.V(method, ast);
             Assert.That(show, Is.Not.Null);
             // Test that AST is correct and Js creator works
-            var js = Js.Create(method, "test", null, ast);
+            var js = JsMethod.Create(method, "test", null, ast);
             if (this.Verbose) {
                 Console.WriteLine(show);
                 Console.WriteLine(js);

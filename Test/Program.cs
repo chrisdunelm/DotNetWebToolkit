@@ -41,15 +41,27 @@ namespace Test {
             }
         }
 
+        public static int T1(int a) {
+            if (a >= 0) {
+                return T2();
+            } else {
+                return T2() + 2;
+            }
+        }
+
+        public static int T2() {
+            return 5;
+        }
+
         static void Main(string[] args) {
 
             //var t = new TestLogic() { Verbose = true };
             //t.Test1IfInt();
 
-            var mi = typeof(Program).GetMethod("T0");
+            var mi = typeof(Program).GetMethod("T1");
             var method  = Transcoder.GetMethod(mi);
-            var ast = Transcoder.ToAst(method, true);
-            Console.WriteLine(Js.Create(method, "js", null, ast));
+            var js = Js.CreateFrom(method);
+            Console.WriteLine(js);
 
             Console.WriteLine();
             Console.WriteLine("*** DONE ***");
