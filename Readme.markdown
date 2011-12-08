@@ -42,7 +42,7 @@ namespace Test {
 
 	static void Main(string[] args) {
 	  MethodInfo methodInfo = typeof(Program).GetMethod("Fn", BindingFlags.NonPublic|BindingFlags.Static);
-	  string javaScript = Transcoder.ToJs(methodInfo, "Fn");
+	  string javaScript = Transcoder.ToJs(methodInfo, "Fn", null);
 	  Console.WriteLine(javaScript);
 	}
 
@@ -67,7 +67,7 @@ Cecil MethodDefinition:
 
 ``` C#
 MethodDefinition method = ...;
-string javaScript = Transcoder.ToJs(method, "Fn");
+string javaScript = Transcoder.ToJs(method, "Fn", null);
 ```
 
 AST representation
@@ -94,7 +94,7 @@ namespace Test {
     static void Main(string[] args) {
       MethodInfo methodInfo = typeof(Program).GetMethod("T0", BindingFlags.NonPublic|BindingFlags.Static);
       MethodDefinition method = Transcoder.GetMethod(methodInfo);
-      ICode ast = Transcoder.ToAst(method);
+      ICode ast = Transcoder.ToAst(method, null);
       var show = ShowVisitor.V(method, ast);
       Console.WriteLine(show);
 	}
