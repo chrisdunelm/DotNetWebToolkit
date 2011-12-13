@@ -13,20 +13,28 @@ with Visual Studio controlling the browsers execution of the generated JavaScrip
 Current Status
 --------------
 
-Cil2Js is currently mostly non-functional. Only simple methods may be successully converted to JavaScript.
-This means:
+Cil2Js is currently mostly non-functional. Lots of things will not be successully converted to JavaScript.
+However, the following should work:
 
-- Methods cannot call any other methods
-- Methods must be static
-- Only primitive types can be used (e.g. boolean, int, double, etc...)
-- *...lots of things probably don't work*
+- Classes with static, instance and virtual methods
+- Simple arithmatic
+- Logic expressions
+- 'if' and 'loop' statements
+
+But there's much more that's missing/broken/bad:
+
+- No integration with web browsers (e.g. you cannot yet call document.getElementById)
+- No arrays
+- Many useful base class classes and methods wll fail
+- *(...add all the other stuff you find missing here)*
 - No Visual Studio tooling available
 - Some of the JavaScript produced is of terrible quality
+- The JavaScript produced is the worst global namespace polluter you've ever seen
 
 How to use
 ----------
 Download and build the Visual Studio 2010 solution.
-The library **Cil2Js** allows individual methods to be converted to JavaScript:
+The library **Cil2Js** allows a method to be converted to JavaScript:
 
 ``` C#
 using System;
@@ -34,31 +42,58 @@ using System.Reflection;
 using Cil2Js;
 
 namespace Test {
-  class Program {
+    class Program {
 
-    static int Fn() {
-      return 7;
+        class A {
+            public A(int number) {
+                this.i = number;
+            }
+            private int i;
+            public int PlusOne {
+                get { return this.i + 1; }
+            }
+        }
+
+        static int AddOne(int number) {
+            var a = new A(number);
+            return a.PlusOne;
+        }
+
+        static void Main(string[] args) {
+
+            var methodInfo = typeof(Program).GetMethod("AddOne", BindingFlags.NonPublic | BindingFlags.Static);
+            string javaScript = Js.CreateFrom(methodInfo);
+            Console.WriteLine(javaScript);
+	    }
+
     }
-
-	static void Main(string[] args) {
-	  MethodInfo methodInfo = typeof(Program).GetMethod("Fn", BindingFlags.NonPublic|BindingFlags.Static);
-	  string javaScript = Transcoder.ToJs(methodInfo, "Fn", null);
-	  Console.WriteLine(javaScript);
-	}
-
-  }
 }
 ```
 
-This will print:
+This will convert all required methods and print:
 
 ``` JavaScript
-function Fn() {
-    return 7;
+function main(a) {
+    return $b($c({}, a));
+}
+
+function $b($) {
+    return ($.a + 1);
+}
+
+function $c($, a) {
+    $d($);
+    $.a = a;
+    return $;
+}
+
+function $d($) {
+    return $;
 }
 ```
 
-to the console.
+to the console. Not the most pleasant JavaScript ever written, but it works. Note that the method passed
+in to convert is always renamed 'main'.
 
 ----
 
@@ -67,13 +102,13 @@ Cecil MethodDefinition:
 
 ``` C#
 MethodDefinition method = ...;
-string javaScript = Transcoder.ToJs(method, "Fn", null);
+string javaScript = Js.CreateFrom(method);
 ```
 
 AST representation
 ------------------
 
-Internally an AST (abstract syntax tree) is generated that represents the .NET CIL byte-code.
+Internally an AST (abstract syntax tree) is generated that represents the .NET CIL byte-code of each method.
 The transcoder allows this to be retreived, and the ShowVisitor helper class will print the AST:
 
 ``` C#
@@ -133,7 +168,7 @@ This is iteratively transformed to the final AST in in two steps:
 These steps are carried out using a collection of AST visitors that are each
 capable of altering the AST in a specific manner.
 
-If you are curious about how the AST is generated, call Transcoder.ToAst() or Transcoder.ToJs()
+If you are curious about how the AST is generated, call Js.CreateFrom(), Transcoder.ToAst() or Transcoder.ToJs()
 with the 'verbose' argument set to true. This will print to the console every step on the way to
 the final AST. This can produce a large amount of output for anything but the simplest methods.
 

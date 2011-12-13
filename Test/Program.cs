@@ -18,16 +18,6 @@ using Cil2Js.Attributes;
 
 namespace Test {
 
-    abstract class C0 {
-        public abstract void A();
-    }
-
-    class C1 : C0 {
-        public override void A() {
-            throw new NotImplementedException();
-        }
-    }
-
     class Program {
 
         static void RunAllTests<T>(bool verbose = false) where T : new() {
@@ -45,34 +35,30 @@ namespace Test {
             }
         }
 
-        //class C1 {
+        class A {
+            public A(int number) {
+                this.i = number;
+            }
+            private int i;
+            public int PlusOne {
+                get { return this.i + 1; }
+            }
+        }
 
-        //    private int i = 3;
-
-        //    public int Get() {
-        //        return this.i;
-        //    }
-        //}
-
-        //public static int T0(string a) {
-        //    var c = new C1();
-        //    return c.Get();
-        //}
-
-        //[Export("EntryPoint")]
-        //public static string T1(string s) {
-        //    return s.ToString();
-        //}
-
-        private int i = 5;
-        public int T0(int a) {
-            return this.i;
+        static int AddOne(int number) {
+            var a = new A(number);
+            return a.PlusOne;
         }
 
         static void Main(string[] args) {
-            var t = new TestSimpleClasses() { Verbose = true };
-            t.TestVirtualComplex();
-            return;
+
+            var methodInfo = typeof(Program).GetMethod("AddOne", BindingFlags.NonPublic | BindingFlags.Static);
+            string javaScript = Js.CreateFrom(methodInfo);
+            Console.WriteLine(javaScript);
+
+            //var t = new TestSimpleClasses() { Verbose = true };
+            //t.TestVirtualComplex();
+            //return;
 
             //var mi = typeof(Program).GetMethod("T0");
             //var method  = Transcoder.GetMethod(mi);
