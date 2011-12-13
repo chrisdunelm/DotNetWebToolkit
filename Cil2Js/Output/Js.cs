@@ -7,9 +7,14 @@ using Cil2Js.Analysis;
 using Cil2Js.Ast;
 using Cil2Js.JsResolvers;
 using Cil2Js.Utils;
+using System.Reflection;
 
 namespace Cil2Js.Output {
     public class Js {
+
+        public static string CreateFrom(MethodInfo methodInfo, bool verbose = false) {
+            return CreateFrom(Transcoder.GetMethod(methodInfo), verbose);
+        }
 
         public static string CreateFrom(MethodDefinition method, bool verbose = false) {
             return CreateFrom(new[] { method }, verbose);
