@@ -60,17 +60,6 @@ namespace Test {
             //t.TestVirtualComplex();
             //return;
 
-            //var mi = typeof(Program).GetMethod("T0");
-            //var method  = Transcoder.GetMethod(mi);
-            ////var js = Js.CreateFrom(method);
-            ////Console.WriteLine(js);
-
-            //var ast = Transcoder.ToAst(method, true);
-            //var show = ShowVisitor.V(method, ast);
-            //Console.WriteLine(show);
-            //var js = JsMethod.Create(method, "T0", null, ast);
-            //Console.WriteLine(js);
-
             //Console.WriteLine();
             //Console.WriteLine("*** DONE ***");
             //Console.ReadKey();
