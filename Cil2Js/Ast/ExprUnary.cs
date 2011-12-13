@@ -8,6 +8,7 @@ namespace Cil2Js.Ast {
 
     public enum UnaryOp {
         Not,
+        BitwiseNot,
         Negate,
     }
 

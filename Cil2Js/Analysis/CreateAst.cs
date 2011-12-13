@@ -68,6 +68,8 @@ namespace Cil2Js.Analysis {
                     case StackBehaviour.Varpop:
                         switch (inst.OpCode.Code) {
                         case Code.Ret: stackSize = 0; break;
+                        case Code.Newobj:
+                        case Code.Callvirt:
                         case Code.Call: stackSize -= ((MethodReference)inst.Operand).Parameters.Count; break;
                         default: throw new NotImplementedException("Cannot handle: " + inst.OpCode);
                         }
@@ -85,6 +87,8 @@ namespace Cil2Js.Analysis {
                     case StackBehaviour.Push1_push1: stackSize += 2; break;
                     case StackBehaviour.Varpush:
                         switch (inst.OpCode.Code) {
+                        case Code.Newobj: stackSize++; break;
+                        case Code.Callvirt:
                         case Code.Call: stackSize += ((MethodReference)inst.Operand).ReturnType.IsVoid() ? 0 : 1; break;
                         default: throw new NotImplementedException("Cannot handle: " + inst.OpCode);
                         }
@@ -218,6 +222,7 @@ namespace Cil2Js.Analysis {
                     this.mappable.Add((StmtContinuation)blockEndStmt);
                     break;
                 case FlowControl.Next:
+                case FlowControl.Call:
                     blockEndStmt = new StmtContinuation(end.Next, false);
                     this.mappable.Add((StmtContinuation)blockEndStmt);
                     break;

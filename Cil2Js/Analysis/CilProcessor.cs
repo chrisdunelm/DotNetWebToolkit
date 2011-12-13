@@ -90,6 +90,12 @@ namespace Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Mul));
             case Code.Div:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Div));
+            case Code.And:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.BitwiseAnd));
+            case Code.Or:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.BitwiseOr));
+            case Code.Xor:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.BitwiseXor));
             case Code.Ceq:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Equal, this.typeSystem.Boolean));
             case Code.Clt:
@@ -101,46 +107,41 @@ namespace Cil2Js.Analysis {
                 return null;
             case Code.Brtrue_S:
             case Code.Brtrue:
-                return this.SsaInstResultAssignment(inst, () => this.stack.Pop());
+                return this.SsaInstResultAssignment(inst, this.stack.Pop());
             case Code.Brfalse_S:
             case Code.Brfalse:
-                return this.SsaInstResultAssignment(inst, () => this.Unary(UnaryOp.Not));
+                return this.SsaInstResultAssignment(inst, this.Unary(UnaryOp.Not));
             case Code.Beq_S:
             case Code.Beq:
-                return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.Equal));
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.Equal));
             case Code.Bne_Un_S:
             case Code.Bne_Un:
-                return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.NotEqual));
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.NotEqual));
             case Code.Blt_S:
             case Code.Blt:
-                return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.LessThan));
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThan));
             case Code.Ble_S:
             case Code.Ble:
-                return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.LessThanOrEqual));
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThanOrEqual));
             case Code.Bge_S:
             case Code.Bge:
-                return this.SsaInstResultAssignment(inst, () => this.Binary(BinaryOp.GreaterThanOrEqual));
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThanOrEqual));
             case Code.Ret:
                 return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.stack.Pop());
+            case Code.Pop:
+                this.stack.Pop(); return null;
+            case Code.Callvirt:
+                return this.Call(inst, true);
             case Code.Call:
-                return this.Call(inst);
+                return this.Call(inst, false);
+            case Code.Newobj:
+                return this.NewObj(inst);
+            case Code.Ldfld:
+                return this.LoadField(inst);
+            case Code.Stfld:
+                return this.StoreField(inst);
             default:
                 throw new NotImplementedException("Cannot handle: " + inst.OpCode);
-            }
-        }
-
-        private Stmt Call(Instruction inst) {
-            var calling = (MethodReference)inst.Operand;
-            var args = new List<Expr>();
-            for (int i = 0; i < calling.Parameters.Count; i++) {
-                var expr = this.stack.Pop();
-                args.Add(expr);
-            }
-            args.Reverse();
-            if (calling.ReturnType.IsVoid()) {
-                return new StmtCall(calling, args);
-            } else {
-                return this.SsaLocalAssignment(new ExprCall(calling, args));
             }
         }
 
@@ -149,19 +150,17 @@ namespace Cil2Js.Analysis {
         }
 
         private Stmt LdArg(int idx) {
-            return this.SsaLocalAssignment(() => {
-                int argIdx;
-                if (this.method.HasThis) {
-                    if (idx == 0) {
-                        return new ExprThis(this.method.DeclaringType);
-                    } else {
-                        argIdx = idx - 1;
-                    }
+            Expr expr;
+            if (this.method.HasThis) {
+                if (idx == 0) {
+                    expr = new ExprThis(this.method.DeclaringType);
                 } else {
-                    argIdx = idx;
+                    expr = this.args[idx - 1];
                 }
-                return this.args[argIdx];
-            });
+            } else {
+                expr = this.args[idx];
+            }
+            return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StArg(int idx) {
@@ -195,10 +194,6 @@ namespace Cil2Js.Analysis {
             return new ExprBinary(op, type ?? left.Type, left, right);
         }
 
-        private Stmt SsaLocalAssignment(Func<Expr> exprFn) {
-            return this.SsaLocalAssignment(exprFn());
-        }
-
         private Stmt SsaLocalAssignment(Expr expr) {
             var target = new ExprVarLocal(expr.Type);
             var assignment = new StmtAssignment(target, expr);
@@ -206,11 +201,51 @@ namespace Cil2Js.Analysis {
             return assignment;
         }
 
-        private Stmt SsaInstResultAssignment(Instruction inst, Func<Expr> fnExpr) {
-            var expr = fnExpr();
+        private Stmt SsaInstResultAssignment(Instruction inst, Expr expr) {
             var target = this.instResults[inst];
             var assignment = new StmtAssignment(target, expr);
             return assignment;
+        }
+
+        private Stmt Call(Instruction inst, bool isVirtual) {
+            var calling = ((MethodReference)inst.Operand).Resolve();
+            var args = new List<Expr>();
+            for (int i = 0; i < calling.Parameters.Count; i++) {
+                var expr = this.stack.Pop();
+                args.Add(expr);
+            }
+            args.Reverse();
+            var obj = calling.IsStatic ? null : this.stack.Pop();
+            var exprCall = new ExprCall(calling, obj, args, isVirtual);
+            if (calling.ReturnType.IsVoid()) {
+                return new StmtWrapExpr(exprCall);
+            } else {
+                return this.SsaLocalAssignment(exprCall);
+            }
+        }
+
+        private Stmt NewObj(Instruction inst) {
+            var ctor = ((MethodReference)inst.Operand).Resolve();
+            var args = new List<Expr>();
+            for (int i = 0; i < ctor.Parameters.Count; i++) {
+                var expr = this.stack.Pop();
+                args.Add(expr);
+            }
+            args.Reverse();
+            return this.SsaLocalAssignment(new ExprNewObj(ctor, args));
+        }
+
+        private Stmt LoadField(Instruction inst) {
+            var obj = this.stack.Pop();
+            var expr = new ExprFieldAccess(obj, ((FieldReference)inst.Operand).Resolve());
+            return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt StoreField(Instruction inst) {
+            var value = this.stack.Pop();
+            var obj = this.stack.Pop();
+            var expr = new ExprFieldAccess(obj, ((FieldReference)inst.Operand).Resolve());
+            return new StmtAssignment(expr, value);
         }
 
     }

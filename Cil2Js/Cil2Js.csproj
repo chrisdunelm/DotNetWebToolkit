@@ -85,19 +85,33 @@
     <Compile Include="Analysis\VisitorExpressionSimplifier.cs" />
     <Compile Include="Analysis\VisitorFindCalls.cs" />
     <Compile Include="Analysis\VisitorFindContinuations.cs" />
+    <Compile Include="Analysis\VisitorFindSpecials.cs" />
     <Compile Include="Analysis\VisitorIfSimplification.cs" />
     <Compile Include="Analysis\VisitorPhiClusters.cs" />
     <Compile Include="Analysis\VisitorPhiSimplifier.cs" />
     <Compile Include="Analysis\VisitorReplace.cs" />
     <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
     <Compile Include="Ast\ExprCall.cs" />
+    <Compile Include="Ast\ExprFieldAccess.cs" />
+    <Compile Include="Ast\ExprNewObj.cs" />
     <Compile Include="Ast\ICall.cs" />
     <Compile Include="Ast\StmtCall.cs" />
+    <Compile Include="Ast\StmtWrapExpr.cs" />
+    <Compile Include="Attributes\ExportAttribute.cs" />
+    <Compile Include="JsResolvers\JsCallResolver.cs" />
+    <Compile Include="JsResolvers\StringResolver.cs" />
+    <Compile Include="Output\NameRef.cs" />
+    <Compile Include="Output\JsResolved.cs" />
     <Compile Include="Output\IMethodResolver.cs" />
     <Compile Include="Output\Js.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Output\JsMethod.cs" />
+    <Compile Include="Output\NameGenerator.cs" />
+    <Compile Include="Output\VisitorFindCalls.cs" />
+    <Compile Include="Output\VisitorFindFieldAccesses.cs" />
+    <Compile Include="Output\VisitorResolveCalls.cs" />
+    <Compile Include="Output\VisitorResolveFieldAccess.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
     <Compile Include="Ast\ExprVarPhi.cs" />
@@ -126,6 +140,7 @@
     <Compile Include="Utils\AstRunner.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />
+    <Compile Include="Utils\TypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cecil\Mono.Cecil.csproj">
@@ -133,7 +148,9 @@
       <Name>Mono.Cecil</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Web\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

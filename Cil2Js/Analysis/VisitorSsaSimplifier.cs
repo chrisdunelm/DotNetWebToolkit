@@ -15,24 +15,6 @@ namespace Cil2Js.Analysis {
 
         class CopyPropagation : AstVisitor {
 
-            class AssignmentRemover : AstVisitor {
-
-                public AssignmentRemover(ExprVar target) {
-                    this.target = target;
-                }
-
-                private ExprVar target;
-
-                protected override ICode VisitAssignment(StmtAssignment s) {
-                    if (s.Target == this.target) {
-                        return null;
-                    } else {
-                        return base.VisitAssignment(s);
-                    }
-                }
-
-            }
-
             class Updater : AstVisitor {
 
                 public Updater(ExprVar target) {
@@ -75,17 +57,13 @@ namespace Cil2Js.Analysis {
                     if (a.mustKeep) {
                         continue;
                     }
-                    if (a.count == 1 || IsSimple(a.assignment.Expr)) {
+                    if (a.count == 1) {
+                        if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
+                            c2 = VisitorReplace.V(c2, a.assignment, null);
+                        }
+                    }
+                    if (a.count == 2 || IsSimple(a.assignment.Expr)) {
                         c2 = (new Updater(a.assignment.Target)).Visit(c2);
-                        // Remove assignment
-                        //c2 = (new AssignmentRemover(a.assignment.Target)).Visit(c2);
-                        // Replace target uses with direct expression
-                        //c2 = VisitorReplace.V(c2, a.assignment.Target, a.assignment.Expr);
-                        //var aInfo = v.assignments.ValueOrDefault(a.assignment.Expr);
-                        //if (aInfo != null) {
-
-                        //}
-                        //break;
                     }
                 }
                 return c2;
@@ -97,18 +75,19 @@ namespace Cil2Js.Analysis {
                 public bool mustKeep = false;
             }
 
-            private Dictionary<ExprVarLocal, AssignmentInfo> assignments = new Dictionary<ExprVarLocal, AssignmentInfo>();
+            private Dictionary<ExprVar, AssignmentInfo> assignments = new Dictionary<ExprVar, AssignmentInfo>();
 
             protected override ICode VisitAssignment(StmtAssignment s) {
-                var aInfo = this.assignments.ValueOrDefault((ExprVarLocal)s.Target, () => new AssignmentInfo(), true);
+                var aInfo = this.assignments.ValueOrDefault((ExprVar)s.Target, () => new AssignmentInfo(), true);
                 aInfo.assignment = s;
+                this.Visit(s.Target);
                 this.Visit(s.Expr);
                 return s;
             }
 
             protected override ICode VisitVarPhi(ExprVarPhi e) {
                 // Variables within phi's cannot be removed
-                foreach (var expr in e.Exprs.Where(x => x.ExprType == Expr.NodeType.VarLocal).Cast<ExprVarLocal>()) {
+                foreach (var expr in e.Exprs.Where(x => x.ExprType == Expr.NodeType.VarLocal).Cast<ExprVar>()) {
                     var aInfo = this.assignments.ValueOrDefault(expr, () => new AssignmentInfo(), true);
                     aInfo.mustKeep = true;
                 }
@@ -122,6 +101,14 @@ namespace Cil2Js.Analysis {
                 }
                 return base.VisitVarLocal(e);
             }
+
+            //protected override ICode VisitFieldAccess(ExprFieldAccess e) {
+            //    var aInfo = this.assignments.ValueOrDefault(e);
+            //    if (aInfo != null) {
+            //        aInfo.count++;
+            //    }
+            //    return base.VisitFieldAccess(e);
+            //}
 
         }
 

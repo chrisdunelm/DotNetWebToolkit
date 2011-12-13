@@ -20,5 +20,10 @@ namespace Cil2Js.Ast {
         public override Mono.Cecil.TypeReference Type {
             get { return this.type; }
         }
+
+        public override string ToString() {
+            return "this";
+        }
+
     }
 }

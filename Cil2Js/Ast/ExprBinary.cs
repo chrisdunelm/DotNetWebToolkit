@@ -12,6 +12,10 @@ namespace Cil2Js.Ast {
         Mul,
         Div,
 
+        BitwiseAnd,
+        BitwiseOr,
+        BitwiseXor,
+
         NotEqual,
         Equal,
         LessThan,

@@ -27,11 +27,35 @@ namespace Test.Utils {
             return ret;
         }
 
+#pragma warning disable 618
+        class Site : IJSVsaSite {
+            public void GetCompiledState(out byte[] pe, out byte[] debugInfo) {
+                throw new NotImplementedException();
+            }
+
+            public object GetEventSourceInstance(string itemName, string eventSourceName) {
+                throw new NotImplementedException();
+            }
+
+            public object GetGlobalInstance(string name) {
+                throw new NotImplementedException();
+            }
+
+            public void Notify(string notify, object info) {
+                throw new NotImplementedException();
+            }
+
+            public bool OnCompilerError(IJSVsaError error) {
+                throw new NotImplementedException();
+            }
+        }
+#pragma warning restore 618
+
         private object[] CompileAndExecute(string js, string functionName, object[][] args) {
-            var jscp = new JScriptCodeProvider();
+            var jscp = CodeDomProvider.CreateProvider("JScript");
             var options = new CompilerParameters {
                 GenerateExecutable = true,
-                GenerateInMemory = true,
+                GenerateInMemory = false,
             };
             var compilerResults = jscp.CompileAssemblyFromSource(options, js);
             var errors = compilerResults.Errors.Cast<CompilerError>().ToArray();
@@ -43,15 +67,23 @@ namespace Test.Utils {
                 throw new InvalidOperationException(msg);
             }
 
-            var functionQuery =
-                from type in compilerResults.CompiledAssembly.GetTypes()
-                from method in type.GetMethods()
-                where method.Name == functionName
-                select method;
-            var function = functionQuery.First();
+            // Run the compiled JS
+            // Difficult to find out exactly how to do this, but this works for now
+            var jscriptType = compilerResults.CompiledAssembly.GetType("JScript 0");
             var ret = new object[args.Length];
             for (int i = 0; i < args.Length; i++) {
-                ret[i] = function.Invoke(null, new object[] { null, null }.Concat(args[i]).ToArray());
+#pragma warning disable 618
+                var vsa = new VsaEngine();
+                vsa.RootMoniker = "cil2js://jsrunner";
+                vsa.Site = new Site();
+                vsa.InitNew();
+                GlobalScope gs = new GlobalScope(null, vsa);
+                var jscript0 = Activator.CreateInstance(jscriptType, gs);
+                var globalCode = jscriptType.GetMethod("Global Code");
+                globalCode.Invoke(jscript0, new object[0]);
+                var fn = jscriptType.GetMethod(functionName);
+                ret[i] = fn.Invoke(jscript0, new object[] { null, vsa }.Concat(args[i]).ToArray());
+#pragma warning restore 618
             }
             return ret;
         }

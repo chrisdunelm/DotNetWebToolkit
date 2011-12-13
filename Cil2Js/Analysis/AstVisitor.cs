@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cil2Js.Ast;
+using Mono.Cecil;
 
 namespace Cil2Js.Analysis {
     public abstract class AstVisitor {
@@ -55,8 +56,10 @@ namespace Cil2Js.Analysis {
                 return this.VisitDoLoop((StmtDoLoop)s);
             case Stmt.NodeType.Return:
                 return this.VisitReturn((StmtReturn)s);
-            case Stmt.NodeType.Call:
-                return this.VisitCall((StmtCall)s);
+            //case Stmt.NodeType.Call:
+            //    return this.VisitCall((StmtCall)s);
+            case Stmt.NodeType.WrapExpr:
+                return this.VisitWrapExpr((StmtWrapExpr)s);
             default:
                 throw new NotImplementedException("Cannot handle: " + s.StmtType);
             }
@@ -175,12 +178,9 @@ namespace Cil2Js.Analysis {
             return expr == s.Expr ? s : new StmtReturn((Expr)expr);
         }
 
-        protected virtual ICode VisitCall(StmtCall s) {
-            return this.VisitCall((ICall)s);
-        }
-
-        private ICode VisitCall(ICall call) {
+        protected T HandleCall<T>(T call, Func<MethodDefinition, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
             this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(call.Obj);
             List<Expr> argsNew = null;
             foreach (var arg in call.Args) {
                 var o = (Expr)this.Visit(arg);
@@ -191,22 +191,31 @@ namespace Cil2Js.Analysis {
                     argsNew.Add(o);
                 }
             }
-            if (argsNew == null) {
+            if (argsNew == null && obj == call.Obj) {
                 return call;
             } else {
-                switch (call.CodeType) {
-                case CodeType.Expression:
-                    return new ExprCall(call.Calling, argsNew);
-                case CodeType.Statement:
-                    return new StmtCall(call.Calling, argsNew);
-                default:
-                    throw new NotImplementedException("Cannot handle: " + call.CodeType);
-                }
+                return fnCreate(call.CallMethod, obj, argsNew ?? call.Args);
+            }
+        }
+
+        protected virtual ICode VisitWrapExpr(StmtWrapExpr s) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(s.Expr);
+            if (expr != s.Expr) {
+                return new StmtWrapExpr(expr);
+            } else {
+                return s;
             }
         }
 
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {
+            case Expr.NodeType.NewObj:
+                return this.VisitNewObj((ExprNewObj)e);
+            case Expr.NodeType.LoadField:
+                return this.VisitFieldAccess((ExprFieldAccess)e);
+            case Expr.NodeType.This:
+                return this.VisitThis((ExprThis)e);
             case Expr.NodeType.Call:
                 return this.VisitCall((ExprCall)e);
             case Expr.NodeType.VarExprInstResult:
@@ -227,8 +236,27 @@ namespace Cil2Js.Analysis {
             }
         }
 
+        protected virtual ICode VisitNewObj(ExprNewObj e) {
+            return this.HandleCall(e, (method, obj, args) => new ExprNewObj(method, args));
+        }
+
+        protected virtual ICode VisitFieldAccess(ExprFieldAccess e) {
+            this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(e.Obj);
+            if (obj != e.Obj) {
+                return new ExprFieldAccess(obj, e.Field);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitThis(ExprThis e) {
+            this.ThrowOnNoOverride();
+            return e;
+        }
+
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.VisitCall((ICall)e);
+            return this.HandleCall(e, (method, obj, args) => new ExprCall(method, obj, args, e.IsVirtual));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {

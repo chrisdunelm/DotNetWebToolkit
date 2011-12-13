@@ -43,9 +43,13 @@ namespace Cil2Js.Ast {
                     return true;
                 }
                 if (!exact) {
+                    // These operations are commutative
                     switch (aBin.Op) {
                     case BinaryOp.Or:
                     case BinaryOp.And:
+                    case BinaryOp.BitwiseAnd:
+                    case BinaryOp.BitwiseOr:
+                    case BinaryOp.BitwiseXor:
                     case BinaryOp.NotEqual:
                         return AreSame(aBin.Left, bBin.Right) && AreSame(aBin.Right, bBin.Left);
                     default:

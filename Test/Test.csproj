@@ -37,7 +37,7 @@
     <Reference Include="FsCheck">
       <HintPath>..\Libs\FsCheck.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.JScript" />
     <Reference Include="nunit.framework">
       <HintPath>..\Libs\nunit.framework.dll</HintPath>
@@ -55,6 +55,7 @@
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
+    <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBooleanSimplification.cs" />

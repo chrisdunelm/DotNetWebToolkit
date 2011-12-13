@@ -130,6 +130,9 @@ namespace Cil2Js.Utils {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.BitwiseAnd, "&" },
+            { BinaryOp.BitwiseOr, "|" },
+            { BinaryOp.BitwiseXor, "^" },
             { BinaryOp.And, "&&" },
             { BinaryOp.Equal, "==" },
             { BinaryOp.NotEqual, "!=" },
@@ -229,24 +232,54 @@ namespace Cil2Js.Utils {
         }
 
         private void VisitCall(ICall call) {
-            this.code.Append(call.Calling.FullName);
-            this.code.Append("(");
-            foreach (var arg in call.Args) {
-                this.Visit(arg);
-                this.code.Append(", ");
+            var method = call.CallMethod;
+            if (method.IsConstructor) {
+                this.code.Append(method.DeclaringType.Name);
+            } else if (method.IsStatic) {
+                this.code.Append(method.DeclaringType.Name + "." + method.Name);
+            } else {
+                this.Visit(call.Obj);
+                this.code.Append(".");
+                this.code.Append(method.Name);
             }
-            this.code.Length -= 2;
+            this.code.Append("(");
+            if (call.Args.Any()) {
+                foreach (var arg in call.Args) {
+                    this.Visit(arg);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
             this.code.Append(")");
         }
 
         protected override ICode VisitCall(ExprCall e) {
+            this.VisitCall((ICall)e);
+            return e;
+        }
+
+        protected override ICode VisitFieldAccess(ExprFieldAccess e) {
+            this.Visit(e.Obj);
+            this.code.Append(".");
+            this.code.Append(e.Field.Name);
+            return e;
+        }
+
+        protected override ICode VisitThis(ExprThis e) {
+            this.code.Append("this");
+            return e;
+        }
+
+        protected override ICode VisitNewObj(ExprNewObj e) {
+            this.code.AppendFormat("new ");
             this.VisitCall(e);
             return e;
         }
 
-        protected override ICode VisitCall(StmtCall s) {
+        protected override ICode VisitWrapExpr(StmtWrapExpr s) {
             this.NewLine();
-            this.VisitCall(s);
+            this.Visit(s.Expr);
+            this.code.Append(";");
             return s;
         }
 

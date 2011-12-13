@@ -228,7 +228,7 @@ namespace Test.ExecutionTests {
                                 if (l <= 3) {
                                     continue;
                                 }
-                                if (l >= 2) {
+                                if (l >= 5) {
                                     break;
                                 }
                                 a += 1000;

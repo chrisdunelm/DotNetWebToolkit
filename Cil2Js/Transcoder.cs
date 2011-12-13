@@ -18,21 +18,21 @@ namespace Cil2Js {
             return finalAst;
         }
 
-        public static string ToJs(MethodDefinition method, string jsMethodName, IMethodResolver methodResolver, bool verbose = false) {
+        public static string ToJs(MethodDefinition method, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {
             var ast = ToAst(method, verbose);
-            return JsMethod.Create(method, jsMethodName, methodResolver, ast);
+            return JsMethod.Create(method, jsMethodName, resolver, ast);
         }
 
-        public static string ToJs(MethodInfo methodInfo, string jsMethodName, IMethodResolver methodResolver, bool verbose = false) {
+        public static string ToJs(MethodInfo methodInfo, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {
             var method = GetMethod(methodInfo);
-            return ToJs(method, jsMethodName, methodResolver, verbose);
+            return ToJs(method, jsMethodName, resolver, verbose);
         }
 
         public static MethodDefinition GetMethod(MethodInfo mi) {
             // TODO: This won't handle overloaded methods (arguments and generics)
             var filename = mi.DeclaringType.Assembly.Location;
             var module = ModuleDefinition.ReadModule(filename);
-            var type = module.GetType(mi.DeclaringType.FullName);
+            var type = module.GetType(mi.DeclaringType.FullName.Replace('+', '.'));
             var method = type.Methods.First(x => x.Name == mi.Name);
             return method;
         }

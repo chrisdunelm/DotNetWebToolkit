@@ -46,20 +46,21 @@ namespace Test.ExecutionTests {
             var module = ModuleDefinition.ReadModule(fn);
             var type = module.GetType(mi.DeclaringType.FullName);
             var method = type.Methods.First(x => x.Name == mi.Name);
-            var ast = Transcoder.ToAst(method, this.Verbose);
+            var js = Js.CreateFrom(method, this.Verbose);
+            //var ast = Transcoder.ToAst(method, this.Verbose);
             // Test that ShowVisitor works
-            var show = ShowVisitor.V(method, ast);
-            Assert.That(show, Is.Not.Null);
+            //var show = ShowVisitor.V(method, ast);
+            //Assert.That(show, Is.Not.Null);
             // Test that AST is correct and Js creator works
-            var js = JsMethod.Create(method, "test", null, ast);
+            //var js = JsMethod.Create(method, "test", null, ast);
             if (this.Verbose) {
-                Console.WriteLine(show);
+                //Console.WriteLine(show);
                 Console.WriteLine(js);
             }
             var range = Enumerable.Range(0, this.testIterations);
             var args = range.Select(i => this.CreateArgs(method)).ToArray();
             var runResults = range.Select(i => mi.Invoke(d.Target, args[i])).ToArray();
-            var jsResults = JsRunner.Run(js, "test", args);
+            var jsResults = JsRunner.Run(js, "main", args);
             for (int i = 0; i < this.testIterations; i++) {
                 var jsResult = jsResults[i];
                 if (jsResult.GetType() != mi.ReturnType) {

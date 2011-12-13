@@ -18,10 +18,26 @@ namespace Cil2Js.Ast {
             VarPhi,
             Ternary,
             Call,
+            LoadField,
+            NewObj,
         }
 
-        public abstract Expr.NodeType ExprType { get; }
+        [Flags]
+        public enum Special {
+            None = 0,
+            /// <summary>
+            /// When evaluating an expression may cause side-effects, therefore the evaluation must be
+            /// done even if the expression result is never used, unless it can be proven that there are no side-effects.
+            /// e.g.: method calls.
+            /// </summary>
+            PossibleSideEffects = 1,
+        }
+
+        public abstract NodeType ExprType { get; }
         public abstract TypeReference Type { get; }
+        public virtual Special Specials {
+            get { return Special.None; }
+        }
 
         CodeType ICode.CodeType {
             get { return CodeType.Expression; }

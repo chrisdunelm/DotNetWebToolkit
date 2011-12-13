@@ -10,7 +10,27 @@ using Cil2Js.Utils;
 namespace Cil2Js.Output {
     public class JsMethod : AstVisitor {
 
-        class VarNamer : AstVisitor {
+        public class Resolver {
+
+            public Resolver(
+                IDictionary<MethodDefinition, string> methodNames,
+                IDictionary<FieldDefinition, string> fieldNames,
+                IDictionary<TypeDefinition, string> vTables,
+                IDictionary<MethodDefinition, int> virtualCalls) {
+                this.MethodNames = methodNames;
+                this.FieldNames = fieldNames;
+                this.VTables = vTables;
+                this.VirtualCalls = virtualCalls;
+            }
+
+            public IDictionary<MethodDefinition, string> MethodNames { get; private set; }
+            public IDictionary<FieldDefinition, string> FieldNames { get; private set; }
+            public IDictionary<TypeDefinition, string> VTables { get; private set; }
+            public IDictionary<MethodDefinition, int> VirtualCalls { get; private set; }
+
+        }
+
+        class LocalVarNamer : AstVisitor {
 
             class VarClustered : ExprVar {
 
@@ -29,10 +49,8 @@ namespace Cil2Js.Output {
                 }
             }
 
-            private readonly static char[] c = "abcdefghijklmnopqrstuvwxyz".ToArray();
-
             public static Dictionary<ExprVar, string> V(ICode c) {
-                var v = new VarNamer();
+                var v = new LocalVarNamer();
                 v.Visit(c);
                 var clusters = UniqueClusters(v.clusters);
                 var allCounts = clusters.ToDictionary(x => (ExprVar)new VarClustered(x), x => x.Sum(y => v.varCount.ValueOrDefault(y)));
@@ -43,9 +61,10 @@ namespace Cil2Js.Output {
                         allCounts.Add(varCount.Key, varCount.Value);
                     }
                 }
+                var nameGenerator = new NameGenerator();
                 var names = allCounts
                     .OrderByDescending(x => x.Value)
-                    .ToDictionary(x => x.Key, x => v.GetNewName());
+                    .ToDictionary(x => x.Key, x => nameGenerator.GetNewName());
                 foreach (var cluster in allClusteredCounts) {
                     foreach (var var in ((VarClustered)cluster.Key).Vars) {
                         names.Add(var, names[cluster.Key]);
@@ -70,30 +89,10 @@ namespace Cil2Js.Output {
                 return clusters;
             }
 
-            private VarNamer() { }
+            private LocalVarNamer() { }
 
             private Dictionary<ExprVar, int> varCount = new Dictionary<ExprVar, int>();
             private List<ExprVar[]> clusters = new List<ExprVar[]>();
-
-            private int curName = 0;
-            private string GetNewName() {
-                var l = c.Length;
-                int length = 1, sub = 0;
-                for (int i = l, add = l; ; sub += add, add *= l, i += add, length++) {
-                    if (this.curName < i) {
-                        break;
-                    }
-                }
-                var v = this.curName - sub;
-                string name = "";
-                for (int i = 0; i < length; i++) {
-                    name += c[v % l];
-                    v = v / l;
-                }
-                this.curName++;
-                name = new string(name.Reverse().ToArray());
-                return name;
-            }
 
             protected override ICode VisitVar(ExprVar e) {
                 if (e.ExprType == Expr.NodeType.VarPhi) {
@@ -107,34 +106,25 @@ namespace Cil2Js.Output {
 
         }
 
-        class BasicMethodResolver : IMethodResolver {
-
-            public Expr Transform(ICall call) {
-                return null;
-            }
-
-            public string GetName(ICall call) {
-                return call.Calling.Name;
-            }
-        }
-
         private const int tabSize = 4;
+        private const string thisName = "$";
 
-        public static string Create(MethodDefinition method, string methodName, IMethodResolver methodResolver, ICode ast) {
-            if (methodResolver == null) {
-                methodResolver = new BasicMethodResolver();
-            }
-            var varNames = VarNamer.V(ast);
-            var v = new JsMethod(varNames, methodResolver);
+        public static string Create(MethodDefinition method, string methodName, Resolver resolver, ICode ast) {
+            var varNames = LocalVarNamer.V(ast);
+            var v = new JsMethod(method, varNames, resolver);
             v.Visit(ast);
             var js = v.js.ToString();
             var sb = new StringBuilder();
             var parameterNames = method.Parameters.Select(x => v.parameters.ValueOrDefault(x, () => null).NullThru(y => varNames[y], "_")).ToArray();
+            if (!method.IsStatic) {
+                parameterNames = new[] { thisName }.Concat(parameterNames).ToArray();
+            }
             sb.AppendFormat("function {0}({1}) {{", methodName, string.Join(", ", parameterNames));
             var vars = varNames
                 .Select(x => x.Value)
                 .Except(parameterNames)
                 .Distinct()
+                .Concat(v.needVirtualCallVars)
                 .ToArray();
             if (vars.Any()) {
                 sb.AppendLine();
@@ -146,18 +136,22 @@ namespace Cil2Js.Output {
             return sb.ToString();
         }
 
-        private JsMethod(Dictionary<ExprVar, string> varNames, IMethodResolver methodResolver)
+        private JsMethod(MethodDefinition method, Dictionary<ExprVar, string> varNames, Resolver resolver)
             : base(true) {
+            this.method = method;
             this.varNames = varNames;
-            this.methodResolver = methodResolver;
+            this.resolver = resolver;
         }
 
+        private MethodDefinition method;
         private Dictionary<ExprVar, string> varNames;
-        private IMethodResolver methodResolver;
+        private Resolver resolver;
 
         private Dictionary<ParameterDefinition, ExprVar> parameters = new Dictionary<ParameterDefinition, ExprVar>();
         private StringBuilder js = new StringBuilder();
+        private List<string> needVirtualCallVars = new List<string>();
 
+        private int virtualCallVarsNum = 0;
         private int indent = 1;
 
         private void NewLine() {
@@ -217,6 +211,9 @@ namespace Cil2Js.Output {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.BitwiseAnd, "&" },
+            { BinaryOp.BitwiseOr, "|" },
+            { BinaryOp.BitwiseXor, "^" },
             { BinaryOp.And, "&&" },
             { BinaryOp.Equal, "==" },
             { BinaryOp.NotEqual, "!=" },
@@ -293,41 +290,89 @@ namespace Cil2Js.Output {
         protected override ICode VisitReturn(StmtReturn s) {
             this.NewLine();
             this.js.Append("return");
-            if (s.Expr != null) {
+            if (this.method.IsConstructor) {
+                this.js.Append(" $");
+            } else if (s.Expr != null) {
                 this.js.Append(" ");
                 this.Visit(s.Expr);
             }
+
             this.js.Append(";");
             return s;
         }
 
-        private void VisitCall(ICall call) {
-            var transformed = methodResolver.Transform(call);
-            if (transformed != null) {
-                this.Visit(transformed);
-            } else {
-                var methodName = methodResolver.GetName(call);
-                this.js.Append(methodName);
+        protected override ICode VisitCall(ExprCall e) {
+            var callMethod = e.CallMethod;
+            Action<string> appendArgs = preThis => {
                 this.js.Append("(");
-                if (call.Args.Any()) {
-                    foreach (var arg in call.Args) {
-                        this.Visit(arg);
+                var needComma = false;
+                if (!callMethod.IsStatic) {
+                    if (preThis != null) {
+                        this.js.Append(preThis);
+                    } else {
+                        this.Visit(e.Obj);
+                    }
+                    needComma = true;
+                }
+                foreach (var arg in e.Args) {
+                    if (needComma) {
                         this.js.Append(", ");
                     }
-                    this.js.Length -= 2;
+                    this.Visit(arg);
+                    needComma = true;
                 }
                 this.js.Append(")");
+            };
+            var vInfo = this.resolver.VirtualCalls.ValueOrDefault(callMethod, () => -1);
+            if (vInfo >= 0) {
+                var preThisName = string.Format("_{0}", this.virtualCallVarsNum++);
+                this.needVirtualCallVars.Add(preThisName);
+                this.js.AppendFormat("({0} = ", preThisName);
+                this.Visit(e.Obj);
+                this.js.Append(")");
+                this.js.AppendFormat("._[{0}]", vInfo);
+                appendArgs(preThisName);
+            } else {
+                var name = this.resolver.MethodNames[callMethod];
+                this.js.Append(name);
+                appendArgs(null);
             }
-        }
-
-        protected override ICode VisitCall(ExprCall e) {
-            this.VisitCall(e);
+            // At this point, all functions must resolve to names
             return e;
         }
 
-        protected override ICode VisitCall(StmtCall s) {
+        protected override ICode VisitFieldAccess(ExprFieldAccess e) {
+            this.Visit(e.Obj);
+            this.js.Append(".");
+            this.js.Append(this.resolver.FieldNames[e.Field]);
+            return e;
+        }
+
+        protected override ICode VisitThis(ExprThis e) {
+            this.js.Append(thisName);
+            return e;
+        }
+
+        protected override ICode VisitNewObj(ExprNewObj e) {
+            var name = this.resolver.MethodNames[e.CallMethod];
+            this.js.Append(name);
+            this.js.Append("({");
+            var vTable = this.resolver.VTables.ValueOrDefault(e.CallMethod.DeclaringType);
+            if (vTable != null) {
+                this.js.AppendFormat("_:{0}", vTable);
+            }
+            this.js.Append("}");
+            foreach (var arg in e.Args) {
+                this.js.Append(", ");
+                this.Visit(arg);
+            }
+            this.js.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitWrapExpr(StmtWrapExpr s) {
             this.NewLine();
-            this.VisitCall(s);
+            this.Visit(s.Expr);
             this.js.Append(";");
             return s;
         }

@@ -44,5 +44,23 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestBitwiseAnd() {
+            Func<int, int, int> f = (a, b) => a & b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestBitwiseOr() {
+            Func<int, int, int> f = (a, b) => a | b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestBitwiseXor() {
+            Func<int, int, int> f = (a, b) => a ^ b;
+            this.Test(f);
+        }
+
     }
 }
