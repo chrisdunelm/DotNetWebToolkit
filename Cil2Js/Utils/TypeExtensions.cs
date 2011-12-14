@@ -184,5 +184,42 @@ namespace Cil2Js.Utils {
             return type.BaseType.Resolve();
         }
 
+        public static bool DoesImplement(this TypeReference t, TypeReference iFace) {
+            return t.Resolve().Interfaces.Any(x => TypeMatch(x, iFace));
+        }
+
+        public static bool IsAssignableTo(this TypeReference from, TypeReference to) {
+            // Rules from ECMA-335 partition III page 21
+            // Rule 4
+            if (to.FullName == "System.Object") {
+                return true;
+            }
+            // Rule 1
+            if (TypeMatch(from, to)) {
+                return true;
+            }
+            // Rule 7
+            if (from.IsArray && to.IsArray) {
+                return from.GetElementType().IsAssignableTo(to.GetElementType());
+            }
+            // Rule 3
+            var baseFrom = from.Resolve().GetBaseType();
+            while (baseFrom != null) {
+                if (TypeMatch(baseFrom, to)) {
+                    return true;
+                }
+                baseFrom = baseFrom.GetBaseType();
+            }
+            var toDef = to.Resolve();
+            if (toDef.IsInterface) {
+                if (from.DoesImplement(toDef)) {
+                    return true;
+                }
+            }
+            // TODO: Other rules
+
+            return false;
+        }
+
     }
 }

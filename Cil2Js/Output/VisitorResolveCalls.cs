@@ -27,7 +27,8 @@ namespace Cil2Js.Output {
             switch (resolved.Type) {
             case JsResolvedType.Expr:
                 return ((JsResolvedExpr)resolved).Expr;
-            case JsResolvedType.Name:
+            case JsResolvedType.Method:
+            case JsResolvedType.Property:
                 //this.calls.Add(Tuple.Create(call, resolved));
                 return null;
             default:

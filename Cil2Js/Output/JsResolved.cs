@@ -7,14 +7,8 @@ using Cil2Js.Ast;
 namespace Cil2Js.Output {
 
     public enum JsResolvedType {
-        /// <summary>
-        /// The call is resolved by giving the JS name of the function being called.
-        /// </summary>
-        Name,
-        ///// <summary>
-        ///// The call will be resolved to a direct function, but the name is not yet known.
-        ///// </summary>
-        //NameRef,
+        Method,
+        Property,
         /// <summary>
         /// The call is resolved by providing a new Expr to replace the call expression.
         /// </summary>
@@ -27,16 +21,38 @@ namespace Cil2Js.Output {
 
     }
 
-    public class JsResolvedName : JsResolved {
+    public class JsResolvedMethod : JsResolved {
 
-        public JsResolvedName(string name) {
-            this.Name = name;
+        public JsResolvedMethod(Expr obj, string methodMame, params Expr[] args) : this(obj, methodMame, (IEnumerable<Expr>)args) { }
+
+        public JsResolvedMethod(Expr obj, string methodName, IEnumerable<Expr> args) {
+            this.Obj = obj;
+            this.MethodName = methodName;
+            this.Args = args;
         }
 
-        public string Name { get; private set; }
+        public Expr Obj { get; private set; }
+        public string MethodName { get; private set; }
+        public IEnumerable<Expr> Args { get; private set; }
 
         public override JsResolvedType Type {
-            get { return JsResolvedType.Name; }
+            get { return JsResolvedType.Method; }
+        }
+
+    }
+
+    public class JsResolvedProperty : JsResolved {
+
+        public JsResolvedProperty(Expr obj, string propertyName) {
+            this.Obj = obj;
+            this.PropertyName = propertyName;
+        }
+
+        public Expr Obj { get; private set; }
+        public string PropertyName { get; private set; }
+
+        public override JsResolvedType Type {
+            get { return JsResolvedType.Property; }
         }
 
     }

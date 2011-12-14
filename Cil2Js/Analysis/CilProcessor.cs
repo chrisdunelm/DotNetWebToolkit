@@ -5,6 +5,7 @@ using System.Text;
 using Mono.Cecil;
 using Cil2Js.Ast;
 using Mono.Cecil.Cil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Analysis {
     class CilProcessor {
@@ -60,6 +61,11 @@ namespace Cil2Js.Analysis {
                 return this.LdArg(1);
             case Code.Ldarg_2:
                 return this.LdArg(2);
+            case Code.Ldarg_3:
+                return this.LdArg(3);
+            case Code.Ldarg:
+            case Code.Ldarg_S:
+                return this.LdArg(((ParameterDefinition)inst.Operand).Index);
             case Code.Starg_S:
                 return this.StArg(((ParameterDefinition)inst.Operand).Index);
             case Code.Ldloc_0:
@@ -123,11 +129,14 @@ namespace Cil2Js.Analysis {
             case Code.Ble_S:
             case Code.Ble:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThanOrEqual));
+            case Code.Bgt_S:
+            case Code.Bgt:
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThan));
             case Code.Bge_S:
             case Code.Bge:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThanOrEqual));
             case Code.Ret:
-                return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.stack.Pop());
+                return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.CastIfRequired(this.stack.Pop(), this.method.ReturnType));
             case Code.Pop:
                 this.stack.Pop(); return null;
             case Code.Callvirt:
@@ -136,17 +145,34 @@ namespace Cil2Js.Analysis {
                 return this.Call(inst, false);
             case Code.Newobj:
                 return this.NewObj(inst);
+            case Code.Newarr:
+                return this.NewArray(inst);
+            case Code.Ldlen:
+                return this.LoadArrayLength();
             case Code.Ldfld:
                 return this.LoadField(inst);
             case Code.Stfld:
                 return this.StoreField(inst);
+            case Code.Ldsfld:
+                return this.LoadStaticField(inst);
+            case Code.Stsfld:
+                return this.StoreStaticField(inst);
+            case Code.Ldelem_I4:
+                return this.LoadElem(inst);
+            case Code.Stelem_I4:
+            case Code.Stelem_Ref:
+                return this.StoreElem(inst);
+            case Code.Conv_I4:
+                return null;
+            case Code.Throw:
+                return new StmtThrow(this.stack.Pop());
             default:
                 throw new NotImplementedException("Cannot handle: " + inst.OpCode);
             }
         }
 
         private Stmt Const(object value, TypeReference type) {
-            return this.SsaLocalAssignment(new ExprLiteral(value, type));
+            return this.SsaLocalAssignment(new ExprLiteral(value, type.Resolve()));
         }
 
         private Stmt LdArg(int idx) {
@@ -185,13 +211,13 @@ namespace Cil2Js.Analysis {
 
         private ExprUnary Unary(UnaryOp op, TypeReference type = null) {
             var e = this.stack.Pop();
-            return new ExprUnary(op, type ?? e.Type, e);
+            return new ExprUnary(op, (type ?? e.Type).Resolve(), e);
         }
 
         private ExprBinary Binary(BinaryOp op, TypeReference type = null) {
             var right = this.stack.Pop();
             var left = this.stack.Pop();
-            return new ExprBinary(op, type ?? left.Type, left, right);
+            return new ExprBinary(op, (type ?? left.Type).Resolve(), left, right);
         }
 
         private Stmt SsaLocalAssignment(Expr expr) {
@@ -207,15 +233,23 @@ namespace Cil2Js.Analysis {
             return assignment;
         }
 
+        private Expr CastIfRequired(Expr expr, TypeReference requireType) {
+            if (expr.Type.IsAssignableTo(requireType)) {
+                return expr;
+            } else {
+                return new ExprCast(expr, requireType);
+            }
+        }
+
         private Stmt Call(Instruction inst, bool isVirtual) {
             var calling = ((MethodReference)inst.Operand).Resolve();
             var args = new List<Expr>();
             for (int i = 0; i < calling.Parameters.Count; i++) {
                 var expr = this.stack.Pop();
-                args.Add(expr);
+                args.Add(this.CastIfRequired(expr, calling.Parameters[calling.Parameters.Count - 1 - i].ParameterType));
             }
             args.Reverse();
-            var obj = calling.IsStatic ? null : this.stack.Pop();
+            var obj = calling.IsStatic ? null : this.CastIfRequired(this.stack.Pop(), calling.DeclaringType);
             var exprCall = new ExprCall(calling, obj, args, isVirtual);
             if (calling.ReturnType.IsVoid()) {
                 return new StmtWrapExpr(exprCall);
@@ -235,6 +269,12 @@ namespace Cil2Js.Analysis {
             return this.SsaLocalAssignment(new ExprNewObj(ctor, args));
         }
 
+        private Stmt NewArray(Instruction inst) {
+            var exprNumElements = this.stack.Pop();
+            var expr = new ExprNewArray((TypeReference)inst.Operand, exprNumElements);
+            return this.SsaLocalAssignment(expr);
+        }
+
         private Stmt LoadField(Instruction inst) {
             var obj = this.stack.Pop();
             var expr = new ExprFieldAccess(obj, ((FieldReference)inst.Operand).Resolve());
@@ -246,6 +286,39 @@ namespace Cil2Js.Analysis {
             var obj = this.stack.Pop();
             var expr = new ExprFieldAccess(obj, ((FieldReference)inst.Operand).Resolve());
             return new StmtAssignment(expr, value);
+        }
+
+        private Stmt LoadStaticField(Instruction inst) {
+            var expr = new ExprFieldAccess(null, ((FieldReference)inst.Operand).Resolve());
+            return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt StoreStaticField(Instruction inst) {
+            var value = this.stack.Pop();
+            var expr = new ExprFieldAccess(null, ((FieldReference)inst.Operand).Resolve());
+            return new StmtAssignment(expr, value);
+        }
+
+        private Stmt LoadElem(Instruction inst) {
+            var index = this.stack.Pop();
+            var array = this.stack.Pop();
+            var arrayAccess = new ExprVarArrayAccess(array, index);
+            return this.SsaLocalAssignment(arrayAccess);
+        }
+
+        private Stmt StoreElem(Instruction inst) {
+            var value = this.stack.Pop();
+            var index = this.stack.Pop();
+            var array = this.stack.Pop();
+            var arrayAccess = new ExprVarArrayAccess(array, index);
+            var assignment = new StmtAssignment(arrayAccess, value);
+            return assignment;
+        }
+
+        private Stmt LoadArrayLength() {
+            var array = this.stack.Pop();
+            var expr = new ExprArrayLength(this.typeSystem, array);
+            return this.SsaLocalAssignment(expr);
         }
 
     }

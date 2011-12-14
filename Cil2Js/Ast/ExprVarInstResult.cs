@@ -21,7 +21,7 @@ namespace Cil2Js.Ast {
             get { return NodeType.VarExprInstResult; }
         }
 
-        public override Mono.Cecil.TypeReference Type {
+        public override TypeReference Type {
             get { return this.type; }
         }
 

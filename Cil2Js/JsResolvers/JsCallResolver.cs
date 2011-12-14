@@ -12,6 +12,12 @@ namespace Cil2Js.JsResolvers {
 
         private const string TBoolean = "System.Boolean";
         private const string TString = "System.String";
+        private const string TChar = "System.Char";
+        private const string TInt32 = "System.Int32";
+
+        private static string ArrayOf(string type) {
+            return type+"[]";
+        }
 
         class M {
 
@@ -60,25 +66,28 @@ namespace Cil2Js.JsResolvers {
 
         }
 
-        private static Dictionary<M, string> named = new Dictionary<M, string>(M.ValueEqComparer) {
-        };
-
-        private static Dictionary<M, Func<Expr.Gen, ICall, Expr>> expred = new Dictionary<M, Func<Expr.Gen, ICall, Expr>>(M.ValueEqComparer) {
-            { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality }
+        private static Dictionary<M, Func<Expr.Gen, ICall, JsResolved>> map = new Dictionary<M, Func<Expr.Gen, ICall, JsResolved>>(M.ValueEqComparer) {
+            { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality },
+            { M.Def(TInt32, "System.String.get_Length"), StringResolver.get_Length },
+            { M.Def(TChar, "System.String.get_Chars", TInt32), StringResolver.get_Chars },
+            { M.Def(TString, "System.String.Concat", TString, TString), StringResolver.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", TString, TString, TString), StringResolver.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", TString, TString, TString, TString), StringResolver.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", ArrayOf(TString)), StringResolver.ConcatStringsMany },
+            { M.Def(TInt32, "System.String.IndexOf", TChar), StringResolver.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TString), StringResolver.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TChar, TInt32), StringResolver.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), StringResolver.IndexOf },
+            { M.Def(TString, "System.String.Substring", TInt32), StringResolver.Substring },
+            { M.Def(TString, "System.String.Substring", TInt32, TInt32), StringResolver.Substring },
         };
 
         public static JsResolved Resolve(Expr.Gen exprGen, ICall call) {
             var m = new M(call.CallMethod);
-            var exprFn = expred.ValueOrDefault(m);
-            if (exprFn != null) {
-                var expr = exprFn(exprGen, call);
-                if (expr != null) {
-                    return new JsResolvedExpr(expr);
-                }
-            }
-            var name = named.ValueOrDefault(m);
-            if (name != null) {
-                return new JsResolvedName(name);
+            var fn = map.ValueOrDefault(m);
+            if (fn != null) {
+                var resolved = fn(exprGen, call);
+                return resolved;
             }
             // No special resolution available
             return null;

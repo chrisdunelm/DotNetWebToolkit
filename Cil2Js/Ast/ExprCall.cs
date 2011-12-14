@@ -20,6 +20,10 @@ namespace Cil2Js.Ast {
         public IEnumerable<Expr> Args { get; private set; }
         public bool IsVirtual { get; private set; }
 
+        public bool IsStatic {
+            get { return this.Obj == null; }
+        }
+
         public override Expr.NodeType ExprType {
             get { return NodeType.Call; }
         }

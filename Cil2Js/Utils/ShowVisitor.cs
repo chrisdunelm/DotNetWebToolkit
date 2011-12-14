@@ -170,6 +170,8 @@ namespace Cil2Js.Utils {
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Type.IsString()) {
                 this.code.Append("\"" + e.Value + "\"");
+            } else if (e.Type.IsChar()) {
+                this.code.Append("'" + e.Value + "'");
             } else {
                 this.code.Append(e.Value);
             }
@@ -259,7 +261,11 @@ namespace Cil2Js.Utils {
         }
 
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
-            this.Visit(e.Obj);
+            if (e.IsStatic) {
+                this.code.Append(e.Field.DeclaringType.Name);
+            } else {
+                this.Visit(e.Obj);
+            }
             this.code.Append(".");
             this.code.Append(e.Field.Name);
             return e;
@@ -280,6 +286,43 @@ namespace Cil2Js.Utils {
             this.NewLine();
             this.Visit(s.Expr);
             this.code.Append(";");
+            return s;
+        }
+
+        protected override ICode VisitNewArray(ExprNewArray e) {
+            this.code.Append("new[");
+            this.Visit(e.ExprNumElements);
+            this.code.Append("]");
+            return e;
+        }
+
+        protected override ICode VisitVarArrayAccess(ExprVarArrayAccess e) {
+            this.Visit(e.Array);
+            this.code.Append("[");
+            this.Visit(e.Index);
+            this.code.Append("]");
+            return e;
+        }
+
+        protected override ICode VisitArrayLength(ExprArrayLength e) {
+            this.Visit(e.Array);
+            this.code.Append(".Length");
+            return e;
+        }
+
+        protected override ICode VisitCast(ExprCast e) {
+            this.code.AppendFormat("({0})", e.Type);
+            this.Visit(e.Expr);
+            return e;
+        }
+
+        protected override ICode VisitThrow(StmtThrow s) {
+            this.NewLine();
+            this.code.Append("throw");
+            if (s.Expr != null) {
+                this.code.Append(" ");
+                this.Visit(s.Expr);
+            }
             return s;
         }
 

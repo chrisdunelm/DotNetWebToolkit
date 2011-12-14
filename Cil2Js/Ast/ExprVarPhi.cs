@@ -23,7 +23,7 @@ namespace Cil2Js.Ast {
         public override TypeReference Type {
             get {
                 if (!this.Exprs.Any()) {
-                    return this.typeSystem.Object;
+                    return this.typeSystem.Object.Resolve();
                 }
                 var t = this.Exprs
                     .Select(x => x.Type)

@@ -35,30 +35,11 @@ namespace Test {
             }
         }
 
-        class A {
-            public A(int number) {
-                this.i = number;
-            }
-            private int i;
-            public int PlusOne {
-                get { return this.i + 1; }
-            }
-        }
-
-        static int AddOne(int number) {
-            var a = new A(number);
-            return a.PlusOne;
-        }
-
         static void Main(string[] args) {
 
-            var methodInfo = typeof(Program).GetMethod("AddOne", BindingFlags.NonPublic | BindingFlags.Static);
-            string javaScript = Js.CreateFrom(methodInfo);
-            Console.WriteLine(javaScript);
-
-            //var t = new TestSimpleClasses() { Verbose = true };
-            //t.TestVirtualComplex();
-            //return;
+            var t = new TestSimpleInterfaces() { Verbose = true };
+            t.TestInterface();
+            return;
 
             //Console.WriteLine();
             //Console.WriteLine("*** DONE ***");

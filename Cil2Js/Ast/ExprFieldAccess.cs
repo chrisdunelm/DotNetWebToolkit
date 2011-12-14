@@ -15,8 +15,12 @@ namespace Cil2Js.Ast {
         public Expr Obj { get; private set; }
         public FieldDefinition Field { get; private set; }
 
+        public bool IsStatic {
+            get { return this.Obj == null; }
+        }
+
         public override Expr.NodeType ExprType {
-            get { return NodeType.LoadField; }
+            get { return NodeType.FieldAccess; }
         }
 
         public override TypeReference Type {
@@ -24,7 +28,11 @@ namespace Cil2Js.Ast {
         }
 
         public override string ToString() {
-            return string.Format("{0}.{1}", this.Obj, this.Field.Name);
+            if (this.IsStatic) {
+                return string.Format("{0}.{1}", this.Field.DeclaringType.Name, this.Field.Name);
+            } else {
+                return string.Format("{0}.{1}", this.Obj, this.Field.Name);
+            }
         }
 
     }

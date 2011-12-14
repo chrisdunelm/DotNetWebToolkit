@@ -409,6 +409,7 @@ namespace Cil2Js.Analysis {
                     throw new InvalidOperationException("Error: Stuck in loop trying to simplify AST");
                 }
             }
+            stmt = doo(s => (Stmt)VisitorRemoveCasts.V(method.Module.TypeSystem, s), stmt);
             return stmt;
         }
 

@@ -84,7 +84,7 @@ namespace Cil2Js.Analysis {
 
         protected override ICode VisitCil(StmtCil s) {
             var bsi = this.blockStartInfos[s];
-            var stack = new Stack<Expr>(bsi.Stack);
+            var stack = new Stack<Expr>(bsi.Stack.Reverse());
             var locals = bsi.Locals.Cast<Expr>().ToArray();
             var args = bsi.Args.Cast<Expr>().ToArray();
             var cil = new CilProcessor(this.method, stack, locals, args, this.instResults);

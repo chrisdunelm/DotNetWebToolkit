@@ -131,7 +131,7 @@ namespace Cil2Js.Analysis {
         protected virtual ICode VisitThrow(StmtThrow s) {
             this.ThrowOnNoOverride();
             var expr = this.Visit(s.Expr);
-            if (expr == s.Expr) {
+            if (expr != s.Expr) {
                 return new StmtThrow((Expr)expr);
             } else {
                 return s;
@@ -210,9 +210,11 @@ namespace Cil2Js.Analysis {
 
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {
+            case Expr.NodeType.Cast:
+                return this.VisitCast((ExprCast)e);
             case Expr.NodeType.NewObj:
                 return this.VisitNewObj((ExprNewObj)e);
-            case Expr.NodeType.LoadField:
+            case Expr.NodeType.FieldAccess:
                 return this.VisitFieldAccess((ExprFieldAccess)e);
             case Expr.NodeType.This:
                 return this.VisitThis((ExprThis)e);
@@ -231,8 +233,24 @@ namespace Cil2Js.Analysis {
                 return this.VisitBinary((ExprBinary)e);
             case Expr.NodeType.Ternary:
                 return this.VisitTernary((ExprTernary)e);
+            case Expr.NodeType.NewArray:
+                return this.VisitNewArray((ExprNewArray)e);
+            case Expr.NodeType.ArrayLength:
+                return this.VisitArrayLength((ExprArrayLength)e);
+            case Expr.NodeType.ArrayAccess:
+                return this.VisitVarArrayAccess((ExprVarArrayAccess)e);
             default:
                 throw new NotImplementedException("Cannot handle: " + e.ExprType);
+            }
+        }
+
+        protected virtual ICode VisitCast(ExprCast e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprCast(expr, e.Type);
+            } else {
+                return e;
             }
         }
 
@@ -354,6 +372,37 @@ namespace Cil2Js.Analysis {
             var ifFalse = (Expr)this.Visit(e.IfFalse);
             if (condition != e.Condition || ifTrue != e.IfTrue || ifFalse != e.IfFalse) {
                 return new ExprTernary(e.TypeSystem, condition, ifTrue, ifFalse);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitNewArray(ExprNewArray e) {
+            this.ThrowOnNoOverride();
+            var numElements = (Expr)this.Visit(e.ExprNumElements);
+            if (numElements != e.ExprNumElements) {
+                return new ExprNewArray(e.Type.GetElementType(), numElements);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitArrayLength(ExprArrayLength e) {
+            this.ThrowOnNoOverride();
+            var array = (Expr)this.Visit(e.Array);
+            if (array != e.Array) {
+                return new ExprArrayLength(e.TypeSystem, array);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitVarArrayAccess(ExprVarArrayAccess e) {
+            this.ThrowOnNoOverride();
+            var array = (Expr)this.Visit(e.Array);
+            var index = (Expr)this.Visit(e.Index);
+            if (array != e.Array || index != e.Index) {
+                return new ExprVarArrayAccess(array, index);
             } else {
                 return e;
             }

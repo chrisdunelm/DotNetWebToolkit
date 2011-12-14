@@ -12,17 +12,13 @@ using Microsoft.JScript.Vsa;
 namespace Test.Utils {
     class JsRunner : MarshalByRefObject {
 
-        public static object Run(string js, string functionName, object[] args) {
-            return Run(js, functionName, new[] { args })[0];
-        }
-
-        public static object[] Run(string js, string functionName, object[][] args) {
+        public static object[] Run(string js, string functionName, object[][] args, Type returnType) {
             var info = new AppDomainSetup {
                 ApplicationBase = Path.GetDirectoryName(typeof(JsRunner).Assembly.Location)
             };
             var jsDomain = AppDomain.CreateDomain("JsRunner", null, info);
             var jsRunner = (JsRunner)jsDomain.CreateInstanceAndUnwrap(typeof(JsRunner).Assembly.FullName, typeof(JsRunner).FullName);
-            var ret = jsRunner.CompileAndExecute(js, functionName, args);
+            var ret = jsRunner.CompileAndExecute(js, functionName, args, returnType);
             AppDomain.Unload(jsDomain);
             return ret;
         }
@@ -51,7 +47,7 @@ namespace Test.Utils {
         }
 #pragma warning restore 618
 
-        private object[] CompileAndExecute(string js, string functionName, object[][] args) {
+        private object[] CompileAndExecute(string js, string functionName, object[][] args, Type returnType) {
             var jscp = CodeDomProvider.CreateProvider("JScript");
             var options = new CompilerParameters {
                 GenerateExecutable = true,
@@ -82,7 +78,12 @@ namespace Test.Utils {
                 var globalCode = jscriptType.GetMethod("Global Code");
                 globalCode.Invoke(jscript0, new object[0]);
                 var fn = jscriptType.GetMethod(functionName);
-                ret[i] = fn.Invoke(jscript0, new object[] { null, vsa }.Concat(args[i]).ToArray());
+                var r = fn.Invoke(jscript0, new object[] { null, vsa }.Concat(args[i]).ToArray());
+                if (r.GetType() != returnType) {
+                    // Some returns will require casting - e.g. booleans will be returned as integers
+                    r = System.Convert.ChangeType(r, returnType);
+                }
+                ret[i] = r;
 #pragma warning restore 618
             }
             return ret;

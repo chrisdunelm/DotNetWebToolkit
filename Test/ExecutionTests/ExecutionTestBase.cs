@@ -13,7 +13,7 @@ using Test.Utils;
 namespace Test.ExecutionTests {
     public class ExecutionTestBase {
 
-        private int testIterations = 10;
+        private int testIterations = 20;
         private Random rnd = new Random(0);
 
         public bool Verbose = false;
@@ -32,12 +32,26 @@ namespace Test.ExecutionTests {
                 case "System.Double":
                     v = this.rnd.NextDouble() * 100.0;
                     break;
+                case "System.String":
+                    int length = this.rnd.Next(10);
+                    string s = "";
+                    for (int i = 0; i < length; i++) {
+                        s += (char)(65 + this.rnd.Next(26));
+                    }
+                    v = s;
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + arg.ParameterType.FullName);
                 }
                 args.Add(v);
             }
             return args.ToArray();
+        }
+
+        protected void Test(params Delegate[] ds) {
+            foreach (var d in ds) {
+                Test(d);
+            }
         }
 
         protected void Test(Delegate d) {
@@ -57,16 +71,13 @@ namespace Test.ExecutionTests {
                 //Console.WriteLine(show);
                 Console.WriteLine(js);
             }
-            var range = Enumerable.Range(0, this.testIterations);
+            var iterationCount = method.Parameters.Any() ? this.testIterations : 1;
+            var range = Enumerable.Range(0, iterationCount);
             var args = range.Select(i => this.CreateArgs(method)).ToArray();
             var runResults = range.Select(i => mi.Invoke(d.Target, args[i])).ToArray();
-            var jsResults = JsRunner.Run(js, "main", args);
-            for (int i = 0; i < this.testIterations; i++) {
+            var jsResults = JsRunner.Run(js, "main", args, mi.ReturnType);
+            for (int i = 0; i < iterationCount; i++) {
                 var jsResult = jsResults[i];
-                if (jsResult.GetType() != mi.ReturnType) {
-                    // Some returns will require casting - e.g. booleans will be returned as integers
-                    jsResult = Convert.ChangeType(jsResult, mi.ReturnType);
-                }
                 Assert.That(jsResult, Is.EqualTo(runResults[i]));
             }
         }

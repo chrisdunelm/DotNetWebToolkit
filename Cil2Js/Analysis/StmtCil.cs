@@ -51,13 +51,14 @@ namespace Cil2Js.Analysis {
         public override string ToString() {
             int l = this.Insts.Count();
             if (l == 1) {
-                return this.Insts.First().ToString();
+                return string.Format("[{0}:{1}]{2}", this.StartStackSize, this.EndStackSize, this.Insts.First().ToString());
             } else {
-                return string.Format("{0} - {1}{2}{3}",
+                return string.Format("[{4}:{5}]{0} - {1}{2}{3}",
                     this.Insts.First(),
                     string.Join(", ", this.Insts.Skip(1).Take(Math.Max(0, l - 2)).Select(x => x.OpCode.Code)),
                     l > 2 ? " - " : "",
-                    this.Insts.Last());
+                    this.Insts.Last(),
+                    this.StartStackSize, this.EndStackSize);
             }
         }
 

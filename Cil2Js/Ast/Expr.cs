@@ -18,8 +18,12 @@ namespace Cil2Js.Ast {
             VarPhi,
             Ternary,
             Call,
-            LoadField,
+            FieldAccess,
             NewObj,
+            NewArray,
+            ArrayAccess,
+            ArrayLength,
+            Cast,
         }
 
         [Flags]
@@ -71,21 +75,21 @@ namespace Cil2Js.Ast {
         public class Gen {
 
             internal Gen(TypeSystem ts) {
-                this.ts = ts;
+                this.TypeSystem = ts;
             }
 
-            private TypeSystem ts;
+            public TypeSystem TypeSystem { get; private set; }
 
             public ExprBinary And(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.And, this.ts.Boolean, left, right);
+                return new ExprBinary(BinaryOp.And, this.TypeSystem.Boolean, left, right);
             }
 
             public ExprBinary Or(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.Or, this.ts.Boolean, left, right);
+                return new ExprBinary(BinaryOp.Or, this.TypeSystem.Boolean, left, right);
             }
 
             public ExprUnary Not(Expr e) {
-                return new ExprUnary(UnaryOp.Not, this.ts.Boolean, e);
+                return new ExprUnary(UnaryOp.Not, this.TypeSystem.Boolean, e);
             }
 
             public Expr NotAutoSimplify(Expr e) {
@@ -99,12 +103,16 @@ namespace Cil2Js.Ast {
                 return Not(e);
             }
 
+            public Expr Add(Expr left, Expr right) {
+                return new ExprBinary(BinaryOp.Add, left.Type, left, right);
+            }
+
             public Expr Equal(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.Equal, this.ts.Boolean, left, right);
+                return new ExprBinary(BinaryOp.Equal, this.TypeSystem.Boolean, left, right);
             }
 
             public Expr NotEqual(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.NotEqual, this.ts.Boolean, left, right);
+                return new ExprBinary(BinaryOp.NotEqual, this.TypeSystem.Boolean, left, right);
             }
 
         }

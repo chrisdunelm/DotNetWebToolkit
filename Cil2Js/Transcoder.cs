@@ -20,7 +20,7 @@ namespace Cil2Js {
 
         public static string ToJs(MethodDefinition method, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {
             var ast = ToAst(method, verbose);
-            return JsMethod.Create(method, jsMethodName, resolver, ast);
+            return JsMethod.Create(method, resolver, ast);
         }
 
         public static string ToJs(MethodInfo methodInfo, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {

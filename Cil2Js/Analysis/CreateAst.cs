@@ -38,8 +38,6 @@ namespace Cil2Js.Analysis {
                     setStackSize(cont.To, endStackSize);
                 }
                 return base.VisitCil(s);
-                //this.Visit(s.EndCil);
-                //return s;
             }
 
             private int StackSizeAnalysis(IEnumerable<Instruction> insts, int startStackSize) {
@@ -113,7 +111,7 @@ namespace Cil2Js.Analysis {
 
         public Stmt Create() {
             if (!this.method.HasBody) {
-                return null;
+                throw new ArgumentException("Method has no body, cannot create AST");
             }
             this.boolean = this.method.Module.TypeSystem.Boolean;
             var body = this.method.Body;
@@ -131,7 +129,7 @@ namespace Cil2Js.Analysis {
                         return Enumerable.Empty<Instruction>();
                     }
                 })
-                .Concat(body.ExceptionHandlers.SelectMany(x => new[]{
+                .Concat(body.ExceptionHandlers.SelectMany(x => new[] {
                     x.TryStart, x.TryEnd, x.HandlerStart, x.HandlerEnd
                 }))
                 .Concat(body.Instructions.First())
@@ -235,7 +233,7 @@ namespace Cil2Js.Analysis {
                     //}
                     break;
                 case FlowControl.Throw:
-                    blockEndStmt = new StmtThrow(null);
+                    blockEndStmt = null; // Throw created when converting CIL
                     break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + end.OpCode.FlowControl);

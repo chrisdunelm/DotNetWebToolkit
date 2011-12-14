@@ -28,14 +28,26 @@ namespace Cil2Js.Output {
             var seen = new HashSet<MethodDefinition>(rootMethods);
             var typesSeen = new HashSet<TypeDefinition>();
             var asts = new Dictionary<MethodDefinition, ICode>();
-            //var callResolvers = new Dictionary<ICall, JsResolved>();
+            var callResolvers = new Dictionary<ICall, JsResolved>();
             var exports = new List<Tuple<MethodDefinition, string>>();
             var fields = new Dictionary<FieldDefinition, int>();
             // Key is the base-most method (possibly abstract), hashset contains base and all overrides that are not abstract
             var virtualCalls = new Dictionary<MethodDefinition, HashSet<MethodDefinition>>();
+            var cctorCalls = new Dictionary<MethodDefinition, IEnumerable<MethodDefinition>>();
+            // Which classes implement which interfaces; key is class, hashset contains all interface definitions implemented by key class
+            var interfaceImplementations = new Dictionary<TypeDefinition, HashSet<TypeDefinition>>();
+            // Which interface methods are referenced; key is interface, hashset contains all referenced methods on key interface
+            var interfaceCalls = new Dictionary<TypeDefinition, HashSet<MethodDefinition>>();
 
             while (todo.Any()) {
                 var method = todo.Dequeue();
+                if (method.IsAbstract) {
+                    continue;
+                }
+                if (method.IsInternalCall) {
+                    throw new ArgumentException("Cannot transcode an internal method");
+                }
+
                 typesSeen.Add(method.DeclaringType);
                 if (method.IsVirtual && !method.IsAbstract) {
                     virtualCalls[method.GetBasemostMethodInTypeHierarchy()].Add(method);
@@ -82,6 +94,10 @@ namespace Cil2Js.Output {
                         methodsCalled.Add(call.CallMethod);
                     } else {
                         switch (resolved.Type) {
+                        case JsResolvedType.Method:
+                        case JsResolvedType.Property:
+                            callResolvers.Add(call, resolved);
+                            break;
                         default:
                             throw new NotImplementedException("Cannot handle: " + resolved.Type);
                         }
@@ -92,6 +108,10 @@ namespace Cil2Js.Output {
                 foreach (var fieldAccess in fieldAccesses) {
                     fields[fieldAccess] = fields.ValueOrDefault(fieldAccess, () => 0, true) + 1;
                 }
+                // Find all static constructors that need calling/converting
+                var staticConstructors = VisitorFindStaticConstructors.V(ast);
+                methodsCalled.AddRange(staticConstructors);
+                cctorCalls.Add(method, staticConstructors);
                 // Record this converted AST
                 asts.Add(method, ast);
 
@@ -99,9 +119,7 @@ namespace Cil2Js.Output {
                 Action<IEnumerable<MethodDefinition>> addToTodo = toAdd => {
                     foreach (var call in toAdd) {
                         if (seen.Add(call)) {
-                            if (call.HasBody) {
-                                todo.Enqueue(call);
-                            }
+                            todo.Enqueue(call);
                         }
                     }
                 };
@@ -128,9 +146,16 @@ namespace Cil2Js.Output {
             var methodNames = asts.Keys.ToDictionary(x => x, x => methodNamer.GetNewName());
             methodNames[rootMethods.First()] = "main";
             // Name all fields
-            // TODO: This generates bad names as no names are shared over different types, to improve...
+            // TODO: This generates bad quality names as no names are shared over different types, to improve...
             var fieldNamer = new NameGenerator();
-            var fieldNames = fields.Keys.ToDictionary(x => x, x => fieldNamer.GetNewName());
+            var staticFieldNamer = new NameGenerator("$_");
+            var fieldNames = fields.Keys.ToDictionary(x => x, x => {
+                if (x.IsStatic) {
+                    return staticFieldNamer.GetNewName();
+                } else {
+                    return fieldNamer.GetNewName();
+                }
+            });
             // Create vTables for virtual methods
             var vMethodsByType = virtualCalls.SelectMany(x => x.Value.Concat(x.Key).Distinct()).ToLookup(x => x.DeclaringType);
             var vAllTypesInBaseOrder = typesSeen.OrderByBaseFirst().ToArray();
@@ -171,19 +196,25 @@ namespace Cil2Js.Output {
                     vTable.Add(vType, vTypeVTable.ToArray());
                 }
             }
-
-            //var virtualCalls2 = vTable.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i);
-            //vTable = vTable.Where(x => x.Value.Any(y => methodNames.ContainsKey(y))).ToDictionary(x => x.Key, x => x.Value);
             var vTableNamer = new NameGenerator("_");
             var vTableNames = vTable.Keys.ToDictionary(x => x, x => vTableNamer.GetNewName());
 
-            // Create JS for all methods
-            var resolver = new JsMethod.Resolver(methodNames, fieldNames, vTableNames, virtualCalls2);
             var js = new StringBuilder();
+            // Declare static fields
+            var staticFieldInits = fieldNames.Where(x => x.Key.IsStatic)
+                .Select(x => x.Value + " = " + DefaultValuer.Get(x.Key.FieldType)).ToArray();
+            if (staticFieldInits.Any()) {
+                js.AppendFormat("var {0};", string.Join(", ", staticFieldInits));
+                js.AppendLine();
+                js.AppendLine();
+            }
+
+            // Create JS for all methods
+            var resolver = new JsMethod.Resolver(methodNames, fieldNames, vTableNames, virtualCalls2, callResolvers, cctorCalls);
             foreach (var kv in asts) {
                 var method = kv.Key;
                 var ast = kv.Value;
-                var s = JsMethod.Create(method, methodNames[method], resolver, ast);
+                var s = JsMethod.Create(method, resolver, ast);
                 js.Append(s);
                 js.AppendLine();
             }

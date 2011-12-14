@@ -181,6 +181,38 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class CTestStaticCctorCalledOnlyOnce {
+            static CTestStaticCctorCalledOnlyOnce() {
+                i++;
+            }
+            public static int i;
+            public static int GetI() {
+                return i;
+            }
+        }
+
+        [Test]
+        public void TestStaticCctorCalledOnlyOnce() {
+            Func<int> f = () => {
+                int r = 0;
+                for (int i = 0; i < 2; i++) {
+                    r += CTestStaticCctorCalledOnlyOnce.GetI();
+                }
+                return r;
+            };
+            this.Test(f);
+        }
+
+        class CTestStaticFields {
+            public static int i = 105;
+        }
+
+        [Test]
+        public void TestStaticFields() {
+            Func<int> f = () => CTestStaticFields.i;
+            this.Test(f);
+        }
+
     }
 
 }
