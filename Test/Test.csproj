@@ -65,6 +65,7 @@
     <Compile Include="TestBooleanSimplification.cs" />
     <Compile Include="TestUtils.cs" />
     <Compile Include="TestVisitorAllPerms.cs" />
+    <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\JsRunner.cs" />
     <Compile Include="Utils\QCheck.cs" />

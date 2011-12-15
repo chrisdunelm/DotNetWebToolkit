@@ -107,6 +107,7 @@ namespace Cil2Js.Utils {
             });
         }
 
+        [DebuggerStepThrough]
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> en) {
             return en ?? Enumerable.Empty<T>();
         }

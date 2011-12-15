@@ -25,7 +25,7 @@ namespace Test.ExecutionTests {
             }
         }
 
-        [Test, Ignore("Interfaces not yet done")]
+        [Test]
         public void TestInterface() {
             Func<bool, int> f = b => {
                 var i = b ? (CTestInterface.I)new CTestInterface.A() : new CTestInterface.B();

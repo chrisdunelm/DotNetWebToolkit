@@ -34,8 +34,6 @@ namespace Cil2Js.Output {
             // Key is the base-most method (possibly abstract), hashset contains base and all overrides that are not abstract
             var virtualCalls = new Dictionary<MethodDefinition, HashSet<MethodDefinition>>();
             var cctorCalls = new Dictionary<MethodDefinition, IEnumerable<MethodDefinition>>();
-            // Which classes implement which interfaces; key is class, hashset contains all interface definitions implemented by key class
-            var interfaceImplementations = new Dictionary<TypeDefinition, HashSet<TypeDefinition>>();
             // Which interface methods are referenced; key is interface, hashset contains all referenced methods on key interface
             var interfaceCalls = new Dictionary<TypeDefinition, HashSet<MethodDefinition>>();
 
@@ -50,7 +48,8 @@ namespace Cil2Js.Output {
 
                 typesSeen.Add(method.DeclaringType);
                 if (method.IsVirtual && !method.IsAbstract) {
-                    virtualCalls[method.GetBasemostMethodInTypeHierarchy()].Add(method);
+                    var baseMethod = method.GetBasemostMethodInTypeHierarchy();
+                    virtualCalls.ValueOrDefault(baseMethod, () => new HashSet<MethodDefinition>(), true).Add(method);
                 }
                 // Is it exported?
                 var export = method.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Cil2Js.Attributes.ExportAttribute");
@@ -83,23 +82,28 @@ namespace Cil2Js.Output {
                 var calls = VisitorFindCalls.V(ast);
                 foreach (var callInfo in calls) {
                     var call = callInfo.Item1;
-                    var isVirtual = callInfo.Item2;
-                    var resolved = JsCallResolver.Resolve(exprGen, call);
-                    if (resolved == null) {
-                        var callMethod = call.CallMethod;
-                        if (isVirtual && callMethod.IsVirtual) {
-                            var baseMethod = callMethod.GetBasemostMethodInTypeHierarchy();
-                            virtualCalls.ValueOrDefault(baseMethod, () => new HashSet<MethodDefinition>(), true);
-                        }
-                        methodsCalled.Add(call.CallMethod);
+                    if (call.CallMethod.DeclaringType.IsInterface) {
+                        interfaceCalls.ValueOrDefault(call.CallMethod.DeclaringType, () => new HashSet<MethodDefinition>(), true)
+                            .Add(call.CallMethod);
                     } else {
-                        switch (resolved.Type) {
-                        case JsResolvedType.Method:
-                        case JsResolvedType.Property:
-                            callResolvers.Add(call, resolved);
-                            break;
-                        default:
-                            throw new NotImplementedException("Cannot handle: " + resolved.Type);
+                        var isVirtual = callInfo.Item2;
+                        var resolved = JsCallResolver.Resolve(exprGen, call);
+                        if (resolved == null) {
+                            var callMethod = call.CallMethod;
+                            if (isVirtual && callMethod.IsVirtual) {
+                                var baseMethod = callMethod.GetBasemostMethodInTypeHierarchy();
+                                virtualCalls.ValueOrDefault(baseMethod, () => new HashSet<MethodDefinition>(), true);
+                            }
+                            methodsCalled.Add(call.CallMethod);
+                        } else {
+                            switch (resolved.Type) {
+                            case JsResolvedType.Method:
+                            case JsResolvedType.Property:
+                                callResolvers.Add(call, resolved);
+                                break;
+                            default:
+                                throw new NotImplementedException("Cannot handle: " + resolved.Type);
+                            }
                         }
                     }
                 }
@@ -126,8 +130,9 @@ namespace Cil2Js.Output {
 
                 addToTodo(methodsCalled);
 
-                // When run out of methods, add any extra methods needed from virtual calls
+                // When run out of methods, add any extra methods needed from virtual calls and interface calls
                 if (!todo.Any()) {
+                    // Virtual calls
                     var vToAdd =
                         from type in typesSeen
                         from m in type.Methods
@@ -137,6 +142,19 @@ namespace Cil2Js.Output {
                         select m;
                     var vToAddArray = vToAdd.ToArray();
                     addToTodo(vToAddArray);
+                    // Interface calls
+                    var iToAdd =
+                        from type in typesSeen
+                        from iFaceRef in type.Interfaces
+                        let iFace = iFaceRef.Resolve()
+                        let iFaceMethods = interfaceCalls.ValueOrDefault(iFace)
+                        where iFaceMethods != null
+                        from iFaceMethod in iFaceMethods
+                        let m = type.GetInterfaceMethod(iFaceMethod)
+                        where !m.IsAbstract
+                        select m;
+                    var iToAddArray = iToAdd.ToArray();
+                    addToTodo(iToAddArray);
                 }
             }
 
@@ -158,10 +176,10 @@ namespace Cil2Js.Output {
             });
             // Create vTables for virtual methods
             var vMethodsByType = virtualCalls.SelectMany(x => x.Value.Concat(x.Key).Distinct()).ToLookup(x => x.DeclaringType);
-            var vAllTypesInBaseOrder = typesSeen.OrderByBaseFirst().ToArray();
+            var allTypesInBaseOrder = typesSeen.OrderByBaseFirst().ToArray();
             var vTable = new Dictionary<TypeDefinition, MethodDefinition[]>();
             var virtualCalls2 = new Dictionary<MethodDefinition, int>();
-            foreach (var vType in vAllTypesInBaseOrder) {
+            foreach (var vType in allTypesInBaseOrder) {
                 MethodDefinition[] vTableBase = null;
                 var vTypeBase = vType;
                 for (; ; ) {
@@ -198,6 +216,29 @@ namespace Cil2Js.Output {
             }
             var vTableNamer = new NameGenerator("_");
             var vTableNames = vTable.Keys.ToDictionary(x => x, x => vTableNamer.GetNewName());
+            // Create interface tables
+            var interfaceNamer = new NameGenerator();
+            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNamer.GetNewName());
+            var interfaceMethods = interfaceCalls.Select(x => x.Value.Select((m, i) => new { m, i }))
+                .SelectMany(x => x).ToDictionary(x => x.m, x => x.i);
+            // Key is each class, value: key=interface type; value=list of methods that implement each interface method
+            var interfaceCallsNames = new Dictionary<TypeDefinition, Dictionary<TypeDefinition, Tuple<string, IEnumerable<MethodDefinition>>>>();
+            foreach (var type in allTypesInBaseOrder) {
+                var iTypes = type.Interfaces.Select(x => x.Resolve());
+                foreach (var iType in iTypes) {
+                    var iMethods = interfaceCalls.ValueOrDefault(iType).ToArray();
+                    if (iMethods != null) {
+                        var map = new MethodDefinition[iMethods.Length];
+                        foreach (var iMethod in iMethods) {
+                            var implMethod = type.GetInterfaceMethod(iMethod);
+                            map[interfaceMethods[iMethod]] = implMethod;
+                        }
+                        interfaceCallsNames.ValueOrDefault(type, () => new Dictionary<TypeDefinition, Tuple<string, IEnumerable<MethodDefinition>>>(), true)
+                            .Add(iType, Tuple.Create(vTableNamer.GetNewName(), (IEnumerable<MethodDefinition>)map));
+                    }
+                }
+            }
+            var icn = interfaceCallsNames.ToDictionary(x => x.Key, x => x.Value.ToDictionary(y => y.Key, y => y.Value.Item1));
 
             var js = new StringBuilder();
             // Declare static fields
@@ -210,7 +251,8 @@ namespace Cil2Js.Output {
             }
 
             // Create JS for all methods
-            var resolver = new JsMethod.Resolver(methodNames, fieldNames, vTableNames, virtualCalls2, callResolvers, cctorCalls);
+            var resolver = new JsMethod.Resolver(methodNames, fieldNames, vTableNames, virtualCalls2, callResolvers,
+                cctorCalls, interfaceNames, interfaceMethods, icn);
             foreach (var kv in asts) {
                 var method = kv.Key;
                 var ast = kv.Value;
@@ -224,6 +266,15 @@ namespace Cil2Js.Output {
                 var contents = string.Join(", ", vT.Value.Select(x => methodNames.ValueOrDefault(x, () => "0")));
                 js.AppendFormat("var {0} = [{1}];", vTableNames[vT.Key], contents);
                 js.AppendLine();
+            }
+
+            // Interface calls
+            foreach (var iT in interfaceCallsNames) {
+                foreach (var i2 in iT.Value) {
+                    var contents = string.Join(", ", i2.Value.Item2.Select(x => methodNames[x]));
+                    js.AppendFormat("var {0} = [{1}];", i2.Value.Item1, contents);
+                    js.AppendLine();
+                }
             }
 
             // Exports

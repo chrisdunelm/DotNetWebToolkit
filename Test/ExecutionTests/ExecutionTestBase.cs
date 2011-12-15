@@ -56,10 +56,7 @@ namespace Test.ExecutionTests {
 
         protected void Test(Delegate d) {
             var mi = d.Method;
-            var fn = Assembly.GetExecutingAssembly().Location;
-            var module = ModuleDefinition.ReadModule(fn);
-            var type = module.GetType(mi.DeclaringType.FullName);
-            var method = type.Methods.First(x => x.Name == mi.Name);
+            var method = CecilHelper.GetMethod(d);
             var js = Js.CreateFrom(method, this.Verbose);
             //var ast = Transcoder.ToAst(method, this.Verbose);
             // Test that ShowVisitor works

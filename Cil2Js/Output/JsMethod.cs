@@ -18,14 +18,19 @@ namespace Cil2Js.Output {
                 IDictionary<TypeDefinition, string> vTables,
                 IDictionary<MethodDefinition, int> virtualCalls,
                 IDictionary<ICall, JsResolved> callResolvers,
-                IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> cctorsCalled) {
+                IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> cctorsCalled,
+                IDictionary<TypeDefinition, string> interfaceNames,
+                IDictionary<MethodDefinition, int> interfaceMethods,
+                IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> interfaceCallsNames) {
                 this.MethodNames = methodNames;
                 this.FieldNames = fieldNames;
                 this.VTables = vTables;
                 this.VirtualCalls = virtualCalls;
                 this.CallResolvers = callResolvers;
                 this.CctorsCalled = cctorsCalled;
-                this.Cctors = new HashSet<MethodDefinition>(cctorsCalled.SelectMany(x => x.Value).Distinct());
+                this.InterfaceNames = interfaceNames;
+                this.InterfaceMethods = interfaceMethods;
+                this.InterfaceCallsNames = interfaceCallsNames;
             }
 
             public IDictionary<MethodDefinition, string> MethodNames { get; private set; }
@@ -34,7 +39,9 @@ namespace Cil2Js.Output {
             public IDictionary<MethodDefinition, int> VirtualCalls { get; private set; }
             public IDictionary<ICall, JsResolved> CallResolvers { get; private set; }
             public IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> CctorsCalled { get; private set; }
-            public HashSet<MethodDefinition> Cctors { get; private set; }
+            public IDictionary<TypeDefinition, string> InterfaceNames { get; private set; }
+            public IDictionary<MethodDefinition, int> InterfaceMethods { get; private set; }
+            public IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> InterfaceCallsNames { get; private set; }
 
         }
 
@@ -55,7 +62,7 @@ namespace Cil2Js.Output {
                 }
 
                 public override TypeReference Type {
-                    get { return this.Vars.Select(x=>x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.TypeSystem, a, b)); }
+                    get { return this.Vars.Select(x => x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.TypeSystem, a, b)); }
                 }
             }
 
@@ -140,8 +147,8 @@ namespace Cil2Js.Output {
             var fnFmt = method.IsConstructor && method.IsStatic ? "var {0} = function({1})" : "function {0}({1})";
             sb.AppendFormat(fnFmt + " {{", methodName, string.Join(", ", parameterNames));
             var vars = varNames
+                .Where(x => !parameterNames.Contains(x.Value))
                 .Select(x => x.Value + " = " + DefaultValuer.Get(x.Key.Type))
-                .Except(parameterNames)
                 .Distinct()
                 .Concat(v.needVirtualCallVars)
                 .ToArray();
@@ -150,7 +157,9 @@ namespace Cil2Js.Output {
                 sb.Append(' ', tabSize);
                 sb.AppendFormat("var {0};", string.Join(", ", vars.Select(x => x)));
             }
-            if (resolver.Cctors.Contains(method)) {
+
+            // Make sure that static constructors are called before any references to static members
+            if (method.IsConstructor && method.IsStatic) {
                 // If this is a cctor, then mark it as called
                 sb.AppendLine();
                 sb.Append(' ', tabSize);
@@ -164,6 +173,30 @@ namespace Cil2Js.Output {
                     sb.AppendFormat("if ({0}) {0}();", resolver.MethodNames[cctor]);
                 }
             }
+
+            // In a non-static constructor, the object with type information must be constructed
+            if (method.IsConstructor && !method.IsStatic && !method.DeclaringType.IsAbstract) {
+                sb.AppendLine();
+                sb.Append(' ', tabSize);
+                sb.AppendFormat("if (!{0}) {0} = {{_:{{", thisName);
+                bool needComma = false;
+                var vTableName = resolver.VTables.ValueOrDefault(method.DeclaringType);
+                if (vTableName != null) {
+                    sb.AppendFormat("_:{0}", vTableName);
+                    needComma = true;
+                }
+                var ifaces = method.DeclaringType.Interfaces.Select(x => x.Resolve()).ToArray();
+                foreach (var iface in ifaces) {
+                    if (needComma) {
+                        sb.Append(", ");
+                    } else {
+                        needComma = true;
+                    }
+                    sb.AppendFormat("{0}:{1}", resolver.InterfaceNames[iface], resolver.InterfaceCallsNames[method.DeclaringType][iface]);
+                }
+                sb.Append("}};");
+            }
+
             sb.AppendLine(js);
             sb.AppendLine("}");
             return sb.ToString();
@@ -184,7 +217,8 @@ namespace Cil2Js.Output {
         private StringBuilder js = new StringBuilder();
         private List<string> needVirtualCallVars = new List<string>();
 
-        private int virtualCallVarsNum = 0;
+        //private int virtualCallVarsNum = 0;
+        private NameGenerator virtualAndInterfaceCallVars = new NameGenerator("_");
         private int indent = 1;
 
         private void NewLine() {
@@ -390,16 +424,25 @@ namespace Cil2Js.Output {
                 return e;
             }
             if (callMethod.DeclaringType.IsInterface) {
-                throw new NotImplementedException();
-            }
-            var vTableIdx = this.resolver.VirtualCalls.ValueOrDefault(callMethod, () => -1);
-            if (vTableIdx >= 0) {
-                var preThisName = string.Format("_{0}", this.virtualCallVarsNum++);
+                var ifaceName = this.resolver.InterfaceNames[callMethod.DeclaringType];
+                var ifaceMethodIdx = this.resolver.InterfaceMethods[callMethod];
+                var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
                 this.needVirtualCallVars.Add(preThisName);
                 this.js.AppendFormat("({0} = ", preThisName);
                 this.Visit(e.Obj);
                 this.js.Append(")");
-                this.js.AppendFormat("._[{0}]", vTableIdx);
+                this.js.AppendFormat("._.{0}[{1}]", ifaceName, ifaceMethodIdx);
+                appendArgs(preThisName);
+                return e;
+            }
+            var vTableIdx = this.resolver.VirtualCalls.ValueOrDefault(callMethod, () => -1);
+            if (vTableIdx >= 0) {
+                var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
+                this.needVirtualCallVars.Add(preThisName);
+                this.js.AppendFormat("({0} = ", preThisName);
+                this.Visit(e.Obj);
+                this.js.Append(")");
+                this.js.AppendFormat("._._[{0}]", vTableIdx);
                 appendArgs(preThisName);
                 return e;
             }
@@ -426,12 +469,13 @@ namespace Cil2Js.Output {
         protected override ICode VisitNewObj(ExprNewObj e) {
             var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
-            this.js.Append("({");
-            var vTable = this.resolver.VTables.ValueOrDefault(e.CallMethod.DeclaringType);
-            if (vTable != null) {
-                this.js.AppendFormat("_:{0}", vTable);
-            }
-            this.js.Append("}");
+            this.js.Append("(null");
+            //this.js.Append("({");
+            //var vTable = this.resolver.VTables.ValueOrDefault(e.CallMethod.DeclaringType);
+            //if (vTable != null) {
+            //    this.js.AppendFormat("_:{0}", vTable);
+            //}
+            //this.js.Append("}");
             foreach (var arg in e.Args) {
                 this.js.Append(", ");
                 this.Visit(arg);

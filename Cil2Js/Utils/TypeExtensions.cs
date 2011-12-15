@@ -221,5 +221,22 @@ namespace Cil2Js.Utils {
             return false;
         }
 
+        /// <summary>
+        /// Returns the method in 'type' that implements the interface method 'iFaceMethod'
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="iFaceMethod"></param>
+        /// <returns></returns>
+        public static MethodDefinition GetInterfaceMethod(this TypeDefinition type, MethodDefinition iFaceMethod) {
+            return type.Methods.First(m => {
+                // Explicit implementation
+                if (m.Overrides.Any(x => x.FullName == iFaceMethod.FullName)) {
+                    return true;
+                }
+                // Implicit implementation
+                return m.MethodMatch(iFaceMethod);
+            });
+        }
+
     }
 }
