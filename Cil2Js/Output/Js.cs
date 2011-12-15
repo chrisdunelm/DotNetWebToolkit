@@ -145,7 +145,7 @@ namespace Cil2Js.Output {
                     // Interface calls
                     var iToAdd =
                         from type in typesSeen
-                        from iFaceRef in type.Interfaces
+                        from iFaceRef in type.GetAllInterfaces()
                         let iFace = iFaceRef.Resolve()
                         let iFaceMethods = interfaceCalls.ValueOrDefault(iFace)
                         where iFaceMethods != null
@@ -224,11 +224,11 @@ namespace Cil2Js.Output {
             // Key is each class, value: key=interface type; value=list of methods that implement each interface method
             var interfaceCallsNames = new Dictionary<TypeDefinition, Dictionary<TypeDefinition, Tuple<string, IEnumerable<MethodDefinition>>>>();
             foreach (var type in allTypesInBaseOrder) {
-                var iTypes = type.Interfaces.Select(x => x.Resolve());
+                var iTypes = type.GetAllInterfaces();
                 foreach (var iType in iTypes) {
-                    var iMethods = interfaceCalls.ValueOrDefault(iType).ToArray();
+                    var iMethods = interfaceCalls.ValueOrDefault(iType);
                     if (iMethods != null) {
-                        var map = new MethodDefinition[iMethods.Length];
+                        var map = new MethodDefinition[iMethods.Count];
                         foreach (var iMethod in iMethods) {
                             var implMethod = type.GetInterfaceMethod(iMethod);
                             map[interfaceMethods[iMethod]] = implMethod;
@@ -271,7 +271,7 @@ namespace Cil2Js.Output {
             // Interface calls
             foreach (var iT in interfaceCallsNames) {
                 foreach (var i2 in iT.Value) {
-                    var contents = string.Join(", ", i2.Value.Item2.Select(x => methodNames[x]));
+                    var contents = string.Join(", ", i2.Value.Item2.Select(x => methodNames.ValueOrDefault(x, () => "0")));
                     js.AppendFormat("var {0} = [{1}];", i2.Value.Item1, contents);
                     js.AppendLine();
                 }

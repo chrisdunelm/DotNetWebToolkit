@@ -38,7 +38,7 @@ namespace Test {
         static void Main(string[] args) {
 
             var t = new TestSimpleInterfaces() { Verbose = true };
-            t.TestInterface();
+            t.TestInterfacesManyInterfaceCalls();
             return;
 
             //Console.WriteLine();

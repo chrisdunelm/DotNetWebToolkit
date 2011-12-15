@@ -185,7 +185,7 @@ namespace Cil2Js.Output {
                     sb.AppendFormat("_:{0}", vTableName);
                     needComma = true;
                 }
-                var ifaces = method.DeclaringType.Interfaces.Select(x => x.Resolve()).ToArray();
+                var ifaces = method.DeclaringType.GetAllInterfaces().Where(x => resolver.InterfaceNames.ContainsKey(x)).ToArray();
                 foreach (var iface in ifaces) {
                     if (needComma) {
                         sb.Append(", ");

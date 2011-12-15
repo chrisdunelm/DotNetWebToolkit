@@ -228,7 +228,7 @@ namespace Cil2Js.Utils {
         /// <param name="iFaceMethod"></param>
         /// <returns></returns>
         public static MethodDefinition GetInterfaceMethod(this TypeDefinition type, MethodDefinition iFaceMethod) {
-            return type.Methods.First(m => {
+            return type.EnumThisAndBases().SelectMany(x => x.Methods).First(m => {
                 // Explicit implementation
                 if (m.Overrides.Any(x => x.FullName == iFaceMethod.FullName)) {
                     return true;
@@ -236,6 +236,29 @@ namespace Cil2Js.Utils {
                 // Implicit implementation
                 return m.MethodMatch(iFaceMethod);
             });
+        }
+
+        public static IEnumerable<TypeDefinition> EnumThisAndBases(this TypeDefinition type) {
+            for (; ; ) {
+                yield return type;
+                type = type.GetBaseType();
+                if (type == null) {
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns all interfaces that 'type' implements, including inheritance
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static IEnumerable<TypeDefinition> GetAllInterfaces(this TypeDefinition type) {
+            IEnumerable<TypeDefinition> allInterfaces = Enumerable.Empty<TypeDefinition>();
+            foreach (var t in type.EnumThisAndBases()) {
+                allInterfaces = allInterfaces.Union(t.Interfaces.Select(x => x.Resolve()));
+            }
+            return allInterfaces;
         }
 
     }
