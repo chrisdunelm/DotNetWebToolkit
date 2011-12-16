@@ -21,7 +21,7 @@ However, the following should work:
 - Logic expressions
 - 'if' and 'loop' statements
 - Single-dimensional arrays
-- try/catch/finally statements *(although you can't actually throw exceptions quite yet)*
+- try/catch/finally statements *(although you can't actually contruct exception objects to throw quite yet)*
 
 But there's much more that's missing/broken/bad:
 
