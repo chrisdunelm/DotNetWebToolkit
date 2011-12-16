@@ -101,6 +101,7 @@
     <Compile Include="Ast\ExprVarArrayAccess.cs" />
     <Compile Include="Ast\ICall.cs" />
     <Compile Include="Ast\StmtCall.cs" />
+    <Compile Include="Ast\StmtEmpty.cs" />
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Attributes\ExportAttribute.cs" />
     <Compile Include="JsResolvers\JsCallResolver.cs" />

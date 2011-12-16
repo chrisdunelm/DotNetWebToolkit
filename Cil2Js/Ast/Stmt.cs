@@ -10,8 +10,8 @@ namespace Cil2Js.Ast {
             Continuation,
             Cil,
 
+            Empty,
             WrapExpr,
-            //Call,
             Block,
             Try,
             Throw,

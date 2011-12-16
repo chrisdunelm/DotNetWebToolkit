@@ -17,6 +17,22 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestTryCatchFinally() {
+            Func<int> f = () => {
+                int r;
+                try {
+                    r = 1;
+                } catch {
+                    r = 2;
+                } finally {
+                    r = 3;
+                }
+                return r;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

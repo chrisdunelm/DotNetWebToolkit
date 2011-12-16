@@ -20,11 +20,12 @@ However, the following should work:
 - Simple arithmatic
 - Logic expressions
 - 'if' and 'loop' statements
+- Single-dimensional arrays
+- try/catch/finally statements *(although you can't actually throw exceptions quite yet)*
 
 But there's much more that's missing/broken/bad:
 
 - No integration with web browsers (e.g. you cannot yet call document.getElementById)
-- No arrays
 - Many useful base class classes and methods wll fail
 - *(...add all the other stuff you find missing here)*
 - No Visual Studio tooling available

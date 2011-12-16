@@ -18,7 +18,7 @@ namespace Cil2Js.Analysis {
                 var conts = VisitorFindContinuations.Get(s.EndCil);
                 Action<Stmt, int> setStackSize = null;
                 setStackSize = (stmt, stackSize) => {
-                    // Set all try and catch stacksizes recursively, in case multiple trys start on the same instruction
+                    // Set all try and catch stacksizes recursively, to handle multiple trys start on the same instruction
                     switch (stmt.StmtType) {
                     case Stmt.NodeType.Cil:
                         ((StmtCil)stmt).StartStackSize = stackSize;
@@ -26,9 +26,11 @@ namespace Cil2Js.Analysis {
                     case Stmt.NodeType.Try:
                         var stmtTry = (StmtTry)stmt;
                         setStackSize(stmtTry.Try, stackSize);
-                        if (stmtTry.Catch != null) {
-                            setStackSize(stmtTry.Catch, 1);
+                        if (stmtTry.Catches != null) {
+                            setStackSize(stmtTry.Catches.First().Stmt, 1);
                         }
+                        // 'Finally' stack sizes do not need setting, as they will have defaulted to 0
+                        // and this will always be correct
                         return;
                     default:
                         throw new NotSupportedException("Should not be seeing: " + stmt.StmtType);
@@ -160,7 +162,7 @@ namespace Cil2Js.Analysis {
                 if (ex != null) {
                     if (inst != stmtStart) {
                         // Build preceding code block up until this 'try' statement
-                        this.BuildBlock(stmtStart.GetRange(inst.Previous));
+                        this.BuildBlock(stmtStart.GetRange(inst.Previous), end.Next);
                     }
                     // Build this 'try' statement
                     var tryExs = exs.Where(x => x.TryStart.Offset >= ex.TryStart.Offset && x.TryEnd.Offset < ex.TryEnd.Offset).ToArray();
@@ -171,27 +173,29 @@ namespace Cil2Js.Analysis {
                     StmtTry tryStmt;
                     if (ex.HandlerType == ExceptionHandlerType.Catch) {
                         tryStmt = new StmtTry(ex.TryStart, ex.HandlerStart, null, ex.CatchType);
-                    } else {
+                    } else if (ex.HandlerType == ExceptionHandlerType.Finally) {
                         tryStmt = new StmtTry(ex.TryStart, null, ex.HandlerStart, null);
+                    } else {
+                        throw new NotImplementedException("Cannot handle handler-type: " + ex.HandlerType);
                     }
                     this.mappable.Add(tryStmt);
                     // Put all 'try' statements in outer-first order. CIL will be at the end of the list
                     this.blockMap[inst].Insert(0, tryStmt);
                     stmtStart = ex.HandlerEnd;
-                    inst = stmtStart;
+                    inst = ex.HandlerEnd.Previous;
                 }
                 if (inst == null || inst == end) {
                     break;
                 }
                 inst = inst.Next;
             }
-            if (stmtStart != null) {
+            if (stmtStart.Offset <= end.Offset) {
                 // Build the final statement
-                this.BuildBlock(stmtStart.GetRange(end));
+                this.BuildBlock(stmtStart.GetRange(end), end.Next);
             }
         }
 
-        private void BuildBlock(IEnumerable<Instruction> insts) {
+        private void BuildBlock(IEnumerable<Instruction> insts, Instruction startOfNextPart) {
             var inst0 = insts.First();
             var instN = insts.Last();
             // Any instruction in the method could target this block
@@ -206,6 +210,7 @@ namespace Cil2Js.Analysis {
                 var blockInsts = start.GetRange(end);
                 Stmt blockEndStmt;
                 var code = end.OpCode.Code;
+                //if (code == Code.Endfinally) System.Diagnostics.Debugger.Break();
                 switch (end.OpCode.FlowControl) {
                 case FlowControl.Cond_Branch:
                     var ifTrue = new StmtContinuation((Instruction)end.Operand, false);
@@ -225,15 +230,18 @@ namespace Cil2Js.Analysis {
                     this.mappable.Add((StmtContinuation)blockEndStmt);
                     break;
                 case FlowControl.Return:
-                    blockEndStmt = null; // 'Return' created when converting CIL
-                    //if (code == Code.Endfinally || code == Code.Endfilter) {
-                    //    blockEndStmt = null;
-                    //} else {
-                    //    blockEndStmt = new StmtReturn(null);
-                    //}
+                    switch (code) {
+                    case Code.Endfinally:
+                        blockEndStmt = new StmtContinuation(startOfNextPart, true);
+                        this.mappable.Add((StmtContinuation)blockEndStmt);
+                        break;
+                    default:
+                        blockEndStmt = null;
+                        break;
+                    }
                     break;
                 case FlowControl.Throw:
-                    blockEndStmt = null; // Throw created when converting CIL
+                    blockEndStmt = null;
                     break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + end.OpCode.FlowControl);

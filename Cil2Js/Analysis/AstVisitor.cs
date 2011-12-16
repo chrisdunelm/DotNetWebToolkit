@@ -119,10 +119,22 @@ namespace Cil2Js.Analysis {
         protected virtual ICode VisitTry(StmtTry s) {
             this.ThrowOnNoOverride();
             var @try = this.Visit(s.Try);
-            var @catch = this.Visit(s.Catch);
+            List<StmtTry.Catch> catches = null;
+            if (s.Catches != null) {
+                foreach (var @catch in s.Catches) {
+                    var stmt = (Stmt)this.Visit(@catch.Stmt);
+                    var exObj = (ExprVar)this.Visit(@catch.ExceptionObject);
+                    if ((stmt != @catch.Stmt || exObj != @catch.ExceptionObject) && catches == null) {
+                        catches = new List<StmtTry.Catch>(s.Catches.TakeWhile(x => x != @catch));
+                    }
+                    if (catches != null) {
+                        catches.Add(new StmtTry.Catch(stmt, exObj));
+                    }
+                }
+            }
             var @finally = this.Visit(s.Finally);
-            if (@try != s.Try || @catch != s.Catch || @finally != s.Finally) {
-                return new StmtTry((Stmt)@try, (Stmt)@catch, (Stmt)@finally, s.CatchType);
+            if (@try != s.Try || catches != null || @finally != s.Finally) {
+                return new StmtTry((Stmt)@try, catches ?? s.Catches, (Stmt)@finally);
             } else {
                 return s;
             }

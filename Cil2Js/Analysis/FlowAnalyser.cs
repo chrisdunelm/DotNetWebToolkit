@@ -113,12 +113,15 @@ namespace Cil2Js.Analysis {
             private ICode start;
 
             protected override ICode VisitContinuation(StmtContinuation s) {
-                var count = VisitCounter.GetCount(s.To, this.start);
-                if (count == 1) {
-                    return this.Visit(s.To);
-                } else {
-                    return base.VisitContinuation(s);
+                if (!s.LeaveProtectedRegion) {
+                    // Must never substitute when leaving protected region.
+                    // This would change which statements were inside the try/catch/finally region
+                    var count = VisitCounter.GetCount(s.To, this.start);
+                    if (count == 1) {
+                        return this.Visit(s.To);
+                    }
                 }
+                return base.VisitContinuation(s);
             }
 
         }
@@ -352,39 +355,111 @@ namespace Cil2Js.Analysis {
 
         }
 
+        class VisitorTryCatchFinallySequencing : AstRecursiveVisitor {
+
+            public static ICode V(ICode ast) {
+                var v = new VisitorTryCatchFinallySequencing();
+                return v.Visit(ast);
+            }
+
+            private Tuple<Stmt, Stmt> RemoveContinuation(Stmt s) {
+                // This must not return null if empty, as then the 'try' statements won't know
+                // if it is a 'catch' or 'finally' statement
+                if (VisitorFindContinuations.Get(s).Count() != 1) {
+                    return null;
+                }
+                switch (s.StmtType) {
+                case Stmt.NodeType.Block:
+                    var statements = ((StmtBlock)s).Statements.ToArray();
+                    if (statements.Length == 0) {
+                        return null;
+                    }
+                    if (statements.Last().StmtType != Stmt.NodeType.Continuation) {
+                        return null;
+                    }
+                    var cont = (StmtContinuation)statements.Last();
+                    if (!cont.LeaveProtectedRegion) {
+                        return null;
+                    }
+                    if (statements.Length == 1) {
+                        return Tuple.Create((Stmt)new StmtEmpty(), cont.To);
+                    }
+                    return Tuple.Create((Stmt)new StmtBlock(statements.Take(statements.Length - 1)), cont.To);
+                case Stmt.NodeType.Continuation:
+                    var sCont = (StmtContinuation)s;
+                    if (!sCont.LeaveProtectedRegion) {
+                        return null;
+                    }
+                    return Tuple.Create((Stmt)new StmtEmpty(), sCont.To);
+                default:
+                    return null;
+                }
+            }
+
+            protected override ICode VisitTry(StmtTry s) {
+                var @try = this.RemoveContinuation(s.Try);
+                if (@try != null) {
+                    if (s.Catches != null) {
+                        if (s.Catches.Count() != 1) {
+                            throw new InvalidOperationException("Should only ever see 1 catch here");
+                        }
+                        var sCatch = s.Catches.First();
+                        var @catch = this.RemoveContinuation(sCatch.Stmt);
+                        if (@try.Item2 == @catch.Item2) {
+                            var newTry = new StmtTry(@try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionObject) }, null);
+                            return new StmtBlock(newTry, @try.Item2);
+                        }
+                    }
+                    if (s.Finally != null) {
+                        var @finally = this.RemoveContinuation(s.Finally);
+                        if (@try.Item2 == @finally.Item2) {
+                            var newTry = new StmtTry(@try.Item1, null, @finally.Item1);
+                            return new StmtBlock(newTry, @try.Item2);
+                        }
+                    }
+                }
+                return base.VisitTry(s);
+            }
+
+        }
+
         public static Stmt Analyse(MethodDefinition method, Stmt stmt0, bool verbose = false) {
             int step = 0;
-            Action<Stmt> print = s => {
+            Action<Stmt, string> print = (s, name) => {
                 if (verbose) {
-                    Console.WriteLine(" --- AST Transform Step {0} ---", step++);
+                    if (name != null && name.StartsWith("Visitor")) {
+                        name = name.Substring(7);
+                    }
+                    Console.WriteLine(" --- AST Transform Step {0}{1} ---", step++, name == null ? "" : (" '" + name + "'"));
                     Console.WriteLine(ShowVisitor.V(method, s));
                     Console.WriteLine();
                 }
             };
-            Func<Func<Stmt, Stmt>, Stmt, Stmt> doo = (fn, s0) => {
+            Func<Func<Stmt, Stmt>, Stmt, string, Stmt> doStep = (fn, s0, name) => {
                 var s1 = fn(s0);
                 if (s1 != s0) {
-                    print(s1);
+                    print(s1, name);
                 }
                 return s1;
             };
-            print(stmt0);
-            var stmt = doo(s => (Stmt)VisitorConvertCilToSsa.V(method, s), stmt0);
+            print(stmt0, null);
+            var stmt = doStep(s => (Stmt)VisitorConvertCilToSsa.V(method, s), stmt0, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
             for (int i = 0; ; i++) {
                 var stmtOrg = stmt;
-                stmt = doo(s => (Stmt)VisitorSubstitute.V(s), stmt);
-                stmt = doo(s => (Stmt)VisitorIfDistribution.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorDerecurse.V(s), stmt);
-                stmt = doo(s => (Stmt)VisitorBooleanSimplification.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorIfSimplification.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorConditionRemoval.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorEmptyBlockRemoval.V(s), stmt);
+                stmt = doStep(s => (Stmt)VisitorSubstitute.V(s), stmt, "VisitorSubstitute");
+                stmt = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), stmt, "VisitorTryCatchFinallySequencing");
+                stmt = doStep(s => (Stmt)VisitorIfDistribution.V(method, s), stmt, "VisitorIfDistribution");
+                stmt = doStep(s => (Stmt)VisitorDerecurse.V(s), stmt, "VisitorDerecurse");
+                stmt = doStep(s => (Stmt)VisitorBooleanSimplification.V(method, s), stmt, "VisitorBooleanSimplification");
+                stmt = doStep(s => (Stmt)VisitorIfSimplification.V(method, s), stmt, "VisitorIfSimplification");
+                stmt = doStep(s => (Stmt)VisitorConditionRemoval.V(method, s), stmt, "VisitorConditionRemoval");
+                stmt = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), stmt, "VisitorEmptyBlockRemoval");
                 if (stmt == stmtOrg) {
                     break;
                 }
-                if (i > 100) {
-                    // After 100 iterations even the most complex method should be sorted out
+                if (i > 20) {
+                    // After 20 iterations even the most complex method should be sorted out
                     throw new InvalidOperationException("Error: Stuck in loop trying to reduce AST");
                 }
             }
@@ -394,22 +469,22 @@ namespace Cil2Js.Analysis {
             // Simplify AST
             for (int i = 0; ; i++) {
                 var stmtOrg = stmt;
-                stmt = doo(s => (Stmt)VisitorBooleanSimplification.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorIfSimplification.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorMoveOutOfLoop.V(s), stmt);
-                stmt = doo(s => (Stmt)VisitorConditionRemoval.V(method, s), stmt);
-                stmt = doo(s => (Stmt)VisitorSsaSimplifier.V(s), stmt);
-                stmt = doo(s => (Stmt)VisitorPhiSimplifier.V(s), stmt);
-                stmt = doo(s => (Stmt)VisitorExpressionSimplifier.V(method, s), stmt);
+                stmt = doStep(s => (Stmt)VisitorBooleanSimplification.V(method, s), stmt, "VisitorBooleanSimplification");
+                stmt = doStep(s => (Stmt)VisitorIfSimplification.V(method, s), stmt, "VisitorIfSimplification");
+                stmt = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), stmt, "VisitorMoveOutOfLoop");
+                stmt = doStep(s => (Stmt)VisitorConditionRemoval.V(method, s), stmt, "VisitorConditionRemoval");
+                stmt = doStep(s => (Stmt)VisitorSsaSimplifier.V(s), stmt, "VisitorSsaSimplifier");
+                stmt = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), stmt, "VisitorPhiSimplifier");
+                stmt = doStep(s => (Stmt)VisitorExpressionSimplifier.V(method, s), stmt, "VisitorExpressionSimplifier");
                 if (stmt == stmtOrg) {
                     break;
                 }
-                if (i > 100) {
-                    // After 100 iterations even the most complex method should be sorted out
+                if (i > 20) {
+                    // After 20 iterations even the most complex method should be sorted out
                     throw new InvalidOperationException("Error: Stuck in loop trying to simplify AST");
                 }
             }
-            stmt = doo(s => (Stmt)VisitorRemoveCasts.V(method.Module.TypeSystem, s), stmt);
+            stmt = doStep(s => (Stmt)VisitorRemoveCasts.V(method.Module.TypeSystem, s), stmt, "VisitorRemoveCasts");
             return stmt;
         }
 

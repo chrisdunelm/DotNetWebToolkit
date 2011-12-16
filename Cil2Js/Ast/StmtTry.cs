@@ -18,52 +18,63 @@ namespace Cil2Js.Ast {
                 this.@try = s.@try;
                 this.@catch = s.@catch;
                 this.@finally = s.@finally;
+                this.catchType = s.catchType;
                 this.Try = s.Try;
-                this.Catch = s.Catch;
+                this.Catches = s.Catches;
                 this.Finally = s.Finally;
-                this.CatchType = s.CatchType;
             }
 
             public Instruction @try { get; private set; }
             public Instruction @catch { get; private set; }
             public Instruction @finally { get; private set; }
+            public TypeReference catchType { get; private set; }
             public Stmt Try { get; private set; }
-            public Stmt Catch { get; private set; }
+            public IEnumerable<Catch> Catches { get; private set; }
             public Stmt Finally { get; private set; }
-            public TypeReference CatchType { get; private set; }
 
+        }
+
+        public class Catch {
+            public Catch(Stmt stmt, ExprVar exceptionObject) {
+                this.Stmt = stmt;
+                this.ExceptionObject = exceptionObject;
+            }
+            public Stmt Stmt { get; private set; }
+            public ExprVar ExceptionObject { get; private set; }
         }
 
         public StmtTry(Instruction @try, Instruction @catch, Instruction @finally, TypeReference catchType) {
             this.@try = @try;
             this.@catch = @catch;
             this.@finally = @finally;
-            this.CatchType = catchType;
+            this.catchType = catchType;
         }
 
-        public StmtTry(Stmt @try, Stmt @catch, Stmt @finally, TypeReference catchType) {
+        public StmtTry(Stmt @try, IEnumerable<Catch> catches, Stmt @finally) {
             this.Try = @try;
-            this.Catch = @catch;
+            this.Catches = catches;
             this.Finally = @finally;
-            this.CatchType = catchType;
         }
 
         private Instruction @try, @catch, @finally;
+        private TypeReference catchType;
+
         public Stmt Try { get; private set; }
-        public Stmt Catch { get; private set; }
+        public IEnumerable<Catch> Catches { get; private set; }
         public Stmt Finally { get; private set; }
-        public TypeReference CatchType { get; private set; }
 
         void IInstructionMappable.Map(Dictionary<Instruction, List<Stmt>> map) {
-            if (this.@try != null) {
-                // Get the nested mapping, just inside this 'try' statement
-                this.Try = map[this.@try].SkipWhile(x => x != this).Skip(1).First();
-            }
+            // Get the nested mapping, just inside this 'try' statement
+            this.Try = map[this.@try].SkipWhile(x => x != this).Skip(1).First();
             if (this.@catch != null) {
-                this.Catch = map[this.@catch][0];
+                this.Catches = new[] { new Catch(map[this.@catch][0], new ExprVarLocal(this.catchType)) };
+            } else {
+                this.Catches = null;
             }
             if (this.@finally != null) {
                 this.Finally = map[this.@finally][0];
+            } else {
+                this.Finally = null;
             }
         }
 

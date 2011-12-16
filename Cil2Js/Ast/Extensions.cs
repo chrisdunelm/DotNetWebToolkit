@@ -16,6 +16,10 @@ namespace Cil2Js.Ast {
             return type.FullName == "System.Void";
         }
 
+        public static bool IsObject(this TypeReference type) {
+            return type.FullName == "System.Object";
+        }
+
         public static bool IsBoolean(this TypeReference type) {
             return type.FullName == "System.Boolean";
         }
@@ -30,6 +34,10 @@ namespace Cil2Js.Ast {
 
         public static bool IsChar(this TypeReference type) {
             return type.FullName == "System.Char";
+        }
+
+        public static bool IsException(this TypeReference type) {
+            return type.FullName == "System.Exception";
         }
 
         public static bool DoesEqual(this Expr a, Expr b) {

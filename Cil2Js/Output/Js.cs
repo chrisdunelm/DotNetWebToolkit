@@ -277,6 +277,11 @@ namespace Cil2Js.Output {
                 }
             }
 
+            // Type definitions
+            foreach (var type in typesSeen) {
+
+            }
+
             // Exports
             foreach (var export in exports) {
                 js.AppendFormat("window['{0}'] = {1}", export.Item2, methodNames[export.Item1]);

@@ -110,6 +110,9 @@ namespace Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan, this.typeSystem.Boolean));
             case Code.Br_S:
             case Code.Br:
+            case Code.Leave_S:
+            case Code.Leave:
+            case Code.Endfinally:
                 return null;
             case Code.Brtrue_S:
             case Code.Brtrue:

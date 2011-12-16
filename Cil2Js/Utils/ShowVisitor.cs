@@ -99,6 +99,9 @@ namespace Cil2Js.Utils {
         protected override ICode VisitContinuation(StmtContinuation s) {
             this.NewLine();
             this.code.AppendFormat("-> {0}", GetStmtName(s.To));
+            if (s.LeaveProtectedRegion) {
+                this.code.Append(" [leave protected region]");
+            }
             this.continuations.Add(s);
             return s;
         }
@@ -323,6 +326,33 @@ namespace Cil2Js.Utils {
                 this.code.Append(" ");
                 this.Visit(s.Expr);
             }
+            return s;
+        }
+
+        protected override ICode VisitTry(StmtTry s) {
+            this.NewLine();
+            this.code.Append("try {");
+            this.indent++;
+            this.Visit(s.Try);
+            this.indent--;
+            foreach (var @catch in s.Catches.EmptyIfNull()) {
+                this.NewLine();
+                this.code.Append("} catch (");
+                this.Visit(@catch.ExceptionObject);
+                this.code.Append(") {");
+                this.indent++;
+                this.Visit(@catch.Stmt);
+                this.indent--;
+            }
+            if (s.Finally != null) {
+                this.NewLine();
+                this.code.Append("} finally {");
+                this.indent++;
+                this.Visit(s.Finally);
+                this.indent--;
+            }
+            this.NewLine();
+            this.code.Append("}");
             return s;
         }
 

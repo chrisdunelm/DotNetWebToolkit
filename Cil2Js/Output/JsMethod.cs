@@ -217,8 +217,7 @@ namespace Cil2Js.Output {
         private StringBuilder js = new StringBuilder();
         private List<string> needVirtualCallVars = new List<string>();
 
-        //private int virtualCallVarsNum = 0;
-        private NameGenerator virtualAndInterfaceCallVars = new NameGenerator("_");
+        private NameGenerator virtualAndInterfaceCallVars = new NameGenerator("__");
         private int indent = 1;
 
         private void NewLine() {
@@ -470,12 +469,6 @@ namespace Cil2Js.Output {
             var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
             this.js.Append("(null");
-            //this.js.Append("({");
-            //var vTable = this.resolver.VTables.ValueOrDefault(e.CallMethod.DeclaringType);
-            //if (vTable != null) {
-            //    this.js.AppendFormat("_:{0}", vTable);
-            //}
-            //this.js.Append("}");
             foreach (var arg in e.Args) {
                 this.js.Append(", ");
                 this.Visit(arg);
@@ -504,6 +497,37 @@ namespace Cil2Js.Output {
             this.Visit(e.Index);
             this.js.Append("]");
             return e;
+        }
+
+        protected override ICode VisitTry(StmtTry s) {
+            this.NewLine();
+            this.js.Append("try {");
+            this.indent++;
+            this.Visit(s.Try);
+            this.indent--;
+            foreach (var @catch in s.Catches.EmptyIfNull()) {
+                // TODO: Implement full exception processing (need some runtime type information to be able to do this)
+                if (!(@catch.ExceptionObject.Type.IsObject() || @catch.ExceptionObject.Type.IsException())) {
+                    throw new NotImplementedException("Cannot yet handle 'catch' of type: " + @catch.ExceptionObject.Type.Name);
+                }
+                this.NewLine();
+                this.js.Append("} catch(");
+                this.Visit(@catch.ExceptionObject);
+                this.js.Append(") {");
+                this.indent++;
+                this.Visit(@catch.Stmt);
+                this.indent--;
+            }
+            if (s.Finally != null) {
+                this.NewLine();
+                this.js.Append("} finally {");
+                this.indent++;
+                this.Visit(s.Finally);
+                this.indent--;
+            }
+            this.NewLine();
+            this.js.Append("}");
+            return s;
         }
 
         protected override ICode VisitWrapExpr(StmtWrapExpr s) {
