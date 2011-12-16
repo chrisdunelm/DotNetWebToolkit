@@ -39,6 +39,11 @@ namespace Cil2Js.Analysis {
             l.Add(Tuple.Create(this.exprGen.NotAutoSimplify(e), this.Bool(!value)));
         }
 
+        private bool ContainsThrow(Stmt s) {
+            return s != null && (s.StmtType == Stmt.NodeType.Throw ||
+                (s.StmtType == Stmt.NodeType.Block && ((StmtBlock)s).Statements.Any(x => x.StmtType == Stmt.NodeType.Throw)));
+        }
+
         protected override ICode VisitIf(StmtIf s) {
             var condition = (Expr)this.Visit(s.Condition);
             this.known.Push(new List<Tuple<Expr, Expr>>());
@@ -49,6 +54,12 @@ namespace Cil2Js.Analysis {
             this.AddKnown(condition, false);
             var @else = (Stmt)this.Visit(s.Else);
             this.known.Pop();
+            if (this.ContainsThrow(s.Then)) {
+                this.AddKnown(condition, false);
+            }
+            if (this.ContainsThrow(s.Else)) {
+                this.AddKnown(condition, true);
+            }
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
                 return new StmtIf(condition, then, @else);
             } else {

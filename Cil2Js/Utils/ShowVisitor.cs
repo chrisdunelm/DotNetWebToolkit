@@ -20,7 +20,7 @@ namespace Cil2Js.Utils {
         public static string V(MethodDefinition method, ICode c) {
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0} {1}({2})",
-                method.ReturnType.FullName, method.Name,
+                method.ReturnType.FullName, method.FullName,
                 string.Join(", ", method.Parameters.Select(x => string.Format("{0} {1}", x.ParameterType.FullName, x.Name))));
             var seen = new HashSet<ICode>() { c };
             var todo = new Queue<Stmt>();
@@ -29,7 +29,6 @@ namespace Cil2Js.Utils {
                 var cBlock = todo.Dequeue();
                 var v = new ShowVisitor(method);
                 v.Visit(cBlock);
-                sb.AppendLine();
                 sb.AppendLine();
                 sb.Append(GetStmtName(cBlock) + ":");
                 sb.Append(v.Code);
@@ -171,7 +170,9 @@ namespace Cil2Js.Utils {
         }
 
         protected override ICode VisitLiteral(ExprLiteral e) {
-            if (e.Type.IsString()) {
+            if (e.Value == null) {
+                this.code.Append("null");
+            } else if (e.Type.IsString()) {
                 this.code.Append("\"" + e.Value + "\"");
             } else if (e.Type.IsChar()) {
                 this.code.Append("'" + e.Value + "'");

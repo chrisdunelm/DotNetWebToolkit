@@ -530,6 +530,17 @@ namespace Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitThrow(StmtThrow s) {
+            this.NewLine();
+            this.js.Append("throw");
+            if (s.Expr != null) {
+                this.js.Append(" ");
+                this.Visit(s.Expr);
+            }
+            this.js.Append(";");
+            return s;
+        }
+
         protected override ICode VisitWrapExpr(StmtWrapExpr s) {
             this.NewLine();
             this.Visit(s.Expr);

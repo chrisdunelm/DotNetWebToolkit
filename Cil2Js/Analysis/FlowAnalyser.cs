@@ -347,8 +347,12 @@ namespace Cil2Js.Analysis {
             }
 
             protected override ICode VisitBlock(StmtBlock s) {
-                if (!s.Statements.Any()) {
+                var count = s.Statements.Count();
+                if (count == 0) {
                     return null;
+                }
+                if (count == 1) {
+                    return this.Visit(s.Statements.First());
                 }
                 return base.VisitBlock(s);
             }
@@ -365,7 +369,12 @@ namespace Cil2Js.Analysis {
             private Tuple<Stmt, Stmt> RemoveContinuation(Stmt s) {
                 // This must not return a null statement if empty, as then the 'try' statements won't know
                 // if it is a 'catch' or 'finally' statement. Uses a StmtEmpty instead.
-                if (VisitorFindContinuations.Get(s).Count() != 1) {
+                var contCount = VisitorFindContinuations.Get(s).Count();
+                if (contCount == 0) {
+                    // Blocks with no continuations must end with a 'throw'
+                    return Tuple.Create(s, (Stmt)null);
+                }
+                if (contCount != 1) {
                     return null;
                 }
                 switch (s.StmtType) {
@@ -405,16 +414,16 @@ namespace Cil2Js.Analysis {
                         }
                         var sCatch = s.Catches.First();
                         var @catch = this.RemoveContinuation(sCatch.Stmt);
-                        if (@try.Item2 == @catch.Item2) {
+                        if ((@try.Item2 == null || @catch.Item2 == null || @try.Item2 == @catch.Item2) && (@try.Item2 != null || @catch.Item2 != null)) {
                             var newTry = new StmtTry(@try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionObject) }, null);
-                            return new StmtBlock(newTry, @try.Item2);
+                            return new StmtBlock(newTry, @try.Item2 ?? @catch.Item2);
                         }
                     }
                     if (s.Finally != null) {
                         var @finally = this.RemoveContinuation(s.Finally);
-                        if (@try.Item2 == @finally.Item2) {
+                        if ((@try.Item2 == null || @finally.Item2 == null || @try.Item2 == @finally.Item2) && (@try.Item2 != null || @finally.Item2 != null)) {
                             var newTry = new StmtTry(@try.Item1, null, @finally.Item1);
-                            return new StmtBlock(newTry, @try.Item2);
+                            return new StmtBlock(newTry, @try.Item2 ?? @finally.Item2);
                         }
                     }
                 }
@@ -476,6 +485,7 @@ namespace Cil2Js.Analysis {
                 stmt = doStep(s => (Stmt)VisitorSsaSimplifier.V(s), stmt, "VisitorSsaSimplifier");
                 stmt = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), stmt, "VisitorPhiSimplifier");
                 stmt = doStep(s => (Stmt)VisitorExpressionSimplifier.V(method, s), stmt, "VisitorExpressionSimplifier");
+                stmt = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), stmt, "VisitorEmptyBlockRemoval");
                 if (stmt == stmtOrg) {
                     break;
                 }

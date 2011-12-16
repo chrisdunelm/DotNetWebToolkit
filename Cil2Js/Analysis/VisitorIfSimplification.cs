@@ -127,16 +127,10 @@ namespace Cil2Js.Analysis {
                 return null;
             })
             .ToArray();
-            StmtBlock ret;
             if (!Enumerable.SequenceEqual(s.Statements, stNew)) {
-                ret = new StmtBlock(stNew);
+                return new StmtBlock(stNew);
             } else {
-                ret = s;
-            }
-            if (ret.Statements.Count() == 1) {
-                return ret.Statements.First();
-            } else {
-                return ret;
+                return s;
             }
         }
 

@@ -53,6 +53,8 @@ namespace Cil2Js.Analysis {
                 return this.Const((int)(sbyte)inst.Operand, this.typeSystem.Int32);
             case Code.Ldc_I4:
                 return this.Const((int)inst.Operand, this.typeSystem.Int32);
+            case Code.Ldnull:
+                return this.Const(null, this.typeSystem.Object);
             case Code.Ldstr:
                 return this.Const((string)inst.Operand, this.typeSystem.String);
             case Code.Ldarg_0:
@@ -166,6 +168,7 @@ namespace Cil2Js.Analysis {
             case Code.Stelem_Ref:
                 return this.StoreElem(inst);
             case Code.Conv_I4:
+            case Code.Conv_I:
                 return null;
             case Code.Throw:
                 return new StmtThrow(this.stack.Pop());
