@@ -9,10 +9,34 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestExceptions : ExecutionTestBase {
 
-        [Test, Ignore("Exceptions not yet implemented")]
-        public void TestThrow() {
-            Action f = () => {
-                throw new Exception();
+        [Test]
+        public void TestThrowReturnDirect() {
+            Func<bool, int> f = b => {
+                try {
+                    if (b) {
+                        throw new Exception();
+                    }
+                } catch {
+                    return 1;
+                }
+                return 0;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestThrowReturnVar() {
+            Func<bool, int> f = b => {
+                int r;
+                try {
+                    if (b) {
+                        throw new Exception();
+                    }
+                    r = 1;
+                } catch {
+                    r = 2;
+                }
+                return r;
             };
             this.Test(f);
         }

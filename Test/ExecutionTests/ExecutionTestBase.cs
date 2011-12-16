@@ -71,7 +71,16 @@ namespace Test.ExecutionTests {
             var iterationCount = method.Parameters.Any() ? this.testIterations : 1;
             var range = Enumerable.Range(0, iterationCount);
             var args = range.Select(i => this.CreateArgs(method)).ToArray();
-            var runResults = range.Select(i => mi.Invoke(d.Target, args[i])).ToArray();
+            var runResults = range.Select(i => {
+                object r = null;
+                Exception e = null;
+                try {
+                    r = d.DynamicInvoke(args[i]);
+                } catch (TargetInvocationException ex) {
+                    e = ex.InnerException;
+                }
+                return Tuple.Create(r, e);
+            }).ToArray();
             var jsResults = JsRunner.Run(js, "main", args, mi.ReturnType);
             for (int i = 0; i < iterationCount; i++) {
                 var jsResult = jsResults[i];

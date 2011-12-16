@@ -37,8 +37,8 @@ namespace Test {
 
         static void Main(string[] args) {
 
-            var t = new TestExceptions  () { Verbose = true };
-            t.TestTryCatchFinally();
+            var t = new TestExceptions() { Verbose = true };
+            t.TestThrowReturnVar();
             return;
 
             //Console.WriteLine();

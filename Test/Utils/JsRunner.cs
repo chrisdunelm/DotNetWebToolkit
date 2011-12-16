@@ -12,7 +12,7 @@ using Microsoft.JScript.Vsa;
 namespace Test.Utils {
     class JsRunner : MarshalByRefObject {
 
-        public static object[] Run(string js, string functionName, object[][] args, Type returnType) {
+        public static Tuple<object, Exception>[] Run(string js, string functionName, object[][] args, Type returnType) {
             var info = new AppDomainSetup {
                 ApplicationBase = Path.GetDirectoryName(typeof(JsRunner).Assembly.Location)
             };
@@ -47,7 +47,7 @@ namespace Test.Utils {
         }
 #pragma warning restore 618
 
-        private object[] CompileAndExecute(string js, string functionName, object[][] args, Type returnType) {
+        private Tuple<object, Exception>[] CompileAndExecute(string js, string functionName, object[][] args, Type returnType) {
             var jscp = CodeDomProvider.CreateProvider("JScript");
             var options = new CompilerParameters {
                 GenerateExecutable = true,
@@ -66,7 +66,7 @@ namespace Test.Utils {
             // Run the compiled JS
             // Difficult to find out exactly how to do this, but this works for now
             var jscriptType = compilerResults.CompiledAssembly.GetType("JScript 0");
-            var ret = new object[args.Length];
+            var ret = new Tuple<object, Exception>[args.Length];
             for (int i = 0; i < args.Length; i++) {
 #pragma warning disable 618
                 var vsa = new VsaEngine();
@@ -78,12 +78,21 @@ namespace Test.Utils {
                 var globalCode = jscriptType.GetMethod("Global Code");
                 globalCode.Invoke(jscript0, new object[0]);
                 var fn = jscriptType.GetMethod(functionName);
-                var r = fn.Invoke(jscript0, new object[] { null, vsa }.Concat(args[i]).ToArray());
-                if (r.GetType() != returnType) {
+                object r = null;
+                Exception e = null;
+                try {
+                    r = fn.Invoke(jscript0, new object[] { null, vsa }.Concat(args[i]).ToArray());
+                } catch (TargetInvocationException ex) {
+                    // This isn't very helpful, as the JScript engine returns a generic "JS threw an unhandled exception"
+                    // exception, with no details as to what the exception was.
+                    // Therefore a test that throws an unhandled exception cannot work
+                    e = ex.InnerException;
+                }
+                if (r != null && r.GetType() != returnType) {
                     // Some returns will require casting - e.g. booleans will be returned as integers
                     r = System.Convert.ChangeType(r, returnType);
                 }
-                ret[i] = r;
+                ret[i] = Tuple.Create(r, e);
 #pragma warning restore 618
             }
             return ret;
