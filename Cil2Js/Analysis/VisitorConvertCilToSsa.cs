@@ -75,9 +75,9 @@ namespace Cil2Js.Analysis {
         }
 
         class BlockInitInfo {
-            public ExprVarPhi[] Stack = new ExprVarPhi[0];
-            public ExprVarPhi[] Locals = new ExprVarPhi[0];
-            public ExprVarPhi[] Args = new ExprVarPhi[0];
+            public ExprVarPhi[] Stack;
+            public ExprVarPhi[] Locals;
+            public ExprVarPhi[] Args;
         }
 
         private MethodDefinition method;
