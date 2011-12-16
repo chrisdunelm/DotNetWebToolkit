@@ -361,10 +361,18 @@ namespace Cil2Js.Analysis {
 
         class VisitorTryCatchFinallySequencing : AstRecursiveVisitor {
 
-            public static ICode V(ICode ast) {
-                var v = new VisitorTryCatchFinallySequencing();
+            public static ICode V(TypeSystem typeSystem, ICode ast) {
+                var v = new VisitorTryCatchFinallySequencing(typeSystem);
                 return v.Visit(ast);
             }
+
+            private VisitorTryCatchFinallySequencing(TypeSystem typeSystem) {
+                this.typeSystem = typeSystem;
+                this.exprGen = Expr.ExprGen(typeSystem);
+            }
+
+            private TypeSystem typeSystem;
+            private Expr.Gen exprGen;
 
             private Tuple<Stmt, Stmt> RemoveContinuation(Stmt s) {
                 // This must not return a null statement if empty, as then the 'try' statements won't know
@@ -418,6 +426,23 @@ namespace Cil2Js.Analysis {
                             var newTry = new StmtTry(@try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionObject) }, null);
                             return new StmtBlock(newTry, @try.Item2 ?? @catch.Item2);
                         }
+                        // Special case
+                        // When 'leave' CIL branch to different instructions, allow specific code to be
+                        // moved inside the 'try' or 'catch' block. It should be impossible for this code to throw an exception
+                        var tryTos = VisitorFindContinuations.Get(@try.Item2);
+                        if (tryTos.Count() == 1 && tryTos.First().To == @catch.Item2 && @try.Item2.StmtType == Stmt.NodeType.Block) {
+                            var try2Stmts = ((StmtBlock)@try.Item2).Statements.ToArray();
+                            var s0 = try2Stmts.Take(try2Stmts.Length - 1);
+                            if (s0.All(x => x.StmtType == Stmt.NodeType.Assignment)) {
+                                var sN = try2Stmts.Last();
+                                if (sN.StmtType == Stmt.NodeType.Continuation) {
+                                    var newTry = new StmtTry(
+                                        new StmtBlock(@try.Item1, new StmtBlock(s0), new StmtContinuation(((StmtContinuation)sN).To, true)),
+                                        s.Catches, null);
+                                    return newTry;
+                                }
+                            }
+                        }
                     }
                     if (s.Finally != null) {
                         var @finally = this.RemoveContinuation(s.Finally);
@@ -451,13 +476,14 @@ namespace Cil2Js.Analysis {
                 }
                 return s1;
             };
+            var typeSystem = method.Module.TypeSystem;
             print(stmt0, null);
             var stmt = doStep(s => (Stmt)VisitorConvertCilToSsa.V(method, s), stmt0, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
             for (int i = 0; ; i++) {
                 var stmtOrg = stmt;
                 stmt = doStep(s => (Stmt)VisitorSubstitute.V(s), stmt, "VisitorSubstitute");
-                stmt = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), stmt, "VisitorTryCatchFinallySequencing");
+                stmt = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(typeSystem, s), stmt, "VisitorTryCatchFinallySequencing");
                 stmt = doStep(s => (Stmt)VisitorIfDistribution.V(method, s), stmt, "VisitorIfDistribution");
                 stmt = doStep(s => (Stmt)VisitorDerecurse.V(s), stmt, "VisitorDerecurse");
                 stmt = doStep(s => (Stmt)VisitorBooleanSimplification.V(method, s), stmt, "VisitorBooleanSimplification");
