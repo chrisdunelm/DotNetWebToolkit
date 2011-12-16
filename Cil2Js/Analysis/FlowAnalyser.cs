@@ -363,8 +363,8 @@ namespace Cil2Js.Analysis {
             }
 
             private Tuple<Stmt, Stmt> RemoveContinuation(Stmt s) {
-                // This must not return null if empty, as then the 'try' statements won't know
-                // if it is a 'catch' or 'finally' statement
+                // This must not return a null statement if empty, as then the 'try' statements won't know
+                // if it is a 'catch' or 'finally' statement. Uses a StmtEmpty instead.
                 if (VisitorFindContinuations.Get(s).Count() != 1) {
                     return null;
                 }
