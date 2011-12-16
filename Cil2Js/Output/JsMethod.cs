@@ -282,7 +282,7 @@ namespace Cil2Js.Output {
             { BinaryOp.BitwiseOr, "|" },
             { BinaryOp.BitwiseXor, "^" },
             { BinaryOp.And, "&&" },
-            { BinaryOp.Equal, "==" },
+            { BinaryOp.Equal, "===" },
             { BinaryOp.NotEqual, "!=" },
             { BinaryOp.LessThan, "<" },
             { BinaryOp.LessThanOrEqual, "<=" },
