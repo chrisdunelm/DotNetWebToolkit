@@ -75,32 +75,20 @@ namespace Test.ExecutionTests {
             public interface I5 {
                 int GetE();
             }
-            public class A:I1 {
-                public int GetA() {
-                    return 1;
-                }
+            public class A : I1 {
+                public int GetA() { return 1; }
             }
             public abstract class B : A, I3 {
-                public virtual int GetB() {
-                    return 11;
-                }
+                public virtual int GetB() { return 11; }
                 public abstract int GetC();
             }
             public class C : B {
-                public override int GetC() {
-                    return 101;
-                }
+                public override int GetC() { return 101; }
             }
             public class D : C, I4, I5 {
-                public override int GetB() {
-                    return 1001;
-                }
-                public int GetD() {
-                    return 1002;
-                }
-                public int GetE() {
-                    return 1003;
-                }
+                public override int GetB() { return 1001; }
+                public int GetD() { return 1002; }
+                public int GetE() { return 1003; }
             }
         }
 
