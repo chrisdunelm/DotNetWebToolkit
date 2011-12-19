@@ -15,7 +15,7 @@ namespace Cil2Js.Analysis {
         class DebugView {
 
             public DebugView(StmtCil s) {
-                this.Method = s.Method;
+                this.Method = s.Ctx.Method;
                 this.Insts = s.Insts;
                 this.EndCil = s.EndCil;
                 this.StartStackSize = s.StartStackSize;
@@ -30,16 +30,23 @@ namespace Cil2Js.Analysis {
 
         }
 
-        public StmtCil(MethodDefinition method, IEnumerable<Instruction> insts, Stmt endCil) {
-            this.Method = method;
+        public enum SpecialBlock {
+            Normal = 0,
+            Start,
+            End
+        }
+
+        public StmtCil(Ctx ctx, IEnumerable<Instruction> insts, Stmt endCil, SpecialBlock blockType = SpecialBlock.Normal)
+            : base(ctx) {
             this.Insts = insts;
+            this.BlockType = blockType;
             this.EndCil = endCil;
             this.StartStackSize = 0;
             this.EndStackSize = 0;
         }
 
-        public MethodDefinition Method { get; private set; }
         public IEnumerable<Instruction> Insts { get; private set; }
+        public SpecialBlock BlockType { get; private set; }
         public Stmt EndCil { get; private set; }
         public int StartStackSize { get; set; }
         public int EndStackSize { get; set; }
@@ -49,7 +56,13 @@ namespace Cil2Js.Analysis {
         }
 
         public override string ToString() {
+            if (this.Insts == null) {
+                return "<null>";
+            }
             int l = this.Insts.Count();
+            if (l == 0) {
+                return "<empty>";
+            }
             if (l == 1) {
                 return string.Format("[{0}:{1}]{2}", this.StartStackSize, this.EndStackSize, this.Insts.First().ToString());
             } else {

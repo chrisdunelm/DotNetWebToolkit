@@ -10,33 +10,29 @@ namespace Cil2Js.Analysis {
         // Removes conditions that are known to be true,
         // because previous 'if' or 'do' statements have already checked them
 
-        public static ICode V(MethodDefinition method, ICode c) {
-            var v = new VisitorConditionRemoval(method);
-            return v.Visit(c);
+        public static ICode V(ICode ast) {
+            var v = new VisitorConditionRemoval(ast.Ctx);
+            return v.Visit(ast);
         }
 
-        private VisitorConditionRemoval(MethodDefinition method) {
-            this.method = method;
-            this.typeSystem = method.Module.TypeSystem;
-            this.exprGen = Expr.ExprGen(this.typeSystem);
+        private VisitorConditionRemoval(Ctx ctx) {
+            this.ctx = ctx;
             this.known = new Stack<List<Tuple<Expr, Expr>>>();
             this.known.Push(new List<Tuple<Expr, Expr>>());
         }
 
-        private MethodDefinition method;
-        private TypeSystem typeSystem;
-        private Expr.Gen exprGen;
+        private Ctx ctx;
 
         private Stack<List<Tuple<Expr, Expr>>> known;
 
         private Expr Bool(bool b) {
-            return new ExprLiteral(b, this.typeSystem.Boolean);
+            return new ExprLiteral(this.ctx, b, this.ctx.Boolean);
         }
 
         private void AddKnown(Expr e, bool value) {
             var l = this.known.Peek();
             l.Add(Tuple.Create(e, this.Bool(value)));
-            l.Add(Tuple.Create(this.exprGen.NotAutoSimplify(e), this.Bool(!value)));
+            l.Add(Tuple.Create(this.ctx.ExprGen.NotAutoSimplify(e), this.Bool(!value)));
         }
 
         private bool ContainsThrow(Stmt s) {
@@ -61,7 +57,7 @@ namespace Cil2Js.Analysis {
                 this.AddKnown(condition, true);
             }
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
-                return new StmtIf(condition, then, @else);
+                return new StmtIf(this.ctx, condition, then, @else);
             } else {
                 return s;
             }
@@ -72,7 +68,7 @@ namespace Cil2Js.Analysis {
             var @while = (Expr)this.Visit(s.While); // This order matters - body must be visited before while
             this.AddKnown(@while, false);
             if (@while != s.While || body != s.Body) {
-                return new StmtDoLoop(body, @while);
+                return new StmtDoLoop(this.ctx, body, @while);
             } else {
                 return s;
             }

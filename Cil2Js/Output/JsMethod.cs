@@ -49,28 +49,27 @@ namespace Cil2Js.Output {
 
             class VarClustered : ExprVar {
 
-                public VarClustered(TypeSystem typeSystem, IEnumerable<ExprVar> vars) {
-                    this.TypeSystem = typeSystem;
+                public VarClustered(Ctx ctx, IEnumerable<ExprVar> vars)
+                    : base(ctx) {
                     this.Vars = vars;
                 }
 
                 public IEnumerable<ExprVar> Vars { get; private set; }
-                public TypeSystem TypeSystem { get; private set; }
 
                 public override Expr.NodeType ExprType {
                     get { throw new NotImplementedException(); }
                 }
 
                 public override TypeReference Type {
-                    get { return this.Vars.Select(x => x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.TypeSystem, a, b)); }
+                    get { return this.Vars.Select(x => x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.Ctx, a, b)); }
                 }
             }
 
-            public static Dictionary<ExprVar, string> V(TypeSystem typeSystem, ICode c) {
+            public static Dictionary<ExprVar, string> V(ICode c) {
                 var v = new LocalVarNamer();
                 v.Visit(c);
                 var clusters = UniqueClusters(v.clusters);
-                var allCounts = clusters.ToDictionary(x => (ExprVar)new VarClustered(typeSystem, x), x => x.Sum(y => v.varCount.ValueOrDefault(y)));
+                var allCounts = clusters.ToDictionary(x => (ExprVar)new VarClustered(c.Ctx, x), x => x.Sum(y => v.varCount.ValueOrDefault(y)));
                 var allClusteredCounts = allCounts.ToArray();
                 var allClustered = new HashSet<ExprVar>(clusters.SelectMany(x => x));
                 foreach (var varCount in v.varCount) {
@@ -134,8 +133,7 @@ namespace Cil2Js.Output {
                 throw new ArgumentException("Cannot transcode an internal method");
             }
             var methodName = resolver.MethodNames[method];
-            var typeSystem = method.Module.TypeSystem;
-            var varNames = LocalVarNamer.V(typeSystem, ast);
+            var varNames = LocalVarNamer.V(ast);
             var v = new JsMethod(method, varNames, resolver);
             v.Visit(ast);
             var js = v.js.ToString();
@@ -349,6 +347,8 @@ namespace Cil2Js.Output {
                 this.js.AppendFormat("\"{0}\"", e.Value);
             } else if (e.Value is char) {
                 this.js.AppendFormat("'{0}'", e.Value);
+            } else if (e.Type.IsBoolean()) {
+                this.js.Append((bool)e.Value ? "true" : "false");
             } else {
                 this.js.Append(e.Value);
             }

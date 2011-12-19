@@ -19,7 +19,8 @@ namespace Cil2Js.Ast {
 
         }
 
-        public StmtThrow(Expr expr) {
+        public StmtThrow(Ctx ctx, Expr expr)
+            : base(ctx) {
             this.Expr = expr;
         }
 

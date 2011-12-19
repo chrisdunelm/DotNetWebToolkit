@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+//using Cil2Js.Analysis;
 using Cil2Js.Ast;
 
 namespace Cil2Js.Ast {
@@ -12,6 +13,8 @@ namespace Cil2Js.Ast {
             //if (SameWithDeMorgans(a, b)) {
             //    return true;
             //}
+            //a = (Expr)VisitorBooleanSimplification.V(a);
+            //b = (Expr)VisitorBooleanSimplification.V(b);
             if (a.ExprType != b.ExprType) {
                 return false;
             }
@@ -63,15 +66,17 @@ namespace Cil2Js.Ast {
                 var bInst = (ExprVarInstResult)b;
                 return aInst.Inst == bInst.Inst;
             case Expr.NodeType.VarLocal:
-                var aVLoc = (ExprVarLocal)a;
-                var bVLoc = (ExprVarLocal)b;
-                // Slightly convoluted test required because it is possible to create a local var
-                // without a real variable backing it
-                return aVLoc == bVLoc || (aVLoc.Var != null && aVLoc.Var == bVLoc.Var);
+                return a == b;
+                //var aVLoc = (ExprVarLocal)a;
+                //var bVLoc = (ExprVarLocal)b;
+                //// Slightly convoluted test required because it is possible to create a local var
+                //// without a real variable backing it
+                //return aVLoc == bVLoc || (aVLoc.Var != null && aVLoc.Var == bVLoc.Var);
             case Expr.NodeType.VarParameter:
-                var aVParam = (ExprVarParameter)a;
-                var bVParam = (ExprVarParameter)b;
-                return aVParam.Parameter == bVParam.Parameter;
+                return a == b;
+                //var aVParam = (ExprVarParameter)a;
+                //var bVParam = (ExprVarParameter)b;
+                //return aVParam.Parameter == bVParam.Parameter;
             case Expr.NodeType.VarPhi:
                 return a == b;
             default:

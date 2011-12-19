@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
 
 namespace Cil2Js.Ast {
     public abstract class Stmt : ICode {
@@ -21,7 +22,13 @@ namespace Cil2Js.Ast {
             Return,
         }
 
+        public Stmt(Ctx ctx) {
+            this.Ctx = ctx;
+        }
+
         public abstract NodeType StmtType { get; }
+
+        public Ctx Ctx { get; private set; }
 
         CodeType ICode.CodeType {
             get { return CodeType.Statement; }

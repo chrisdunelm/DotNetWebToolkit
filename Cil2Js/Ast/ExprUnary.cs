@@ -14,7 +14,8 @@ namespace Cil2Js.Ast {
 
     public class ExprUnary : Expr {
 
-        public ExprUnary(UnaryOp op, TypeReference type, Expr expr) {
+        public ExprUnary(Ctx ctx, UnaryOp op, TypeReference type, Expr expr)
+            : base(ctx) {
             this.Op = op;
             this.type = type;
             this.Expr = expr;

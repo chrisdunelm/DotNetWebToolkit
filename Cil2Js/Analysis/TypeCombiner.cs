@@ -8,19 +8,19 @@ using Cil2Js.Ast;
 namespace Cil2Js.Analysis {
     static class TypeCombiner {
 
-        public static TypeReference Combine(TypeSystem typeSystem, Expr a, Expr b) {
-            return Combine(typeSystem, a.Type, b.Type);
+        public static TypeReference Combine(Ctx ctx, Expr a, Expr b) {
+            return Combine(ctx, a.Type, b.Type);
         }
 
-        public static TypeReference Combine(TypeSystem typeSystem, TypeReference a, TypeReference b) {
+        public static TypeReference Combine(Ctx ctx, TypeReference a, TypeReference b) {
             if (a.IsSame(b)) {
                 return a;
             }
             var t = Tuple.Create(a, b);
             if (t.Perms((x, y) => x.IsBoolean() && y.IsInt32())) {
-                return typeSystem.Boolean;
+                return ctx.Boolean;
             }
-            return typeSystem.Object;
+            return ctx.Object;
         }
 
     }

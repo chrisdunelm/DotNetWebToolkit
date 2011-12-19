@@ -56,8 +56,6 @@ namespace Cil2Js.Analysis {
                 return this.VisitDoLoop((StmtDoLoop)s);
             case Stmt.NodeType.Return:
                 return this.VisitReturn((StmtReturn)s);
-            //case Stmt.NodeType.Call:
-            //    return this.VisitCall((StmtCall)s);
             case Stmt.NodeType.WrapExpr:
                 return this.VisitWrapExpr((StmtWrapExpr)s);
             default:
@@ -67,9 +65,9 @@ namespace Cil2Js.Analysis {
 
         protected virtual ICode VisitCil(StmtCil s) {
             this.ThrowOnNoOverride();
-            var endCil = this.Visit(s.EndCil);
+            var endCil = (Stmt)this.Visit(s.EndCil);
             if (endCil != s.EndCil) {
-                return new StmtCil(s.Method, s.Insts, (Stmt)endCil) {
+                return new StmtCil(s.Ctx, s.Insts, endCil) {
                     StartStackSize = s.StartStackSize,
                     EndStackSize = s.EndStackSize,
                 };
@@ -107,7 +105,7 @@ namespace Cil2Js.Analysis {
                     }
                 })
                 .ToArray();
-                return new StmtBlock(blocks);
+                return new StmtBlock(s.Ctx, blocks);
             }
         }
 
@@ -134,7 +132,7 @@ namespace Cil2Js.Analysis {
             }
             var @finally = this.Visit(s.Finally);
             if (@try != s.Try || catches != null || @finally != s.Finally) {
-                return new StmtTry((Stmt)@try, catches ?? s.Catches, (Stmt)@finally);
+                return new StmtTry(s.Ctx, (Stmt)@try, catches ?? s.Catches, (Stmt)@finally);
             } else {
                 return s;
             }
@@ -144,7 +142,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = this.Visit(s.Expr);
             if (expr != s.Expr) {
-                return new StmtThrow((Expr)expr);
+                return new StmtThrow(s.Ctx,(Expr)expr);
             } else {
                 return s;
             }
@@ -155,7 +153,7 @@ namespace Cil2Js.Analysis {
             var expr = this.Visit(s.Expr);
             var target = this.Visit(s.Target);
             if (expr != s.Expr || target != s.Target) {
-                return new StmtAssignment((ExprVar)target, (Expr)expr);
+                return new StmtAssignment(s.Ctx,(ExprVar)target, (Expr)expr);
             } else {
                 return s;
             }
@@ -167,7 +165,7 @@ namespace Cil2Js.Analysis {
             var then = this.Visit(s.Then);
             var @else = this.Visit(s.Else);
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
-                return new StmtIf((Expr)condition, (Stmt)then, (Stmt)@else);
+                return new StmtIf(s.Ctx,(Expr)condition, (Stmt)then, (Stmt)@else);
             } else {
                 return s;
             }
@@ -178,7 +176,7 @@ namespace Cil2Js.Analysis {
             var body = this.Visit(s.Body);
             var @while = this.Visit(s.While);
             if (body != s.Body || @while != s.While) {
-                return new StmtDoLoop((Stmt)body, (Expr)@while);
+                return new StmtDoLoop(s.Ctx,(Stmt)body, (Expr)@while);
             } else {
                 return s;
             }
@@ -187,7 +185,7 @@ namespace Cil2Js.Analysis {
         protected virtual ICode VisitReturn(StmtReturn s) {
             this.ThrowOnNoOverride();
             var expr = this.Visit(s.Expr);
-            return expr == s.Expr ? s : new StmtReturn((Expr)expr);
+            return expr == s.Expr ? s : new StmtReturn(s.Ctx,(Expr)expr);
         }
 
         protected T HandleCall<T>(T call, Func<MethodDefinition, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
@@ -214,7 +212,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(s.Expr);
             if (expr != s.Expr) {
-                return new StmtWrapExpr(expr);
+                return new StmtWrapExpr(s.Ctx,expr);
             } else {
                 return s;
             }
@@ -260,21 +258,21 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprCast(expr, e.Type);
+                return new ExprCast(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }
         }
 
         protected virtual ICode VisitNewObj(ExprNewObj e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprNewObj(method, args));
+            return this.HandleCall(e, (method, obj, args) => new ExprNewObj(e.Ctx, method, args));
         }
 
         protected virtual ICode VisitFieldAccess(ExprFieldAccess e) {
             this.ThrowOnNoOverride();
             var obj = (Expr)this.Visit(e.Obj);
             if (obj != e.Obj) {
-                return new ExprFieldAccess(obj, e.Field);
+                return new ExprFieldAccess(e.Ctx, obj, e.Field);
             } else {
                 return e;
             }
@@ -286,7 +284,7 @@ namespace Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprCall(method, obj, args, e.IsVirtual));
+            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtual));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {
@@ -352,7 +350,7 @@ namespace Cil2Js.Analysis {
                     }
                 })
                 .ToArray();
-                return new ExprVarPhi(e.Method) { Exprs = exprs };
+                return new ExprVarPhi(e.Ctx) { Exprs = exprs };
             }
         }
 
@@ -360,7 +358,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprUnary(e.Op, e.Type, (Expr)expr);
+                return new ExprUnary(e.Ctx, e.Op, e.Type, (Expr)expr);
             } else {
                 return e;
             }
@@ -373,7 +371,7 @@ namespace Cil2Js.Analysis {
             if (left == e.Left && right == e.Right) {
                 return e;
             } else {
-                return new ExprBinary(e.Op, e.Type, (Expr)left, (Expr)right);
+                return new ExprBinary(e.Ctx, e.Op, e.Type, (Expr)left, (Expr)right);
             }
         }
 
@@ -383,7 +381,7 @@ namespace Cil2Js.Analysis {
             var ifTrue = (Expr)this.Visit(e.IfTrue);
             var ifFalse = (Expr)this.Visit(e.IfFalse);
             if (condition != e.Condition || ifTrue != e.IfTrue || ifFalse != e.IfFalse) {
-                return new ExprTernary(e.TypeSystem, condition, ifTrue, ifFalse);
+                return new ExprTernary(e.Ctx, condition, ifTrue, ifFalse);
             } else {
                 return e;
             }
@@ -393,7 +391,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var numElements = (Expr)this.Visit(e.ExprNumElements);
             if (numElements != e.ExprNumElements) {
-                return new ExprNewArray(e.Type.GetElementType(), numElements);
+                return new ExprNewArray(e.Ctx, e.Type.GetElementType(), numElements);
             } else {
                 return e;
             }
@@ -403,7 +401,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var array = (Expr)this.Visit(e.Array);
             if (array != e.Array) {
-                return new ExprArrayLength(e.TypeSystem, array);
+                return new ExprArrayLength(e.Ctx, array);
             } else {
                 return e;
             }
@@ -414,7 +412,7 @@ namespace Cil2Js.Analysis {
             var array = (Expr)this.Visit(e.Array);
             var index = (Expr)this.Visit(e.Index);
             if (array != e.Array || index != e.Index) {
-                return new ExprVarArrayAccess(array, index);
+                return new ExprVarArrayAccess(e.Ctx, array, index);
             } else {
                 return e;
             }

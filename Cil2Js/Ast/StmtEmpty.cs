@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 
 namespace Cil2Js.Ast {
-    public class StmtEmpty :Stmt {
+    public class StmtEmpty : Stmt {
+
+        public StmtEmpty(Ctx ctx)
+            : base(ctx) {
+        }
 
         public override Stmt.NodeType StmtType {
             get { return NodeType.Empty; }

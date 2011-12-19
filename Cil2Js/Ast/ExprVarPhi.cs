@@ -8,13 +8,9 @@ using Cil2Js.Analysis;
 namespace Cil2Js.Ast {
     public class ExprVarPhi : ExprVar {
 
-        public ExprVarPhi(MethodDefinition method) {
-            this.Method = method;
-            this.typeSystem = method.Module.TypeSystem;
+        public ExprVarPhi(Ctx ctx)
+            : base(ctx) {
         }
-
-        public MethodDefinition Method { get; private set; }
-        private TypeSystem typeSystem;
 
         public override Expr.NodeType ExprType {
             get { return NodeType.VarPhi; }
@@ -23,11 +19,11 @@ namespace Cil2Js.Ast {
         public override TypeReference Type {
             get {
                 if (!this.Exprs.Any()) {
-                    return this.typeSystem.Object.Resolve();
+                    return this.Ctx.Object.Resolve();
                 }
                 var t = this.Exprs
                     .Select(x => x.Type)
-                    .Aggregate((a, b) => TypeCombiner.Combine(this.typeSystem, a, b));
+                    .Aggregate((a, b) => TypeCombiner.Combine(this.Ctx, a, b));
                 return t;
             }
         }

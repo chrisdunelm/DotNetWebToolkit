@@ -10,22 +10,18 @@ namespace Cil2Js.Analysis {
 
         // See http://www.d.umn.edu/~snorr/ece1315f2/BOOLLAWP.htm for all simplifications
 
-        public static ICode V(MethodDefinition method, ICode c) {
-            var v = new VisitorBooleanSimplification(method);
-            return v.Visit(c);
+        public static ICode V(ICode ast) {
+            var v = new VisitorBooleanSimplification();
+            return v.Visit(ast);
         }
 
-        public VisitorBooleanSimplification(MethodDefinition method) {
-            this.typeSystem = method.Module.TypeSystem;
-        }
-
-        private TypeSystem typeSystem;
+        private VisitorBooleanSimplification() { }
 
         // A + B is A || B
         // AB is A && B
 
         protected override ICode VisitUnary(ExprUnary e) {
-            var eg = Expr.ExprGen(this.typeSystem);
+            var eg = Expr.CreateExprGen(e.Ctx);
             var op = e.Op;
             var expr = (Expr)this.Visit(e.Expr);
 
@@ -53,14 +49,15 @@ namespace Cil2Js.Analysis {
             //}
 
             if (expr != e.Expr) {
-                return new ExprUnary(op, e.Type, expr);
+                return new ExprUnary(e.Ctx, op, e.Type, expr);
             } else {
                 return e;
             }
         }
 
         protected override ICode VisitBinary(ExprBinary e) {
-            var eg = Expr.ExprGen(this.typeSystem);
+            var ts = e.Ctx;
+            var eg = Expr.CreateExprGen(ts);
             var op = e.Op;
             var left = (Expr)this.Visit(e.Left);
             var right = (Expr)this.Visit(e.Right);
@@ -77,13 +74,13 @@ namespace Cil2Js.Analysis {
             if (op == BinaryOp.Or) {
                 // A + !A => 1
                 if (left.DoesEqualNot(right)) {
-                    return new ExprLiteral(true, this.typeSystem.Boolean);
+                    return new ExprLiteral(ts, true, ts.Boolean);
                 }
             }
             if (op == BinaryOp.And) {
                 // A(!A) => 0
                 if (left.DoesEqualNot(right)) {
-                    return new ExprLiteral(false, this.typeSystem.Boolean);
+                    return new ExprLiteral(ts, false, ts.Boolean);
                 }
             }
 
@@ -98,7 +95,7 @@ namespace Cil2Js.Analysis {
                 }
                 // A + 1 => 1
                 if (left.IsLiteralBoolean(true) || right.IsLiteralBoolean(true)) {
-                    return new ExprLiteral(true, this.typeSystem.Boolean);
+                    return new ExprLiteral(ts, true, ts.Boolean);
                 }
             }
             if (op == BinaryOp.And) {
@@ -111,7 +108,7 @@ namespace Cil2Js.Analysis {
                 }
                 // A0 => 0
                 if (left.IsLiteralBoolean(false) || right.IsLiteralBoolean(false)) {
-                    return new ExprLiteral(false, this.typeSystem.Boolean);
+                    return new ExprLiteral(ts, false, ts.Boolean);
                 }
             }
 
@@ -319,7 +316,7 @@ namespace Cil2Js.Analysis {
             }
 
             if (left != e.Left || right != e.Right) {
-                return new ExprBinary(op, e.Type, left, right);
+                return new ExprBinary(ts, op, e.Type, left, right);
             } else {
                 return e;
             }

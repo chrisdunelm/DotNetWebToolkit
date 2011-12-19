@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
 
 namespace Cil2Js.Ast {
 
@@ -13,6 +14,7 @@ namespace Cil2Js.Ast {
     public interface ICode : ICloneable {
 
         CodeType CodeType { get; }
+        Ctx Ctx { get; }
 
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using Cil2Js.Utils;
+using Cil2Js.Analysis;
 
 namespace Cil2Js.Ast {
     public static class Extensions {
@@ -44,6 +45,26 @@ namespace Cil2Js.Ast {
             return VisitorSameExpr.AreSame(a, b);
         }
 
+        public static bool DoesEqualNot(this Expr a, Expr b) {
+            return a.Ctx.ExprGen.Not(a).DoesEqual(b);
+            //return Tuple.Create(a, b).Perms((_a, _b) => {
+            //    Expr aNot;
+            //    if (_a.ExprType == Expr.NodeType.Unary && ((ExprUnary)_a).Op == UnaryOp.Not) {
+            //        aNot = ((ExprUnary)_a).Expr;
+            //    } else {
+            //        aNot = _a.Ctx.ExprGen.Not(_a);
+            //    }
+            //    return aNot.DoesEqual(_b);
+            //    //if (_a.ExprType == Expr.NodeType.Unary) {
+            //    //    var aUn = (ExprUnary)_a;
+            //    //    if (aUn.Op == UnaryOp.Not && VisitorSameExpr.AreSame(aUn.Expr, _b)) {
+            //    //        return true;
+            //    //    }
+            //    //}
+            //    //return false;
+            //});
+        }
+
         public static bool DoesEqualExact(this Expr a, Expr b) {
             return VisitorSameExpr.AreSame(a, b, true);
         }
@@ -80,18 +101,6 @@ namespace Cil2Js.Ast {
                 }
             }
             return default(TResult);
-        }
-
-        public static bool DoesEqualNot(this Expr a, Expr b) {
-            return Tuple.Create(a, b).Perms((_a, _b) => {
-                if (_a.ExprType == Expr.NodeType.Unary) {
-                    var aUn = (ExprUnary)_a;
-                    if (aUn.Op == UnaryOp.Not && VisitorSameExpr.AreSame(aUn.Expr, _b)) {
-                        return true;
-                    }
-                }
-                return false;
-            });
         }
 
         public static bool IsLiteralBoolean(this Expr e, bool value) {

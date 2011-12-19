@@ -19,7 +19,8 @@ namespace Cil2Js.Ast {
 
         }
 
-        public StmtReturn(Expr expr) {
+        public StmtReturn(Ctx ctx, Expr expr)
+            : base(ctx) {
             this.Expr = expr;
         }
 

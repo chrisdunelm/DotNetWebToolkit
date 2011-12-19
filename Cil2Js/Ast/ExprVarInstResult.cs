@@ -8,7 +8,8 @@ using Mono.Cecil.Cil;
 namespace Cil2Js.Ast {
     public class ExprVarInstResult : ExprVar {
 
-        public ExprVarInstResult(Instruction inst, TypeReference type) {
+        public ExprVarInstResult(Ctx ctx, Instruction inst, TypeReference type)
+            : base(ctx) {
             this.Inst = inst;
             this.type = type;
         }

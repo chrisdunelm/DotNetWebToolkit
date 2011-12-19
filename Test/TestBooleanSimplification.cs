@@ -12,43 +12,10 @@ using Test.Utils;
 namespace Test {
 
     [TestFixture]
-    public class TestBooleanSimplification {
-
-        private static MethodDefinition methodCache = null;
-        private static MethodDefinition GetMethod() {
-            if (methodCache == null) {
-                var mod = AssemblyDefinition.ReadAssembly(System.Reflection.Assembly.GetExecutingAssembly().Location).MainModule;
-                var curMethod = System.Reflection.MethodBase.GetCurrentMethod();
-                var type = mod.GetType(curMethod.DeclaringType.FullName);
-                methodCache = type.Methods.First(x => x.Name == curMethod.Name);
-            }
-            return methodCache;
-        }
-
-        private static TypeSystem GetTypeSystem() {
-            return GetMethod().Module.TypeSystem;
-        }
+    public class TestBooleanSimplification : TestBase {
 
         private static Expr V(ICode c) {
-            return (Expr)VisitorBooleanSimplification.V(GetMethod(), c);
-        }
-
-        private static TypeReference booleanCache = null;
-        private static TypeReference Boolean {
-            get {
-                if (booleanCache == null) {
-                    booleanCache = new TypeDefinition("System", "Boolean", TypeAttributes.Class);
-                }
-                return booleanCache;
-            }
-        }
-
-        private static ExprLiteral GetTrue() {
-            return new ExprLiteral(true, Boolean);
-        }
-
-        private static ExprLiteral GetFalse() {
-            return new ExprLiteral(false, Boolean);
+            return (Expr)VisitorBooleanSimplification.V(c);
         }
 
         private static void AssertPerms(Expr expr, IResolveConstraint c) {
@@ -61,86 +28,82 @@ namespace Test {
 
         [Test]
         public void TestNot() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
+            var c = new ExprVarLocal(Ctx, Ctx.Boolean, "c");
             ICode e;
-            var c = new ExprVarLocal(Boolean, "c");
 
-            e = V(eGen.Not(eGen.Not(c)));
+            e = V(ExprGen.Not(ExprGen.Not(c)));
             Assert.That(e, Is.EqualTo(c));
         }
 
         [Test]
         public void TestSimple() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
-            var c = new ExprVarLocal(Boolean, "c");
+            var c = new ExprVarLocal(Ctx, Ctx.Boolean, "c");
+            //var d = V(ExprGen.Or(ExprGen.Not(c), c));
+            //Assert.That(d, Is.EqualTo(True).Using(Expr.EqComparer));
 
-            AssertPerms(eGen.Or(GetFalse(), c), Is.EqualTo(c));
-            AssertPerms(eGen.Or(GetTrue(), c), Is.EqualTo(GetTrue()).Using(Expr.EqComparer));
-            AssertPerms(eGen.Or(c, c), Is.EqualTo(c));
-            AssertPerms(eGen.Or(c, eGen.Not(c)), Is.EqualTo(GetTrue()).Using(Expr.EqComparer));
+            AssertPerms(Ctx.ExprGen.Or(False, c), Is.EqualTo(c));
+            AssertPerms(ExprGen.Or(True, c), Is.EqualTo(True).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.Or(c, c), Is.EqualTo(c));
+            AssertPerms(ExprGen.Or(c, ExprGen.Not(c)), Is.EqualTo(True).Using(Expr.EqComparer));
 
-            AssertPerms(eGen.And(GetTrue(), c), Is.EqualTo(c));
-            AssertPerms(eGen.And(GetFalse(), c), Is.EqualTo(GetFalse()).Using(Expr.EqComparer));
-            AssertPerms(eGen.And(c, c), Is.EqualTo(c));
-            AssertPerms(eGen.And(c, eGen.Not(c)), Is.EqualTo(GetFalse()).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.And(True, c), Is.EqualTo(c));
+            AssertPerms(ExprGen.And(False, c), Is.EqualTo(False).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.And(c, c), Is.EqualTo(c));
+            AssertPerms(ExprGen.And(c, ExprGen.Not(c)), Is.EqualTo(False).Using(Expr.EqComparer));
         }
 
         [Test]
         public void TestDeMorgans() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
             Expr eOrg;
-            var a = new ExprVarLocal(Boolean, "a");
-            var b = new ExprVarLocal(Boolean, "b");
+            var a = new ExprVarLocal(Ctx, Ctx.Boolean, "a");
+            var b = new ExprVarLocal(Ctx, Ctx.Boolean, "b");
 
             // !A + !B => !(AB)
-            AssertPerms(eGen.Or(eGen.Not(a), eGen.Not(b)), Is.EqualTo(eGen.Not(eGen.And(a, b))).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.Or(ExprGen.Not(a), ExprGen.Not(b)), Is.EqualTo(ExprGen.Not(ExprGen.And(a, b))).Using(Expr.EqComparer));
             // (!A)(!B) => !(A + B)
-            AssertPerms(eGen.And(eGen.Not(a), eGen.Not(b)), Is.EqualTo(eGen.Not(eGen.Or(a, b))).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.And(ExprGen.Not(a), ExprGen.Not(b)), Is.EqualTo(ExprGen.Not(ExprGen.Or(a, b))).Using(Expr.EqComparer));
 
             // Check it doesn't transform in the other direction
             // !(AB) !=> !A + !B
-            AssertPerms(eOrg = eGen.Not(eGen.And(a, b)), Is.EqualTo(eOrg).Using(Expr.EqComparer));
+            AssertPerms(eOrg = ExprGen.Not(ExprGen.And(a, b)), Is.EqualTo(eOrg).Using(Expr.EqComparer));
             // !(A + B) !=> (!A)(!B)
-            AssertPerms(eOrg = eGen.Not(eGen.Or(a, b)), Is.EqualTo(eOrg).Using(Expr.EqComparer));
+            AssertPerms(eOrg = ExprGen.Not(ExprGen.Or(a, b)), Is.EqualTo(eOrg).Using(Expr.EqComparer));
 
         }
 
         [Test]
         public void TestAbsorption() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
-            var a = new ExprVarLocal(Boolean, "a");
-            var b = new ExprVarLocal(Boolean, "b");
+            var a = new ExprVarLocal(Ctx, Ctx.Boolean, "a");
+            var b = new ExprVarLocal(Ctx, Ctx.Boolean, "b");
 
             // A + AB = A
-            AssertPerms(eGen.Or(a, eGen.And(a, b)), Is.EqualTo(a));
+            AssertPerms(ExprGen.Or(a, ExprGen.And(a, b)), Is.EqualTo(a));
             // A(A + B) = A
-            AssertPerms(eGen.And(a, eGen.Or(a, b)), Is.EqualTo(a));
+            AssertPerms(ExprGen.And(a, ExprGen.Or(a, b)), Is.EqualTo(a));
         }
 
         [Test]
         public void TestDistribution() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
-            var a = new ExprVarLocal(Boolean, "a");
-            var b = new ExprVarLocal(Boolean, "b");
-            var c = new ExprVarLocal(Boolean, "c");
+            var a = new ExprVarLocal(Ctx, Ctx.Boolean, "a");
+            var b = new ExprVarLocal(Ctx, Ctx.Boolean, "b");
+            var c = new ExprVarLocal(Ctx, Ctx.Boolean, "c");
 
             // (A + B)(A + C) = A + BC
-            AssertPerms(eGen.And(eGen.Or(a, b), eGen.Or(a, c)), Is.EqualTo(eGen.Or(a, eGen.And(b, c))).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.And(ExprGen.Or(a, b), ExprGen.Or(a, c)), Is.EqualTo(ExprGen.Or(a, ExprGen.And(b, c))).Using(Expr.EqComparer));
             // AB + AC = A(B + C)
-            AssertPerms(eGen.Or(eGen.And(a, b), eGen.And(a, c)), Is.EqualTo(eGen.And(a, eGen.Or(b, c))).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.Or(ExprGen.And(a, b), ExprGen.And(a, c)), Is.EqualTo(ExprGen.And(a, ExprGen.Or(b, c))).Using(Expr.EqComparer));
         }
 
         [Test]
         public void TestSimplification() {
-            var eGen = Expr.ExprGen(GetTypeSystem());
-            var a = new ExprVarLocal(Boolean, "a");
-            var b = new ExprVarLocal(Boolean, "b");
+            var a = new ExprVarLocal(Ctx, Ctx.Boolean, "a");
+            var b = new ExprVarLocal(Ctx, Ctx.Boolean, "b");
             //var c = new ExprVarLocal(Boolean, "c");
 
             // A + !AB = A + B
-            AssertPerms(eGen.Or(a, eGen.And(eGen.Not(a), b)), Is.EqualTo(eGen.Or(a, b)).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.Or(a, ExprGen.And(ExprGen.Not(a), b)), Is.EqualTo(ExprGen.Or(a, b)).Using(Expr.EqComparer));
             // A((!A) + B) => AB
-            AssertPerms(eGen.And(a, eGen.Or(eGen.Not(a), b)), Is.EqualTo(eGen.And(a, b)).Using(Expr.EqComparer));
+            AssertPerms(ExprGen.And(a, ExprGen.Or(ExprGen.Not(a), b)), Is.EqualTo(ExprGen.And(a, b)).Using(Expr.EqComparer));
 
             // AB + AC + (!B)C => AB + (!B)C
             // Ignore for now, fairly obscure logic...

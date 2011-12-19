@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprCast : Expr {
 
-        public ExprCast(Expr expr, TypeReference castTo) {
+        public ExprCast(Ctx ctx, Expr expr, TypeReference castTo)
+            : base(ctx) {
             this.Expr = expr;
             this.castTo = castTo;
         }

@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprThis : Expr {
 
-        public ExprThis(TypeReference type) {
+        public ExprThis(Ctx ctx, TypeReference type)
+            : base(ctx) {
             this.type = type;
         }
 

@@ -57,6 +57,45 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestNestedCatch2() {
+            Func<bool, bool, int> f = (a, b) => {
+                try {
+                    if (a) {
+                        throw new Exception();
+                    }
+                    try {
+                        if (b) {
+                            throw new Exception();
+                        }
+                    } catch {
+                        return 1;
+                    }
+                } catch {
+                    return 2;
+                }
+                return 3;
+            };
+            this.Test(f);
+        }
+
+        [Test, Ignore("Goto's not really supported")]
+        public void TestWithGoto() {
+            Func<bool, int> f = a => {
+                try {
+                    goto t;
+                } catch {
+                }
+                t:
+                try {
+                    return 6;
+                } catch {
+                }
+                return 5;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

@@ -6,11 +6,12 @@ using System.Text;
 namespace Cil2Js.Ast {
     public class StmtBlock : Stmt {
 
-        public StmtBlock(params Stmt[] statements)
-            : this((IEnumerable<Stmt>)statements) {
+        public StmtBlock(Ctx ctx, params Stmt[] statements)
+            : this(ctx, (IEnumerable<Stmt>)statements) {
         }
 
-        public StmtBlock(IEnumerable<Stmt> statements) {
+        public StmtBlock(Ctx ctx, IEnumerable<Stmt> statements)
+            : base(ctx) {
             this.Statements = statements.SelectMany(x => {
                 if (x == null) {
                     return Enumerable.Empty<Stmt>();

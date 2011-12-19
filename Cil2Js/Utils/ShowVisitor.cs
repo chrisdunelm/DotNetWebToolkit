@@ -11,13 +11,16 @@ namespace Cil2Js.Utils {
 
         private static string GetStmtName(Stmt s) {
             if (s.StmtType == Stmt.NodeType.Cil) {
-                return string.Format("IL_{0:x4}", ((StmtCil)s).Insts.First().Offset);
-            } else {
-                return string.Format("{0:x8}", s.GetHashCode());
+                var sCil = (StmtCil)s;
+                if (sCil.Insts != null && sCil.Insts.Any()) {
+                    return string.Format("IL_{0:x4}", sCil.Insts.First().Offset);
+                }
             }
+            return string.Format("{0:x8}", s.GetHashCode());
         }
 
-        public static string V(MethodDefinition method, ICode c) {
+        public static string V(ICode c) {
+            var method = c.Ctx.Method;
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0} {1}({2})",
                 method.ReturnType.FullName, method.FullName,
@@ -27,7 +30,7 @@ namespace Cil2Js.Utils {
             todo.Enqueue((Stmt)c);
             while (todo.Any()) {
                 var cBlock = todo.Dequeue();
-                var v = new ShowVisitor(method);
+                var v = new ShowVisitor();
                 v.Visit(cBlock);
                 sb.AppendLine();
                 sb.Append(GetStmtName(cBlock) + ":");
@@ -44,7 +47,7 @@ namespace Cil2Js.Utils {
             return sb.ToString();
         }
 
-        private ShowVisitor(MethodDefinition method)
+        private ShowVisitor()
             : base(true) {
         }
 

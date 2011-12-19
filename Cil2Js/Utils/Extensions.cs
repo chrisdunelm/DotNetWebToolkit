@@ -16,6 +16,9 @@ namespace Cil2Js.Utils {
 
         [DebuggerStepThrough]
         public static IEnumerable<Instruction> GetRange(this Instruction start, Instruction end) {
+            if (end == null) {
+                return Enumerable.Empty<Instruction>();
+            }
             if (start.Offset > end.Offset) {
                 throw new ArgumentException();
             }

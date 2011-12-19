@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprNewArray : Expr {
 
-        public ExprNewArray(TypeReference elementType, Expr exprNumElements) {
+        public ExprNewArray(Ctx ctx, TypeReference elementType, Expr exprNumElements)
+            : base(ctx) {
             this.ExprNumElements = exprNumElements;
             this.type = new ArrayType(elementType);
         }

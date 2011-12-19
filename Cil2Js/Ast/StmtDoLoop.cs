@@ -6,7 +6,8 @@ using System.Text;
 namespace Cil2Js.Ast {
     public class StmtDoLoop : Stmt {
 
-        public StmtDoLoop(Stmt body, Expr @while) {
+        public StmtDoLoop(Ctx ctx, Stmt body, Expr @while)
+            : base(ctx) {
             this.Body = body;
             this.While = @while;
         }

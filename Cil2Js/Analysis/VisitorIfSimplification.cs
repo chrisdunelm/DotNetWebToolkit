@@ -9,23 +9,19 @@ using Cil2Js.Utils;
 namespace Cil2Js.Analysis {
     public class VisitorIfSimplification : AstRecursiveVisitor {
 
-        public static ICode V(MethodDefinition method, ICode c) {
-            var v = new VisitorIfSimplification(method, c);
-            var ret = v.Visit(c);
+        public static ICode V(ICode ast) {
+            var v = new VisitorIfSimplification(ast);
+            var ret = v.Visit(ast);
             foreach (var replace in v.replaceVars) {
                 ret = VisitorReplace.V(ret, replace.Item1, replace.Item2);
             }
             return ret;
         }
 
-        private VisitorIfSimplification(MethodDefinition method, ICode c) {
-            this.typeSystem = method.Module.TypeSystem;
-            this.exprGen = Expr.ExprGen(this.typeSystem);
+        private VisitorIfSimplification(ICode c) {
             this.phiClusters = VisitorPhiClusters.V(c);
         }
 
-        private TypeSystem typeSystem;
-        private Expr.Gen exprGen;
         private IEnumerable<IEnumerable<ExprVar>> phiClusters;
         private List<Tuple<ExprVar, ExprVar>> replaceVars = new List<Tuple<ExprVar, ExprVar>>();
 
@@ -54,7 +50,7 @@ namespace Cil2Js.Analysis {
             }
             // If 'if' only has an 'else' case, not a 'then' case, then swap
             if (then == null) {
-                return new StmtIf(new ExprUnary(UnaryOp.Not, this.typeSystem.Boolean, s.Condition), @else);
+                return new StmtIf(s.Ctx, s.Ctx.ExprGen.NotAutoSimplify(s.Condition), @else, null);
             }
             // If both 'if' parts only contain an assignment to the same (with phi clustering) target, then turn into ternary assignment
             if (then != null && @else != null && then.StmtType == Stmt.NodeType.Assignment && @else.StmtType == Stmt.NodeType.Assignment) {
@@ -62,12 +58,12 @@ namespace Cil2Js.Analysis {
                 var elseAssign = (StmtAssignment)@else;
                 if (this.AreClustered(thenAssign.Target, elseAssign.Target)) {
                     this.replaceVars.Add(Tuple.Create(elseAssign.Target, thenAssign.Target));
-                    var ternary = new ExprTernary(this.typeSystem, s.Condition, thenAssign.Expr, elseAssign.Expr);
-                    return new StmtAssignment(thenAssign.Target, ternary);
+                    var ternary = new ExprTernary(s.Ctx, s.Condition, thenAssign.Expr, elseAssign.Expr);
+                    return new StmtAssignment(s.Ctx, thenAssign.Target, ternary);
                 }
             }
             if (then != s.Then || @else != s.Else) {
-                return new StmtIf(s.Condition, then, @else);
+                return new StmtIf(s.Ctx, s.Condition, then, @else);
             } else {
                 return s;
             }
@@ -83,52 +79,27 @@ namespace Cil2Js.Analysis {
                     var aIf = (StmtIf)a;
                     var bIf = (StmtIf)b;
                     if (aIf.Then.StmtType != Stmt.NodeType.Continuation && bIf.Then.StmtType != Stmt.NodeType.Continuation) {
-                        // 
+                        // Join adjacent 'if' statements if possible
                         if (aIf.Condition.DoesEqual(bIf.Condition)) {
-                            return new StmtIf(aIf.Condition,
-                                new StmtBlock(aIf.Then, bIf.Then),
-                                new StmtBlock(aIf.Else, bIf.Else));
+                            return new StmtIf(s.Ctx, aIf.Condition,
+                                new StmtBlock(s.Ctx, aIf.Then, bIf.Then),
+                                new StmtBlock(s.Ctx, aIf.Else, bIf.Else));
                         } else if (aIf.Condition.DoesEqualNot(bIf.Condition)) {
-                            return new StmtIf(aIf.Condition,
-                                new StmtBlock(aIf.Then, bIf.Else),
-                                new StmtBlock(aIf.Else, bIf.Then));
+                            return new StmtIf(s.Ctx, aIf.Condition,
+                                new StmtBlock(s.Ctx, aIf.Then, bIf.Else),
+                                new StmtBlock(s.Ctx, aIf.Else, bIf.Then));
                         }
                     }
                     if (aIf.Then.DoesEqual(bIf.Then) && aIf.Else.DoesEqual(bIf.Else)) {
                         // Both 'if' statements contain the same bodies, so 'or' conditions together
-                        return new StmtIf(this.exprGen.Or(aIf.Condition, bIf.Condition), aIf.Then, aIf.Else);
+                        return new StmtIf(s.Ctx, s.Ctx.ExprGen.Or(aIf.Condition, bIf.Condition), aIf.Then, aIf.Else);
                     }
-                    //}
-                    //} else if (aIf.Else == null && bIf.Else == null) {
-                    //    // Look for common 'if' condition parts and join them, unless bodies contain continuations
-                    //    Func<Expr, IEnumerable<Expr>> getAnds = null;
-                    //    getAnds = e => {
-                    //        if (e.ExprType == Expr.NodeType.Binary) {
-                    //            var eBin = (ExprBinary)e;
-                    //            if (eBin.Op == BinaryOp.And) {
-                    //                return Enumerable.Concat(getAnds(eBin.Left), getAnds(eBin.Right));
-                    //            }
-                    //        }
-                    //        return new[] { e };
-                    //    };
-                    //    var aAnds = getAnds(aIf.Condition).ToArray();
-                    //    var bAnds = getAnds(bIf.Condition).ToArray();
-                    //    var intersectionAnds = aAnds.Intersect(bAnds).ToArray();
-                    //    if (intersectionAnds.Any()) {
-                    //        var aAndsNoCommon = aAnds.Except(intersectionAnds);
-                    //        var bAndsNoCommon = bAnds.Except(intersectionAnds);
-                    //        var condition = intersectionAnds.Aggregate((x, y) => this.exprGen.And(x, y));
-                    //        var aCond = aAndsNoCommon.Aggregate((Expr)new ExprLiteral(true, this.typeSystem.Boolean), (x, y) => this.exprGen.And(x, y));
-                    //        var bCond = bAndsNoCommon.Aggregate((Expr)new ExprLiteral(true, this.typeSystem.Boolean), (x, y) => this.exprGen.And(x, y));
-                    //        return new StmtIf(condition,
-                    //            new StmtBlock(new StmtIf(aCond, aIf.Then), new StmtIf(bCond, bIf.Then)));
-                    //    }
                 }
                 return null;
             })
             .ToArray();
             if (!Enumerable.SequenceEqual(s.Statements, stNew)) {
-                return new StmtBlock(stNew);
+                return new StmtBlock(s.Ctx, stNew);
             } else {
                 return s;
             }

@@ -8,7 +8,7 @@ using Mono.Cecil;
 using Cil2Js.Utils;
 
 namespace Cil2Js.Analysis {
-    public class CreateAst {
+    public class AstGenerator {
 
         class StackSizeVisitor : AstRecursiveVisitor {
 
@@ -32,6 +32,9 @@ namespace Cil2Js.Analysis {
                         // 'Finally' stack sizes do not need setting, as they will have defaulted to 0
                         // and this will always be correct
                         return;
+                    case Stmt.NodeType.Return:
+                        // do nothing
+                        return;
                     default:
                         throw new NotSupportedException("Should not be seeing: " + stmt.StmtType);
                     }
@@ -43,6 +46,9 @@ namespace Cil2Js.Analysis {
             }
 
             private int StackSizeAnalysis(IEnumerable<Instruction> insts, int startStackSize) {
+                if (insts == null) {
+                    return startStackSize;
+                }
                 int stackSize = startStackSize;
                 foreach (var inst in insts) {
                     switch (inst.OpCode.StackBehaviourPop) {
@@ -101,22 +107,27 @@ namespace Cil2Js.Analysis {
 
         }
 
-        public CreateAst(MethodDefinition method) {
-            this.method = method;
+        public static Stmt CreateBlockedCilAst(MethodDefinition method) {
+            var gen = new AstGenerator(method);
+            return gen.Create();
         }
 
-        private MethodDefinition method;
-        private TypeReference boolean;
+        private AstGenerator(MethodDefinition method) {
+            this.ctx = new Ctx(method);
+            this.endBlock = new StmtCil(this.ctx, null, null, StmtCil.SpecialBlock.End);
+        }
+
+        private Ctx ctx;
+        private Stmt endBlock;
         private IEnumerable<Instruction> methodBlockStarts;
         private Dictionary<Instruction, List<Stmt>> blockMap = new Dictionary<Instruction, List<Stmt>>();
         private List<IInstructionMappable> mappable = new List<IInstructionMappable>();
 
         public Stmt Create() {
-            if (!this.method.HasBody) {
+            if (!this.ctx.Method.HasBody) {
                 throw new ArgumentException("Method has no body, cannot create AST");
             }
-            this.boolean = this.method.Module.TypeSystem.Boolean;
-            var body = this.method.Body;
+            var body = this.ctx.Method.Body;
             // Pre-calculate all method block starts
             this.methodBlockStarts = body.Instructions
                 .SelectMany(x => {
@@ -149,7 +160,9 @@ namespace Cil2Js.Analysis {
             var stmt0 = this.blockMap[body.Instructions.First()].First();
             var vStackSize = new StackSizeVisitor();
             vStackSize.Visit(stmt0);
-            return stmt0;
+            // Create entry block, and return it
+            var entryBlock = new StmtCil(this.ctx, null, new StmtContinuation(this.ctx, stmt0, false), StmtCil.SpecialBlock.Start);
+            return entryBlock;
         }
 
         private void CreatePart(IEnumerable<Instruction> insts, IEnumerable<ExceptionHandler> exs) {
@@ -172,9 +185,9 @@ namespace Cil2Js.Analysis {
                     this.CreatePart(ex.HandlerStart.GetRange(ex.HandlerEnd.Previous), handlerExs);
                     StmtTry tryStmt;
                     if (ex.HandlerType == ExceptionHandlerType.Catch) {
-                        tryStmt = new StmtTry(ex.TryStart, ex.HandlerStart, null, ex.CatchType);
+                        tryStmt = new StmtTry(this.ctx, ex.TryStart, ex.HandlerStart, null, ex.CatchType);
                     } else if (ex.HandlerType == ExceptionHandlerType.Finally) {
-                        tryStmt = new StmtTry(ex.TryStart, null, ex.HandlerStart, null);
+                        tryStmt = new StmtTry(this.ctx, ex.TryStart, null, ex.HandlerStart, null);
                     } else {
                         throw new NotImplementedException("Cannot handle handler-type: " + ex.HandlerType);
                     }
@@ -210,30 +223,33 @@ namespace Cil2Js.Analysis {
                 var blockInsts = start.GetRange(end);
                 Stmt blockEndStmt;
                 var code = end.OpCode.Code;
-                //if (code == Code.Endfinally) System.Diagnostics.Debugger.Break();
                 switch (end.OpCode.FlowControl) {
                 case FlowControl.Cond_Branch:
-                    var ifTrue = new StmtContinuation((Instruction)end.Operand, false);
-                    var ifFalse = new StmtContinuation(end.Next, false);
+                    var ifTrue = new StmtContinuation(this.ctx, (Instruction)end.Operand, false);
+                    var ifFalse = new StmtContinuation(this.ctx, end.Next, false);
                     this.mappable.Add(ifTrue);
                     this.mappable.Add(ifFalse);
-                    blockEndStmt = new StmtIf(new ExprVarInstResult(end, this.boolean), ifTrue, ifFalse);
+                    blockEndStmt = new StmtIf(this.ctx, new ExprVarInstResult(this.ctx, end, this.ctx.Boolean), ifTrue, ifFalse);
                     break;
                 case FlowControl.Branch:
                     var leaveProtectedRegion = code == Code.Leave || code == Code.Leave_S;
-                    blockEndStmt = new StmtContinuation((Instruction)end.Operand, leaveProtectedRegion);
+                    blockEndStmt = new StmtContinuation(this.ctx, (Instruction)end.Operand, leaveProtectedRegion);
                     this.mappable.Add((StmtContinuation)blockEndStmt);
                     break;
                 case FlowControl.Next:
                 case FlowControl.Call:
-                    blockEndStmt = new StmtContinuation(end.Next, false);
+                    blockEndStmt = new StmtContinuation(this.ctx, end.Next, false);
                     this.mappable.Add((StmtContinuation)blockEndStmt);
                     break;
                 case FlowControl.Return:
                     switch (code) {
                     case Code.Endfinally:
-                        blockEndStmt = new StmtContinuation(startOfNextPart, true);
+                        blockEndStmt = new StmtContinuation(this.ctx, startOfNextPart, true);
                         this.mappable.Add((StmtContinuation)blockEndStmt);
+                        break;
+                    case Code.Ret:
+                        blockEndStmt = new StmtContinuation(this.ctx, this.endBlock, false);
+                        blockInsts = start.GetRange(end.Previous); // Remove 'ret' from statements
                         break;
                     default:
                         blockEndStmt = null;
@@ -246,7 +262,7 @@ namespace Cil2Js.Analysis {
                 default:
                     throw new NotImplementedException("Cannot handle: " + end.OpCode.FlowControl);
                 }
-                var block = new StmtCil(this.method, blockInsts, blockEndStmt);
+                var block = new StmtCil(this.ctx, blockInsts, blockEndStmt);
                 this.blockMap.Add(start, new List<Stmt> { block });
             }
         }

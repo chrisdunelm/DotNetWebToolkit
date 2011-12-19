@@ -37,6 +37,12 @@ namespace Cil2Js.Ast {
             PossibleSideEffects = 1,
         }
 
+        public Expr(Ctx ctx) {
+            this.Ctx = ctx;
+        }
+
+        public Ctx Ctx { get; private set; }
+
         public abstract NodeType ExprType { get; }
         public abstract TypeReference Type { get; }
         public virtual Special Specials {
@@ -74,22 +80,22 @@ namespace Cil2Js.Ast {
 
         public class Gen {
 
-            internal Gen(TypeSystem ts) {
-                this.TypeSystem = ts;
+            internal Gen(Ctx ctx) {
+                this.ctx = ctx;
             }
 
-            public TypeSystem TypeSystem { get; private set; }
+            private Ctx ctx;
 
             public ExprBinary And(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.And, this.TypeSystem.Boolean, left, right);
+                return new ExprBinary(this.ctx, BinaryOp.And, this.ctx.Boolean, left, right);
             }
 
             public ExprBinary Or(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.Or, this.TypeSystem.Boolean, left, right);
+                return new ExprBinary(this.ctx, BinaryOp.Or, this.ctx.Boolean, left, right);
             }
 
             public ExprUnary Not(Expr e) {
-                return new ExprUnary(UnaryOp.Not, this.TypeSystem.Boolean, e);
+                return new ExprUnary(this.ctx, UnaryOp.Not, this.ctx.Boolean, e);
             }
 
             public Expr NotAutoSimplify(Expr e) {
@@ -104,21 +110,21 @@ namespace Cil2Js.Ast {
             }
 
             public Expr Add(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.Add, left.Type, left, right);
+                return new ExprBinary(this.ctx, BinaryOp.Add, left.Type, left, right);
             }
 
             public Expr Equal(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.Equal, this.TypeSystem.Boolean, left, right);
+                return new ExprBinary(this.ctx, BinaryOp.Equal, this.ctx.Boolean, left, right);
             }
 
             public Expr NotEqual(Expr left, Expr right) {
-                return new ExprBinary(BinaryOp.NotEqual, this.TypeSystem.Boolean, left, right);
+                return new ExprBinary(this.ctx, BinaryOp.NotEqual, this.ctx.Boolean, left, right);
             }
 
         }
 
-        public static Gen ExprGen(TypeSystem ts) {
-            return new Gen(ts);
+        public static Gen CreateExprGen(Ctx ctx) {
+            return new Gen(ctx);
         }
 
         object ICloneable.Clone() {

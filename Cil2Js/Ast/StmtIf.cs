@@ -22,7 +22,8 @@ namespace Cil2Js.Ast {
             public Stmt Else { get; private set; }
         }
 
-        public StmtIf(Expr condition, Stmt then, Stmt @else = null) {
+        public StmtIf(Ctx ctx, Expr condition, Stmt then, Stmt @else)
+            : base(ctx) {
             this.Condition = condition;
             this.Then = then;
             this.Else = @else;

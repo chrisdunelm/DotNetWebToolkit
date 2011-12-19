@@ -6,7 +6,8 @@ using System.Text;
 namespace Cil2Js.Ast {
     public class StmtWrapExpr : Stmt {
 
-        public StmtWrapExpr(Expr expr) {
+        public StmtWrapExpr(Ctx ctx, Expr expr)
+            : base(ctx) {
             this.Expr = expr;
         }
 

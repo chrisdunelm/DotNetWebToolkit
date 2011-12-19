@@ -66,7 +66,7 @@ namespace Cil2Js.JsResolvers {
 
         }
 
-        private static Dictionary<M, Func<Expr.Gen, ICall, JsResolved>> map = new Dictionary<M, Func<Expr.Gen, ICall, JsResolved>>(M.ValueEqComparer) {
+        private static Dictionary<M, Func<ICall, JsResolved>> map = new Dictionary<M, Func<ICall, JsResolved>>(M.ValueEqComparer) {
             { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality },
             { M.Def(TInt32, "System.String.get_Length"), StringResolver.get_Length },
             { M.Def(TChar, "System.String.get_Chars", TInt32), StringResolver.get_Chars },
@@ -82,11 +82,11 @@ namespace Cil2Js.JsResolvers {
             { M.Def(TString, "System.String.Substring", TInt32, TInt32), StringResolver.Substring },
         };
 
-        public static JsResolved Resolve(Expr.Gen exprGen, ICall call) {
+        public static JsResolved Resolve(ICall call) {
             var m = new M(call.CallMethod);
             var fn = map.ValueOrDefault(m);
             if (fn != null) {
-                var resolved = fn(exprGen, call);
+                var resolved = fn(call);
                 return resolved;
             }
             // No special resolution available

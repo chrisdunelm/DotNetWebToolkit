@@ -7,9 +7,9 @@ using Cil2Js.Ast;
 namespace Cil2Js.Analysis {
     class VisitorPhiSimplifier : AstRecursiveVisitor {
 
-        public static ICode V(ICode c) {
+        public static ICode V(ICode ast) {
             var v = new VisitorPhiSimplifier();
-            return v.Visit(c);
+            return v.Visit(ast);
         }
 
         protected override ICode VisitVarPhi(ExprVarPhi e) {
@@ -32,7 +32,7 @@ namespace Cil2Js.Analysis {
             if (exprs.SequenceEqual(e.Exprs)) {
                 return e;
             } else {
-                return new ExprVarPhi(e.Method) { Exprs = exprs };
+                return new ExprVarPhi(e.Ctx) { Exprs = exprs };
             }
         }
 

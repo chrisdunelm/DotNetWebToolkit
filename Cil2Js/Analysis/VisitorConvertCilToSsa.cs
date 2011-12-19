@@ -23,9 +23,9 @@ namespace Cil2Js.Analysis {
 
         class VisitorCounter : AstRecursiveVisitor {
 
-            public static int Count(ICode c, ICode toCount) {
+            public static int Count(ICode ast, ICode toCount) {
                 var v = new VisitorCounter(toCount);
-                v.Visit(c);
+                v.Visit(ast);
                 return v.count;
             }
 
@@ -51,27 +51,27 @@ namespace Cil2Js.Analysis {
         // If ending in 'if', 'then' and 'else' will both have continuations only
         // 'try' statements will have only 0 or 1 catch clauses
 
-        public static ICode V(MethodDefinition method, ICode c) {
-            var v = new VisitorConvertCilToSsa(method, c);
-            c = v.Visit(c);
+        public static ICode V(ICode ast) {
+            var v = new VisitorConvertCilToSsa(ast);
+            ast = v.Visit(ast);
             // Convert all InstResults to normal Vars
-            var vFindInstResults = new VisitorFindInstResults();
-            vFindInstResults.Visit(c);
-            foreach (var instResult in vFindInstResults.instResults) {
-                var var = new ExprVarLocal(instResult.Type);
-                c = VisitorReplace.V(c, instResult, var);
+            //var vFindInstResults = new VisitorFindInstResults();
+            //vFindInstResults.Visit(c);
+            foreach (var instResult in v.instResults.Values){//vFindInstResults.instResults) {
+                var var = new ExprVarLocal(ast.Ctx, instResult.Type);
+                ast = VisitorReplace.V(ast, instResult, var);
             }
-            return c;
+            return ast;
         }
 
-        private VisitorConvertCilToSsa(MethodDefinition method, ICode root) {
-            this.method = method;
+        private VisitorConvertCilToSsa(ICode root) {
+            this.ctx = root.Ctx;
             var v = new VisitorFindInstResults();
             v.Visit(root);
             this.instResults = v.instResults.ToDictionary(x => x.Inst);
             this.CreateOrMergeBsi((Stmt)root, new ExprVarPhi[0],
-                method.Body.Variables.Select(x => (Expr)null).ToArray(),
-                method.Parameters.Select(x => (Expr)new ExprVarParameter(x)).ToArray());
+                this.ctx.Method.Body.Variables.Select(x => (Expr)null).ToArray(),
+                this.ctx.Method.Parameters.Select(x => (Expr)new ExprVarParameter(this.ctx, x)).ToArray());
         }
 
         class BlockInitInfo {
@@ -80,7 +80,7 @@ namespace Cil2Js.Analysis {
             public ExprVarPhi[] Args;
         }
 
-        private MethodDefinition method;
+        private Ctx ctx;
         private Dictionary<Instruction, ExprVarInstResult> instResults;
         private Dictionary<ICode, BlockInitInfo> blockStartInfos = new Dictionary<ICode, BlockInitInfo>();
 
@@ -119,12 +119,12 @@ namespace Cil2Js.Analysis {
             if (!this.blockStartInfos.TryGetValue(s, out bsi)) {
                 Func<IEnumerable<Expr>, ExprVarPhi[]> create = exprs => exprs.Select(x => {
                     if (x == null) {
-                        return new ExprVarPhi(this.method) { Exprs = new Expr[0] };
+                        return new ExprVarPhi(this.ctx) { Exprs = new Expr[0] };
                     }
                     if (x.ExprType == Expr.NodeType.VarPhi) {
                         return (ExprVarPhi)x;
                     }
-                    return new ExprVarPhi(this.method) { Exprs = new[] { x } };
+                    return new ExprVarPhi(this.ctx) { Exprs = new[] { x } };
                 }).ToArray();
                 this.blockStartInfos.Add(s, new BlockInitInfo {
                     Stack = create(stack),
@@ -143,13 +143,25 @@ namespace Cil2Js.Analysis {
             var stack = new Stack<Expr>(bsi.Stack.Reverse());
             var locals = bsi.Locals.Cast<Expr>().ToArray();
             var args = bsi.Args.Cast<Expr>().ToArray();
-            var cil = new CilProcessor(this.method, stack, locals, args, this.instResults);
+            var cil = new CilProcessor(this.ctx, stack, locals, args, this.instResults);
             var stmts = new List<Stmt>();
-            foreach (var inst in s.Insts) {
-                var stmt = cil.Process(inst);
-                if (stmt != null) {
-                    stmts.Add(stmt);
+            switch (s.BlockType) {
+            case StmtCil.SpecialBlock.Normal:
+                foreach (var inst in s.Insts) {
+                    var stmt = cil.Process(inst);
+                    if (stmt != null) {
+                        stmts.Add(stmt);
+                    }
                 }
+                break;
+            case StmtCil.SpecialBlock.Start:
+                // Do nothing
+                break;
+            case StmtCil.SpecialBlock.End:
+                stmts.Add(cil.ProcessReturn());
+                break;
+            default:
+                throw new InvalidOperationException("Invalid block type: " + s.BlockType);
             }
             // Merge phi's
             var continuations = VisitorFindContinuations.Get(s);
@@ -159,7 +171,7 @@ namespace Cil2Js.Analysis {
             // End
             var next = (Stmt)this.Visit(s.EndCil);
             stmts.Add(next);
-            return new StmtBlock(stmts);
+            return new StmtBlock(this.ctx, stmts);
         }
 
     }

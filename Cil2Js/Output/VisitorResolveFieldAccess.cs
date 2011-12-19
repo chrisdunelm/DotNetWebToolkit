@@ -18,7 +18,7 @@ namespace Cil2Js.Output {
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             var obj = (Expr)this.Visit(e.Obj);
             if (obj != e.Obj) {
-                e = new ExprFieldAccess(obj, e.Field);
+                e = new ExprFieldAccess(e.Ctx, obj, e.Field);
             }
             var resolved = this.fnFieldAccessResolver(e);
             if (resolved == null) {

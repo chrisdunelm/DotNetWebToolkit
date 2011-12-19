@@ -27,9 +27,10 @@ namespace Cil2Js.Ast {
         Or,
     }
 
-    public class ExprBinary:Expr {
+    public class ExprBinary : Expr {
 
-        public ExprBinary(BinaryOp op, TypeReference type, Expr left, Expr right) {
+        public ExprBinary(Ctx ctx, BinaryOp op, TypeReference type, Expr left, Expr right)
+            : base(ctx) {
             this.Op = op;
             this.type = type;
             this.Left = left;

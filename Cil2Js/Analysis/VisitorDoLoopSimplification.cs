@@ -30,7 +30,7 @@ namespace Cil2Js.Analysis {
                 return body;
             }
             if (body != s.Body) {
-                return new StmtDoLoop(body, s.While);
+                return new StmtDoLoop(s.Ctx, body, s.While);
             } else {
                 return s;
             }

@@ -37,8 +37,8 @@ namespace Test {
 
         static void Main(string[] args) {
 
-            var t = new TestExceptions() { Verbose = true };
-            t.TestThrowReturnVar();
+            var t = new TestSimpleClasses() { Verbose = true };
+            t.TestNewObj();
             return;
 
             //Console.WriteLine();

@@ -6,17 +6,15 @@ using Cil2Js.Analysis;
 using Mono.Cecil;
 
 namespace Cil2Js.Ast {
-    public class ExprTernary:Expr {
+    public class ExprTernary : Expr {
 
-        public ExprTernary(TypeSystem typeSystem, Expr condition, Expr ifTrue, Expr ifFalse) {
-            this.TypeSystem = typeSystem;
+        public ExprTernary(Ctx ctx, Expr condition, Expr ifTrue, Expr ifFalse)
+            : base(ctx) {
             this.Condition = condition;
             this.IfTrue = ifTrue;
             this.IfFalse = ifFalse;
-            this.type = TypeCombiner.Combine(typeSystem, ifTrue, ifFalse);
+            this.type = TypeCombiner.Combine(ctx, ifTrue, ifFalse);
         }
-
-        public TypeSystem TypeSystem { get; private set; }
 
         public Expr Condition { get; private set; }
         public Expr IfTrue { get; private set; }

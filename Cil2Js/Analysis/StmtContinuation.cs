@@ -24,12 +24,14 @@ namespace Cil2Js.Analysis {
 
         }
 
-        public StmtContinuation(Instruction to, bool leaveProtectedRegion) {
+        public StmtContinuation(Ctx ctx, Instruction to, bool leaveProtectedRegion)
+            : base(ctx) {
             this.to = to;
             this.LeaveProtectedRegion = leaveProtectedRegion;
         }
 
-        public StmtContinuation(Stmt to, bool leaveProtectedRegion) {
+        public StmtContinuation(Ctx ctx, Stmt to, bool leaveProtectedRegion)
+            : base(ctx) {
             this.To = to;
             this.LeaveProtectedRegion = leaveProtectedRegion;
         }
@@ -53,11 +55,6 @@ namespace Cil2Js.Analysis {
                 return string.Format("-> {0}{1}", this.to.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
             } else {
                 return string.Format("-> {0}{1}", this.To.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
-                //if (this.To.StmtType == NodeType.Cil) {
-                //    return "-> "+((StmtCil)this.To).
-                //} else {
-                //    return "-> ???"+(this.LeaveProtectedRegion ? " (leave protected region)" : "");
-                //};
             }
         }
 

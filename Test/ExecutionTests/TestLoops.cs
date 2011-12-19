@@ -184,6 +184,23 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void Test2ForBreakAndContinueSimpler() {
+            Func<int, int> f = a => {
+                for (int j = 0; j < 5; j++) {
+                    for (int i = 0; i < 10; i++) {
+                        if (i > 5) {
+                            break;
+                        }
+                        a++;
+                    }
+                    a += 100;
+                }
+                return a;
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void Test2ForBreakAndContinue() {
             Func<int, int> f = a => {
                 for (int j = 0; j < 5; j++) {

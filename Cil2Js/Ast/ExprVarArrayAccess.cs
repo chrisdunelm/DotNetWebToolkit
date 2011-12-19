@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprVarArrayAccess : ExprVar {
 
-        public ExprVarArrayAccess(Expr array, Expr index) {
+        public ExprVarArrayAccess(Ctx ctx, Expr array, Expr index)
+            : base(ctx) {
             this.Array = array;
             this.Index = index;
         }

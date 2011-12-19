@@ -8,7 +8,8 @@ namespace Cil2Js.Ast {
 
     public class ExprCall : Expr, ICall {
 
-        public ExprCall(MethodDefinition callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtual) {
+        public ExprCall(Ctx ctx, MethodDefinition callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtual)
+            : base(ctx) {
             this.CallMethod = callMethod;
             this.Obj = obj;
             this.Args = args;

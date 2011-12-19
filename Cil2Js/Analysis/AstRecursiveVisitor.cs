@@ -15,7 +15,8 @@ namespace Cil2Js.Analysis {
         private HashSet<ICode> seen = new HashSet<ICode>();
 
         protected virtual ICode TopLevel(ICode c) {
-            todo.Enqueue(c);
+            this.seen.Add(c);
+            this.todo.Enqueue(c);
             ICode ret = null;
             while (todo.Any()) {
                 var node = todo.Dequeue();
@@ -33,6 +34,8 @@ namespace Cil2Js.Analysis {
                 }
             }
             if (anyChanges) {
+                // Cloned to make sure the returned object will be different from ICode argument
+                // Other code relies on it being different if this visitor has made changes to the AST
                 ret = (ICode)ret.Clone();
             }
             return ret;

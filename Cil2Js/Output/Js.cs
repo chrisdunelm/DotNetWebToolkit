@@ -12,10 +12,6 @@ using System.Reflection;
 namespace Cil2Js.Output {
     public class Js {
 
-        public static string CreateFrom(MethodInfo methodInfo, bool verbose = false) {
-            return CreateFrom(Transcoder.GetMethod(methodInfo), verbose);
-        }
-
         public static string CreateFrom(MethodDefinition method, bool verbose = false) {
             return CreateFrom(new[] { method }, verbose);
         }
@@ -58,13 +54,12 @@ namespace Cil2Js.Output {
                     exports.Add(Tuple.Create(method, exportName));
                 }
                 // Create AST
-                var exprGen = Expr.ExprGen(method.Module.TypeSystem);
                 var ast = Transcoder.ToAst(method, verbose);
                 var methodsCalled = new List<MethodDefinition>();
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
                     // Resolve calls
-                    var vResolveCalls = new VisitorResolveCalls(call => JsCallResolver.Resolve(exprGen, call));
+                    var vResolveCalls = new VisitorResolveCalls(call => JsCallResolver.Resolve(call));
                     ast = vResolveCalls.Visit(ast);
                     // Resolve field accesses
                     var vResolveFieldAccess = new VisitorResolveFieldAccess(field => null);
@@ -87,7 +82,7 @@ namespace Cil2Js.Output {
                             .Add(call.CallMethod);
                     } else {
                         var isVirtual = callInfo.Item2;
-                        var resolved = JsCallResolver.Resolve(exprGen, call);
+                        var resolved = JsCallResolver.Resolve(call);
                         if (resolved == null) {
                             var callMethod = call.CallMethod;
                             if (isVirtual && callMethod.IsVirtual) {
@@ -162,7 +157,7 @@ namespace Cil2Js.Output {
             // TODO: Improve this
             var methodNamer = new NameGenerator("$");
             var methodNames = asts.Keys.ToDictionary(x => x, x => methodNamer.GetNewName());
-            methodNames[rootMethods.First()] = "main";
+            methodNames[rootMethods.First()] = "main"; // TODO: sort this out properly
             // Name all fields
             // TODO: This generates bad quality names as no names are shared over different types, to improve...
             var fieldNamer = new NameGenerator();

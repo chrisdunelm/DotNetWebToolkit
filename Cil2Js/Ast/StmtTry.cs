@@ -43,14 +43,16 @@ namespace Cil2Js.Ast {
             public ExprVar ExceptionObject { get; private set; }
         }
 
-        public StmtTry(Instruction @try, Instruction @catch, Instruction @finally, TypeReference catchType) {
+        public StmtTry(Ctx ctx, Instruction @try, Instruction @catch, Instruction @finally, TypeReference catchType)
+            : base(ctx) {
             this.@try = @try;
             this.@catch = @catch;
             this.@finally = @finally;
             this.catchType = catchType;
         }
 
-        public StmtTry(Stmt @try, IEnumerable<Catch> catches, Stmt @finally) {
+        public StmtTry(Ctx ctx, Stmt @try, IEnumerable<Catch> catches, Stmt @finally)
+            : base(ctx) {
             this.Try = @try;
             this.Catches = catches;
             this.Finally = @finally;
@@ -67,7 +69,7 @@ namespace Cil2Js.Ast {
             // Get the nested mapping, just inside this 'try' statement
             this.Try = map[this.@try].SkipWhile(x => x != this).Skip(1).First();
             if (this.@catch != null) {
-                this.Catches = new[] { new Catch(map[this.@catch][0], new ExprVarLocal(this.catchType)) };
+                this.Catches = new[] { new Catch(map[this.@catch][0], new ExprVarLocal(this.Ctx, this.catchType)) };
             } else {
                 this.Catches = null;
             }

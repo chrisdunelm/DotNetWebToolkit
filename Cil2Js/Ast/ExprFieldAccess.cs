@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprFieldAccess : ExprVar {
 
-        public ExprFieldAccess(Expr obj, FieldDefinition field) {
+        public ExprFieldAccess(Ctx ctx, Expr obj, FieldDefinition field)
+            : base(ctx) {
             this.Obj = obj;
             this.Field = field;
         }

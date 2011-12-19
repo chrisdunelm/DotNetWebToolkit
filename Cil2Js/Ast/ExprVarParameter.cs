@@ -7,7 +7,8 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprVarParameter : ExprVar {
 
-        public ExprVarParameter(ParameterDefinition parameter) {
+        public ExprVarParameter(Ctx ctx, ParameterDefinition parameter)
+            : base(ctx) {
             this.Parameter = parameter;
         }
 

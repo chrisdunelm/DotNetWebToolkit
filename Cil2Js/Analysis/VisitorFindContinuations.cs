@@ -5,7 +5,7 @@ using System.Text;
 using Cil2Js.Ast;
 
 namespace Cil2Js.Analysis {
-    class VisitorFindContinuations : AstVisitor {
+    public class VisitorFindContinuations : AstVisitor {
 
         public static bool Any(ICode root) {
             var v = new VisitorFindContinuations();

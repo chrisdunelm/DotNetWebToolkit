@@ -42,7 +42,7 @@ namespace Test.Utils {
                             if (t.Item1 == e.Left && t.Item2 == e.Right) {
                                 perm = e;
                             } else {
-                                perm = new ExprBinary(e.Op, e.Type, t.Item1, t.Item2);
+                                perm = new ExprBinary(e.Ctx, e.Op, e.Type, t.Item1, t.Item2);
                             }
                             this.allPerms.Add((Expr)VisitorReplace.V(this.root, e, perm));
                         }

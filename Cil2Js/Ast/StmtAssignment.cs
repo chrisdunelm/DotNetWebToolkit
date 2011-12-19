@@ -6,7 +6,8 @@ using System.Text;
 namespace Cil2Js.Ast {
     public class StmtAssignment : Stmt {
 
-        public StmtAssignment(ExprVar target, Expr expr) {
+        public StmtAssignment(Ctx ctx, ExprVar target, Expr expr)
+            : base(ctx) {
             this.Target = target;
             this.Expr = expr;
         }

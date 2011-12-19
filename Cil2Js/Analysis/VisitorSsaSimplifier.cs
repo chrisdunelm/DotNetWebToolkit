@@ -8,9 +8,9 @@ using Cil2Js.Utils;
 namespace Cil2Js.Analysis {
     public class VisitorSsaSimplifier : AstVisitor {
 
-        public static ICode V(ICode c) {
-            c = CopyPropagation.V(c);
-            return c;
+        public static ICode V(ICode ast) {
+            ast = CopyPropagation.V(ast);
+            return ast;
         }
 
         class CopyPropagation : AstVisitor {

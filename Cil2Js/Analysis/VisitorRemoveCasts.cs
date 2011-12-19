@@ -8,16 +8,12 @@ using Mono.Cecil;
 namespace Cil2Js.Analysis {
     public class VisitorRemoveCasts : AstVisitor {
 
-        public static ICode V(TypeSystem typeSystem, ICode ast) {
-            var v = new VisitorRemoveCasts(typeSystem);
+        public static ICode V(ICode ast) {
+            var v = new VisitorRemoveCasts();
             return v.Visit(ast);
         }
 
-        private VisitorRemoveCasts(TypeSystem typeSystem) {
-            this.typeSystem = typeSystem;
-        }
-
-        private TypeSystem typeSystem;
+        private VisitorRemoveCasts() { }
 
         protected override Ast.ICode VisitCast(ExprCast e) {
             var expr = (Expr)this.Visit(e.Expr);
@@ -32,12 +28,12 @@ namespace Cil2Js.Analysis {
         private Expr Convert(ExprLiteral e, TypeReference convertToType) {
             if (convertToType.IsChar()) {
                 if (e.Type.IsInt32()) {
-                    return new ExprLiteral((char)(int)e.Value, this.typeSystem.Char);
+                    return new ExprLiteral(e.Ctx, (char)(int)e.Value, e.Ctx.Char);
                 }
             }
             if (convertToType.IsBoolean()) {
                 if (e.Type.IsInt32()) {
-                    return new ExprLiteral(((int)e.Value) == 0, this.typeSystem.Boolean);
+                    return new ExprLiteral(e.Ctx, ((int)e.Value) != 0, e.Ctx.Boolean);
                 }
             }
             throw new NotImplementedException("Cannot convert");
