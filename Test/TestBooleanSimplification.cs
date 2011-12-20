@@ -39,7 +39,7 @@ namespace Test {
         public void TestSimple() {
             var c = new ExprVarLocal(Ctx, Ctx.Boolean, "c");
 
-            AssertPerms(Ctx.ExprGen.Or(False, c), Is.EqualTo(c));
+            AssertPerms(ExprGen.Or(False, c), Is.EqualTo(c));
             AssertPerms(ExprGen.Or(True, c), Is.EqualTo(True).Using(Expr.EqComparer));
             AssertPerms(ExprGen.Or(c, c), Is.EqualTo(c));
             AssertPerms(ExprGen.Or(c, ExprGen.Not(c)), Is.EqualTo(True).Using(Expr.EqComparer));
