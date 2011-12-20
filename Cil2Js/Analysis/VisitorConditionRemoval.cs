@@ -25,21 +25,16 @@ namespace Cil2Js.Analysis {
 
         private Stack<List<Expr>> knownTrue;
 
-        //private Expr Bool(bool b) {
-        //    return new ExprLiteral(this.ctx, b, this.ctx.Boolean);
-        //}
-
         private void AddKnownTrue(Expr e) {
             var l = this.knownTrue.Peek();
             l.Add(e);
-            // TODO: This following code causes a bug in test TestLoops::Test4ForBreakAndContinue() - why?
-            //if (e.ExprType == Expr.NodeType.Binary) {
-            //    var eBin = (ExprBinary)e;
-            //    if (eBin.Op == BinaryOp.Or) {
-            //        this.AddKnownTrue(eBin.Left);
-            //        this.AddKnownTrue(eBin.Right);
-            //    }
-            //}
+            if (e.ExprType == Expr.NodeType.Binary) {
+                var eBin = (ExprBinary)e;
+                if (eBin.Op == BinaryOp.And) {
+                    this.AddKnownTrue(eBin.Left);
+                    this.AddKnownTrue(eBin.Right);
+                }
+            }
         }
 
         private bool HasBlockExit(Stmt s) {
@@ -66,14 +61,10 @@ namespace Cil2Js.Analysis {
             var @else = (Stmt)this.Visit(s.Else);
             var elseTrue = this.knownTrue.Pop();
             if (this.HasBlockExit(s.Then)) {
-                //this.knownTrue.Peek().AddRange(elseTrue);
-                this.AddKnownTrue(s.Ctx.ExprGen.Not(condition));
-                //this.AddKnownTrue(elseTrue);
+                this.knownTrue.Peek().AddRange(elseTrue);
             }
             if (this.HasBlockExit(s.Else)) {
-                //this.knownTrue.Peek().AddRange(thenTrue);
-                //this.AddKnownTrue(condition);
-                this.AddKnownTrue(condition);
+                this.knownTrue.Peek().AddRange(thenTrue);
             }
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
                 return new StmtIf(this.ctx, condition, then, @else);
@@ -94,15 +85,15 @@ namespace Cil2Js.Analysis {
         }
 
         protected override ICode VisitExpr(Expr e) {
-            //var knownTrues = this.knownTrue.SelectMany(x => x).ToArray();
-            //foreach (var knownTrue in knownTrues) {
-            //    if (e.DoesEqual(knownTrue)) {
-            //        return new ExprLiteral(e.Ctx, true, e.Ctx.Boolean);
-            //    }
-            //    if (e.DoesEqualNot(knownTrue)) {
-            //        return new ExprLiteral(e.Ctx, false, e.Ctx.Boolean);
-            //    }
-            //}
+            var knownTrues = this.knownTrue.SelectMany(x => x).ToArray();
+            foreach (var knownTrue in knownTrues) {
+                if (e.DoesEqual(knownTrue)) {
+                    return new ExprLiteral(e.Ctx, true, e.Ctx.Boolean);
+                }
+                if (e.DoesEqualNot(knownTrue)) {
+                    return new ExprLiteral(e.Ctx, false, e.Ctx.Boolean);
+                }
+            }
             return base.VisitExpr(e);
         }
 
