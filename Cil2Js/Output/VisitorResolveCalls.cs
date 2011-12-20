@@ -7,7 +7,7 @@ using Cil2Js.Ast;
 
 namespace Cil2Js.Output {
 
-    public class VisitorResolveCalls : AstVisitor {
+    public class VisitorResolveCalls : JsAstVisitor {
 
         public VisitorResolveCalls(Func<ICall, JsResolved> fnCallResolver) {
             this.fnCallResolver = fnCallResolver;

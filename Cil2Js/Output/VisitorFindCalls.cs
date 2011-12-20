@@ -7,7 +7,7 @@ using Cil2Js.Ast;
 using Mono.Cecil;
 
 namespace Cil2Js.Output {
-    public class VisitorFindCalls : AstVisitor {
+    public class VisitorFindCalls : JsAstVisitor {
 
         public static IEnumerable<Tuple<ICall, bool>> V(ICode ast) {
             var v = new VisitorFindCalls();

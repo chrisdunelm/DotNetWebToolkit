@@ -23,6 +23,7 @@ namespace Cil2Js.Ast {
         public TypeReference Boolean { get { return this.TypeSystem.Boolean; } }
         public TypeReference Char { get { return this.TypeSystem.Char; } }
         public TypeReference String { get { return this.TypeSystem.String; } }
+        public TypeReference IntPtr { get { return this.TypeSystem.IntPtr; } }
 
     }
 }

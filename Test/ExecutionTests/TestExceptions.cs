@@ -9,7 +9,7 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestExceptions : ExecutionTestBase {
 
-        [Test,Ignore]
+        [Test]
         public void TestThrowReturnDirect() {
             Func<bool, int> f = b => {
                 try {
@@ -24,7 +24,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore]
+        [Test]
         public void TestThrowReturnVar() {
             Func<bool, int> f = b => {
                 int r;
@@ -41,7 +41,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore]
+        [Test]
         public void TestTryCatchFinally() {
             Func<int> f = () => {
                 int r;
@@ -57,7 +57,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Nested try statements not yet working")]
         public void TestNestedCatch2() {
             Func<bool, bool, int> f = (a, b) => {
                 try {

@@ -51,6 +51,8 @@ namespace Cil2Js.Analysis {
                 return this.Const((int)(sbyte)inst.Operand, this.ctx.TypeSystem.Int32);
             case Code.Ldc_I4:
                 return this.Const((int)inst.Operand, this.ctx.TypeSystem.Int32);
+            case Code.Ldc_R8:
+                return this.Const((double)inst.Operand, this.ctx.TypeSystem.Double);
             case Code.Ldnull:
                 return this.Const(null, this.ctx.TypeSystem.Object);
             case Code.Ldstr:
@@ -164,13 +166,18 @@ namespace Cil2Js.Analysis {
             case Code.Stelem_Ref:
                 return this.StoreElem(inst);
             case Code.Conv_I4:
+                return this.Cast(this.ctx.Int32);
             case Code.Conv_I:
-                return null;
+                return this.Cast(this.ctx.IntPtr);
+            case Code.Castclass: // TODO: Should do more than this...
+                return this.Cast((TypeReference)inst.Operand);
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
             case Code.Ret:
                 //return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.CastIfRequired(this.stack.Pop(), this.method.ReturnType));
                 throw new InvalidOperationException("Should not see this here: " + inst);
+            case Code.Ldftn:
+                return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, (MethodReference)inst.Operand));
             default:
                 throw new NotImplementedException("Cannot handle: " + inst.OpCode);
             }
@@ -247,6 +254,12 @@ namespace Cil2Js.Analysis {
             var target = this.instResults[inst];
             var assignment = new StmtAssignment(this.ctx, target, expr);
             return assignment;
+        }
+
+        private Stmt Cast(TypeReference toType) {
+            var expr = new ExprCast(this.ctx, this.stack.Pop(), toType);
+            this.stack.Push(expr);
+            return null;
         }
 
         private Expr CastIfRequired(Expr expr, TypeReference requireType) {

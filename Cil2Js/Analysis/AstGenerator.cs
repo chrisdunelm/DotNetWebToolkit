@@ -249,7 +249,7 @@ namespace Cil2Js.Analysis {
                         break;
                     case Code.Ret:
                         blockEndStmt = new StmtContinuation(this.ctx, this.endBlock, false);
-                        blockInsts = start.GetRange(end.Previous); // Remove 'ret' from statements
+                        blockInsts = start == end ? Enumerable.Empty<Instruction>() : start.GetRange(end.Previous); // Remove 'ret' from statements
                         break;
                     default:
                         blockEndStmt = null;

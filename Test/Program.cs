@@ -15,6 +15,7 @@ using System.Linq.Expressions;
 using Test.Utils;
 using Cil2Js;
 using Cil2Js.Attributes;
+using Cil2Js.Web;
 
 namespace Test {
 
@@ -35,17 +36,27 @@ namespace Test {
             }
         }
 
+        public static void T0() {
+            var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
+            var ctx = (CanvasRenderingContext2D)canvas.GetContext("2d");
+            string fill1 = "#ff0000";
+            string fill2 = "#0000ff";
+            bool f1 = true;
+            Window.SetInterval(() => {
+                ctx.FillStyle = f1 ? fill1 : fill2;
+                f1 = !f1;
+                ctx.Rect(50, 50, 100, 50);
+            }, 5000);
+        }
+
         static void Main(string[] args) {
+            var mi = typeof(Program).GetMethod("T0");
+            var js = Transcoder.ToJs(mi, true);
 
-            var t = new TestLoops() { Verbose = true };
-            t.Test4ForBreakAndContinue();
-            //t.Test3NestedForsWithExtraIfs();
-            //t.TestSimplification();
-            return;
-
-            //Console.WriteLine();
-            //Console.WriteLine("*** DONE ***");
-            //Console.ReadKey();
+            Console.WriteLine(js);
+            //var t = new TestExceptions() { Verbose = true };
+            //t.TestNestedCatch2();
+            //return;
 
         }
     }

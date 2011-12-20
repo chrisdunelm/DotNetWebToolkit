@@ -25,6 +25,7 @@ namespace Cil2Js.Ast {
             ArrayAccess,
             ArrayLength,
             Cast,
+            MethodReference,
         }
 
         [Flags]

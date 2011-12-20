@@ -8,7 +8,7 @@ using Mono.Cecil;
 using Cil2Js.Utils;
 
 namespace Cil2Js.Output {
-    public class JsMethod : AstVisitor {
+    public class JsMethod : JsAstVisitor {
 
         public class Resolver {
 
@@ -396,8 +396,10 @@ namespace Cil2Js.Output {
                 switch (callResolved.Type) {
                 case JsResolvedType.Method:
                     var methodResolved = (JsResolvedMethod)callResolved;
-                    this.Visit(methodResolved.Obj);
-                    this.js.Append(".");
+                    if (methodResolved.Obj != null) {
+                        this.Visit(methodResolved.Obj);
+                        this.js.Append(".");
+                    }
                     this.js.Append(methodResolved.MethodName);
                     this.js.Append("(");
                     bool first = true;
@@ -416,6 +418,11 @@ namespace Cil2Js.Output {
                     this.Visit(propertyResolved.Obj);
                     this.js.Append(".");
                     this.js.Append(propertyResolved.PropertyName);
+                    if (e.Args.Count() == 1) {
+                        // Setter of property, so emit the ' = ...'
+                        this.js.Append(" = ");
+                        this.Visit(e.Args.First());
+                    }
                     break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + callResolved.Type);
@@ -550,6 +557,16 @@ namespace Cil2Js.Output {
 
         protected override ICode VisitCast(ExprCast e) {
             this.Visit(e.Expr);
+            return e;
+        }
+
+        protected override ICode VisitJsFunction(ExprJsFunction e) {
+            this.js.Append("function() { ");
+            this.indent++;
+            this.Visit(e.Body);
+            this.indent--;
+            this.NewLine();
+            this.js.Append("}");
             return e;
         }
 

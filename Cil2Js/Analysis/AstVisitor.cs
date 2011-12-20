@@ -16,7 +16,7 @@ namespace Cil2Js.Analysis {
 
         private bool throwOnNoOverride;
 
-        private void ThrowOnNoOverride() {
+        protected void ThrowOnNoOverride() {
             if (this.throwOnNoOverride) {
                 throw new InvalidOperationException("Method not overridden");
             }
@@ -249,8 +249,14 @@ namespace Cil2Js.Analysis {
                 return this.VisitArrayLength((ExprArrayLength)e);
             case Expr.NodeType.ArrayAccess:
                 return this.VisitVarArrayAccess((ExprVarArrayAccess)e);
+            case Expr.NodeType.MethodReference:
+                return this.VisitMethodReference((ExprMethodReference)e);
             default:
-                throw new NotImplementedException("Cannot handle: " + e.ExprType);
+                if ((int)e.ExprType >= 1000) {
+                    return e;
+                } else {
+                    throw new NotImplementedException("Cannot handle: " + e.ExprType);
+                }
             }
         }
 
@@ -416,6 +422,10 @@ namespace Cil2Js.Analysis {
             } else {
                 return e;
             }
+        }
+
+        protected virtual ICode VisitMethodReference(ExprMethodReference e) {
+            return e;
         }
 
     }

@@ -23,7 +23,7 @@ namespace Cil2Js.Output {
 
     public class JsResolvedMethod : JsResolved {
 
-        public JsResolvedMethod(Expr obj, string methodMame, params Expr[] args) : this(obj, methodMame, (IEnumerable<Expr>)args) { }
+        public JsResolvedMethod(Expr obj, string methodName, params Expr[] args) : this(obj, methodName, (IEnumerable<Expr>)args) { }
 
         public JsResolvedMethod(Expr obj, string methodName, IEnumerable<Expr> args) {
             this.Obj = obj;

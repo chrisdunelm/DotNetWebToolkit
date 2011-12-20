@@ -360,5 +360,10 @@ namespace Cil2Js.Utils {
             return s;
         }
 
+        protected override ICode VisitMethodReference(ExprMethodReference e) {
+            this.code.AppendFormat("&{0}", e.Method.Name);
+            return e;
+        }
+
     }
 }

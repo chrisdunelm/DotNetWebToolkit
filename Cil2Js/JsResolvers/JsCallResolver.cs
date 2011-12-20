@@ -10,13 +10,16 @@ using Cil2Js.Utils;
 namespace Cil2Js.JsResolvers {
     public static class JsCallResolver {
 
+        private const string TVoid = "System.Void";
+        private const string TObject = "System.Object";
+        private const string TIntPtr = "System.IntPtr";
         private const string TBoolean = "System.Boolean";
         private const string TString = "System.String";
         private const string TChar = "System.Char";
         private const string TInt32 = "System.Int32";
 
         private static string ArrayOf(string type) {
-            return type+"[]";
+            return type + "[]";
         }
 
         class M {
@@ -67,6 +70,7 @@ namespace Cil2Js.JsResolvers {
         }
 
         private static Dictionary<M, Func<ICall, JsResolved>> map = new Dictionary<M, Func<ICall, JsResolved>>(M.ValueEqComparer) {
+            { M.Def(TVoid, "System.Action..ctor", TObject, TIntPtr), SystemResolver.Action_ctor },
             { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality },
             { M.Def(TInt32, "System.String.get_Length"), StringResolver.get_Length },
             { M.Def(TChar, "System.String.get_Chars", TInt32), StringResolver.get_Chars },
@@ -83,14 +87,38 @@ namespace Cil2Js.JsResolvers {
         };
 
         public static JsResolved Resolve(ICall call) {
-            var m = new M(call.CallMethod);
+            var method = call.CallMethod;
+            // A call that needs translating into a javascript call
+            var m = new M(method);
             var fn = map.ValueOrDefault(m);
             if (fn != null) {
                 var resolved = fn(call);
                 return resolved;
             }
+            // A call that is defined in JS only
+            var type = method.DeclaringType;
+            var jsClass = type.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Cil2Js.Attributes.JsClassAttribute");
+            if (jsClass != null) {
+                if (method.IsSetter || method.IsGetter) {
+                    var propertyName = JsCase(method.Name.Substring(4));
+                    if (method.IsStatic) {
+                        propertyName = JsCase(method.DeclaringType.Name) + "." + propertyName;
+                    }
+                    return new JsResolvedProperty(call.Obj, propertyName);
+                } else {
+                    var methodName = JsCase(method.Name);
+                    if (method.IsStatic) {
+                        methodName = JsCase(method.DeclaringType.Name) + "." + methodName;
+                    }
+                    return new JsResolvedMethod(call.Obj, methodName, call.Args);
+                }
+            }
             // No special resolution available
             return null;
+        }
+
+        private static string JsCase(string s) {
+            return char.ToLowerInvariant(s[0]) + s.Substring(1);
         }
 
     }
