@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cil2Js.Analysis;
 using Mono.Cecil;
 
 namespace Cil2Js.Ast {
@@ -86,6 +87,14 @@ namespace Cil2Js.Ast {
 
             private Ctx ctx;
 
+            public ExprLiteral True() {
+                return new ExprLiteral(this.ctx, true, this.ctx.Boolean);
+            }
+
+            public ExprLiteral False() {
+                return new ExprLiteral(this.ctx, false, this.ctx.Boolean);
+            }
+
             public ExprBinary And(Expr left, Expr right) {
                 return new ExprBinary(this.ctx, BinaryOp.And, this.ctx.Boolean, left, right);
             }
@@ -99,6 +108,7 @@ namespace Cil2Js.Ast {
             }
 
             public Expr NotAutoSimplify(Expr e) {
+                //return (Expr)VisitorBooleanSimplification.V(Not(e));
                 // Special handling for when 'e' already starts with a 'not'
                 if (e.ExprType == NodeType.Unary) {
                     var eUn = (ExprUnary)e;

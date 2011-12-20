@@ -73,7 +73,6 @@
     <Compile Include="Analysis\CilProcessor.cs" />
     <Compile Include="Analysis\CilStackAnalysis.cs" />
     <Compile Include="Analysis\AstGenerator.cs" />
-    <Compile Include="Analysis\FlowAnalyser.cs" />
     <Compile Include="Analysis\IInstructionMappable.cs" />
     <Compile Include="Analysis\StmtCil.cs" />
     <Compile Include="Analysis\StmtContinuation.cs" />
@@ -90,6 +89,7 @@
     <Compile Include="Analysis\VisitorFindContinuations.cs" />
     <Compile Include="Analysis\VisitorFindSpecials.cs" />
     <Compile Include="Analysis\VisitorIfDistribution.cs" />
+    <Compile Include="Analysis\VisitorIfReorder.cs" />
     <Compile Include="Analysis\VisitorIfSimplification.cs" />
     <Compile Include="Analysis\VisitorMoveOutOfLoop.cs" />
     <Compile Include="Analysis\VisitorOnlyStatements.cs" />

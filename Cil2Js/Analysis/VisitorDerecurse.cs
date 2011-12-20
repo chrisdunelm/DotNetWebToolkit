@@ -32,11 +32,23 @@ namespace Cil2Js.Analysis {
             }
             var block = (StmtBlock)s.To;
             foreach (var stmt in block.Statements) {
+                if (stmt.StmtType == Stmt.NodeType.Continuation) {
+                    // Continuation not inside 'if'
+                    var sCont = (StmtContinuation)stmt;
+                    if (sCont.To == block) {
+                        // Recursive, so derecurse with no condition on loop
+                        var body = new StmtBlock(s.Ctx, block.Statements.TakeWhile(x => x != stmt).ToArray());
+                        var replaceWith = new StmtDoLoop(s.Ctx, body, new ExprLiteral(s.Ctx, true, s.Ctx.Boolean));
+                        this.replaces.Add(s.To, replaceWith);
+                        return base.VisitContinuation(s);
+                    }
+                }
                 if (stmt.StmtType == Stmt.NodeType.If) {
+                    // Continuation only statement within 'if' with only a 'then' clause
                     var sIf = (StmtIf)stmt;
                     if (sIf.Else == null && sIf.Then.StmtType == Stmt.NodeType.Continuation) {
                         var sThen = (StmtContinuation)sIf.Then;
-                        if (sThen.To == s.To) {
+                        if (sThen.To == block) {
                             // Recursive, so derecurse
                             var condition = sIf.Condition;
                             var bodyStmts = block.Statements.TakeWhile(x => x != stmt).ToArray();

@@ -62,6 +62,13 @@ namespace Cil2Js.Analysis {
                     return new StmtAssignment(s.Ctx, thenAssign.Target, ternary);
                 }
             }
+            // If 'if' contains only 'if' then combine condition with 'and'
+            if (@else == null && then.StmtType == Stmt.NodeType.If) {
+                var thenIf = (StmtIf)then;
+                if (thenIf.Else == null) {
+                    return new StmtIf(s.Ctx, s.Ctx.ExprGen.And(s.Condition, thenIf.Condition), thenIf.Then, null);
+                }
+            }
             if (then != s.Then || @else != s.Else) {
                 return new StmtIf(s.Ctx, s.Condition, then, @else);
             } else {
@@ -79,7 +86,8 @@ namespace Cil2Js.Analysis {
                     var aIf = (StmtIf)a;
                     var bIf = (StmtIf)b;
                     if (aIf.Then.StmtType != Stmt.NodeType.Continuation && bIf.Then.StmtType != Stmt.NodeType.Continuation) {
-                        // Join adjacent 'if' statements if possible
+                        // Join adjacent 'if' statements if possible. Do not do if both 'if' statements only contain
+                        // continuations, so as not to mess up the if-distribution
                         if (aIf.Condition.DoesEqual(bIf.Condition)) {
                             return new StmtIf(s.Ctx, aIf.Condition,
                                 new StmtBlock(s.Ctx, aIf.Then, bIf.Then),

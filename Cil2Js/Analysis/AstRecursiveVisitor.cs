@@ -20,6 +20,7 @@ namespace Cil2Js.Analysis {
             ICode ret = null;
             while (todo.Any()) {
                 var node = todo.Dequeue();
+                this.BlockStart(node);
                 var transformed = this.Visit(node);
                 if (ret == null) {
                     ret = transformed;
@@ -40,6 +41,8 @@ namespace Cil2Js.Analysis {
             }
             return ret;
         }
+
+        protected virtual void BlockStart(ICode block) { }
 
         protected override ICode VisitContinuation(StmtContinuation s) {
             this.continuations.Add(s);

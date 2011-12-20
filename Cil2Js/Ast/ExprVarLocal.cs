@@ -16,6 +16,7 @@ namespace Cil2Js.Ast {
             : base(ctx) {
             //this.Var = new VariableDefinition(name, type);
             this.type = type;
+            this.Name = name;
         }
 
         //public ExprVarLocal(TypeSystem typeSystem) {
@@ -24,6 +25,8 @@ namespace Cil2Js.Ast {
 
         //public VariableDefinition Var { get; private set; }
         private TypeReference type;
+
+        public string Name { get; private set; }
 
         public override Expr.NodeType ExprType {
             get { return NodeType.VarLocal; }
@@ -37,7 +40,8 @@ namespace Cil2Js.Ast {
             //if (this.Var != null && !string.IsNullOrWhiteSpace(this.Var.Name)) {
             //    return this.Var.ToString();
             //} else {
-            return string.Format("Var_{0:x8}:{1}", this.GetHashCode(), this.Type.Name);
+            return string.Format("Var_{0:x8}:{1}{2}", this.GetHashCode(), this.Type.Name,
+                this.Name==null?"":" \""+this.Name+"\"");
             //}
         }
 

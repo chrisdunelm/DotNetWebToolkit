@@ -42,31 +42,37 @@ namespace Cil2Js.Ast {
         }
 
         public static bool DoesEqual(this Expr a, Expr b) {
-            return VisitorSameExpr.AreSame(a, b);
-        }
-
-        public static bool DoesEqualNot(this Expr a, Expr b) {
-            return a.Ctx.ExprGen.Not(a).DoesEqual(b);
-            //return Tuple.Create(a, b).Perms((_a, _b) => {
-            //    Expr aNot;
-            //    if (_a.ExprType == Expr.NodeType.Unary && ((ExprUnary)_a).Op == UnaryOp.Not) {
-            //        aNot = ((ExprUnary)_a).Expr;
-            //    } else {
-            //        aNot = _a.Ctx.ExprGen.Not(_a);
-            //    }
-            //    return aNot.DoesEqual(_b);
-            //    //if (_a.ExprType == Expr.NodeType.Unary) {
-            //    //    var aUn = (ExprUnary)_a;
-            //    //    if (aUn.Op == UnaryOp.Not && VisitorSameExpr.AreSame(aUn.Expr, _b)) {
-            //    //        return true;
-            //    //    }
-            //    //}
-            //    //return false;
-            //});
+            return VisitorSameExpr.AreSame(a, b, false);
         }
 
         public static bool DoesEqualExact(this Expr a, Expr b) {
             return VisitorSameExpr.AreSame(a, b, true);
+        }
+
+        public static bool DoesEqualNot(this Expr a, Expr b) {
+            if (a.ExprType == Expr.NodeType.Unary && ((ExprUnary)a).Op == UnaryOp.Not) {
+                return ((ExprUnary)a).Expr.DoesEqual(b);
+            }
+            if (b.ExprType == Expr.NodeType.Unary && ((ExprUnary)b).Op == UnaryOp.Not) {
+                return ((ExprUnary)b).Expr.DoesEqual(a);
+            }
+            return Tuple.Create(a, b).Perms((x, y) => {
+                var xNot = x.Ctx.ExprGen.Not(x);
+                return xNot.DoesEqual(y);
+            });
+        }
+
+        public static bool DoesEqualNotExact(this Expr a, Expr b) {
+            if (a.ExprType == Expr.NodeType.Unary && ((ExprUnary)a).Op == UnaryOp.Not) {
+                return ((ExprUnary)a).Expr.DoesEqualExact(b);
+            }
+            if (b.ExprType == Expr.NodeType.Unary && ((ExprUnary)b).Op == UnaryOp.Not) {
+                return ((ExprUnary)b).Expr.DoesEqualExact(a);
+            }
+            return Tuple.Create(a, b).Perms((x, y) => {
+                var xNot = x.Ctx.ExprGen.Not(x);
+                return xNot.DoesEqualExact(y);
+            });
         }
 
         private static IEnumerable<T[]> Permutations<T>(T[] set) {

@@ -34,6 +34,50 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void Test2And() {
+            Func<int, int, int> f = (a, b) => {
+                if (a > 20 && b > 25) {
+                    return a;
+                }
+                return b;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void Test2Or() {
+            Func<int, int> f = a => {
+                if (a < 20 || a > 50) {
+                    return a;
+                }
+                return a + 1;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void Test3And() {
+            Func<int, int, int> f = (a, b) => {
+                if (a > 20 && b > 25 && b < 75) {
+                    return a;
+                }
+                return b;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void Test3Or() {
+            Func<int, int> f = a => {
+                if (a < 20 || a > 50 || a == 30) {
+                    return a;
+                }
+                return a + 1;
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestMultiAnd() {
             Func<int, int, int, int> f = (a, b, c) => {
                 if (a >= -1 && a < 50 && b > 10 && b < 75 && c > 6 && c < 80) {

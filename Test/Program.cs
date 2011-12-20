@@ -37,8 +37,10 @@ namespace Test {
 
         static void Main(string[] args) {
 
-            var t = new TestSimpleClasses() { Verbose = true };
-            t.TestNewObj();
+            var t = new TestLoops() { Verbose = true };
+            t.Test4ForBreakAndContinue();
+            //t.Test3NestedForsWithExtraIfs();
+            //t.TestSimplification();
             return;
 
             //Console.WriteLine();

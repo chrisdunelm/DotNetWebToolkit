@@ -17,44 +17,63 @@ namespace Cil2Js.Analysis {
 
         private VisitorConditionRemoval(Ctx ctx) {
             this.ctx = ctx;
-            this.known = new Stack<List<Tuple<Expr, Expr>>>();
-            this.known.Push(new List<Tuple<Expr, Expr>>());
+            this.knownTrue = new Stack<List<Expr>>();
+            this.knownTrue.Push(new List<Expr>());
         }
 
         private Ctx ctx;
 
-        private Stack<List<Tuple<Expr, Expr>>> known;
+        private Stack<List<Expr>> knownTrue;
 
-        private Expr Bool(bool b) {
-            return new ExprLiteral(this.ctx, b, this.ctx.Boolean);
+        //private Expr Bool(bool b) {
+        //    return new ExprLiteral(this.ctx, b, this.ctx.Boolean);
+        //}
+
+        private void AddKnownTrue(Expr e) {
+            var l = this.knownTrue.Peek();
+            l.Add(e);
+            // TODO: This following code causes a bug in test TestLoops::Test4ForBreakAndContinue() - why?
+            //if (e.ExprType == Expr.NodeType.Binary) {
+            //    var eBin = (ExprBinary)e;
+            //    if (eBin.Op == BinaryOp.Or) {
+            //        this.AddKnownTrue(eBin.Left);
+            //        this.AddKnownTrue(eBin.Right);
+            //    }
+            //}
         }
 
-        private void AddKnown(Expr e, bool value) {
-            var l = this.known.Peek();
-            l.Add(Tuple.Create(e, this.Bool(value)));
-            l.Add(Tuple.Create(this.ctx.ExprGen.NotAutoSimplify(e), this.Bool(!value)));
-        }
-
-        private bool ContainsThrow(Stmt s) {
-            return s != null && (s.StmtType == Stmt.NodeType.Throw ||
-                (s.StmtType == Stmt.NodeType.Block && ((StmtBlock)s).Statements.Any(x => x.StmtType == Stmt.NodeType.Throw)));
+        private bool HasBlockExit(Stmt s) {
+            if (s == null) {
+                return false;
+            }
+            if (s.StmtType == Stmt.NodeType.Throw || s.StmtType == Stmt.NodeType.Return || s.StmtType == Stmt.NodeType.Continuation) {
+                return true;
+            }
+            if (s.StmtType == Stmt.NodeType.Block) {
+                return ((StmtBlock)s).Statements.Any(x => x.StmtType == Stmt.NodeType.Throw || x.StmtType == Stmt.NodeType.Return || x.StmtType == Stmt.NodeType.Continuation);
+            }
+            return false;
         }
 
         protected override ICode VisitIf(StmtIf s) {
             var condition = (Expr)this.Visit(s.Condition);
-            this.known.Push(new List<Tuple<Expr, Expr>>());
-            this.AddKnown(condition, true);
+            this.knownTrue.Push(new List<Expr>());
+            this.AddKnownTrue(condition);
             var then = (Stmt)this.Visit(s.Then);
-            this.known.Pop();
-            this.known.Push(new List<Tuple<Expr, Expr>>());
-            this.AddKnown(condition, false);
+            var thenTrue = this.knownTrue.Pop();
+            this.knownTrue.Push(new List<Expr>());
+            this.AddKnownTrue(s.Ctx.ExprGen.Not(condition));
             var @else = (Stmt)this.Visit(s.Else);
-            this.known.Pop();
-            if (this.ContainsThrow(s.Then)) {
-                this.AddKnown(condition, false);
+            var elseTrue = this.knownTrue.Pop();
+            if (this.HasBlockExit(s.Then)) {
+                //this.knownTrue.Peek().AddRange(elseTrue);
+                this.AddKnownTrue(s.Ctx.ExprGen.Not(condition));
+                //this.AddKnownTrue(elseTrue);
             }
-            if (this.ContainsThrow(s.Else)) {
-                this.AddKnown(condition, true);
+            if (this.HasBlockExit(s.Else)) {
+                //this.knownTrue.Peek().AddRange(thenTrue);
+                //this.AddKnownTrue(condition);
+                this.AddKnownTrue(condition);
             }
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
                 return new StmtIf(this.ctx, condition, then, @else);
@@ -66,7 +85,7 @@ namespace Cil2Js.Analysis {
         protected override ICode VisitDoLoop(StmtDoLoop s) {
             var body = (Stmt)this.Visit(s.Body);
             var @while = (Expr)this.Visit(s.While); // This order matters - body must be visited before while
-            this.AddKnown(@while, false);
+            this.AddKnownTrue(s.Ctx.ExprGen.NotAutoSimplify(@while));
             if (@while != s.While || body != s.Body) {
                 return new StmtDoLoop(this.ctx, body, @while);
             } else {
@@ -75,12 +94,15 @@ namespace Cil2Js.Analysis {
         }
 
         protected override ICode VisitExpr(Expr e) {
-            var knowns = this.known.SelectMany(x => x).ToArray();
-            foreach (var known in knowns) {
-                if (e.DoesEqual(known.Item1)) {
-                    return known.Item2;
-                }
-            }
+            //var knownTrues = this.knownTrue.SelectMany(x => x).ToArray();
+            //foreach (var knownTrue in knownTrues) {
+            //    if (e.DoesEqual(knownTrue)) {
+            //        return new ExprLiteral(e.Ctx, true, e.Ctx.Boolean);
+            //    }
+            //    if (e.DoesEqualNot(knownTrue)) {
+            //        return new ExprLiteral(e.Ctx, false, e.Ctx.Boolean);
+            //    }
+            //}
             return base.VisitExpr(e);
         }
 

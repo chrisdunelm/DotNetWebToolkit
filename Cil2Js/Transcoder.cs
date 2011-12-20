@@ -35,14 +35,16 @@ namespace Cil2Js {
             print(ast, null);
             ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
+            HashSet<Expr> booleanSimplification = new HashSet<Expr>();
             for (int i = 0; ; i++) {
                 var astOrg = ast;
                 ast = doStep(s => (Stmt)VisitorSubstitute.V(s), ast, "VisitorSubstitute");
                 ast = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), ast, "VisitorTryCatchFinallySequencing");
                 ast = doStep(s => (Stmt)VisitorIfDistribution.V(s), ast, "VisitorIfDistribution");
                 ast = doStep(s => (Stmt)VisitorDerecurse.V(s), ast, "VisitorDerecurse");
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
+                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s, booleanSimplification, out booleanSimplification), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
+                ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
                 ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
                 if (ast == astOrg) {
@@ -59,7 +61,7 @@ namespace Cil2Js {
             // Simplify AST
             for (int i = 0; ; i++) {
                 var astOrg = ast;
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
+                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s, booleanSimplification, out booleanSimplification), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
                 ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
