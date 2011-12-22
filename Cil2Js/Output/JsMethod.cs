@@ -45,7 +45,7 @@ namespace Cil2Js.Output {
 
         }
 
-        class LocalVarNamer : AstVisitor {
+        class LocalVarNamer : JsAstVisitor {
 
             class VarClustered : ExprVar {
 
@@ -194,7 +194,7 @@ namespace Cil2Js.Output {
                 }
                 sb.Append("}};");
                 // All fields must be initialised
-                foreach (var field in method.DeclaringType.Fields) {
+                foreach (var field in method.DeclaringType.Fields.Where(x => resolver.FieldNames.ContainsKey(x))) {
                     sb.AppendLine();
                     sb.Append(' ', tabSize);
                     sb.AppendFormat("{0}.{1} = {2};", thisName,
@@ -568,12 +568,38 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitJsFunction(ExprJsFunction e) {
-            this.js.Append("function() { ");
+            this.js.Append("(function(");//) { ");
+            bool needComma = false;
+            foreach (var arg in e.Args) {
+                if (needComma) {
+                    this.js.Append(", ");
+                } else {
+                    needComma = true;
+                }
+                this.Visit(arg);
+            }
+            this.js.Append(") {");
             this.indent++;
             this.Visit(e.Body);
             this.indent--;
             this.NewLine();
-            this.js.Append("}");
+            this.js.Append("})");
+            return e;
+        }
+
+        protected override ICode VisitJsInvoke(ExprJsInvoke e) {
+            this.Visit(e.MethodToInvoke);
+            this.js.Append("(");
+            bool needComma = false;
+            foreach (var arg in e.Args) {
+                if (needComma) {
+                    this.js.Append(", ");
+                } else {
+                    needComma = true;
+                }
+                this.Visit(arg);
+            }
+            this.js.Append(")");
             return e;
         }
 

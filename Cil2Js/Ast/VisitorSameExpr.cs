@@ -69,6 +69,8 @@ namespace Cil2Js.Ast {
             case Expr.NodeType.VarParameter:
             case Expr.NodeType.VarPhi:
                 return a == b;
+            case Expr.NodeType.FieldAccess:
+                return ((ExprFieldAccess)a).Field.Resolve() == ((ExprFieldAccess)b).Field.Resolve();
             default:
                 throw new NotImplementedException("Cannot handle: " + a.ExprType);
             }

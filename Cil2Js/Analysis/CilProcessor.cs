@@ -58,16 +58,16 @@ namespace Cil2Js.Analysis {
             case Code.Ldstr:
                 return this.Const((string)inst.Operand, this.ctx.TypeSystem.String);
             case Code.Ldarg_0:
-                return this.LdArg(0);
+                return this.LdArg(0, true);
             case Code.Ldarg_1:
-                return this.LdArg(1);
+                return this.LdArg(1, true);
             case Code.Ldarg_2:
-                return this.LdArg(2);
+                return this.LdArg(2, true);
             case Code.Ldarg_3:
-                return this.LdArg(3);
+                return this.LdArg(3, true);
             case Code.Ldarg:
             case Code.Ldarg_S:
-                return this.LdArg(((ParameterDefinition)inst.Operand).Index);
+                return this.LdArg(((ParameterDefinition)inst.Operand).Index, false);
             case Code.Starg_S:
                 return this.StArg(((ParameterDefinition)inst.Operand).Index);
             case Code.Ldloc_0:
@@ -197,9 +197,9 @@ namespace Cil2Js.Analysis {
             return this.SsaLocalAssignment(new ExprLiteral(this.ctx, value, type.Resolve()));
         }
 
-        private Stmt LdArg(int idx) {
+        private Stmt LdArg(int idx, bool adjust) {
             Expr expr;
-            if (this.ctx.Method.HasThis) {
+            if (this.ctx.Method.HasThis && adjust) {
                 if (idx == 0) {
                     expr = new ExprThis(this.ctx, this.ctx.Method.DeclaringType);
                 } else {

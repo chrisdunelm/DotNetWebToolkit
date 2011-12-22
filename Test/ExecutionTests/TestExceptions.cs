@@ -79,23 +79,6 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Goto's not really supported")]
-        public void TestWithGoto() {
-            Func<bool, int> f = a => {
-                try {
-                    goto t;
-                } catch {
-                }
-                t:
-                try {
-                    return 6;
-                } catch {
-                }
-                return 5;
-            };
-            this.Test(f);
-        }
-
     }
 
 }

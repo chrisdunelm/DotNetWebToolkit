@@ -27,19 +27,39 @@ namespace Cil2Js.Output {
             switch (jsExprType) {
             case JsExprType.JsFunction:
                 return this.VisitJsFunction((ExprJsFunction)e);
+            case JsExprType.JsInvoke:
+                return this.VisitJsInvoke((ExprJsInvoke)e);
             default:
-                return base.VisitExpr(e);
+                if ((int)jsExprType >= (int)JsExprType.First) {
+                    throw new NotImplementedException("Cannot handle: " + jsExprType);
+                } else {
+                    return base.VisitExpr(e);
+                }
             }
         }
 
         protected virtual ICode VisitJsFunction(ExprJsFunction e) {
             this.ThrowOnNoOverride();
             var body = (Stmt)this.Visit(e.Body);
+            foreach (var arg in e.Args) {
+                this.Visit(arg);
+            }
+            // TODO: Handle properly
             if (body != e.Body) {
-                return new ExprJsFunction(e.Ctx, body);
+                return new ExprJsFunction(e.Ctx, e.Args, body);
             } else {
                 return e;
             }
+        }
+
+        protected virtual ICode VisitJsInvoke(ExprJsInvoke e) {
+            this.ThrowOnNoOverride();
+            this.Visit(e.MethodToInvoke);
+            foreach (var arg in e.Args) {
+                this.Visit(arg);
+            }
+            // TODO: Handle properly
+            return e;
         }
 
     }

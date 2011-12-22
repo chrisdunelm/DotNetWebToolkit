@@ -14,6 +14,7 @@ namespace Cil2Js.Output {
             if (type.IsPrimitive) {
                 switch (type.FullName) {
                 case "System.Boolean": return "false";
+                case "System.IntPtr":
                 case "System.UIntPtr":
                 case "System.Int16":
                 case "System.Int32": return "0";

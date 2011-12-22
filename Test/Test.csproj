@@ -49,16 +49,20 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebDriver">
+      <HintPath>..\Libs\Selenium\WebDriver.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
-    <Compile Include="ExecutionTests\TestClosures.cs" />
+    <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
     <Compile Include="ExecutionTests\TestGenerics.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
+    <Compile Include="ExecutionTests\TestMethodCalls.cs" />
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="ExecutionTests\TestSimpleInterfaces.cs" />
     <Compile Include="ExecutionTests\TestString.cs" />
@@ -84,6 +88,12 @@
       <Project>{1BC431AB-58C6-4D60-95C2-885FDD784CE0}</Project>
       <Name>Cil2Js</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Libs\Selenium\chromedriver.exe">
+      <Link>chromedriver.exe</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

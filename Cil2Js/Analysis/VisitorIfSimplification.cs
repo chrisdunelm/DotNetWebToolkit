@@ -104,8 +104,13 @@ namespace Cil2Js.Analysis {
                     }
                 }
                 return null;
-            })
-            .ToArray();
+            }).ToArray();
+            //stNew = stNew.Combine((a, b) => {
+            //    if (a.StmtType == Stmt.NodeType.If && b.StmtType == Stmt.NodeType.If) {
+
+            //    }
+            //    return null;
+            //}).ToArray();
             if (!Enumerable.SequenceEqual(s.Statements, stNew)) {
                 return new StmtBlock(s.Ctx, stNew);
             } else {

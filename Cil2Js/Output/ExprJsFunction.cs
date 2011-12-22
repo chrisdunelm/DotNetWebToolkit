@@ -8,11 +8,13 @@ using Mono.Cecil;
 namespace Cil2Js.Output {
     public class ExprJsFunction : Expr {
 
-        public ExprJsFunction(Ctx ctx, Stmt body)
+        public ExprJsFunction(Ctx ctx, IEnumerable<Expr> args, Stmt body)
             : base(ctx) {
+            this.Args = args;
             this.Body = body;
         }
 
+        public IEnumerable<Expr> Args { get; private set; }
         public Stmt Body { get; private set; }
 
         public override Expr.NodeType ExprType {

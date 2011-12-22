@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestGenerics() { Verbose = true };
-            t.TestStaticGenericMethod();
+            var t = new TestFuncsClosures() { Verbose = true };
+            t.TestFunc8Closure();
             return;
 
         }

@@ -61,10 +61,11 @@ namespace Cil2Js {
             // Simplify AST
             for (int i = 0; ; i++) {
                 var astOrg = ast;
+                // TODO: VisitorBooleanSimplification may re-order logic, which should not be done at this stage
                 ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s, booleanSimplification, out booleanSimplification), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
-                ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
+                //ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorSsaSimplifier.V(s), ast, "VisitorSsaSimplifier");
                 ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
                 ast = doStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier");
