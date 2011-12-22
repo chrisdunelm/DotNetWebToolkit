@@ -18,7 +18,7 @@ namespace Cil2Js.Output {
         private List<Tuple<ICall, bool>> calls = new List<Tuple<ICall, bool>>();
 
         protected override ICode VisitCall(ExprCall e) {
-            this.calls.Add(Tuple.Create((ICall)e, e.IsVirtual));
+            this.calls.Add(Tuple.Create((ICall)e, e.IsVirtualCall));
             return base.VisitCall(e);
         }
 

@@ -32,7 +32,7 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            e = base.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtual));
+            e = base.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall));
             var res = this.VisitCall((ICall)e);
             if (res == null) {
                 return e;

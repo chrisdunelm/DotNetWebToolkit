@@ -370,7 +370,7 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            var callMethod = e.CallMethod;
+            var callMethod = e.CallMethod.Resolve();
             Action<string> appendArgs = preThis => {
                 this.js.Append("(");
                 var needComma = false;
@@ -473,7 +473,7 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitNewObj(ExprNewObj e) {
-            var name = this.resolver.MethodNames[e.CallMethod];
+            var name = this.resolver.MethodNames[e.CallMethod.Resolve()];
             this.js.Append(name);
             this.js.Append("(null");
             foreach (var arg in e.Args) {

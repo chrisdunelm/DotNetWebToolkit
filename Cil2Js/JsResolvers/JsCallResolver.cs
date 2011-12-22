@@ -89,7 +89,7 @@ namespace Cil2Js.JsResolvers {
         };
 
         public static JsResolved Resolve(ICall call) {
-            var method = call.CallMethod;
+            var method = call.CallMethod.Resolve();
             // A call that needs translating into a javascript call
             var m = new M(method);
             var fn = map.ValueOrDefault(m);

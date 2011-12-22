@@ -169,15 +169,14 @@ namespace Cil2Js.Analysis {
                 return this.Cast(this.ctx.Int32);
             case Code.Conv_I:
                 return this.Cast(this.ctx.IntPtr);
-            case Code.Castclass: // TODO: Should do more than this...
+            case Code.Castclass:
                 return this.Cast((TypeReference)inst.Operand);
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
-            case Code.Ret:
-                //return new StmtReturn(this.method.ReturnType.IsVoid() ? null : this.CastIfRequired(this.stack.Pop(), this.method.ReturnType));
-                throw new InvalidOperationException("Should not see this here: " + inst);
             case Code.Ldftn:
                 return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, (MethodReference)inst.Operand));
+            case Code.Ret:
+                throw new InvalidOperationException("Should not see this here: " + inst);
             default:
                 throw new NotImplementedException("Cannot handle: " + inst.OpCode);
             }
@@ -270,38 +269,62 @@ namespace Cil2Js.Analysis {
             }
         }
 
-        private Stmt Call(Instruction inst, bool isVirtual) {
-            var calling = ((MethodReference)inst.Operand).Resolve();
-            var args = new List<Expr>();
-            for (int i = 0; i < calling.Parameters.Count; i++) {
-                var expr = this.stack.Pop();
-                args.Add(this.CastIfRequired(expr, calling.Parameters[calling.Parameters.Count - 1 - i].ParameterType));
+        private Stmt Call(Instruction inst, bool isVirtualCall) {
+            var callingRef = (MethodReference)inst.Operand;
+            var numArgs = callingRef.Parameters.Count;
+            var argExprs = new Expr[numArgs];
+            for (int i = numArgs - 1; i >= 0; i--) {
+                argExprs[i] = this.stack.Pop();
             }
-            args.Reverse();
-            var obj = calling.IsStatic ? null : this.CastIfRequired(this.stack.Pop(), calling.DeclaringType);
-            var exprCall = new ExprCall(this.ctx, calling, obj, args, isVirtual);
-            if (calling.ReturnType.IsVoid()) {
+            for (int i = 0; i < numArgs; i++) {
+                var argType = callingRef.Parameters[i].GetResolvedType(callingRef);
+                argExprs[i] = this.CastIfRequired(argExprs[i], argType);
+            }
+            var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
+            var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall);
+            if (callingRef.ReturnType.IsVoid()) {
                 return new StmtWrapExpr(this.ctx, exprCall);
             } else {
                 return this.SsaLocalAssignment(exprCall);
             }
+
+            //var calling = ((MethodReference)inst.Operand).Resolve();
+            //var args = new List<Expr>();
+            //for (int i = 0; i < calling.Parameters.Count; i++) {
+            //    var expr = this.stack.Pop();
+            //    args.Add(this.CastIfRequired(expr, calling.Parameters[calling.Parameters.Count - 1 - i].ParameterType));
+            //}
+            //args.Reverse();
+            //var obj = calling.IsStatic ? null : this.CastIfRequired(this.stack.Pop(), calling.DeclaringType);
+            //var exprCall = new ExprCall(this.ctx, calling, obj, args, isVirtualCall);
+            //if (calling.ReturnType.IsVoid()) {
+            //    return new StmtWrapExpr(this.ctx, exprCall);
+            //} else {
+            //    return this.SsaLocalAssignment(exprCall);
+            //}
         }
 
         private Stmt NewObj(Instruction inst) {
             var ctorRef = (MethodReference)inst.Operand;
-            var ctor = ctorRef.Resolve();
-            var objTypeRef = ctorRef.DeclaringType;
-            var objTypeDef = objTypeRef.Resolve();
-            var fieldDef = objTypeDef.Fields.First();
-            var fTypeRef = fieldDef.FieldType;
-            var fTypeDef = fTypeRef.Resolve();
-            var args = new List<Expr>();
-            for (int i = 0; i < ctor.Parameters.Count; i++) {
-                var expr = this.stack.Pop();
-                args.Add(expr);
+            var numArgs = ctorRef.Parameters.Count;
+            var argExprs = new Expr[numArgs];
+            for (int i = numArgs - 1; i >= 0; i--) {
+                argExprs[i] = this.stack.Pop();
             }
-            args.Reverse();
-            return this.SsaLocalAssignment(new ExprNewObj(this.ctx, ctor, args));
+            for (int i = 0; i < numArgs; i++) {
+                var argType = ctorRef.Parameters[i].GetResolvedType(ctorRef);
+                argExprs[i] = this.CastIfRequired(argExprs[i], argType);
+            }
+            var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
+            return this.SsaLocalAssignment(expr);
+            //var ctor = ctorRef.Resolve();
+            //var args = new List<Expr>();
+            //for (int i = 0; i < ctor.Parameters.Count; i++) {
+            //    var expr = this.stack.Pop();
+            //    args.Add(expr);
+            //}
+            //args.Reverse();
+            //return this.SsaLocalAssignment(new ExprNewObj(this.ctx, ctor, args));
         }
 
         private Stmt LoadField(Instruction inst) {

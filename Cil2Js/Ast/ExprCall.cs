@@ -3,23 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Ast {
 
     public class ExprCall : Expr, ICall {
 
-        public ExprCall(Ctx ctx, MethodDefinition callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtual)
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
             : base(ctx) {
             this.CallMethod = callMethod;
             this.Obj = obj;
             this.Args = args;
-            this.IsVirtual = isVirtual;
+            this.IsVirtualCall = isVirtualCall;
+            this.returnType = callMethod.GetResolvedReturnType();
         }
 
         public Expr Obj { get; private set; }
-        public MethodDefinition CallMethod { get; private set; }
+        public MethodReference CallMethod { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
-        public bool IsVirtual { get; private set; }
+        public bool IsVirtualCall { get; private set; }
+        private TypeReference returnType;
 
         public bool IsStatic {
             get { return this.Obj == null; }
@@ -30,7 +33,7 @@ namespace Cil2Js.Ast {
         }
 
         public override TypeReference Type {
-            get { return this.CallMethod.ReturnType; }
+            get { return this.returnType; }
         }
 
         public override Special Specials {

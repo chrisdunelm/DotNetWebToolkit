@@ -7,13 +7,13 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprNewObj : Expr, ICall {
 
-        public ExprNewObj(Ctx ctx, MethodDefinition ctor, IEnumerable<Expr> args)
+        public ExprNewObj(Ctx ctx, MethodReference ctor, IEnumerable<Expr> args)
             : base(ctx) {
             this.CallMethod = ctor;
             this.Args = args;
         }
 
-        public MethodDefinition CallMethod { get; private set; }
+        public MethodReference CallMethod { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
 
         public override Expr.NodeType ExprType {

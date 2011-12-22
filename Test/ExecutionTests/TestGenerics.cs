@@ -96,8 +96,37 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestStatic() {
+        public void TestStaticGenericMethod() {
             Func<int, int> f = a => C6.Get(a);
+            this.Test(f);
+        }
+
+        class C7A<T, U> {
+            public C7A(T t, U u) { this.t = t; this.u = u; }
+            public T t;
+            public U u;
+        }
+        static class C7<T> {
+            public static C7A<T, U> Get<U>(T t, U u) {
+                return new C7A<T, U>(t, u);
+            }
+        }
+
+        [Test]
+        public void TestStaticGenericMethodInGenericClass() {
+            Func<int, bool, int> f = (a, b) => {
+                var c = C7<int>.Get(a, b);
+                return c.t + (c.u ? 1 : -1);
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestStaticGenericMethodInGenericClassWithObj() {
+            Func<int, int, int> f = (a, b) => {
+                var c = C7<int>.Get(a, new C7A<int, int>(a, b));
+                return c.t + c.u.t + c.u.u;
+            };
             this.Test(f);
         }
 

@@ -188,7 +188,7 @@ namespace Cil2Js.Analysis {
             return expr == s.Expr ? s : new StmtReturn(s.Ctx,(Expr)expr);
         }
 
-        protected T HandleCall<T>(T call, Func<MethodDefinition, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
+        protected T HandleCall<T>(T call, Func<MethodReference, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
             this.ThrowOnNoOverride();
             var obj = (Expr)this.Visit(call.Obj);
             List<Expr> argsNew = null;
@@ -290,7 +290,7 @@ namespace Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtual));
+            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {

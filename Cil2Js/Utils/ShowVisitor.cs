@@ -240,11 +240,11 @@ namespace Cil2Js.Utils {
             return s;
         }
 
-        private void VisitCall(ICall call) {
+        private void VisitCall(ICall call, bool isConstructor) {
             var method = call.CallMethod;
-            if (method.IsConstructor) {
+            if (isConstructor) {
                 this.code.Append(method.DeclaringType.Name);
-            } else if (method.IsStatic) {
+            } else if (!method.HasThis) {
                 this.code.Append(method.DeclaringType.Name + "." + method.Name);
             } else {
                 this.Visit(call.Obj);
@@ -263,7 +263,13 @@ namespace Cil2Js.Utils {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            this.VisitCall((ICall)e);
+            this.VisitCall((ICall)e, false);
+            return e;
+        }
+
+        protected override ICode VisitNewObj(ExprNewObj e) {
+            this.code.AppendFormat("new ");
+            this.VisitCall(e, true);
             return e;
         }
 
@@ -280,12 +286,6 @@ namespace Cil2Js.Utils {
 
         protected override ICode VisitThis(ExprThis e) {
             this.code.Append("this");
-            return e;
-        }
-
-        protected override ICode VisitNewObj(ExprNewObj e) {
-            this.code.AppendFormat("new ");
-            this.VisitCall(e);
             return e;
         }
 

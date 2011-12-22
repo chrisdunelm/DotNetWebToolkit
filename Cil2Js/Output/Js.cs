@@ -77,19 +77,19 @@ namespace Cil2Js.Output {
                 var calls = VisitorFindCalls.V(ast);
                 foreach (var callInfo in calls) {
                     var call = callInfo.Item1;
-                    if (call.CallMethod.DeclaringType.IsInterface) {
-                        interfaceCalls.ValueOrDefault(call.CallMethod.DeclaringType, () => new HashSet<MethodDefinition>(), true)
-                            .Add(call.CallMethod);
+                    var callMethod = call.CallMethod.Resolve();
+                    if (callMethod.DeclaringType.IsInterface) {
+                        interfaceCalls.ValueOrDefault(callMethod.DeclaringType, () => new HashSet<MethodDefinition>(), true)
+                            .Add(callMethod);
                     } else {
                         var isVirtual = callInfo.Item2;
                         var resolved = JsCallResolver.Resolve(call);
                         if (resolved == null) {
-                            var callMethod = call.CallMethod;
                             if (isVirtual && callMethod.IsVirtual) {
                                 var baseMethod = callMethod.GetBasemostMethodInTypeHierarchy();
                                 virtualCalls.ValueOrDefault(baseMethod, () => new HashSet<MethodDefinition>(), true);
                             }
-                            methodsCalled.Add(call.CallMethod);
+                            methodsCalled.Add(callMethod);
                         } else {
                             switch (resolved.Type) {
                             case JsResolvedType.Method:

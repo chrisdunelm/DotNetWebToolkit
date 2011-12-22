@@ -36,7 +36,7 @@ namespace Cil2Js.Output {
 
         protected override ICode VisitCall(ExprCall e) {
             if (e.IsStatic) {
-                this.Add(e.CallMethod.DeclaringType);
+                this.Add(e.CallMethod.DeclaringType.Resolve());
             }
             return e;
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Ast {
     public class ExprFieldAccess : ExprVar {
@@ -11,17 +12,18 @@ namespace Cil2Js.Ast {
             : base(ctx) {
             this.Obj = obj;
             this.Field = field;
-            if (field.FieldType.IsGenericParameter) {
-                var declType = field.DeclaringType;
-                if (!declType.IsGenericInstance) {
-                    throw new InvalidOperationException("Declaring type surely should be a generic instance?!?");
-                }
-                var genericInstanceDeclType = (GenericInstanceType)declType;
-                var genericParameterFieldType = (GenericParameter)field.FieldType;
-                this.type = genericInstanceDeclType.GenericArguments[genericParameterFieldType.Position];
-            } else {
-                this.type = field.FieldType;
-            }
+            this.type = field.GetResolvedType();
+            //if (field.FieldType.IsGenericParameter) {
+            //    var declType = field.DeclaringType;
+            //    if (!declType.IsGenericInstance) {
+            //        throw new InvalidOperationException("Declaring type surely should be a generic instance?!?");
+            //    }
+            //    var genericInstanceDeclType = (GenericInstanceType)declType;
+            //    var genericParameterFieldType = (GenericParameter)field.FieldType;
+            //    this.type = genericInstanceDeclType.GenericArguments[genericParameterFieldType.Position];
+            //} else {
+            //    this.type = field.FieldType;
+            //}
         }
 
         private TypeReference type;

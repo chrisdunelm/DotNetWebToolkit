@@ -55,7 +55,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestGenerics() { Verbose = true };
-            t.TestStatic();
+            t.TestStaticGenericMethod();
             return;
 
         }
