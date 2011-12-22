@@ -4,34 +4,43 @@ using System.Linq;
 using System.Text;
 
 namespace Cil2Js.Output {
-    class NameGenerator {
+    public class NameGenerator {
 
-        private readonly static char[] c = "abcdefghijklmnopqrstuvwxyz".ToArray();
+        private readonly static char[] c0 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToArray();
+        private readonly static char[] cN = c0.Concat("0123456789".ToArray()).ToArray();
 
         public NameGenerator(string prefix = "") {
             this.prefix = prefix;
+            this.gen = this.GenFn().GetEnumerator();
         }
 
         private string prefix;
-        private int curName = 0;
+        private IEnumerator<string> gen;
 
-        public string GetNewName() {
-            var l = c.Length;
-            int length = 1, sub = 0;
-            for (int i = l, add = l; ; sub += add, add *= l, i += add, length++) {
-                if (this.curName < i) {
-                    break;
+        private IEnumerable<string> GenFn() {
+            int[] indexes = { 0 };
+            for (; ; ) {
+                var name = new string(indexes.Select((index, position) => (position == 0 ? c0 : cN)[index]).ToArray());
+                yield return this.prefix + name;
+                bool ok = false;
+                for (int i = indexes.Length - 1; i >= 0; i--) {
+                    if (++indexes[i] >= (i == 0 ? c0 : cN).Length) {
+                        indexes[i] = 0;
+                    } else {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) {
+                    // Need to start a longer name
+                    indexes = new int[indexes.Length + 1]; // All default to 0 which is correct
                 }
             }
-            var v = this.curName - sub;
-            string name = "";
-            for (int i = 0; i < length; i++) {
-                name += c[v % l];
-                v = v / l;
-            }
-            this.curName++;
-            name = this.prefix + new string(name.Reverse().ToArray());
-            return name;
+        }
+
+        public string GetNewName() {
+            this.gen.MoveNext();
+            return this.gen.Current;
         }
 
 
