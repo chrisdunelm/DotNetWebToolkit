@@ -213,6 +213,33 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class C10 {
+#pragma warning disable 0649
+            public static int i;
+#pragma warning restore 0649
+        }
+
+        [Test]
+        public void TestStaticFieldNoInit() {
+            Func<int> f = () => C10.i;
+            this.Test(f);
+        }
+
+        class C11 {
+#pragma warning disable 0649
+            public int i;
+#pragma warning restore 0649
+        }
+
+        [Test]
+        public void TestFieldNoInit() {
+            Func<int> f = () => {
+                var c = new C11();
+                return c.i;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

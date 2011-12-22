@@ -156,13 +156,13 @@ namespace Cil2Js.Output {
                 sb.AppendFormat("var {0};", string.Join(", ", vars.Select(x => x)));
             }
 
-            // Make sure that static constructors are called before any references to static members
             if (method.IsConstructor && method.IsStatic) {
                 // If this is a cctor, then mark it as called
                 sb.AppendLine();
                 sb.Append(' ', tabSize);
                 sb.AppendFormat("{0} = null;", methodName);
             }
+            // Make sure that static constructors are called before any references to static members
             foreach (var cctor in resolver.CctorsCalled[method]) {
                 if (cctor != method) {
                     // Don't re-call same cctor!
@@ -172,8 +172,8 @@ namespace Cil2Js.Output {
                 }
             }
 
-            // In a non-static constructor, the object with type information must be constructed
             if (method.IsConstructor && !method.IsStatic && !method.DeclaringType.IsAbstract) {
+                // In a non-static constructor, the object with type information must be constructed
                 sb.AppendLine();
                 sb.Append(' ', tabSize);
                 sb.AppendFormat("if (!{0}) {0} = {{_:{{", thisName);
@@ -193,6 +193,13 @@ namespace Cil2Js.Output {
                     sb.AppendFormat("{0}:{1}", resolver.InterfaceNames[iface], resolver.InterfaceCallsNames[method.DeclaringType][iface]);
                 }
                 sb.Append("}};");
+                // All fields must be initialised
+                foreach (var field in method.DeclaringType.Fields) {
+                    sb.AppendLine();
+                    sb.Append(' ', tabSize);
+                    sb.AppendFormat("{0}.{1} = {2};", thisName,
+                        resolver.FieldNames[field], DefaultValuer.Get(field.GetResolvedType()));
+                }
             }
 
             sb.AppendLine(js);
