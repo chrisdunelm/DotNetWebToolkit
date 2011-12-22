@@ -463,7 +463,7 @@ namespace Cil2Js.Output {
                 this.Visit(e.Obj);
                 this.js.Append(".");
             }
-            this.js.Append(this.resolver.FieldNames[e.Field]);
+            this.js.Append(this.resolver.FieldNames[e.Field.Resolve()]);
             return e;
         }
 

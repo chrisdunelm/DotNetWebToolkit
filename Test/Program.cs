@@ -45,18 +45,18 @@ namespace Test {
             Window.SetInterval(() => {
                 ctx.FillStyle = f1 ? fill1 : fill2;
                 f1 = !f1;
-                ctx.Rect(50, 50, 100, 50);
+                ctx.FillRect(50, 50, 100, 50);
             }, 5000);
         }
 
         static void Main(string[] args) {
-            var mi = typeof(Program).GetMethod("T0");
-            var js = Transcoder.ToJs(mi, true);
+            //var mi = typeof(Program).GetMethod("T0");
+            //var js = Transcoder.ToJs(mi, true);
+            //Console.WriteLine(js);
 
-            Console.WriteLine(js);
-            //var t = new TestExceptions() { Verbose = true };
-            //t.TestNestedCatch2();
-            //return;
+            var t = new TestGenerics() { Verbose = true };
+            t.TestStatic();
+            return;
 
         }
     }

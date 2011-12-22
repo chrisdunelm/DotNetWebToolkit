@@ -18,7 +18,7 @@ namespace Cil2Js.Output {
         private List<FieldDefinition> fieldAccesses = new List<FieldDefinition>();
 
         protected override Ast.ICode VisitFieldAccess(ExprFieldAccess e) {
-            this.fieldAccesses.Add(e.Field);
+            this.fieldAccesses.Add(e.Field.Resolve());
             return base.VisitFieldAccess(e);
         }
 

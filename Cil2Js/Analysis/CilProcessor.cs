@@ -288,7 +288,13 @@ namespace Cil2Js.Analysis {
         }
 
         private Stmt NewObj(Instruction inst) {
-            var ctor = ((MethodReference)inst.Operand).Resolve();
+            var ctorRef = (MethodReference)inst.Operand;
+            var ctor = ctorRef.Resolve();
+            var objTypeRef = ctorRef.DeclaringType;
+            var objTypeDef = objTypeRef.Resolve();
+            var fieldDef = objTypeDef.Fields.First();
+            var fTypeRef = fieldDef.FieldType;
+            var fTypeDef = fTypeRef.Resolve();
             var args = new List<Expr>();
             for (int i = 0; i < ctor.Parameters.Count; i++) {
                 var expr = this.stack.Pop();
@@ -298,34 +304,34 @@ namespace Cil2Js.Analysis {
             return this.SsaLocalAssignment(new ExprNewObj(this.ctx, ctor, args));
         }
 
-        private Stmt NewArray(Instruction inst) {
-            var exprNumElements = this.stack.Pop();
-            var expr = new ExprNewArray(this.ctx, (TypeReference)inst.Operand, exprNumElements);
-            return this.SsaLocalAssignment(expr);
-        }
-
         private Stmt LoadField(Instruction inst) {
             var obj = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, obj, ((FieldReference)inst.Operand).Resolve());
+            var expr = new ExprFieldAccess(this.ctx, obj, (FieldReference)inst.Operand);
             return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StoreField(Instruction inst) {
             var value = this.stack.Pop();
             var obj = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, obj, ((FieldReference)inst.Operand).Resolve());
+            var expr = new ExprFieldAccess(this.ctx, obj, (FieldReference)inst.Operand);
             return new StmtAssignment(this.ctx, expr, value);
         }
 
         private Stmt LoadStaticField(Instruction inst) {
-            var expr = new ExprFieldAccess(this.ctx, null, ((FieldReference)inst.Operand).Resolve());
+            var expr = new ExprFieldAccess(this.ctx, null, (FieldReference)inst.Operand);
             return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StoreStaticField(Instruction inst) {
             var value = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, null, ((FieldReference)inst.Operand).Resolve());
+            var expr = new ExprFieldAccess(this.ctx, null, (FieldReference)inst.Operand);
             return new StmtAssignment(this.ctx, expr, value);
+        }
+
+        private Stmt NewArray(Instruction inst) {
+            var exprNumElements = this.stack.Pop();
+            var expr = new ExprNewArray(this.ctx, (TypeReference)inst.Operand, exprNumElements);
+            return this.SsaLocalAssignment(expr);
         }
 
         private Stmt LoadElem(Instruction inst) {

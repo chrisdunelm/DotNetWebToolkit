@@ -54,7 +54,9 @@
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
+    <Compile Include="ExecutionTests\TestClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
+    <Compile Include="ExecutionTests\TestGenerics.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />

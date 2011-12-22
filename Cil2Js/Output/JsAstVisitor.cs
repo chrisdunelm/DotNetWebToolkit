@@ -8,7 +8,10 @@ using Cil2Js.Ast;
 namespace Cil2Js.Output {
 
     public enum JsExprType {
-        JsFunction = 1000,
+        First = Expr.NodeType.Max,
+
+        JsFunction,
+        JsInvoke,
     }
 
     public class JsAstVisitor : AstVisitor {

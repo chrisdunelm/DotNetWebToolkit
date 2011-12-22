@@ -11,7 +11,7 @@ namespace Cil2Js.Web {
 
         public object FillStyle { get; set; }
 
-        public void Rect(double x, double y, double w, double h) {
+        public void FillRect(double x, double y, double w, double h) {
             throw new JsOnlyException();
         }
 

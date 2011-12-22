@@ -252,7 +252,7 @@ namespace Cil2Js.Analysis {
             case Expr.NodeType.MethodReference:
                 return this.VisitMethodReference((ExprMethodReference)e);
             default:
-                if ((int)e.ExprType >= 1000) {
+                if ((int)e.ExprType >= (int)Expr.NodeType.Max) {
                     return e;
                 } else {
                     throw new NotImplementedException("Cannot handle: " + e.ExprType);

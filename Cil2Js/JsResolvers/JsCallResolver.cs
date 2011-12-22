@@ -71,6 +71,8 @@ namespace Cil2Js.JsResolvers {
 
         private static Dictionary<M, Func<ICall, JsResolved>> map = new Dictionary<M, Func<ICall, JsResolved>>(M.ValueEqComparer) {
             { M.Def(TVoid, "System.Action..ctor", TObject, TIntPtr), SystemResolver.Action_ctor },
+            //{ M.Def(
+
             { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality },
             { M.Def(TInt32, "System.String.get_Length"), StringResolver.get_Length },
             { M.Def(TChar, "System.String.get_Chars", TInt32), StringResolver.get_Chars },

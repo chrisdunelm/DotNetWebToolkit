@@ -29,7 +29,7 @@ namespace Cil2Js.Output {
 
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             if (e.IsStatic) {
-                this.Add(e.Field.DeclaringType);
+                this.Add(e.Field.Resolve().DeclaringType);
             }
             return e;
         }

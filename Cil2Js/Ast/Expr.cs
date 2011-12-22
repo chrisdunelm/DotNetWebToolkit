@@ -26,6 +26,8 @@ namespace Cil2Js.Ast {
             ArrayLength,
             Cast,
             MethodReference,
+
+            Max = 1000
         }
 
         [Flags]
