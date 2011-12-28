@@ -5,9 +5,10 @@ using System.Text;
 using Cil2Js.Analysis;
 using Mono.Cecil;
 using Cil2Js.Ast;
+using Cil2Js.Output;
 
 namespace Cil2Js.Utils {
-    public class ShowVisitor : AstVisitor {
+    public class ShowVisitor : JsAstVisitor {
 
         private static string GetStmtName(Stmt s) {
             if (s.StmtType == Stmt.NodeType.Cil) {
@@ -363,6 +364,36 @@ namespace Cil2Js.Utils {
         protected override ICode VisitMethodReference(ExprMethodReference e) {
             this.code.AppendFormat("&{0}", e.Method.Name);
             return e;
+        }
+
+        protected override ICode VisitSwitch(StmtSwitch s) {
+            this.NewLine();
+            this.code.Append("switch (");
+            this.Visit(s.Expr);
+            this.code.Append(") {");
+            foreach (var @case in s.Cases) {
+                this.NewLine();
+                this.code.AppendFormat("case {0}:", @case.Value);
+                this.indent++;
+                this.Visit(@case.Stmt);
+                this.indent--;
+            }
+            if (s.Default != null) {
+                this.NewLine();
+                this.code.Append("default:");
+                this.indent++;
+                this.Visit(s.Default);
+                this.indent--;
+            }
+            this.NewLine();
+            this.code.Append("}");
+            return s;
+        }
+
+        protected override ICode VisitBreak(StmtBreak s) {
+            this.NewLine();
+            this.code.Append("break");
+            return s;
         }
 
     }

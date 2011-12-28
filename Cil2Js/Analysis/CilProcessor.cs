@@ -130,9 +130,13 @@ namespace Cil2Js.Analysis {
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.NotEqual));
             case Code.Blt_S:
             case Code.Blt:
+            case Code.Blt_Un_S: // Hack
+            case Code.Blt_Un: // Hack
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThan));
             case Code.Ble_S:
             case Code.Ble:
+            case Code.Ble_Un_S: // Hack
+            case Code.Ble_Un: // Hack
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThanOrEqual));
             case Code.Bgt_S:
             case Code.Bgt:
@@ -140,6 +144,8 @@ namespace Cil2Js.Analysis {
             case Code.Bge_S:
             case Code.Bge:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThanOrEqual));
+            case Code.Switch:
+                return this.SsaInstResultAssignment(inst, this.stack.Pop());
             case Code.Pop:
                 this.stack.Pop(); return null;
             case Code.Callvirt:
@@ -161,9 +167,11 @@ namespace Cil2Js.Analysis {
             case Code.Stsfld:
                 return this.StoreStaticField(inst);
             case Code.Ldelem_I4:
+            case Code.Ldelem_Any:
                 return this.LoadElem(inst);
             case Code.Stelem_I4:
             case Code.Stelem_Ref:
+            case Code.Stelem_Any:
                 return this.StoreElem(inst);
             case Code.Conv_I4:
                 return this.Cast(this.ctx.Int32);
@@ -175,6 +183,8 @@ namespace Cil2Js.Analysis {
                 return new StmtThrow(this.ctx, this.stack.Pop());
             case Code.Ldftn:
                 return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, (MethodReference)inst.Operand));
+            case Code.Dup:
+                return this.Dup();
             case Code.Ret:
                 throw new InvalidOperationException("Should not see this here: " + inst);
             default:
@@ -377,6 +387,12 @@ namespace Cil2Js.Analysis {
             var array = this.stack.Pop();
             var expr = new ExprArrayLength(this.ctx, array);
             return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt Dup() {
+            var value = this.stack.Peek();
+            this.stack.Push(value);
+            return null;
         }
 
     }

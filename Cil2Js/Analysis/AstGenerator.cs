@@ -134,7 +134,11 @@ namespace Cil2Js.Analysis {
                     switch (x.OpCode.FlowControl) {
                     case FlowControl.Cond_Branch:
                     case FlowControl.Branch:
-                        return new[] { (Instruction)x.Operand, x.Next };
+                        if (x.OpCode.Code == Code.Switch) {
+                            return ((Instruction[])x.Operand).Concat(x.Next);
+                        } else {
+                            return new[] { (Instruction)x.Operand, x.Next };
+                        }
                     case FlowControl.Throw:
                     case FlowControl.Return:
                         return new[] { x.Next };
@@ -225,11 +229,23 @@ namespace Cil2Js.Analysis {
                 var code = end.OpCode.Code;
                 switch (end.OpCode.FlowControl) {
                 case FlowControl.Cond_Branch:
-                    var ifTrue = new StmtContinuation(this.ctx, (Instruction)end.Operand, false);
-                    var ifFalse = new StmtContinuation(this.ctx, end.Next, false);
-                    this.mappable.Add(ifTrue);
-                    this.mappable.Add(ifFalse);
-                    blockEndStmt = new StmtIf(this.ctx, new ExprVarInstResult(this.ctx, end, this.ctx.Boolean), ifTrue, ifFalse);
+                    if (code == Code.Switch) {
+                        var cases = ((Instruction[])end.Operand).Select(x => new StmtContinuation(this.ctx, x, false)).ToArray();
+                        foreach (var @case in cases) {
+                            this.mappable.Add(@case);
+                        }
+                        var @default = new StmtContinuation(this.ctx, end.Next, false);
+                        this.mappable.Add(@default);
+                        blockEndStmt = new StmtSwitch(this.ctx, new ExprVarInstResult(this.ctx, end, this.ctx.Int32),
+                            cases.Select((x, value) => new StmtSwitch.Case(value, x)).ToArray(),
+                            @default);
+                    } else {
+                        var ifTrue = new StmtContinuation(this.ctx, (Instruction)end.Operand, false);
+                        var ifFalse = new StmtContinuation(this.ctx, end.Next, false);
+                        this.mappable.Add(ifTrue);
+                        this.mappable.Add(ifFalse);
+                        blockEndStmt = new StmtIf(this.ctx, new ExprVarInstResult(this.ctx, end, this.ctx.Boolean), ifTrue, ifFalse);
+                    }
                     break;
                 case FlowControl.Branch:
                     var leaveProtectedRegion = code == Code.Leave || code == Code.Leave_S;

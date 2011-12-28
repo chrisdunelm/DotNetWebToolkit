@@ -60,12 +60,14 @@
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
     <Compile Include="ExecutionTests\TestGenerics.cs" />
+    <Compile Include="ExecutionTests\TestList.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
     <Compile Include="ExecutionTests\TestMethodCalls.cs" />
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="ExecutionTests\TestSimpleInterfaces.cs" />
     <Compile Include="ExecutionTests\TestString.cs" />
+    <Compile Include="ExecutionTests\TestSwitch.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBooleanSimplification.cs" />

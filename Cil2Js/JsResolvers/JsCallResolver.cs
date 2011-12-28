@@ -148,18 +148,20 @@ namespace Cil2Js.JsResolvers {
             var type = method.DeclaringType;
             var jsClass = type.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Cil2Js.Attributes.JsClassAttribute");
             if (jsClass != null) {
-                if (method.IsSetter || method.IsGetter) {
-                    var propertyName = JsCase(method.Name.Substring(4));
-                    if (method.IsStatic) {
-                        propertyName = JsCase(method.DeclaringType.Name) + "." + propertyName;
+                if (method.IsExternal()) {
+                    if (method.IsSetter || method.IsGetter) {
+                        var propertyName = JsCase(method.Name.Substring(4));
+                        if (method.IsStatic) {
+                            propertyName = JsCase(method.DeclaringType.Name) + "." + propertyName;
+                        }
+                        return new JsResolvedProperty(call.Obj, propertyName);
+                    } else {
+                        var methodName = JsCase(method.Name);
+                        if (method.IsStatic) {
+                            methodName = JsCase(method.DeclaringType.Name) + "." + methodName;
+                        }
+                        return new JsResolvedMethod(call.Obj, methodName, call.Args);
                     }
-                    return new JsResolvedProperty(call.Obj, propertyName);
-                } else {
-                    var methodName = JsCase(method.Name);
-                    if (method.IsStatic) {
-                        methodName = JsCase(method.DeclaringType.Name) + "." + methodName;
-                    }
-                    return new JsResolvedMethod(call.Obj, methodName, call.Args);
                 }
             }
             // No special resolution available

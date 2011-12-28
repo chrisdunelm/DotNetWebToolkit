@@ -18,8 +18,10 @@ namespace Cil2Js.Ast {
             Throw,
             Assignment,
             If,
+            Switch,
             DoLoop,
             Return,
+            Break,
         }
 
         public Stmt(Ctx ctx) {

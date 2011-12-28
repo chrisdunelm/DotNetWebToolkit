@@ -38,7 +38,7 @@ namespace Test {
 
         public static void T0() {
             var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
-            var ctx = (CanvasRenderingContext2D)canvas.GetContext("2d");
+            var ctx = (CanvasRenderingContext2D)canvas.GetContext(CanvasContext.TwoD);
             string fill1 = "#ff0000";
             string fill2 = "#0000ff";
             bool f1 = true;
@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestFuncsClosures() { Verbose = true };
-            t.TestFunc8Closure();
+            var t = new TestGenerics() { Verbose = true };
+            t.TestGeneric1();
             return;
 
         }

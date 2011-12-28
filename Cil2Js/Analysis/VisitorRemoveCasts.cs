@@ -36,6 +36,9 @@ namespace Cil2Js.Analysis {
                     return new ExprLiteral(e.Ctx, ((int)e.Value) != 0, e.Ctx.Boolean);
                 }
             }
+            if (convertToType.Resolve().IsEnum) {
+                return e;
+            }
             throw new NotImplementedException("Cannot convert");
         }
 

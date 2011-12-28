@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using Cil2Js.Attributes;
 
+#pragma warning disable 0626
+
 namespace Cil2Js.Web {
 
     [JsClass]
     public static class Document {
 
-        public static HtmlElement GetElementById(string id) {
-            throw new JsOnlyException();
-        }
+        public static extern HtmlElement GetElementById(string id);
 
     }
 

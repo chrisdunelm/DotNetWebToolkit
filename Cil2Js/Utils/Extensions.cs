@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil.Cil;
 using System.Diagnostics;
+using Mono.Cecil;
 
 namespace Cil2Js.Utils {
     public static class Extensions {
@@ -113,6 +114,28 @@ namespace Cil2Js.Utils {
         [DebuggerStepThrough]
         public static IEnumerable<T> EmptyIfNull<T>(this IEnumerable<T> en) {
             return en ?? Enumerable.Empty<T>();
+        }
+
+        [DebuggerStepThrough]
+        public static bool AllSame<T, TCompare>(this IEnumerable<T> en, Func<T, TCompare> select) {
+            bool haveFirst = false;
+            TCompare first = default(TCompare);
+            foreach (var item in en) {
+                var comp = select(item);
+                if (!haveFirst) {
+                    haveFirst = true;
+                    first = comp;
+                } else {
+                    if (!comp.Equals(first)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        public static bool IsExternal(this MethodDefinition method) {
+            return method.HasBody && method.RVA == 0;
         }
 
     }

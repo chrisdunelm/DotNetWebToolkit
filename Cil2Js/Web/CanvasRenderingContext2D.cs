@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using Cil2Js.Attributes;
 
+#pragma warning disable 0626
+
 namespace Cil2Js.Web {
 
     [JsClass]
     public class CanvasRenderingContext2D : CanvasRenderingContext {
 
-        public object FillStyle { get; set; }
+        public extern object FillStyle { get; set; }
 
-        public void FillRect(double x, double y, double w, double h) {
-            throw new JsOnlyException();
-        }
+        public extern void FillRect(double x, double y, double w, double h);
 
     }
 

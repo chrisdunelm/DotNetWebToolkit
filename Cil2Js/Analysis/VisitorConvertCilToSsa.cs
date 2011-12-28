@@ -45,9 +45,9 @@ namespace Cil2Js.Analysis {
 
         }
 
-        // Only have if, cil, continuation, try - no other type of statement
+        // Only have if, switch, cil, continuation, try - no other type of statement
         // Blocks will only start with cil or try
-        // Will end with null, if or continuation
+        // Will end with null, if, switch or continuation
         // If ending in 'if', 'then' and 'else' will both have continuations only
         // 'try' statements will have only 0 or 1 catch clauses
 

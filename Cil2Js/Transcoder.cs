@@ -47,6 +47,7 @@ namespace Cil2Js {
                 ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
                 ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
+                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s), ast, "VisitorSwitchSequencing");
                 if (ast == astOrg) {
                     break;
                 }

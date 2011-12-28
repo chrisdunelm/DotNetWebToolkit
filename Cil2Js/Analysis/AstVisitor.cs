@@ -52,12 +52,16 @@ namespace Cil2Js.Analysis {
                 return this.VisitAssignment((StmtAssignment)s);
             case Stmt.NodeType.If:
                 return this.VisitIf((StmtIf)s);
+            case Stmt.NodeType.Switch:
+                return this.VisitSwitch((StmtSwitch)s);
             case Stmt.NodeType.DoLoop:
                 return this.VisitDoLoop((StmtDoLoop)s);
             case Stmt.NodeType.Return:
                 return this.VisitReturn((StmtReturn)s);
             case Stmt.NodeType.WrapExpr:
                 return this.VisitWrapExpr((StmtWrapExpr)s);
+            case Stmt.NodeType.Break:
+                return this.VisitBreak((StmtBreak)s);
             default:
                 throw new NotImplementedException("Cannot handle: " + s.StmtType);
             }
@@ -142,7 +146,7 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = this.Visit(s.Expr);
             if (expr != s.Expr) {
-                return new StmtThrow(s.Ctx,(Expr)expr);
+                return new StmtThrow(s.Ctx, (Expr)expr);
             } else {
                 return s;
             }
@@ -153,7 +157,7 @@ namespace Cil2Js.Analysis {
             var expr = this.Visit(s.Expr);
             var target = this.Visit(s.Target);
             if (expr != s.Expr || target != s.Target) {
-                return new StmtAssignment(s.Ctx,(ExprVar)target, (Expr)expr);
+                return new StmtAssignment(s.Ctx, (ExprVar)target, (Expr)expr);
             } else {
                 return s;
             }
@@ -165,7 +169,28 @@ namespace Cil2Js.Analysis {
             var then = this.Visit(s.Then);
             var @else = this.Visit(s.Else);
             if (condition != s.Condition || then != s.Then || @else != s.Else) {
-                return new StmtIf(s.Ctx,(Expr)condition, (Stmt)then, (Stmt)@else);
+                return new StmtIf(s.Ctx, (Expr)condition, (Stmt)then, (Stmt)@else);
+            } else {
+                return s;
+            }
+        }
+
+        protected virtual ICode VisitSwitch(StmtSwitch s) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(s.Expr);
+            var @default = (Stmt)this.Visit(s.Default);
+            List<StmtSwitch.Case> cases = null;
+            foreach (var @case in s.Cases) {
+                var c = (Stmt)this.Visit(@case.Stmt);
+                if (c != @case.Stmt && cases == null) {
+                    cases = new List<StmtSwitch.Case>(s.Cases.TakeWhile(x => x != @case));
+                }
+                if (cases != null) {
+                    cases.Add(new StmtSwitch.Case(@case.Value, c));
+                }
+            }
+            if (cases != null || expr != s.Expr || @default != s.Default) {
+                return new StmtSwitch(s.Ctx, expr, cases ?? s.Cases, @default);
             } else {
                 return s;
             }
@@ -176,7 +201,7 @@ namespace Cil2Js.Analysis {
             var body = this.Visit(s.Body);
             var @while = this.Visit(s.While);
             if (body != s.Body || @while != s.While) {
-                return new StmtDoLoop(s.Ctx,(Stmt)body, (Expr)@while);
+                return new StmtDoLoop(s.Ctx, (Stmt)body, (Expr)@while);
             } else {
                 return s;
             }
@@ -185,7 +210,7 @@ namespace Cil2Js.Analysis {
         protected virtual ICode VisitReturn(StmtReturn s) {
             this.ThrowOnNoOverride();
             var expr = this.Visit(s.Expr);
-            return expr == s.Expr ? s : new StmtReturn(s.Ctx,(Expr)expr);
+            return expr == s.Expr ? s : new StmtReturn(s.Ctx, (Expr)expr);
         }
 
         protected T HandleCall<T>(T call, Func<MethodReference, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
@@ -212,10 +237,15 @@ namespace Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(s.Expr);
             if (expr != s.Expr) {
-                return new StmtWrapExpr(s.Ctx,expr);
+                return new StmtWrapExpr(s.Ctx, expr);
             } else {
                 return s;
             }
+        }
+
+        protected virtual ICode VisitBreak(StmtBreak s) {
+            this.ThrowOnNoOverride();
+            return s;
         }
 
         protected virtual ICode VisitExpr(Expr e) {

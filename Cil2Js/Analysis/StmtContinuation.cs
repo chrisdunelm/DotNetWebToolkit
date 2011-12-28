@@ -51,11 +51,16 @@ namespace Cil2Js.Analysis {
         }
 
         public override string ToString() {
-            if (this.to != null) {
-                return string.Format("-> {0}{1}", this.to.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
-            } else {
-                return string.Format("-> {0}{1}", this.To.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
-            }
+            return string.Format(
+                "-> {0}/{1}{2}",
+                (this.to ?? (object)"<null>").ToString(),
+                (this.To ?? (object)"<null>").ToString(),
+                this.LeaveProtectedRegion ? " (leave protected region)" : "");
+            //if (this.to != null) {
+            //    return string.Format("-> {0}{1}", this.to.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
+            //} else {
+            //    return string.Format("-> {0}{1}", this.To.ToString(), this.LeaveProtectedRegion ? " (leave protected region)" : "");
+            //}
         }
 
     }

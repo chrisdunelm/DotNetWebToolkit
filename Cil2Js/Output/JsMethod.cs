@@ -347,6 +347,36 @@ namespace Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitSwitch(StmtSwitch s) {
+            this.NewLine();
+            this.js.Append("switch (");
+            this.Visit(s.Expr);
+            this.js.Append(") {");
+            foreach (var @case in s.Cases) {
+                this.NewLine();
+                this.js.AppendFormat("case {0}:", @case.Value);
+                this.indent++;
+                this.Visit(@case.Stmt);
+                this.indent--;
+            }
+            if (s.Default != null) {
+                this.NewLine();
+                this.js.Append("default:");
+                this.indent++;
+                this.Visit(s.Default);
+                this.indent--;
+            }
+            this.NewLine();
+            this.js.Append("}");
+            return s;
+        }
+
+        protected override ICode VisitBreak(StmtBreak s) {
+            this.NewLine();
+            this.js.Append("break;");
+            return s;
+        }
+
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Value == null) {
                 this.js.Append("null");

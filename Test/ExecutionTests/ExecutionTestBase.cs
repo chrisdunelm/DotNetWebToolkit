@@ -105,6 +105,9 @@ namespace Test.ExecutionTests {
                             var arg = args[i];
                             var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
                             var jsResult = chrome.ExecuteScript(js + jsCall);
+                            if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
+                                jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                            }
                             Assert.That(jsResult, Is.EqualTo(runResults[i].Item1));
                         }
                     } finally {

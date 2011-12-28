@@ -99,6 +99,7 @@
     <Compile Include="Analysis\VisitorReplace.cs" />
     <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
     <Compile Include="Analysis\VisitorSubstitute.cs" />
+    <Compile Include="Analysis\VisitorSwitchSequencing.cs" />
     <Compile Include="Analysis\VisitorTryCatchFinallySequencing.cs" />
     <Compile Include="Ast\Ctx.cs" />
     <Compile Include="Ast\Expr.cs" />
@@ -126,10 +127,12 @@
     <Compile Include="Ast\Stmt.cs" />
     <Compile Include="Ast\StmtAssignment.cs" />
     <Compile Include="Ast\StmtBlock.cs" />
+    <Compile Include="Ast\StmtBreak.cs" />
     <Compile Include="Ast\StmtEmpty.cs" />
     <Compile Include="Ast\StmtIf.cs" />
     <Compile Include="Ast\StmtDoLoop.cs" />
     <Compile Include="Ast\StmtReturn.cs" />
+    <Compile Include="Ast\StmtSwitch.cs" />
     <Compile Include="Ast\StmtThrow.cs" />
     <Compile Include="Ast\StmtTry.cs" />
     <Compile Include="Ast\StmtWrapExpr.cs" />
@@ -168,7 +171,6 @@
     <Compile Include="Web\Document.cs" />
     <Compile Include="Web\HtmlCanvasElement.cs" />
     <Compile Include="Web\HtmlElement.cs" />
-    <Compile Include="Web\JsOnlyException.cs" />
     <Compile Include="Web\Window.cs" />
   </ItemGroup>
   <ItemGroup>
