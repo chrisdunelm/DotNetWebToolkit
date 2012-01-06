@@ -16,7 +16,6 @@ namespace Cil2Js.Analysis {
             this.locals = locals;
             this.args = args;
             this.instResults = instResults;
-            this.@this = ctx.MDef.IsStatic ? null : new ExprVarThis(ctx, ctx.TRef);
         }
 
         private Ctx ctx;
@@ -213,7 +212,7 @@ namespace Cil2Js.Analysis {
             Expr expr;
             if (this.ctx.MRef.HasThis && adjust) {
                 if (idx == 0) {
-                    expr = this.@this;
+                    expr = this.ctx.This;
                 } else {
                     expr = this.args[idx - 1];
                 }

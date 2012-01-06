@@ -67,7 +67,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestSimpleClasses() { Verbose = true };
-            t.TestNewObj();
+            t.TestStaticCctorCalledOnlyOnce();
             return;
 
             //var t = new TestCecilExtensions();

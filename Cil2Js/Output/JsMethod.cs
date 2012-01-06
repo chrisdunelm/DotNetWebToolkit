@@ -130,7 +130,6 @@ namespace Cil2Js.Output {
         //}
 
         private const int tabSize = 4;
-        //private const string thisName = "$";
 
         public static string Create(MethodReference mRef, Resolver resolver, ICode ast) {
             var mDef = mRef.Resolve();
@@ -140,6 +139,8 @@ namespace Cil2Js.Output {
             if (mDef.IsInternalCall) {
                 throw new ArgumentException("Cannot transcode an internal method");
             }
+            var tRef = mRef.DeclaringType;
+            var tDef = tRef.Resolve();
 
             var v = new JsMethod(mDef, resolver);
             v.Visit(ast);
@@ -154,7 +155,7 @@ namespace Cil2Js.Output {
                 pNames = pNames.Prepend(thisName).ToArray();
             }
             sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", pNames));
-            // Variable declerations
+            // Variable declarations
             var declVars = v.vars
                 .Select(x => new { name = resolver.LocalVarNames[x], type = x.Type })
                 .Where(x => !pNames.Contains(x.name))
@@ -166,7 +167,6 @@ namespace Cil2Js.Output {
                 sb.Append(' ', tabSize);
                 sb.AppendFormat("var {0};", string.Join(", ", declVars));
             }
-
             // Method body
             sb.AppendLine(js);
             // Method ending
@@ -429,16 +429,19 @@ namespace Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitDefaultValue(ExprDefaultValue e) {
+            var value = DefaultValuer.Get(e.Type);
+            this.js.Append(value);
+            return e;
+        }
+
         protected override ICode VisitReturn(StmtReturn s) {
             this.NewLine();
             this.js.Append("return");
-            if (this.method.IsConstructor && !this.method.IsStatic) {
-                this.js.Append(" $");
-            } else if (s.Expr != null) {
+            if (s.Expr != null) {
                 this.js.Append(" ");
                 this.Visit(s.Expr);
             }
-
             this.js.Append(";");
             return s;
         }
@@ -659,6 +662,10 @@ namespace Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitEmpty(StmtEmpty s) {
+            return s;
+        }
+
         protected override ICode VisitJsFunction(ExprJsFunction e) {
             this.js.Append("(function(");//) { ");
             bool needComma = false;
@@ -692,6 +699,16 @@ namespace Cil2Js.Output {
                 this.Visit(arg);
             }
             this.js.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsEmptyFunction(ExprJsEmptyFunction e) {
+            this.js.Append("function() { }");
+            return e;
+        }
+
+        protected override ICode VisitJsVarMethodReference(ExprJsVarMethodReference e) {
+            this.js.Append(this.resolver.MethodNames[e.MRef]);
             return e;
         }
 

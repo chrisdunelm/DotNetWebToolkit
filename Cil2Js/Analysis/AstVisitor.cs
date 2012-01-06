@@ -62,6 +62,8 @@ namespace Cil2Js.Analysis {
                 return this.VisitWrapExpr((StmtWrapExpr)s);
             case Stmt.NodeType.Break:
                 return this.VisitBreak((StmtBreak)s);
+            case Stmt.NodeType.Empty:
+                return this.VisitEmpty((StmtEmpty)s);
             default:
                 throw new NotImplementedException("Cannot handle: " + s.StmtType);
             }
@@ -248,16 +250,21 @@ namespace Cil2Js.Analysis {
             return s;
         }
 
+        protected virtual ICode VisitEmpty(StmtEmpty s) {
+            this.ThrowOnNoOverride();
+            return s;
+        }
+
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {
+            case Expr.NodeType.DefaultValue:
+                return this.VisitDefaultValue((ExprDefaultValue)e);
             case Expr.NodeType.Cast:
                 return this.VisitCast((ExprCast)e);
             case Expr.NodeType.NewObj:
                 return this.VisitNewObj((ExprNewObj)e);
             case Expr.NodeType.FieldAccess:
                 return this.VisitFieldAccess((ExprFieldAccess)e);
-            //case Expr.NodeType.VarThis:
-            //    return this.VisitThis((ExprThis)e);
             case Expr.NodeType.Call:
                 return this.VisitCall((ExprCall)e);
             case Expr.NodeType.VarExprInstResult:
@@ -289,6 +296,11 @@ namespace Cil2Js.Analysis {
                     throw new NotImplementedException("Cannot handle: " + e.ExprType);
                 }
             }
+        }
+
+        protected virtual ICode VisitDefaultValue(ExprDefaultValue e) {
+            this.ThrowOnNoOverride();
+            return e;
         }
 
         protected virtual ICode VisitCast(ExprCast e) {

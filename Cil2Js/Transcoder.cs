@@ -81,6 +81,7 @@ namespace Cil2Js {
                 }
             }
             ast = doStep(s => (Stmt)VisitorRemoveCasts.V(s), ast, "VisitorRemoveCasts");
+            ast = doStep(s => (Stmt)VisitorRemoveFinalReturn.V(s), ast, "VisitorRemoveFinalReturn");
             return ast;
 
         }

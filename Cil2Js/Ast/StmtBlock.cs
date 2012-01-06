@@ -12,6 +12,7 @@ namespace Cil2Js.Ast {
 
         public StmtBlock(Ctx ctx, IEnumerable<Stmt> statements)
             : base(ctx) {
+            // Expand any nested blocks. Evaluate to array.
             this.Statements = statements.SelectMany(x => {
                 if (x == null) {
                     return Enumerable.Empty<Stmt>();

@@ -56,6 +56,7 @@ namespace Cil2Js.Output {
                 var mRef = todo.Pop();
                 var mDef = mRef.Resolve();
                 var tRef = mRef.DeclaringType;
+                var tDef = tRef.Resolve();
                 if (mDef.IsAbstract) {
                     throw new InvalidOperationException("Cannot transcode an abstract method");
                 }
@@ -73,6 +74,8 @@ namespace Cil2Js.Output {
                 }
 
                 var ast = Transcoder.ToAst(mRef, tRef, verbose);
+                var ctx = ast.Ctx;
+                
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
@@ -85,6 +88,32 @@ namespace Cil2Js.Output {
                         // After 10 iterations even the most complex method should be sorted out
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
+                }
+
+                if (mDef.IsConstructor && !mDef.IsStatic) {
+                    // Instance constructor; add instance field initialisation and final return of 'this'
+                    var initStmts = tDef.Fields.Where(x => !x.IsStatic)
+                        .Select(x => new StmtAssignment(ctx,
+                            new ExprFieldAccess(ctx, ctx.This, x),
+                            new ExprDefaultValue(ctx, x.FieldType)))
+                        .ToArray();
+                    var returnStmt = new StmtReturn(ctx, ctx.This);
+                    ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
+                }
+
+                var cctors = VisitorFindStaticConstructors.V(ast).Where(x => !TypeExtensions.MethodRefEqComparerInstance.Equals(x, mRef)).ToArray();
+                if (cctors.Any()) {
+                    // All methods that access static fields or methods must call the static constructor at the very
+                    // start of the method. Except the static construtor itself, which must not recurse into itself.
+                    var cctorCalls = cctors
+                        .Select(x => new StmtWrapExpr(ctx, new ExprCall(ctx, x, null, Enumerable.Empty<Expr>(), false))).ToArray();
+                    ast = new StmtBlock(ctx, cctorCalls.Concat((Stmt)ast));
+                }
+
+                if (mDef.IsConstructor && mDef.IsStatic) {
+                    // At the end of the static constructor, it rewrites itself as an empty function, so it is only called once.
+                    var rewrite = new StmtAssignment(ctx, new ExprJsVarMethodReference(ctx, mRef), new ExprJsEmptyFunction(ctx));
+                    ast = new StmtBlock(ctx, (Stmt)ast, rewrite);
                 }
 
                 methodAsts.Add(mRef, ast);
@@ -193,6 +222,11 @@ namespace Cil2Js.Output {
                 var ast = methodInfo.Value;
                 var mJs = JsMethod.Create(mRef, resolver, ast);
                 js.AppendLine(mJs);
+            }
+
+            // Construct static fields
+            foreach (var field in staticFields.Select(x=>x.Key)) {
+                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType));
             }
 
             // Construct type data

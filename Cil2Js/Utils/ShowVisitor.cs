@@ -396,5 +396,9 @@ namespace Cil2Js.Utils {
             return s;
         }
 
+        protected override ICode VisitEmpty(StmtEmpty s) {
+            return s;
+        }
+
     }
 }

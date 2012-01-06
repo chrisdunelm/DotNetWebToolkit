@@ -14,12 +14,15 @@ namespace Cil2Js.Ast {
             this.MDef = mRef.Resolve();
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
+            this.This = MDef.IsStatic ? null : new ExprVarThis(this, tRef);
         }
 
         public TypeReference TRef { get; private set; }
         public TypeDefinition TDef { get; private set; }
         public MethodReference MRef { get; private set; }
         public MethodDefinition MDef { get; private set; }
+
+        public ExprVarThis This { get; private set; }
 
         public TypeSystem TypeSystem { get; private set; }
 

@@ -95,6 +95,7 @@
     <Compile Include="Analysis\VisitorPhiClusters.cs" />
     <Compile Include="Analysis\VisitorPhiSimplifier.cs" />
     <Compile Include="Analysis\VisitorRemoveCasts.cs" />
+    <Compile Include="Analysis\VisitorRemoveFinalReturn.cs" />
     <Compile Include="Analysis\VisitorReplace.cs" />
     <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
     <Compile Include="Analysis\VisitorSubstitute.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Ast\ExprBinary.cs" />
     <Compile Include="Ast\ExprCall.cs" />
     <Compile Include="Ast\ExprCast.cs" />
+    <Compile Include="Ast\ExprDefaultValue.cs" />
     <Compile Include="Ast\ExprFieldAccess.cs" />
     <Compile Include="Ast\ExprLiteral.cs" />
     <Compile Include="Ast\ExprMethodReference.cs" />
@@ -143,7 +145,9 @@
     <Compile Include="JsResolvers\StringResolver.cs" />
     <Compile Include="JsResolvers\SystemResolver.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
+    <Compile Include="Output\ExprJsEmptyFunction.cs" />
     <Compile Include="Output\ExprJsFunction.cs" />
+    <Compile Include="Output\ExprJsVarMethodReference.cs" />
     <Compile Include="Output\JsAstVisitor.cs" />
     <Compile Include="Output\ExprJsInvoke.cs" />
     <Compile Include="Output\JsResolved.cs" />

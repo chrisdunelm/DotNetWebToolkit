@@ -12,6 +12,8 @@ namespace Cil2Js.Output {
 
         JsFunction,
         JsInvoke,
+        JsVarMethodReference,
+        JsEmptyFunction,
     }
 
     public class JsAstVisitor : AstVisitor {
@@ -29,6 +31,10 @@ namespace Cil2Js.Output {
                 return this.VisitJsFunction((ExprJsFunction)e);
             case JsExprType.JsInvoke:
                 return this.VisitJsInvoke((ExprJsInvoke)e);
+            case JsExprType.JsEmptyFunction:
+                return this.VisitJsEmptyFunction((ExprJsEmptyFunction)e);
+            case JsExprType.JsVarMethodReference:
+                return this.VisitJsVarMethodReference((ExprJsVarMethodReference)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
@@ -59,6 +65,16 @@ namespace Cil2Js.Output {
                 this.Visit(arg);
             }
             // TODO: Handle properly
+            return e;
+        }
+
+        protected virtual ICode VisitJsEmptyFunction(ExprJsEmptyFunction e) {
+            this.ThrowOnNoOverride();
+            return e;
+        }
+
+        protected virtual ICode VisitJsVarMethodReference(ExprJsVarMethodReference e) {
+            this.ThrowOnNoOverride();
             return e;
         }
 

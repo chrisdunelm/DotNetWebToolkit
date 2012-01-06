@@ -5,12 +5,13 @@ using System.Text;
 using Cil2Js.Analysis;
 using Cil2Js.Ast;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Output {
 
     public class VisitorFindStaticConstructors : AstVisitor {
 
-        public static IEnumerable<MethodDefinition> V(ICode ast) {
+        public static IEnumerable<MethodReference> V(ICode ast) {
             var v = new VisitorFindStaticConstructors();
             v.Visit(ast);
             return v.staticConstructors;
@@ -18,10 +19,10 @@ namespace Cil2Js.Output {
 
         private VisitorFindStaticConstructors() { }
 
-        private List<MethodDefinition> staticConstructors = new List<MethodDefinition>();
+        private List<MethodReference> staticConstructors = new List<MethodReference>();
 
-        private void Add(TypeDefinition type) {
-            var cctor = type.Methods.FirstOrDefault(x => x.Name == ".cctor");
+        private void Add(TypeReference tRef) {
+            var cctor = tRef.GetMethods().FirstOrDefault(x => x.Name == ".cctor");
             if (cctor != null) {
                 this.staticConstructors.Add(cctor);
             }
@@ -29,14 +30,14 @@ namespace Cil2Js.Output {
 
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             if (e.IsStatic) {
-                this.Add(e.Field.Resolve().DeclaringType);
+                this.Add(e.Field.DeclaringType);
             }
             return e;
         }
 
         protected override ICode VisitCall(ExprCall e) {
             if (e.IsStatic) {
-                this.Add(e.CallMethod.DeclaringType.Resolve());
+                this.Add(e.CallMethod.DeclaringType);
             }
             return e;
         }

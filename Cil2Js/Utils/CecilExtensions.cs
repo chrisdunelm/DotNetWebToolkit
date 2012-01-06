@@ -60,6 +60,12 @@ namespace Cil2Js.Utils {
             return typeRef.Resolve().BaseType;
         }
 
+        public static IEnumerable<MethodReference> GetMethods(this TypeReference tRef) {
+            // TODO: Won't work with generics
+            var tDef = tRef.Resolve();
+            return tDef.Methods;
+        }
+
         //public static IEnumerable<MethodReference> GetMethods(this TypeReference typeRef) {
         //    var typeDef = typeRef.Resolve();
         //    foreach (var m in typeDef.Methods) {
@@ -86,39 +92,39 @@ namespace Cil2Js.Utils {
         //    }
         //}
 
-        public static MethodReference GetBaseMethodByType(this MethodReference methodRef) {
-            var methodDef = methodRef.Resolve();
-            if (!methodDef.IsVirtual) {
-                throw new ArgumentException("Method must be virtual");
-            }
-            if (methodDef.IsNewSlot) {
-                // No base method, this is the base method
-                return null;
-            }
-            var baseTypeRef = methodRef.DeclaringType.GetBaseType();
-            var baseTypeDef = baseTypeRef.Resolve();
-            foreach (var baseMethod in baseTypeDef.Methods) {
-                if (baseMethod.MethodMatch(methodDef)) {
-                    //if (baseMethod.Parameters.Any(x => x.ParameterType.IsGenericParameter) || baseMethod.ReturnType.IsGenericParameter) {
+        //public static MethodReference GetBaseMethodByType(this MethodReference methodRef) {
+        //    var methodDef = methodRef.Resolve();
+        //    if (!methodDef.IsVirtual) {
+        //        throw new ArgumentException("Method must be virtual");
+        //    }
+        //    if (methodDef.IsNewSlot) {
+        //        // No base method, this is the base method
+        //        return null;
+        //    }
+        //    var baseTypeRef = methodRef.DeclaringType.GetBaseType();
+        //    var baseTypeDef = baseTypeRef.Resolve();
+        //    foreach (var baseMethod in baseTypeDef.Methods) {
+        //        if (baseMethod.MethodMatch(methodDef)) {
+        //            //if (baseMethod.Parameters.Any(x => x.ParameterType.IsGenericParameter) || baseMethod.ReturnType.IsGenericParameter) {
 
-                    //    var mRef = new MethodReference(baseMethod.Name);
-                    //    return mRef;
-                    //}
-                    return baseMethod;
-                    //if (baseTypeRef.IsGenericInstance) {
-                    //    var baseMethodRef = new MethodReference(baseMethod.Name, methodRef.GetResolvedReturnType(), baseTypeRef);
-                    //    for (int i = 0; i < baseMethod.Parameters.Count; i++) {
-                    //        var pType = baseMethod.Parameters[i].GetResolvedType(baseMethodRef);
-                    //    }
-                    //    var ret = new GenericInstanceMethod(baseMethodRef);
-                    //    return ret;
-                    //} else {
-                    //    return baseMethod;
-                    //}
-                }
-            }
-            throw new InvalidOperationException("Base method cannot be found - this should not occur");
-        }
+        //            //    var mRef = new MethodReference(baseMethod.Name);
+        //            //    return mRef;
+        //            //}
+        //            return baseMethod;
+        //            //if (baseTypeRef.IsGenericInstance) {
+        //            //    var baseMethodRef = new MethodReference(baseMethod.Name, methodRef.GetResolvedReturnType(), baseTypeRef);
+        //            //    for (int i = 0; i < baseMethod.Parameters.Count; i++) {
+        //            //        var pType = baseMethod.Parameters[i].GetResolvedType(baseMethodRef);
+        //            //    }
+        //            //    var ret = new GenericInstanceMethod(baseMethodRef);
+        //            //    return ret;
+        //            //} else {
+        //            //    return baseMethod;
+        //            //}
+        //        }
+        //    }
+        //    throw new InvalidOperationException("Base method cannot be found - this should not occur");
+        //}
 
         public static MethodReference GetBasemostMethodByType(this MethodReference methodRef) {
             throw new NotImplementedException();
