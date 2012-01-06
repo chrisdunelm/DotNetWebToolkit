@@ -9,21 +9,21 @@ using Mono.Cecil;
 namespace Cil2Js.Output {
     public class VisitorFindCalls : JsAstVisitor {
 
-        public static IEnumerable<Tuple<ICall, bool>> V(ICode ast) {
+        public static IEnumerable<ICall> V(ICode ast) {
             var v = new VisitorFindCalls();
             v.Visit(ast);
             return v.calls;
         }
 
-        private List<Tuple<ICall, bool>> calls = new List<Tuple<ICall, bool>>();
+        private List<ICall> calls = new List<ICall>();
 
         protected override ICode VisitCall(ExprCall e) {
-            this.calls.Add(Tuple.Create((ICall)e, e.IsVirtualCall));
+            this.calls.Add(e);
             return base.VisitCall(e);
         }
 
         protected override ICode VisitNewObj(ExprNewObj e) {
-            this.calls.Add(Tuple.Create((ICall)e, false));
+            this.calls.Add(e);
             return base.VisitNewObj(e);
         }
 

@@ -26,5 +26,9 @@ namespace Cil2Js.Ast {
 
         Expr ICall.Obj { get { return null; } }
 
+        public bool IsVirtualCall {
+            get { return false; }
+        }
+
     }
 }

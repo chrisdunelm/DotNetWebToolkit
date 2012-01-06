@@ -7,27 +7,96 @@ using Mono.Cecil;
 namespace Cil2Js.Utils {
     public static class TypeExtensions {
 
-        class BaseFirstComparer : IComparer<TypeDefinition> {
+        class TypeRefEqComparer : IEqualityComparer<TypeReference> {
 
-            public static IComparer<TypeDefinition> Instance = new BaseFirstComparer();
+            public bool Equals(TypeReference x, TypeReference y) {
+                return x.FullName == y.FullName;
+            }
 
-            private BaseFirstComparer() { }
+            public int GetHashCode(TypeReference obj) {
+                return obj.FullName.GetHashCode();
+            }
 
-            private bool IsABaseOfB(TypeDefinition a, TypeDefinition b) {
+        }
+
+        public static readonly IEqualityComparer<TypeReference> TypeRefEqComparerInstance = new TypeRefEqComparer();
+
+        class MethodRefEqComparer : IEqualityComparer<MethodReference> {
+
+            public bool Equals(MethodReference x, MethodReference y) {
+                return x.FullName == y.FullName;
+            }
+
+            public int GetHashCode(MethodReference obj) {
+                return obj.FullName.GetHashCode();
+            }
+
+        }
+
+        public static readonly IEqualityComparer<MethodReference> MethodRefEqComparerInstance = new MethodRefEqComparer();
+
+        class FieldRefEqComparer : IEqualityComparer<FieldReference> {
+
+            public bool Equals(FieldReference x, FieldReference y) {
+                return x.FullName == y.FullName;
+            }
+
+            public int GetHashCode(FieldReference obj) {
+                return obj.FullName.GetHashCode();
+            }
+
+        }
+
+        public static readonly IEqualityComparer<FieldReference> FieldReqEqComparerInstance = new FieldRefEqComparer();
+
+        //class BaseFirstComparer : IComparer<TypeDefinition> {
+
+        //    public static IComparer<TypeDefinition> Instance = new BaseFirstComparer();
+
+        //    private BaseFirstComparer() { }
+
+        //    private bool IsABaseOfB(TypeDefinition a, TypeDefinition b) {
+        //        var t = b;
+        //        for (; ; ) {
+        //            t = t.GetBaseType();
+        //            if (t == null) {
+        //                return false;
+        //            }
+        //            if (t == a) {
+        //                return true;
+        //            }
+        //        }
+        //    }
+
+        //    public int Compare(TypeDefinition x, TypeDefinition y) {
+        //        // Return less than zero if x is more base than y
+        //        if (this.IsABaseOfB(x, y)) {
+        //            return -1;
+        //        }
+        //        if (this.IsABaseOfB(y, x)) {
+        //            return 1;
+        //        }
+        //        return 0;
+        //    }
+
+        //}
+
+        class BaseFirstComparer : IComparer<TypeReference> {
+
+            private bool IsABaseOfB(TypeReference a, TypeReference b) {
                 var t = b;
                 for (; ; ) {
                     t = t.GetBaseType();
                     if (t == null) {
                         return false;
                     }
-                    if (t == a) {
+                    if (t.FullName == a.FullName) {
                         return true;
                     }
                 }
             }
 
-            public int Compare(TypeDefinition x, TypeDefinition y) {
-                // Return less than zero if x is more base than y
+            public int Compare(TypeReference x, TypeReference y) {
                 if (this.IsABaseOfB(x, y)) {
                     return -1;
                 }
@@ -39,75 +108,87 @@ namespace Cil2Js.Utils {
 
         }
 
-        public static IEnumerable<TypeDefinition> OrderByBaseFirst(this IEnumerable<TypeDefinition> types) {
-            return types.OrderBy(x => x, BaseFirstComparer.Instance);
-        }
+        public static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
 
-        public static MethodDefinition GetBasemostMethodInTypeHierarchy(this MethodDefinition method) {
-            var m = method;
-            for (; ; ) {
-                if (m.IsNewSlot) {
-                    return m;
-                }
-                m = m.GetBaseMethodInTypeHierarchy();
-                if (m == null) {
-                    throw new InvalidOperationException("Error in type hierarchy");
-                }
-            }
-        }
+        //public static IEnumerable<TypeDefinition> OrderByBaseFirst(this IEnumerable<TypeDefinition> types) {
+        //    return types.OrderBy(x => x, BaseFirstComparer.Instance);
+        //}
 
-        public static MethodDefinition GetBaseMethodInTypeHierarchy(this MethodDefinition method) {
-            return GetBaseMethodInTypeHierarchy(method.DeclaringType, method);
-        }
+        //public static MethodDefinition GetBasemostMethodInTypeHierarchy(this MethodDefinition method) {
+        //    var m = method;
+        //    for (; ; ) {
+        //        if (m.IsNewSlot) {
+        //            return m;
+        //        }
+        //        m = m.GetBaseMethodInTypeHierarchy();
+        //        if (m == null) {
+        //            throw new InvalidOperationException("Error in type hierarchy");
+        //        }
+        //    }
+        //}
 
-        static MethodDefinition GetBaseMethodInTypeHierarchy(TypeDefinition type, MethodDefinition method) {
-            TypeDefinition @base = GetBaseType(type);
-            while (@base != null) {
-                MethodDefinition base_method = TryMatchMethod(@base, method);
-                if (base_method != null)
-                    return base_method;
+        //public static MethodReference GetBasemostMethodInTypeHierarchy(this MethodReference method) {
+        //    for (; ; ) {
+        //        var mDef = method.Resolve();
+        //        if (mDef.IsNewSlot) {
+        //            return method;
+        //        }
+        //        method.DeclaringType.
+        //    }
+        //}
 
-                @base = GetBaseType(@base);
-            }
+        //public static MethodDefinition GetBaseMethodInTypeHierarchy(this MethodDefinition method) {
+        //    return GetBaseMethodInTypeHierarchy(method.DeclaringType, method);
+        //}
 
-            return null;
-        }
+        //static MethodDefinition GetBaseMethodInTypeHierarchy(TypeDefinition type, MethodDefinition method) {
+        //    TypeDefinition @base = GetBaseType(type);
+        //    while (@base != null) {
+        //        MethodDefinition base_method = TryMatchMethod(@base, method);
+        //        if (base_method != null)
+        //            return base_method;
 
-        public static MethodDefinition GetBaseMethodInInterfaceHierarchy(this MethodDefinition method) {
-            return GetBaseMethodInInterfaceHierarchy(method.DeclaringType, method);
-        }
+        //        @base = GetBaseType(@base);
+        //    }
 
-        static MethodDefinition GetBaseMethodInInterfaceHierarchy(TypeDefinition type, MethodDefinition method) {
-            if (!type.HasInterfaces)
-                return null;
+        //    return null;
+        //}
 
-            foreach (TypeReference interface_ref in type.Interfaces) {
-                TypeDefinition @interface = interface_ref.Resolve();
-                if (@interface == null)
-                    continue;
+        //public static MethodDefinition GetBaseMethodInInterfaceHierarchy(this MethodDefinition method) {
+        //    return GetBaseMethodInInterfaceHierarchy(method.DeclaringType, method);
+        //}
 
-                MethodDefinition base_method = TryMatchMethod(@interface, method);
-                if (base_method != null)
-                    return base_method;
+        //static MethodDefinition GetBaseMethodInInterfaceHierarchy(TypeDefinition type, MethodDefinition method) {
+        //    if (!type.HasInterfaces)
+        //        return null;
 
-                base_method = GetBaseMethodInInterfaceHierarchy(@interface, method);
-                if (base_method != null)
-                    return base_method;
-            }
+        //    foreach (TypeReference interface_ref in type.Interfaces) {
+        //        TypeDefinition @interface = interface_ref.Resolve();
+        //        if (@interface == null)
+        //            continue;
 
-            return null;
-        }
+        //        MethodDefinition base_method = TryMatchMethod(@interface, method);
+        //        if (base_method != null)
+        //            return base_method;
 
-        public static MethodDefinition TryMatchMethod(this TypeDefinition type, MethodDefinition method) {
-            if (!type.HasMethods)
-                return null;
+        //        base_method = GetBaseMethodInInterfaceHierarchy(@interface, method);
+        //        if (base_method != null)
+        //            return base_method;
+        //    }
 
-            foreach (MethodDefinition candidate in type.Methods)
-                if (MethodMatch(candidate, method))
-                    return candidate;
+        //    return null;
+        //}
 
-            return null;
-        }
+        //public static MethodDefinition TryMatchMethod(this TypeDefinition type, MethodDefinition method) {
+        //    if (!type.HasMethods)
+        //        return null;
+
+        //    foreach (MethodDefinition candidate in type.Methods)
+        //        if (MethodMatch(candidate, method))
+        //            return candidate;
+
+        //    return null;
+        //}
 
         public static bool MethodMatch(this MethodDefinition candidate, MethodDefinition method) {
             if (!candidate.IsVirtual)

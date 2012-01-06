@@ -11,218 +11,254 @@ namespace Cil2Js.Output {
     public class JsMethod : JsAstVisitor {
 
         public class Resolver {
-
-            public Resolver(
-                IDictionary<MethodDefinition, string> methodNames,
-                IDictionary<FieldDefinition, string> fieldNames,
-                IDictionary<TypeDefinition, string> vTables,
-                IDictionary<MethodDefinition, int> virtualCalls,
-                IDictionary<ICall, JsResolved> callResolvers,
-                IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> cctorsCalled,
-                IDictionary<TypeDefinition, string> interfaceNames,
-                IDictionary<MethodDefinition, int> interfaceMethods,
-                IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> interfaceCallsNames) {
-                this.MethodNames = methodNames;
-                this.FieldNames = fieldNames;
-                this.VTables = vTables;
-                this.VirtualCalls = virtualCalls;
-                this.CallResolvers = callResolvers;
-                this.CctorsCalled = cctorsCalled;
-                this.InterfaceNames = interfaceNames;
-                this.InterfaceMethods = interfaceMethods;
-                this.InterfaceCallsNames = interfaceCallsNames;
-            }
-
-            public IDictionary<MethodDefinition, string> MethodNames { get; private set; }
-            public IDictionary<FieldDefinition, string> FieldNames { get; private set; }
-            public IDictionary<TypeDefinition, string> VTables { get; private set; }
-            public IDictionary<MethodDefinition, int> VirtualCalls { get; private set; }
-            public IDictionary<ICall, JsResolved> CallResolvers { get; private set; }
-            public IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> CctorsCalled { get; private set; }
-            public IDictionary<TypeDefinition, string> InterfaceNames { get; private set; }
-            public IDictionary<MethodDefinition, int> InterfaceMethods { get; private set; }
-            public IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> InterfaceCallsNames { get; private set; }
-
+            public Dictionary<ExprVar, string> LocalVarNames { get; set; }
+            public Dictionary<MethodReference, string> MethodNames { get; set; }
+            public Dictionary<FieldReference, string> FieldNames { get; set; }
+            public Dictionary<TypeReference, string> TypeNames { get; set; }
         }
 
-        class LocalVarNamer : JsAstVisitor {
+        //public class Resolver {
 
-            class VarClustered : ExprVar {
+        //    public Resolver(
+        //        IDictionary<MethodDefinition, string> methodNames,
+        //        IDictionary<FieldDefinition, string> fieldNames,
+        //        IDictionary<TypeDefinition, string> vTables,
+        //        IDictionary<MethodDefinition, int> virtualCalls,
+        //        IDictionary<ICall, JsResolved> callResolvers,
+        //        IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> cctorsCalled,
+        //        IDictionary<TypeDefinition, string> interfaceNames,
+        //        IDictionary<MethodDefinition, int> interfaceMethods,
+        //        IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> interfaceCallsNames) {
+        //        this.MethodNames = methodNames;
+        //        this.FieldNames = fieldNames;
+        //        this.VTables = vTables;
+        //        this.VirtualCalls = virtualCalls;
+        //        this.CallResolvers = callResolvers;
+        //        this.CctorsCalled = cctorsCalled;
+        //        this.InterfaceNames = interfaceNames;
+        //        this.InterfaceMethods = interfaceMethods;
+        //        this.InterfaceCallsNames = interfaceCallsNames;
+        //    }
 
-                public VarClustered(Ctx ctx, IEnumerable<ExprVar> vars)
-                    : base(ctx) {
-                    this.Vars = vars;
-                }
+        //    public IDictionary<MethodDefinition, string> MethodNames { get; private set; }
+        //    public IDictionary<FieldDefinition, string> FieldNames { get; private set; }
+        //    public IDictionary<TypeDefinition, string> VTables { get; private set; }
+        //    public IDictionary<MethodDefinition, int> VirtualCalls { get; private set; }
+        //    public IDictionary<ICall, JsResolved> CallResolvers { get; private set; }
+        //    public IDictionary<MethodDefinition, IEnumerable<MethodDefinition>> CctorsCalled { get; private set; }
+        //    public IDictionary<TypeDefinition, string> InterfaceNames { get; private set; }
+        //    public IDictionary<MethodDefinition, int> InterfaceMethods { get; private set; }
+        //    public IDictionary<TypeDefinition, Dictionary<TypeDefinition, string>> InterfaceCallsNames { get; private set; }
 
-                public IEnumerable<ExprVar> Vars { get; private set; }
+        //}
 
-                public override Expr.NodeType ExprType {
-                    get { throw new NotImplementedException(); }
-                }
+        //class LocalVarNamer : JsAstVisitor {
 
-                public override TypeReference Type {
-                    get { return this.Vars.Select(x => x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.Ctx, a, b)); }
-                }
-            }
+        //    class VarClustered : ExprVar {
 
-            public static Dictionary<ExprVar, string> V(ICode c) {
-                var v = new LocalVarNamer();
-                v.Visit(c);
-                var clusters = UniqueClusters(v.clusters);
-                var allCounts = clusters.ToDictionary(x => (ExprVar)new VarClustered(c.Ctx, x), x => x.Sum(y => v.varCount.ValueOrDefault(y)));
-                var allClusteredCounts = allCounts.ToArray();
-                var allClustered = new HashSet<ExprVar>(clusters.SelectMany(x => x));
-                foreach (var varCount in v.varCount) {
-                    if (!allClustered.Contains(varCount.Key)) {
-                        allCounts.Add(varCount.Key, varCount.Value);
-                    }
-                }
-                var nameGenerator = new NameGenerator();
-                var names = allCounts
-                    .OrderByDescending(x => x.Value)
-                    .ToDictionary(x => x.Key, x => nameGenerator.GetNewName());
-                foreach (var cluster in allClusteredCounts) {
-                    foreach (var var in ((VarClustered)cluster.Key).Vars) {
-                        names.Add(var, names[cluster.Key]);
-                    }
-                }
-                return names;
-            }
+        //        public VarClustered(Ctx ctx, IEnumerable<ExprVar> vars)
+        //            : base(ctx) {
+        //            this.Vars = vars;
+        //        }
 
-            private static IEnumerable<ExprVar[]> UniqueClusters(IEnumerable<ExprVar[]> clusters) {
-            start:
-                foreach (var a in clusters) {
-                    foreach (var b in clusters) {
-                        if (a == b) {
-                            continue;
-                        }
-                        if (a.Intersect(b).Any()) {
-                            clusters = clusters.Where(x => x != a && x != b).Concat(a.Union(b).ToArray()).ToArray();
-                            goto start;
-                        }
-                    }
-                }
-                return clusters;
-            }
+        //        public IEnumerable<ExprVar> Vars { get; private set; }
 
-            private LocalVarNamer() { }
+        //        public override Expr.NodeType ExprType {
+        //            get { throw new NotImplementedException(); }
+        //        }
 
-            private Dictionary<ExprVar, int> varCount = new Dictionary<ExprVar, int>();
-            private List<ExprVar[]> clusters = new List<ExprVar[]>();
+        //        public override TypeReference Type {
+        //            get { return this.Vars.Select(x => x.Type).Aggregate((a, b) => TypeCombiner.Combine(this.Ctx, a, b)); }
+        //        }
+        //    }
 
-            protected override ICode VisitVar(ExprVar e) {
-                if (e.ExprType == Expr.NodeType.VarPhi) {
-                    var ePhi = (ExprVarPhi)e;
-                    this.clusters.Add(ePhi.Exprs.Cast<ExprVar>().Concat(ePhi).ToArray());
-                }
-                var curCount = this.varCount.ValueOrDefault(e, () => 0);
-                this.varCount[e] = curCount + 1;
-                return e;
-            }
+        //    public static Dictionary<ExprVar, string> V(ICode c) {
+        //        var v = new LocalVarNamer();
+        //        v.Visit(c);
+        //        var clusters = UniqueClusters(v.clusters);
+        //        var allCounts = clusters.ToDictionary(x => (ExprVar)new VarClustered(c.Ctx, x), x => x.Sum(y => v.varCount.ValueOrDefault(y)));
+        //        var allClusteredCounts = allCounts.ToArray();
+        //        var allClustered = new HashSet<ExprVar>(clusters.SelectMany(x => x));
+        //        foreach (var varCount in v.varCount) {
+        //            if (!allClustered.Contains(varCount.Key)) {
+        //                allCounts.Add(varCount.Key, varCount.Value);
+        //            }
+        //        }
+        //        var nameGenerator = new NameGenerator();
+        //        var names = allCounts
+        //            .OrderByDescending(x => x.Value)
+        //            .ToDictionary(x => x.Key, x => nameGenerator.GetNewName());
+        //        foreach (var cluster in allClusteredCounts) {
+        //            foreach (var var in ((VarClustered)cluster.Key).Vars) {
+        //                names.Add(var, names[cluster.Key]);
+        //            }
+        //        }
+        //        return names;
+        //    }
 
-        }
+        //    private static IEnumerable<ExprVar[]> UniqueClusters(IEnumerable<ExprVar[]> clusters) {
+        //    start:
+        //        foreach (var a in clusters) {
+        //            foreach (var b in clusters) {
+        //                if (a == b) {
+        //                    continue;
+        //                }
+        //                if (a.Intersect(b).Any()) {
+        //                    clusters = clusters.Where(x => x != a && x != b).Concat(a.Union(b).ToArray()).ToArray();
+        //                    goto start;
+        //                }
+        //            }
+        //        }
+        //        return clusters;
+        //    }
+
+        //    private LocalVarNamer() { }
+
+        //    private Dictionary<ExprVar, int> varCount = new Dictionary<ExprVar, int>();
+        //    private List<ExprVar[]> clusters = new List<ExprVar[]>();
+
+        //    protected override ICode VisitVar(ExprVar e) {
+        //        if (e.ExprType == Expr.NodeType.VarPhi) {
+        //            var ePhi = (ExprVarPhi)e;
+        //            this.clusters.Add(ePhi.Exprs.Cast<ExprVar>().Concat(ePhi).ToArray());
+        //        }
+        //        var curCount = this.varCount.ValueOrDefault(e, () => 0);
+        //        this.varCount[e] = curCount + 1;
+        //        return e;
+        //    }
+
+        //}
 
         private const int tabSize = 4;
-        private const string thisName = "$";
+        //private const string thisName = "$";
 
-        public static string Create(MethodDefinition method, Resolver resolver, ICode ast) {
-            if (method.IsAbstract) {
+        public static string Create(MethodReference mRef, Resolver resolver, ICode ast) {
+            var mDef = mRef.Resolve();
+            if (mDef.IsAbstract) {
                 throw new ArgumentException("Cannot transcode an abstract method");
             }
-            if (method.IsInternalCall) {
+            if (mDef.IsInternalCall) {
                 throw new ArgumentException("Cannot transcode an internal method");
             }
-            var methodName = resolver.MethodNames[method];
-            var varNames = LocalVarNamer.V(ast);
-            var v = new JsMethod(method, varNames, resolver);
+
+            var v = new JsMethod(mDef, resolver);
             v.Visit(ast);
             var js = v.js.ToString();
+
             var sb = new StringBuilder();
-            var parameterNames = method.Parameters.Select(x => v.parameters.ValueOrDefault(x, () => null).NullThru(y => varNames[y], "_")).ToArray();
-            if (!method.IsStatic) {
-                parameterNames = new[] { thisName }.Concat(parameterNames).ToArray();
+            // Method declaration
+            var methodName = resolver.MethodNames[mRef];
+            var pNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y], "_")).ToArray();
+            if (!mDef.IsStatic) {
+                var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x], "_");
+                pNames = pNames.Prepend(thisName).ToArray();
             }
-            var fnFmt = method.IsConstructor && method.IsStatic ? "var {0} = function({1})" : "function {0}({1})";
-            sb.AppendFormat(fnFmt + " {{", methodName, string.Join(", ", parameterNames));
-            var vars = varNames
-                .Where(x => !parameterNames.Contains(x.Value))
-                .Select(x => x.Value + " = " + DefaultValuer.Get(x.Key.Type))
-                .Distinct()
-                .Concat(v.needVirtualCallVars)
+            sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", pNames));
+            // Variable declerations
+            var declVars = v.vars
+                .Select(x => new { name = resolver.LocalVarNames[x], type = x.Type })
+                .Where(x => !pNames.Contains(x.name))
+                .Select(x => x.name + " = " + DefaultValuer.Get(x.type))
+                .Distinct() // Bit of a hack, but works for now
                 .ToArray();
-            if (vars.Any()) {
+            if (declVars.Any()) {
                 sb.AppendLine();
                 sb.Append(' ', tabSize);
-                sb.AppendFormat("var {0};", string.Join(", ", vars.Select(x => x)));
+                sb.AppendFormat("var {0};", string.Join(", ", declVars));
             }
 
-            if (method.IsConstructor && method.IsStatic) {
-                // If this is a cctor, then mark it as called
-                sb.AppendLine();
-                sb.Append(' ', tabSize);
-                sb.AppendFormat("{0} = null;", methodName);
-            }
-            // Make sure that static constructors are called before any references to static members
-            foreach (var cctor in resolver.CctorsCalled[method]) {
-                if (cctor != method) {
-                    // Don't re-call same cctor!
-                    sb.AppendLine();
-                    sb.Append(' ', tabSize);
-                    sb.AppendFormat("if ({0}) {0}();", resolver.MethodNames[cctor]);
-                }
-            }
-
-            if (method.IsConstructor && !method.IsStatic && !method.DeclaringType.IsAbstract) {
-                // In a non-static constructor, the object with type information must be constructed
-                sb.AppendLine();
-                sb.Append(' ', tabSize);
-                sb.AppendFormat("if (!{0}) {0} = {{_:{{", thisName);
-                bool needComma = false;
-                var vTableName = resolver.VTables.ValueOrDefault(method.DeclaringType);
-                if (vTableName != null) {
-                    sb.AppendFormat("_:{0}", vTableName);
-                    needComma = true;
-                }
-                var ifaces = method.DeclaringType.GetAllInterfaces().Where(x => resolver.InterfaceNames.ContainsKey(x)).ToArray();
-                foreach (var iface in ifaces) {
-                    if (needComma) {
-                        sb.Append(", ");
-                    } else {
-                        needComma = true;
-                    }
-                    sb.AppendFormat("{0}:{1}", resolver.InterfaceNames[iface], resolver.InterfaceCallsNames[method.DeclaringType][iface]);
-                }
-                sb.Append("}};");
-                // All fields must be initialised
-                foreach (var field in method.DeclaringType.Fields.Where(x => resolver.FieldNames.ContainsKey(x))) {
-                    sb.AppendLine();
-                    sb.Append(' ', tabSize);
-                    sb.AppendFormat("{0}.{1} = {2};", thisName,
-                        resolver.FieldNames[field], DefaultValuer.Get(field.GetResolvedType()));
-                }
-            }
-
+            // Method body
             sb.AppendLine(js);
+            // Method ending
             sb.AppendLine("}");
-            return sb.ToString();
+
+            var sbStr = sb.ToString();
+            return sbStr;
+            //var parameterNames = mDef.Parameters.Select(x => v.parameters.ValueOrDefault(x, () => null).NullThru(y => varNames[y], "_")).ToArray();
+            //if (!mDef.IsStatic) {
+            //    parameterNames = new[] { thisName }.Concat(parameterNames).ToArray();
+            //}
+            //var fnFmt = mDef.IsConstructor && mDef.IsStatic ? "var {0} = function({1})" : "function {0}({1})";
+            //sb.AppendFormat(fnFmt + " {{", methodName, string.Join(", ", parameterNames));
+            //var vars = varNames
+            //    .Where(x => !parameterNames.Contains(x.Value))
+            //    .Select(x => x.Value + " = " + DefaultValuer.Get(x.Key.Type))
+            //    .Distinct()
+            //    .Concat(v.needVirtualCallVars)
+            //    .ToArray();
+            //if (vars.Any()) {
+            //    sb.AppendLine();
+            //    sb.Append(' ', tabSize);
+            //    sb.AppendFormat("var {0};", string.Join(", ", vars.Select(x => x)));
+            //}
+
+            //if (mDef.IsConstructor && mDef.IsStatic) {
+            //    // If this is a cctor, then mark it as called
+            //    sb.AppendLine();
+            //    sb.Append(' ', tabSize);
+            //    sb.AppendFormat("{0} = null;", methodName);
+            //}
+            //// Make sure that static constructors are called before any references to static members
+            //foreach (var cctor in resolver.CctorsCalled[mDef]) {
+            //    if (cctor != mDef) {
+            //        // Don't re-call same cctor!
+            //        sb.AppendLine();
+            //        sb.Append(' ', tabSize);
+            //        sb.AppendFormat("if ({0}) {0}();", resolver.MethodNames[cctor]);
+            //    }
+            //}
+
+            //if (mDef.IsConstructor && !mDef.IsStatic && !mDef.DeclaringType.IsAbstract) {
+            //    // In a non-static constructor, the object with type information must be constructed
+            //    sb.AppendLine();
+            //    sb.Append(' ', tabSize);
+            //    sb.AppendFormat("if (!{0}) {0} = {{_:{{", thisName);
+            //    bool needComma = false;
+            //    var vTableName = resolver.VTables.ValueOrDefault(mDef.DeclaringType);
+            //    if (vTableName != null) {
+            //        sb.AppendFormat("_:{0}", vTableName);
+            //        needComma = true;
+            //    }
+            //    var ifaces = mDef.DeclaringType.GetAllInterfaces().Where(x => resolver.InterfaceNames.ContainsKey(x)).ToArray();
+            //    foreach (var iface in ifaces) {
+            //        if (needComma) {
+            //            sb.Append(", ");
+            //        } else {
+            //            needComma = true;
+            //        }
+            //        sb.AppendFormat("{0}:{1}", resolver.InterfaceNames[iface], resolver.InterfaceCallsNames[mDef.DeclaringType][iface]);
+            //    }
+            //    sb.Append("}};");
+            //    // All fields must be initialised
+            //    // TODO: Does not work with fields that have generic types
+            //   /* foreach (var field in method.DeclaringType.Fields.Where(x => resolver.FieldNames.ContainsKey(x))) {
+            //        sb.AppendLine();
+            //        sb.Append(' ', tabSize);
+            //        sb.AppendFormat("{0}.{1} = {2};", thisName,
+            //            resolver.FieldNames[field], DefaultValuer.Get(field.GetResolvedType()));
+            //    }*/
+            //}
+
+            //sb.AppendLine(js);
+            //sb.AppendLine("}");
+            //return sb.ToString();
         }
 
-        private JsMethod(MethodDefinition method, Dictionary<ExprVar, string> varNames, Resolver resolver)
+        private JsMethod(MethodDefinition method, Resolver resolver)
             : base(true) {
             this.method = method;
-            this.varNames = varNames;
             this.resolver = resolver;
         }
 
         private MethodDefinition method;
-        private Dictionary<ExprVar, string> varNames;
         private Resolver resolver;
 
         private Dictionary<ParameterDefinition, ExprVar> parameters = new Dictionary<ParameterDefinition, ExprVar>();
         private StringBuilder js = new StringBuilder();
-        private List<string> needVirtualCallVars = new List<string>();
+        private List<ExprVar> vars = new List<ExprVar>();
+        //private List<string> needVirtualCallVars = new List<string>();
 
-        private NameGenerator virtualAndInterfaceCallVars = new NameGenerator("__");
+        //private NameGenerator virtualAndInterfaceCallVars = new NameGenerator("__");
         private int indent = 1;
 
         private void NewLine() {
@@ -247,7 +283,8 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitVar(ExprVar e) {
-            this.js.Append(varNames[e]);
+            this.js.Append(this.resolver.LocalVarNames[e]);
+            this.vars.Add(e);
             if (e.ExprType == Expr.NodeType.VarParameter) {
                 if (!this.parameters.ContainsKey(((ExprVarParameter)e).Parameter)) {
                     this.parameters.Add(((ExprVarParameter)e).Parameter, e);
@@ -407,91 +444,114 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            var callMethod = e.CallMethod.Resolve();
-            Action<string> appendArgs = preThis => {
-                this.js.Append("(");
-                var needComma = false;
-                if (!callMethod.IsStatic) {
-                    if (preThis != null) {
-                        this.js.Append(preThis);
-                    } else {
-                        this.Visit(e.Obj);
-                    }
-                    needComma = true;
+            var mRef = e.CallMethod;
+            var mDef = mRef.Resolve();
+            //throw new NotImplementedException();
+            //var callMethod = e.CallMethod.Resolve();
+            Action appendArgs = () => {
+                var args = e.Args.ToArray();
+                if (!mDef.IsStatic) {
+                    args = args.Prepend(e.Obj).ToArray();
                 }
-                foreach (var arg in e.Args) {
-                    if (needComma) {
+                this.js.Append("(");
+                for (int i = 0; i < args.Length; i++) {
+                    if (i != 0) {
                         this.js.Append(", ");
                     }
-                    this.Visit(arg);
-                    needComma = true;
+                    this.Visit(args[i]);
                 }
                 this.js.Append(")");
             };
-            var callResolved = this.resolver.CallResolvers.ValueOrDefault(e);
-            if (callResolved != null) {
-                switch (callResolved.Type) {
-                case JsResolvedType.Method:
-                    var methodResolved = (JsResolvedMethod)callResolved;
-                    if (methodResolved.Obj != null) {
-                        this.Visit(methodResolved.Obj);
-                        this.js.Append(".");
-                    }
-                    this.js.Append(methodResolved.MethodName);
-                    this.js.Append("(");
-                    bool first = true;
-                    foreach (var arg in methodResolved.Args.EmptyIfNull()) {
-                        if (first) {
-                            first = false;
-                        } else {
-                            this.js.Append(", ");
-                        }
-                        this.Visit(arg);
-                    }
-                    this.js.Append(")");
-                    break;
-                case JsResolvedType.Property:
-                    var propertyResolved = (JsResolvedProperty)callResolved;
-                    this.Visit(propertyResolved.Obj);
-                    this.js.Append(".");
-                    this.js.Append(propertyResolved.PropertyName);
-                    if (e.Args.Count() == 1) {
-                        // Setter of property, so emit the ' = ...'
-                        this.js.Append(" = ");
-                        this.Visit(e.Args.First());
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException("Cannot handle: " + callResolved.Type);
-                }
-                return e;
+            //Action<string> appendArgs = preThis => {
+            //    this.js.Append("(");
+            //    var needComma = false;
+            //    if (!callMethod.IsStatic) {
+            //        if (preThis != null) {
+            //            this.js.Append(preThis);
+            //        } else {
+            //            this.Visit(e.Obj);
+            //        }
+            //        needComma = true;
+            //    }
+            //    foreach (var arg in e.Args) {
+            //        if (needComma) {
+            //            this.js.Append(", ");
+            //        }
+            //        this.Visit(arg);
+            //        needComma = true;
+            //    }
+            //    this.js.Append(")");
+            //};
+            //var callResolved = this.resolver.CallResolvers.ValueOrDefault(e);
+            //if (callResolved != null) {
+            //    switch (callResolved.Type) {
+            //    case JsResolvedType.Method:
+            //        var methodResolved = (JsResolvedMethod)callResolved;
+            //        if (methodResolved.Obj != null) {
+            //            this.Visit(methodResolved.Obj);
+            //            this.js.Append(".");
+            //        }
+            //        this.js.Append(methodResolved.MethodName);
+            //        this.js.Append("(");
+            //        bool first = true;
+            //        foreach (var arg in methodResolved.Args.EmptyIfNull()) {
+            //            if (first) {
+            //                first = false;
+            //            } else {
+            //                this.js.Append(", ");
+            //            }
+            //            this.Visit(arg);
+            //        }
+            //        this.js.Append(")");
+            //        break;
+            //    case JsResolvedType.Property:
+            //        var propertyResolved = (JsResolvedProperty)callResolved;
+            //        this.Visit(propertyResolved.Obj);
+            //        this.js.Append(".");
+            //        this.js.Append(propertyResolved.PropertyName);
+            //        if (e.Args.Count() == 1) {
+            //            // Setter of property, so emit the ' = ...'
+            //            this.js.Append(" = ");
+            //            this.Visit(e.Args.First());
+            //        }
+            //        break;
+            //    default:
+            //        throw new NotImplementedException("Cannot handle: " + callResolved.Type);
+            //    }
+            //    return e;
+            //}
+            //if (callMethod.DeclaringType.IsInterface) {
+            //    var ifaceName = this.resolver.InterfaceNames[callMethod.DeclaringType];
+            //    var ifaceMethodIdx = this.resolver.InterfaceMethods[callMethod];
+            //    var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
+            //    this.needVirtualCallVars.Add(preThisName);
+            //    this.js.AppendFormat("({0} = ", preThisName);
+            //    this.Visit(e.Obj);
+            //    this.js.Append(")");
+            //    this.js.AppendFormat("._.{0}[{1}]", ifaceName, ifaceMethodIdx);
+            //    appendArgs(preThisName);
+            //    return e;
+            //}
+            //var vTableIdx = this.resolver.VirtualCalls.ValueOrDefault(callMethod, () => -1);
+            //if (vTableIdx >= 0) {
+            //    var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
+            //    this.needVirtualCallVars.Add(preThisName);
+            //    this.js.AppendFormat("({0} = ", preThisName);
+            //    this.Visit(e.Obj);
+            //    this.js.Append(")");
+            //    this.js.AppendFormat("._._[{0}]", vTableIdx);
+            //    appendArgs(preThisName);
+            //    return e;
+            //}
+            if (mDef.DeclaringType.IsInterface) {
+                throw new NotImplementedException("Cannot handle interface calls");
             }
-            if (callMethod.DeclaringType.IsInterface) {
-                var ifaceName = this.resolver.InterfaceNames[callMethod.DeclaringType];
-                var ifaceMethodIdx = this.resolver.InterfaceMethods[callMethod];
-                var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
-                this.needVirtualCallVars.Add(preThisName);
-                this.js.AppendFormat("({0} = ", preThisName);
-                this.Visit(e.Obj);
-                this.js.Append(")");
-                this.js.AppendFormat("._.{0}[{1}]", ifaceName, ifaceMethodIdx);
-                appendArgs(preThisName);
-                return e;
+            if (e.IsVirtualCall) {
+                throw new NotImplementedException("Cannot handle virtual calls");
             }
-            var vTableIdx = this.resolver.VirtualCalls.ValueOrDefault(callMethod, () => -1);
-            if (vTableIdx >= 0) {
-                var preThisName = this.virtualAndInterfaceCallVars.GetNewName();
-                this.needVirtualCallVars.Add(preThisName);
-                this.js.AppendFormat("({0} = ", preThisName);
-                this.Visit(e.Obj);
-                this.js.Append(")");
-                this.js.AppendFormat("._._[{0}]", vTableIdx);
-                appendArgs(preThisName);
-                return e;
-            }
-            var name = this.resolver.MethodNames[callMethod];
+            var name = this.resolver.MethodNames[mRef];
             this.js.Append(name);
-            appendArgs(null);
+            appendArgs();
             return e;
         }
 
@@ -500,19 +560,21 @@ namespace Cil2Js.Output {
                 this.Visit(e.Obj);
                 this.js.Append(".");
             }
-            this.js.Append(this.resolver.FieldNames[e.Field.Resolve()]);
+            this.js.Append(this.resolver.FieldNames[e.Field]);
             return e;
         }
 
-        protected override ICode VisitThis(ExprThis e) {
-            this.js.Append(thisName);
+        protected override ICode VisitVarThis(ExprVarThis e) {
+            this.js.Append(this.resolver.LocalVarNames[e]);
             return e;
         }
 
         protected override ICode VisitNewObj(ExprNewObj e) {
-            var name = this.resolver.MethodNames[e.CallMethod.Resolve()];
+            var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
-            this.js.Append("(null");
+            this.js.Append("({_:");
+            this.js.Append(this.resolver.TypeNames[e.Type]);
+            this.js.Append("}");
             foreach (var arg in e.Args) {
                 this.js.Append(", ");
                 this.Visit(arg);

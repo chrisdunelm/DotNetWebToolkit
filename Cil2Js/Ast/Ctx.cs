@@ -7,13 +7,20 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class Ctx {
 
-        public Ctx(MethodDefinition method) {
-            this.Method = method;
-            this.TypeSystem = method.Module.TypeSystem;
+        public Ctx(TypeReference tRef, MethodReference mRef) {
+            this.TRef = tRef;
+            this.TDef = tRef.Resolve();
+            this.MRef = mRef;
+            this.MDef = mRef.Resolve();
+            this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
         }
 
-        public MethodDefinition Method { get; private set; }
+        public TypeReference TRef { get; private set; }
+        public TypeDefinition TDef { get; private set; }
+        public MethodReference MRef { get; private set; }
+        public MethodDefinition MDef { get; private set; }
+
         public TypeSystem TypeSystem { get; private set; }
 
         public Expr.Gen ExprGen { get; private set; }

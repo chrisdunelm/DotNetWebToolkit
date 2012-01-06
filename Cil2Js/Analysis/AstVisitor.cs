@@ -256,14 +256,15 @@ namespace Cil2Js.Analysis {
                 return this.VisitNewObj((ExprNewObj)e);
             case Expr.NodeType.FieldAccess:
                 return this.VisitFieldAccess((ExprFieldAccess)e);
-            case Expr.NodeType.This:
-                return this.VisitThis((ExprThis)e);
+            //case Expr.NodeType.VarThis:
+            //    return this.VisitThis((ExprThis)e);
             case Expr.NodeType.Call:
                 return this.VisitCall((ExprCall)e);
             case Expr.NodeType.VarExprInstResult:
             case Expr.NodeType.VarLocal:
             case Expr.NodeType.VarParameter:
             case Expr.NodeType.VarPhi:
+            case Expr.NodeType.VarThis:
                 return this.VisitVar((ExprVar)e);
             case Expr.NodeType.Literal:
                 return this.VisitLiteral((ExprLiteral)e);
@@ -314,7 +315,7 @@ namespace Cil2Js.Analysis {
             }
         }
 
-        protected virtual ICode VisitThis(ExprThis e) {
+        protected virtual ICode VisitVarThis(ExprVarThis e) {
             this.ThrowOnNoOverride();
             return e;
         }
@@ -333,6 +334,8 @@ namespace Cil2Js.Analysis {
                 return this.VisitVarParameter((ExprVarParameter)e);
             case Expr.NodeType.VarPhi:
                 return this.VisitVarPhi((ExprVarPhi)e);
+            case Expr.NodeType.VarThis:
+                return this.VisitVarThis((ExprVarThis)e);
             default:
                 throw new NotImplementedException("Cannot handle: " + e.ExprType);
             }

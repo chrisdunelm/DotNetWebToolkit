@@ -16,7 +16,7 @@ namespace Test.Utils {
                     var curMethod = System.Reflection.MethodBase.GetCurrentMethod();
                     var type = mod.GetType(curMethod.DeclaringType.FullName);
                     var method = type.Methods.First(x => x.Name == curMethod.Name);
-                    ctxCache = new Ctx(method);
+                    ctxCache = new Ctx(type, method);
                 }
                 return ctxCache;
             }

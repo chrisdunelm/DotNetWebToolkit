@@ -21,7 +21,7 @@ namespace Cil2Js.Utils {
         }
 
         public static string V(ICode c) {
-            var method = c.Ctx.Method;
+            var method = c.Ctx.MRef;
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("{0} {1}({2})",
                 method.ReturnType.FullName, method.FullName,
@@ -285,7 +285,7 @@ namespace Cil2Js.Utils {
             return e;
         }
 
-        protected override ICode VisitThis(ExprThis e) {
+        protected override ICode VisitVarThis(ExprVarThis e) {
             this.code.Append("this");
             return e;
         }

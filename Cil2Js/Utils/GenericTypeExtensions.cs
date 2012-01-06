@@ -7,14 +7,14 @@ using Mono.Cecil;
 namespace Cil2Js.Utils {
     public static class GenericTypeExtensions {
 
-        public static TypeReference GetResolvedType(this ParameterDefinition parameter, MethodReference methodRef) {
+        public static TypeReference GetResolvedType(this ParameterDefinition parameter, TypeReference tRef, MethodReference mRef) {
             var type = parameter.ParameterType;
             if (type.IsGenericParameter) {
                 IGenericInstance genericInstance;
                 switch (type.MetadataType) {
-                case MetadataType.Var: genericInstance = (IGenericInstance)methodRef.DeclaringType; break;
-                case MetadataType.MVar: genericInstance = (IGenericInstance)methodRef; break;
-                default: throw new InvalidOperationException("Must be Var or MVar here");
+                case MetadataType.Var: genericInstance = (IGenericInstance)tRef; break;
+                case MetadataType.MVar: genericInstance = (IGenericInstance)mRef; break;
+                default: throw new InvalidOperationException("Metadata must be Var or MVar");
                 }
                 return genericInstance.GenericArguments[((GenericParameter)type).Position];
             } else {
@@ -31,14 +31,14 @@ namespace Cil2Js.Utils {
             }
         }
 
-        public static TypeReference GetResolvedReturnType(this MethodReference methodRef) {
-            var type = methodRef.ReturnType;
+        public static TypeReference GetResolvedReturnType(this MethodReference mRef, TypeReference tRef) {
+            var type = mRef.ReturnType;
             if (type.IsGenericParameter) {
                 IGenericInstance genericInstance;
                 switch (type.MetadataType) {
-                case MetadataType.Var: genericInstance = (IGenericInstance)methodRef.DeclaringType; break;
-                case MetadataType.MVar: genericInstance = (IGenericInstance)methodRef; break;
-                default: throw new InvalidOperationException("Must be Var or MVar here");
+                case MetadataType.Var: genericInstance = (IGenericInstance)tRef; break;
+                case MetadataType.MVar: genericInstance = (IGenericInstance)mRef; break;
+                default: throw new InvalidOperationException("Metadata must be Var or MVar");
                 }
                 return genericInstance.GenericArguments[((GenericParameter)type).Position];
             } else {

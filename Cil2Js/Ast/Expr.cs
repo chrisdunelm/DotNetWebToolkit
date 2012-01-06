@@ -15,7 +15,7 @@ namespace Cil2Js.Ast {
             VarParameter,
             VarLocal,
             VarExprInstResult,
-            This,
+            VarThis,
             VarPhi,
             Ternary,
             Call,

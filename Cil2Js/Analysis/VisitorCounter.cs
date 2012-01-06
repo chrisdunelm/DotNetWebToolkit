@@ -5,15 +5,15 @@ using System.Text;
 using Cil2Js.Ast;
 
 namespace Cil2Js.Analysis {
-    public class VisitCounter : AstRecursiveVisitor {
+    public class VisitorCounter : AstRecursiveVisitor {
 
         public static int GetCount(ICode countReferences, ICode root) {
-            var v = new VisitCounter(countReferences);
+            var v = new VisitorCounter(countReferences);
             v.Visit(root);
             return v.Count;
         }
 
-        public VisitCounter(ICode countReferences) {
+        public VisitorCounter(ICode countReferences) {
             this.countReferences = countReferences;
             this.Count = 0;
         }

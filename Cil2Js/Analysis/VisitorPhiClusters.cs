@@ -18,10 +18,7 @@ namespace Cil2Js.Analysis {
         private static IEnumerable<ExprVar[]> UniqueClusters(IEnumerable<ExprVar[]> clusters) {
         start:
             foreach (var a in clusters) {
-                foreach (var b in clusters) {
-                    if (a == b) {
-                        continue;
-                    }
+                foreach (var b in clusters.Where(x => a != x)) {
                     if (a.Intersect(b).Any()) {
                         clusters = clusters.Where(x => x != a && x != b).Concat(a.Union(b).ToArray()).ToArray();
                         goto start;
@@ -36,7 +33,7 @@ namespace Cil2Js.Analysis {
         private List<ExprVar[]> clusters = new List<ExprVar[]>();
 
         protected override ICode VisitVarPhi(ExprVarPhi e) {
-            this.clusters.Add(e.Exprs.Where(x => x.ExprType == Expr.NodeType.VarLocal).Cast<ExprVar>().ToArray());
+            this.clusters.Add(e.Exprs.OfType<ExprVar>().Concat(e).ToArray());
             return e;
         }
 

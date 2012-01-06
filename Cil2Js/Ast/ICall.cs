@@ -7,7 +7,9 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public interface ICall : ICode {
 
+        Expr.NodeType ExprType { get; }
         MethodReference CallMethod { get; }
+        bool IsVirtualCall { get; }
         Expr Obj { get; }
         IEnumerable<Expr> Args { get; }
         TypeReference Type { get; }

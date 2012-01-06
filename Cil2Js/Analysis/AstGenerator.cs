@@ -107,13 +107,13 @@ namespace Cil2Js.Analysis {
 
         }
 
-        public static Stmt CreateBlockedCilAst(MethodDefinition method) {
-            var gen = new AstGenerator(method);
+        public static Stmt CreateBlockedCilAst(TypeReference tRef, MethodReference mRef) {
+            var gen = new AstGenerator(tRef, mRef);
             return gen.Create();
         }
 
-        private AstGenerator(MethodDefinition method) {
-            this.ctx = new Ctx(method);
+        private AstGenerator(TypeReference tRef, MethodReference mRef) {
+            this.ctx = new Ctx(tRef, mRef);
             this.endBlock = new StmtCil(this.ctx, null, null, StmtCil.SpecialBlock.End);
         }
 
@@ -124,10 +124,11 @@ namespace Cil2Js.Analysis {
         private List<IInstructionMappable> mappable = new List<IInstructionMappable>();
 
         public Stmt Create() {
-            if (!this.ctx.Method.HasBody) {
+            var mDef = this.ctx.MRef.Resolve();
+            if (!mDef.HasBody) {
                 throw new ArgumentException("Method has no body, cannot create AST");
             }
-            var body = this.ctx.Method.Body;
+            var body = mDef.Body;
             // Pre-calculate all method block starts
             this.methodBlockStarts = body.Instructions
                 .SelectMany(x => {

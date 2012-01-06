@@ -10,6 +10,7 @@ namespace Test.ExecutionTests {
     public class TestMethodCalls : ExecutionTestBase {
 
         class C0 {
+            public int i = 0;
             public static int S2(int a, int b) { return a + b; }
             public static int S3(int a, int b, int c) { return a + b + c; }
             public static int S4(int a, int b, int c, int d) { return a + b + c + d; }
@@ -18,6 +19,10 @@ namespace Test.ExecutionTests {
             public int I3(int a, int b, int c) { return a + b + c; }
             public int I4(int a, int b, int c, int d) { return a + b + c + d; }
             public int I5(int a, int b, int c, int d, int e) { return a + b + c + d + e; }
+            public int T2(int a, int b) { return this.i + a + b; }
+            public int T3(int a, int b, int c) { return this.i + a + b + c; }
+            public int T4(int a, int b, int c, int d) { return this.i + a + b + c + d; }
+            public int T5(int a, int b, int c, int d, int e) { return this.i + a + b + c + d + e; }
         }
 
         [Test]
@@ -65,6 +70,30 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestI5() {
             Func<int, int, int, int, int, int> z = (a, b, c, d, e) => (new C0()).I5(a, b, c, d, e);
+            this.Test(z);
+        }
+
+        [Test]
+        public void TestT2() {
+            Func<int, int, int, int> z = (a, b, c) => (new C0 { i = a }).T2(b, c);
+            this.Test(z);
+        }
+
+        [Test]
+        public void TestT3() {
+            Func<int, int, int, int, int> z = (a, b, c, d) => (new C0 { i = a }).T3(b, c, d);
+            this.Test(z);
+        }
+
+        [Test]
+        public void TestT4() {
+            Func<int, int, int, int, int, int> z = (a, b, c, d, e) => (new C0 { i = a }).T4(b, c, d, e);
+            this.Test(z);
+        }
+
+        [Test]
+        public void TestT5() {
+            Func<int, int, int, int, int, int, int> z = (a, b, c, d, e, f) => (new C0 { i = a }).T5(b, c, d, e, f);
             this.Test(z);
         }
 

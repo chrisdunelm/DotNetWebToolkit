@@ -12,18 +12,205 @@ using System.Reflection;
 namespace Cil2Js.Output {
     public class Js {
 
-        public static string CreateFrom(MethodDefinition method, bool verbose = false) {
+        class ExprVarCluster : ExprVar {
+
+            public ExprVarCluster(IEnumerable<ExprVar> vars)
+                : base(null) {
+                this.Vars = vars;
+            }
+
+            public IEnumerable<ExprVar> Vars { get; private set; }
+
+            public override Expr.NodeType ExprType {
+                get { throw new NotImplementedException(); }
+            }
+
+            public override TypeReference Type {
+                get { throw new NotImplementedException(); }
+            }
+
+        }
+
+        public static string CreateFrom(MethodReference method, bool verbose = false) {
             return CreateFrom(new[] { method }, verbose);
         }
 
-        public static string CreateFrom(IEnumerable<MethodDefinition> rootMethods, bool verbose = false) {
-            var todo = new Queue<MethodDefinition>();
+        public static string CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false) {
+            var todo = new Stack<MethodReference>();
+            foreach (var method in rootMethods) {
+                todo.Push(method);
+            }
+            // Each method, with the count of how often it is referenced.
+            var methodsSeen = new Dictionary<MethodReference, int>(rootMethods.ToDictionary(x => x, x => 1), TypeExtensions.MethodRefEqComparerInstance);
+            // Each type, with the count of how often it is referenced directly (newobj only at the moment).
+            var typesSeen = new Dictionary<TypeReference, int>(TypeExtensions.TypeRefEqComparerInstance);
+            var methodAsts = new Dictionary<MethodReference, ICode>(TypeExtensions.MethodRefEqComparerInstance);
+            var nonVirtualMethodCallCounts = new Dictionary<MethodReference, int>(TypeExtensions.MethodRefEqComparerInstance);
+            foreach (var rootMethod in rootMethods) {
+                nonVirtualMethodCallCounts.Add(rootMethod, 1);
+            }
+            // Each field, with the count of how often it is referenced.
+            var fieldAccesses = new Dictionary<FieldReference, int>(TypeExtensions.FieldReqEqComparerInstance);
+
+            while (todo.Any()) {
+                var mRef = todo.Pop();
+                var mDef = mRef.Resolve();
+                var tRef = mRef.DeclaringType;
+                if (mDef.IsAbstract) {
+                    throw new InvalidOperationException("Cannot transcode an abstract method");
+                }
+                if (mDef.IsInternalCall) {
+                    throw new InvalidOperationException("Cannot transcode an internal call");
+                }
+                if (mDef.IsExternal()) {
+                    throw new InvalidOperationException("Cannot transcode an external method");
+                }
+                if (!mDef.HasBody) {
+                    throw new InvalidOperationException("Cannot transcode method without body");
+                }
+                if (!typesSeen.ContainsKey(tRef)) {
+                    typesSeen.Add(tRef, 0);
+                }
+
+                var ast = Transcoder.ToAst(mRef, tRef, verbose);
+
+                for (int i = 0; ; i++) {
+                    var astOrg = ast;
+                    var vResolveCalls = new VisitorResolveCalls(JsCallResolver.Resolve);
+                    ast = vResolveCalls.Visit(ast);
+                    if (ast == astOrg) {
+                        break;
+                    }
+                    if (i > 10) {
+                        // After 10 iterations even the most complex method should be sorted out
+                        throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
+                    }
+                }
+
+                methodAsts.Add(mRef, ast);
+
+                var fieldRefs = VisitorFindFieldAccesses.V(ast);
+                foreach (var fieldRef in fieldRefs) {
+                    fieldAccesses[fieldRef] = fieldAccesses.ValueOrDefault(fieldRef) + 1;
+                }
+
+                var calls = VisitorFindCalls.V(ast);
+                foreach (var call in calls.Where(x => x.ExprType == Expr.NodeType.NewObj)) {
+                    // Add reference to each type constructed (direct access to type variable)
+                    typesSeen[call.Type] = typesSeen.ValueOrDefault(call.Type, 0) + 1;
+                }
+                foreach (var call in calls) {
+                    if (methodsSeen.ContainsKey(call.CallMethod)) {
+                        methodsSeen[call.CallMethod]++;
+                    } else {
+                        methodsSeen.Add(call.CallMethod, 1);
+                        todo.Push(call.CallMethod);
+                    }
+                }
+            }
+
+            // Locally name all instance fields; base type names must not be re-used in derived types
+            var instanceFields = fieldAccesses.Where(x => !x.Key.Resolve().IsStatic).ToArray();
+            // TODO: This names all instance fields globally. IT CAN BE DONE BETTER.
+            var instanceFieldNameGen = new NameGenerator();
+            var instanceFieldNames = instanceFields.OrderByDescending(x => x.Value).Select(x => new { f = x.Key, name = instanceFieldNameGen.GetNewName() }).ToArray();
+            // Prepare list of static fields for global naming
+            var staticFields = fieldAccesses.Where(x => x.Key.Resolve().IsStatic).ToArray();
+
+            // Prepare local variables for global naming.
+            // All locals in all methods are sorted by usage count, then all methods usage counts are combined
+            var clusters = methodAsts.Values.SelectMany(x => VisitorPhiClusters.V(x).Select(y => new ExprVarCluster(y))).ToArray();
+            var varToCluster = clusters.SelectMany(x => x.Vars.Select(y => new { cluster = x, var = y })).ToDictionary(x => x.var, x => x.cluster);
+            var varsWithCount = methodAsts.Values.Select(x => {
+                var methodVars = VisitorGetVars.V(x);
+                // Parameters need one extra count, as they appear in the method declaration
+                methodVars = methodVars.Concat(methodVars.Where(y => y.ExprType == Expr.NodeType.VarParameter).Distinct());
+                var ret = methodVars.Select(y => varToCluster.ValueOrDefault(y) ?? y)
+                    .GroupBy(y => y)
+                    .Select(y => new { var = y.Key, count = y.Count() })
+                    .OrderByDescending(y => y.count)
+                    .ToArray();
+                return ret;
+            }).ToArray();
+            var localVarCounts = new Dictionary<int, int>();
+            foreach (var x in varsWithCount) {
+                for (int i = 0; i < x.Length; i++) {
+                    localVarCounts[i] = localVarCounts.ValueOrDefault(i) + x[i].count;
+                }
+            }
+
+            // Globally name all items that require names
+            var needNaming =
+                localVarCounts.Select(x => new { item = (object)x.Key, count = x.Value })
+                .Concat(methodsSeen.Select(x => new { item = (object)x.Key, count = x.Value }))
+                .Concat(staticFields.Select(x => new { item = (object)x.Key, count = x.Value }))
+                .Concat(typesSeen.Select(x => new { item = (object)x.Key, count = x.Value }))
+                .Where(x => x.count > 0)
+                .OrderByDescending(x => x.count)
+                .ToArray();
+            var nameGen = new NameGenerator();
+            var globalNames = needNaming.ToDictionary(x => x.item, x => nameGen.GetNewName());
+
+            // Create map of all local variables to their names
+            var localVarNames = varsWithCount.Select(x => x.Select((y, i) => new { y.var, name = globalNames[i] }))
+                .SelectMany(x => x)
+                .SelectMany(x => {
+                    var varCluster = x.var as ExprVarCluster;
+                    if (varCluster != null) {
+                        return varCluster.Vars.Select(y => new { var = y, name = x.name });
+                    } else {
+                        return new[] { x };
+                    }
+                })
+                .ToDictionary(x => x.var, x => x.name);
+
+            // Create map of all method names
+            var methodNames = methodsSeen.Keys.ToDictionary(x => x, x => globalNames[x], TypeExtensions.MethodRefEqComparerInstance);
+            methodNames[rootMethods.First()] = "main"; // HACK
+
+            // Create list of all static field names
+            var staticFieldNames = staticFields.Select(x => new { f = x.Key, name = globalNames[x.Key] });
+            // Create map of all fields
+            var fieldNames = instanceFieldNames.Concat(staticFieldNames).ToDictionary(x => x.f, x => x.name);
+
+            // Create map of type names
+            var typeNames = typesSeen
+                .Where(x => x.Value > 0)
+                .ToDictionary(x => x.Key, x => globalNames[x.Key], TypeExtensions.TypeRefEqComparerInstance);
+
+            var resolver = new JsMethod.Resolver {
+                LocalVarNames = localVarNames,
+                MethodNames = methodNames,
+                FieldNames = fieldNames,
+                TypeNames = typeNames,
+            };
+
+            var js = new StringBuilder();
+
+            // Construct methods
+            foreach (var methodInfo in methodAsts) {
+                var mRef = methodInfo.Key;
+                var ast = methodInfo.Value;
+                var mJs = JsMethod.Create(mRef, resolver, ast);
+                js.AppendLine(mJs);
+            }
+
+            // Construct type data
+            foreach (var type in typesSeen.Where(x => x.Value > 0).Select(x => x.Key)) {
+                js.AppendFormat("var {0}={{}};", typeNames[type]);
+                js.AppendLine();
+            }
+
+            var jsStr = js.ToString();
+            return jsStr;
+            /*
+            var todo = new Queue<MethodReference>();
             foreach (var method in rootMethods) {
                 todo.Enqueue(method);
             }
-            var seen = new HashSet<MethodDefinition>(rootMethods);
-            var typesSeen = new HashSet<TypeDefinition>();
-            var asts = new Dictionary<MethodDefinition, ICode>();
+            var seen = new HashSet<MethodReference>(rootMethods, TypeExtensions.MethodRefEqComparerInstance);
+            var typesSeen = new HashSet<TypeReference>(TypeExtensions.TypeRefEqComparerInstance);
+            var asts = new Dictionary<MethodReference, ICode>(TypeExtensions.MethodRefEqComparerInstance);
             var callResolvers = new Dictionary<ICall, JsResolved>();
             var exports = new List<Tuple<MethodDefinition, string>>();
             var fields = new Dictionary<FieldDefinition, int>();
@@ -35,15 +222,16 @@ namespace Cil2Js.Output {
 
             while (todo.Any()) {
                 var method = todo.Dequeue();
-                if (method.IsAbstract) {
+                var methodDef = method.Resolve();
+                if (methodDef.IsAbstract) {
                     continue;
                 }
-                if (method.IsInternalCall) {
+                if (methodDef.IsInternalCall) {
                     throw new ArgumentException("Cannot transcode an internal method");
                 }
 
                 typesSeen.Add(method.DeclaringType);
-                if (method.IsVirtual && !method.IsAbstract) {
+                if (methodDef.IsVirtual && !methodDef.IsAbstract) {
                     var baseMethod = method.GetBasemostMethodInTypeHierarchy();
                     virtualCalls.ValueOrDefault(baseMethod, () => new HashSet<MethodDefinition>(), true).Add(method);
                 }
@@ -285,6 +473,7 @@ namespace Cil2Js.Output {
 
             var jsStr = js.ToString();
             return jsStr;
+            */
         }
 
     }

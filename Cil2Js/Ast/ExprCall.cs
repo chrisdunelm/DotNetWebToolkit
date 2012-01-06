@@ -15,13 +15,14 @@ namespace Cil2Js.Ast {
             this.Obj = obj;
             this.Args = args;
             this.IsVirtualCall = isVirtualCall;
-            this.returnType = callMethod.GetResolvedReturnType();
+            this.returnType = callMethod.GetResolvedReturnType(callMethod.DeclaringType);
         }
 
         public Expr Obj { get; private set; }
         public MethodReference CallMethod { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
         public bool IsVirtualCall { get; private set; }
+
         private TypeReference returnType;
 
         public bool IsStatic {

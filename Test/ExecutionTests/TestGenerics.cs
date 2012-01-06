@@ -130,6 +130,20 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class CStaticField<T> {
+            public static T Value;
+        }
+
+        [Test]
+        public void TestStaticGenericField() {
+            Func<int, string, int> f = (i, s) => {
+                CStaticField<int>.Value = i;
+                CStaticField<string>.Value = s;
+                return CStaticField<int>.Value + CStaticField<string>.Value.Length;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

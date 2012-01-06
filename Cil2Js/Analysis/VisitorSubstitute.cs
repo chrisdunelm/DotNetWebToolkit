@@ -22,7 +22,7 @@ namespace Cil2Js.Analysis {
             if (!s.LeaveProtectedRegion) {
                 // Must never substitute when leaving protected region.
                 // This would change which statements were inside the try/catch/finally region
-                var count = VisitCounter.GetCount(s.To, this.root);
+                var count = VisitorCounter.GetCount(s.To, this.root);
                 if (count == 1) {
                     return this.Visit(s.To);
                 }

@@ -71,6 +71,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBooleanSimplification.cs" />
+    <Compile Include="TestCecilExtensions.cs" />
     <Compile Include="TestNameGenerator.cs" />
     <Compile Include="TestUtils.cs" />
     <Compile Include="TestVisitorAllPerms.cs" />

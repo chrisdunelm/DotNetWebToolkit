@@ -11,8 +11,18 @@ namespace Cil2Js.Utils {
 
         [DebuggerStepThrough]
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> en, T item) {
-            foreach (var e in en) yield return e;
+            foreach (var e in en) {
+                yield return e;
+            }
             yield return item;
+        }
+
+        [DebuggerStepThrough]
+        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> en, T item) {
+            yield return item;
+            foreach (var e in en) {
+                yield return e;
+            }
         }
 
         [DebuggerStepThrough]
@@ -39,6 +49,18 @@ namespace Cil2Js.Utils {
         public static TValue ValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key) {
             TValue value;
             return d.TryGetValue(key, out value) ? value : default(TValue);
+        }
+
+        [DebuggerStepThrough]
+        public static TValue ValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> d, TKey key, TValue @default, bool autoAdd = false) {
+            TValue value;
+            if (!d.TryGetValue(key, out value)) {
+                value = @default;
+                if (autoAdd) {
+                    d.Add(key, value);
+                }
+            }
+            return value;
         }
 
         [DebuggerStepThrough]

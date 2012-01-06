@@ -51,27 +51,29 @@ namespace Cil2Js.Analysis {
         // If ending in 'if', 'then' and 'else' will both have continuations only
         // 'try' statements will have only 0 or 1 catch clauses
 
-        public static ICode V(ICode ast) {
-            var v = new VisitorConvertCilToSsa(ast);
+        public static ICode V(ICode ast, TypeReference tRef, MethodReference mRef) {
+            var v = new VisitorConvertCilToSsa(ast, tRef, mRef);
             ast = v.Visit(ast);
             // Convert all InstResults to normal Vars
             //var vFindInstResults = new VisitorFindInstResults();
             //vFindInstResults.Visit(c);
-            foreach (var instResult in v.instResults.Values){//vFindInstResults.instResults) {
+            foreach (var instResult in v.instResults.Values) {//vFindInstResults.instResults) {
                 var var = new ExprVarLocal(ast.Ctx, instResult.Type);
                 ast = VisitorReplace.V(ast, instResult, var);
             }
             return ast;
         }
 
-        private VisitorConvertCilToSsa(ICode root) {
+        private VisitorConvertCilToSsa(ICode root, TypeReference tRef, MethodReference mRef) {
             this.ctx = root.Ctx;
             var v = new VisitorFindInstResults();
             v.Visit(root);
             this.instResults = v.instResults.ToDictionary(x => x.Inst);
             this.CreateOrMergeBsi((Stmt)root, new ExprVarPhi[0],
-                this.ctx.Method.Body.Variables.Select(x => (Expr)null).ToArray(),
-                this.ctx.Method.Parameters.Select(x => (Expr)new ExprVarParameter(this.ctx, x)).ToArray());
+                this.ctx.MDef.Body.Variables.Select(x => (Expr)null).ToArray(),
+                this.ctx.MRef.Parameters.Select(x =>
+                    (Expr)new ExprVarParameter(this.ctx, x, x.GetResolvedType(tRef, mRef))
+                    ).ToArray());
         }
 
         class BlockInitInfo {

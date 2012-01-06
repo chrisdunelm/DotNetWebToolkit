@@ -15,14 +15,14 @@ namespace Cil2Js.Analysis {
         class DebugView {
 
             public DebugView(StmtCil s) {
-                this.Method = s.Ctx.Method;
+                this.Method = s.Ctx.MRef;
                 this.Insts = s.Insts;
                 this.EndCil = s.EndCil;
                 this.StartStackSize = s.StartStackSize;
                 this.EndStackSize = s.EndStackSize;
             }
 
-            public MethodDefinition Method { get; private set; }
+            public MethodReference Method { get; private set; }
             public IEnumerable<Instruction> Insts { get; private set; }
             public Stmt EndCil { get; private set; }
             public int StartStackSize { get; set; }

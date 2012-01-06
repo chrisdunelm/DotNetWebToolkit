@@ -71,13 +71,12 @@
     <Compile Include="Analysis\AstRecursiveVisitor.cs" />
     <Compile Include="Analysis\AstVisitor.cs" />
     <Compile Include="Analysis\CilProcessor.cs" />
-    <Compile Include="Analysis\CilStackAnalysis.cs" />
     <Compile Include="Analysis\AstGenerator.cs" />
     <Compile Include="Analysis\IInstructionMappable.cs" />
     <Compile Include="Analysis\StmtCil.cs" />
     <Compile Include="Analysis\StmtContinuation.cs" />
     <Compile Include="Analysis\TypeCombiner.cs" />
-    <Compile Include="Analysis\VisitCounter.cs" />
+    <Compile Include="Analysis\VisitorCounter.cs" />
     <Compile Include="Analysis\VisitorBooleanSimplification.cs" />
     <Compile Include="Analysis\VisitorConditionRemoval.cs" />
     <Compile Include="Analysis\VisitorConvertCilToSsa.cs" />
@@ -113,7 +112,7 @@
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
-    <Compile Include="Ast\ExprThis.cs" />
+    <Compile Include="Ast\ExprVarThis.cs" />
     <Compile Include="Ast\ExprUnary.cs" />
     <Compile Include="Ast\ExprVar.cs" />
     <Compile Include="Ast\ExprVarArrayAccess.cs" />
@@ -157,11 +156,13 @@
     <Compile Include="Output\VisitorFindCalls.cs" />
     <Compile Include="Output\VisitorFindFieldAccesses.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
+    <Compile Include="Output\VisitorGetVars.cs" />
     <Compile Include="Output\VisitorResolveCalls.cs" />
     <Compile Include="Output\VisitorResolveFieldAccess.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\AstRunner.cs" />
+    <Compile Include="Utils\CecilExtensions.cs" />
     <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\GenericTypeExtensions.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />

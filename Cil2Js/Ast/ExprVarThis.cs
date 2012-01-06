@@ -5,9 +5,9 @@ using System.Text;
 using Mono.Cecil;
 
 namespace Cil2Js.Ast {
-    public class ExprThis : Expr {
+    public class ExprVarThis : ExprVar {
 
-        public ExprThis(Ctx ctx, TypeReference type)
+        public ExprVarThis(Ctx ctx, TypeReference type)
             : base(ctx) {
             this.type = type;
         }
@@ -15,7 +15,7 @@ namespace Cil2Js.Ast {
         private TypeReference type;
 
         public override Expr.NodeType ExprType {
-            get { return NodeType.This; }
+            get { return NodeType.VarThis; }
         }
 
         public override Mono.Cecil.TypeReference Type {

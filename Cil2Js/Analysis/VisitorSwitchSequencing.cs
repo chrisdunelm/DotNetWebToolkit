@@ -18,7 +18,7 @@ namespace Cil2Js.Analysis {
             if (!VisitorFindContinuations.Any(s)) {
                 return base.VisitSwitch(s);
             }
-            // If any cases go to the same continuation as the default case, then remove them
+            // If any cases go to the same continuation as the default case, remove them
             if (s.Default != null && s.Default.StmtType == Stmt.NodeType.Continuation) {
                 var defaultCont = (StmtContinuation)s.Default;
                 var sameAsDefault = s.Cases

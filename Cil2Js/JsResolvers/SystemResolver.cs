@@ -12,9 +12,9 @@ namespace Cil2Js.JsResolvers {
         public static JsResolved ActionFunc_ctor(ICall call) {
             var ctx = call.Ctx;
             var _this = call.Args.ElementAt(0);
-            var method = ((ExprMethodReference)call.Args.ElementAt(1)).Method.Resolve();
-            var args = method.Parameters.Select(x => new ExprVarLocal(ctx, x.GetResolvedType(method))).ToArray();
-            var boundCall = new ExprCall(ctx, method, _this, args, false);
+            var mRef = ((ExprMethodReference)call.Args.ElementAt(1)).Method;
+            var args = mRef.Parameters.Select(x => new ExprVarLocal(ctx, x.GetResolvedType(mRef.DeclaringType, mRef))).ToArray();
+            var boundCall = new ExprCall(ctx, mRef, _this, args, false);
             var innerStmt = boundCall.Type.IsVoid() ?
                 (Stmt)new StmtWrapExpr(ctx, boundCall) :
                 (Stmt)new StmtReturn(ctx, boundCall);

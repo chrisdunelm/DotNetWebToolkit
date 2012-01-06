@@ -16,12 +16,14 @@ namespace Cil2Js.Analysis {
             this.locals = locals;
             this.args = args;
             this.instResults = instResults;
+            this.@this = ctx.MDef.IsStatic ? null : new ExprVarThis(ctx, ctx.TRef);
         }
 
         private Ctx ctx;
         private Stack<Expr> stack;
         private Expr[] locals, args;
         private Dictionary<Instruction, ExprVarInstResult> instResults;
+        private ExprVarThis @this;
 
         public Stmt Process(Instruction inst) {
             switch (inst.OpCode.Code) {
@@ -197,21 +199,21 @@ namespace Cil2Js.Analysis {
             case 0:
                 return new StmtReturn(this.ctx, null);
             case 1:
-                return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.Method.ReturnType));
+                return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.GetResolvedReturnType(this.ctx.TRef)));
             default:
                 throw new InvalidOperationException("Stack size incorrect for return instruction: " + this.stack.Count);
             }
         }
 
         private Stmt Const(object value, TypeReference type) {
-            return this.SsaLocalAssignment(new ExprLiteral(this.ctx, value, type.Resolve()));
+            return this.SsaLocalAssignment(new ExprLiteral(this.ctx, value, type));
         }
 
         private Stmt LdArg(int idx, bool adjust) {
             Expr expr;
-            if (this.ctx.Method.HasThis && adjust) {
+            if (this.ctx.MRef.HasThis && adjust) {
                 if (idx == 0) {
-                    expr = new ExprThis(this.ctx, this.ctx.Method.DeclaringType);
+                    expr = this.@this;
                 } else {
                     expr = this.args[idx - 1];
                 }
@@ -287,7 +289,7 @@ namespace Cil2Js.Analysis {
                 argExprs[i] = this.stack.Pop();
             }
             for (int i = 0; i < numArgs; i++) {
-                var argType = callingRef.Parameters[i].GetResolvedType(callingRef);
+                var argType = callingRef.Parameters[i].GetResolvedType(callingRef.DeclaringType, callingRef);
                 argExprs[i] = this.CastIfRequired(argExprs[i], argType);
             }
             var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
@@ -297,21 +299,6 @@ namespace Cil2Js.Analysis {
             } else {
                 return this.SsaLocalAssignment(exprCall);
             }
-
-            //var calling = ((MethodReference)inst.Operand).Resolve();
-            //var args = new List<Expr>();
-            //for (int i = 0; i < calling.Parameters.Count; i++) {
-            //    var expr = this.stack.Pop();
-            //    args.Add(this.CastIfRequired(expr, calling.Parameters[calling.Parameters.Count - 1 - i].ParameterType));
-            //}
-            //args.Reverse();
-            //var obj = calling.IsStatic ? null : this.CastIfRequired(this.stack.Pop(), calling.DeclaringType);
-            //var exprCall = new ExprCall(this.ctx, calling, obj, args, isVirtualCall);
-            //if (calling.ReturnType.IsVoid()) {
-            //    return new StmtWrapExpr(this.ctx, exprCall);
-            //} else {
-            //    return this.SsaLocalAssignment(exprCall);
-            //}
         }
 
         private Stmt NewObj(Instruction inst) {
@@ -322,19 +309,11 @@ namespace Cil2Js.Analysis {
                 argExprs[i] = this.stack.Pop();
             }
             for (int i = 0; i < numArgs; i++) {
-                var argType = ctorRef.Parameters[i].GetResolvedType(ctorRef);
+                var argType = ctorRef.Parameters[i].GetResolvedType(ctorRef.DeclaringType, ctorRef);
                 argExprs[i] = this.CastIfRequired(argExprs[i], argType);
             }
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
             return this.SsaLocalAssignment(expr);
-            //var ctor = ctorRef.Resolve();
-            //var args = new List<Expr>();
-            //for (int i = 0; i < ctor.Parameters.Count; i++) {
-            //    var expr = this.stack.Pop();
-            //    args.Add(expr);
-            //}
-            //args.Reverse();
-            //return this.SsaLocalAssignment(new ExprNewObj(this.ctx, ctor, args));
         }
 
         private Stmt LoadField(Instruction inst) {
