@@ -15,6 +15,8 @@ namespace Cil2Js.Output {
             public Dictionary<MethodReference, string> MethodNames { get; set; }
             public Dictionary<FieldReference, string> FieldNames { get; set; }
             public Dictionary<TypeReference, string> TypeNames { get; set; }
+            public Dictionary<ICall, JsResolved> ResolvedCalls { get; set; }
+            public Dictionary<MethodReference, int> VirtualCallIndices { get; set; }
         }
 
         //public class Resolver {
@@ -282,6 +284,15 @@ namespace Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitAssignment(ExprAssignment e) {
+            this.js.Append("(");
+            this.Visit(e.Target);
+            this.js.Append(" = ");
+            this.Visit(e.Expr);
+            this.js.Append(")");
+            return e;
+        }
+
         protected override ICode VisitVar(ExprVar e) {
             this.js.Append(this.resolver.LocalVarNames[e]);
             this.vars.Add(e);
@@ -446,25 +457,41 @@ namespace Cil2Js.Output {
             return s;
         }
 
+        private void CallAppendArgs(ICall e) {
+            var mDef = e.CallMethod.Resolve();
+            var args = e.Args.ToArray();
+            if (!mDef.IsStatic) {
+                args = args.Prepend(e.Obj).ToArray();
+            }
+            this.js.Append("(");
+            for (int i = 0; i < args.Length; i++) {
+                if (i != 0) {
+                    this.js.Append(", ");
+                }
+                this.Visit(args[i]);
+            }
+            this.js.Append(")");
+        }
+
         protected override ICode VisitCall(ExprCall e) {
             var mRef = e.CallMethod;
             var mDef = mRef.Resolve();
             //throw new NotImplementedException();
             //var callMethod = e.CallMethod.Resolve();
-            Action appendArgs = () => {
-                var args = e.Args.ToArray();
-                if (!mDef.IsStatic) {
-                    args = args.Prepend(e.Obj).ToArray();
-                }
-                this.js.Append("(");
-                for (int i = 0; i < args.Length; i++) {
-                    if (i != 0) {
-                        this.js.Append(", ");
-                    }
-                    this.Visit(args[i]);
-                }
-                this.js.Append(")");
-            };
+            //Action appendArgs = () => {
+            //    var args = e.Args.ToArray();
+            //    if (!mDef.IsStatic) {
+            //        args = args.Prepend(e.Obj).ToArray();
+            //    }
+            //    this.js.Append("(");
+            //    for (int i = 0; i < args.Length; i++) {
+            //        if (i != 0) {
+            //            this.js.Append(", ");
+            //        }
+            //        this.Visit(args[i]);
+            //    }
+            //    this.js.Append(")");
+            //};
             //Action<string> appendArgs = preThis => {
             //    this.js.Append("(");
             //    var needComma = false;
@@ -546,15 +573,45 @@ namespace Cil2Js.Output {
             //    appendArgs(preThisName);
             //    return e;
             //}
+            var resolved = this.resolver.ResolvedCalls.ValueOrDefault(e);
+            if (resolved != null) {
+                switch (resolved.Type) {
+                //case JsResolvedType.Method:
+                //    break;
+                case JsResolvedType.Property:
+                    var propertyResolved = (JsResolvedProperty)resolved;
+                    this.Visit(propertyResolved.Obj);
+                    this.js.Append(".");
+                    this.js.Append(propertyResolved.PropertyName);
+                    if (e.Args.Count() == 1) {
+                        // Property setter, so emit ' = ...'
+                        this.js.Append(" = ");
+                        this.Visit(e.Args.First());
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Cannot handle: " + resolved.Type);
+                }
+                return e;
+            }
             if (mDef.DeclaringType.IsInterface) {
                 throw new NotImplementedException("Cannot handle interface calls");
             }
             if (e.IsVirtualCall) {
-                throw new NotImplementedException("Cannot handle virtual calls");
+                throw new InvalidOperationException("Virtual calls should never occur here");
             }
             var name = this.resolver.MethodNames[mRef];
             this.js.Append(name);
-            appendArgs();
+            this.CallAppendArgs(e);
+            return e;
+        }
+
+        protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
+            var mBasemost = e.CallMethod.GetBasemostMethod();
+            int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
+            this.Visit(e.ObjInit);
+            this.js.AppendFormat("._._[{0}]", vTableIndex);
+            this.CallAppendArgs(e);
             return e;
         }
 

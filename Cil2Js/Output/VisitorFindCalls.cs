@@ -27,5 +27,10 @@ namespace Cil2Js.Output {
             return base.VisitNewObj(e);
         }
 
+        protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
+            this.calls.Add(e);
+            return base.VisitJsVirtualCall(e);
+        }
+
     }
 }

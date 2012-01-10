@@ -104,6 +104,7 @@
     <Compile Include="Ast\Ctx.cs" />
     <Compile Include="Ast\Expr.cs" />
     <Compile Include="Ast\ExprArrayLength.cs" />
+    <Compile Include="Ast\ExprAssignment.cs" />
     <Compile Include="Ast\ExprBinary.cs" />
     <Compile Include="Ast\ExprCall.cs" />
     <Compile Include="Ast\ExprCast.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
     <Compile Include="Output\ExprJsFunction.cs" />
     <Compile Include="Output\ExprJsVarMethodReference.cs" />
+    <Compile Include="Output\ExprJsVirtualCall.cs" />
     <Compile Include="Output\JsAstVisitor.cs" />
     <Compile Include="Output\ExprJsInvoke.cs" />
     <Compile Include="Output\JsResolved.cs" />
@@ -165,10 +167,8 @@
     <Compile Include="Output\VisitorResolveFieldAccess.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\AstRunner.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />
     <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Utils\GenericTypeExtensions.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />
     <Compile Include="Utils\TypeExtensions.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />

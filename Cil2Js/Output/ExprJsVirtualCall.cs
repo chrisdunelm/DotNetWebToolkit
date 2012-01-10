@@ -2,35 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Cil2Js.Ast;
 using Mono.Cecil;
 using Cil2Js.Utils;
 
-namespace Cil2Js.Ast {
+namespace Cil2Js.Output {
+    public class ExprJsVirtualCall : Expr, ICall {
 
-    public class ExprCall : Expr, ICall {
-
-        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
+        public ExprJsVirtualCall(Ctx ctx, MethodReference callMethod, Expr objInit, Expr objRef, IEnumerable<Expr> args)
             : base(ctx) {
             this.CallMethod = callMethod;
-            this.Obj = obj;
+            this.ObjInit = objInit;
+            this.ObjRef = objRef;
             this.Args = args;
-            this.IsVirtualCall = isVirtualCall;
             this.returnType = callMethod.ReturnType.FullResolve(callMethod);
         }
 
-        public Expr Obj { get; private set; }
         public MethodReference CallMethod { get; private set; }
+        public Expr ObjInit { get; private set; }
+        public Expr ObjRef { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
-        public bool IsVirtualCall { get; private set; }
 
         private TypeReference returnType;
 
-        public bool IsStatic {
-            get { return this.Obj == null; }
-        }
-
         public override Expr.NodeType ExprType {
-            get { return NodeType.Call; }
+            get { return (Expr.NodeType)JsExprType.JsVirtualCall; }
         }
 
         public override TypeReference Type {
@@ -39,6 +35,14 @@ namespace Cil2Js.Ast {
 
         public override Special Specials {
             get { return Special.PossibleSideEffects; }
+        }
+
+        public bool IsVirtualCall {
+            get { return true; }
+        }
+
+        public Expr Obj {
+            get { return this.ObjRef; }
         }
 
     }

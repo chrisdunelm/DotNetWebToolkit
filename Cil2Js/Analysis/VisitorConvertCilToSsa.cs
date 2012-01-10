@@ -72,7 +72,7 @@ namespace Cil2Js.Analysis {
             this.CreateOrMergeBsi((Stmt)root, new ExprVarPhi[0],
                 this.ctx.MDef.Body.Variables.Select(x => (Expr)null).ToArray(),
                 this.ctx.MRef.Parameters.Select(x =>
-                    (Expr)new ExprVarParameter(this.ctx, x, x.GetResolvedType(tRef, mRef))
+                    (Expr)new ExprVarParameter(this.ctx, x)
                     ).ToArray());
         }
 

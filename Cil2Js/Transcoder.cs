@@ -95,7 +95,7 @@ namespace Cil2Js {
         //    return ToJsSingleMethod(GetMethod(methodInfo), jsMethodName, resolver, verbose);
         //}
 
-        public static string ToJs(MethodDefinition method, bool verbose = false) {
+        public static string ToJs(MethodReference method, bool verbose = false) {
             return Js.CreateFrom(method, verbose);
         }
 
@@ -103,12 +103,11 @@ namespace Cil2Js {
             return Js.CreateFrom(GetMethod(methodInfo), verbose);
         }
 
-        public static MethodDefinition GetMethod(MethodInfo mi) {
+        public static MethodReference GetMethod(MethodInfo mi) {
             // TODO: This won't handle overloaded methods (arguments and generics)
             var filename = mi.DeclaringType.Assembly.Location;
             var module = ModuleDefinition.ReadModule(filename);
-            var type = module.GetType(mi.DeclaringType.FullName.Replace('+', '.'));
-            var method = type.Methods.First(x => x.Name == mi.Name);
+            var method = module.Import(mi);
             return method;
         }
 

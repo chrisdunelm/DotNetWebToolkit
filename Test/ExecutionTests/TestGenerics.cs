@@ -24,6 +24,21 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class CNoInit<T> {
+#pragma warning disable 0649
+            public T t;
+#pragma warning restore 0649
+        }
+
+        [Test]
+        public void TestGenericFieldNoInit() {
+            Func<int> f = () => {
+                var c = new CNoInit<int>();
+                return c.t;
+            };
+            this.Test(f);
+        }
+
         class C2<T, U, V, W> {
             public T t;
             public U u;
@@ -81,7 +96,7 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestWithGenericMethod() {
+        public void TestWithMethodWithGenericReturnType() {
             Func<int, int> f = a => {
                 var c = new C5<int> { t = a };
                 return c.Get();
@@ -93,11 +108,45 @@ namespace Test.ExecutionTests {
             public static T Get<T>(T t) {
                 return t;
             }
+            public static U Get2<U>(U u) {
+                return Get<U>(u);
+            }
+            public static V Get3<V>(V v) {
+                return Get2<V>(v);
+            }
+            public static W Get4<W>(W w) {
+                return Get3<W>(w);
+            }
         }
 
         [Test]
-        public void TestStaticGenericMethod() {
+        public void TestWithStaticMethodWithGenericArgument() {
             Func<int, int> f = a => C6.Get(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestWithStaticMethodWithGenericArgument2() {
+            Func<int, int> f = a => C6.Get2(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestWithStaticMethodWithGenericArgument4() {
+            Func<int, int> f = a => C6.Get4(a);
+            this.Test(f);
+        }
+
+        static class CGenericClassGenericMethodMulti<T> {
+            public static U Get1<U>(U u) { return u; }
+            public static V Get2<V>(V v) { return CGenericClassGenericMethodMulti<V>.Get1<V>(v); }
+            public static W Get3<W>(W w) { return CGenericClassGenericMethodMulti<W>.Get2<W>(w); }
+            public static X Get4<X>(X x) { return CGenericClassGenericMethodMulti<X>.Get3<X>(x); }
+        }
+
+        [Test]
+        public void TestGenericClassGenericMethodMulti() {
+            Func<int, int> f = a => CGenericClassGenericMethodMulti<int>.Get4<int>(a);
             this.Test(f);
         }
 

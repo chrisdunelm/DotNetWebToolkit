@@ -7,10 +7,10 @@ using Mono.Cecil;
 namespace Cil2Js.Ast {
     public class ExprVarParameter : ExprVar {
 
-        public ExprVarParameter(Ctx ctx, ParameterDefinition parameter, TypeReference parameterType)
+        public ExprVarParameter(Ctx ctx, ParameterDefinition parameter)
             : base(ctx) {
             this.Parameter = parameter;
-            this.type = parameterType;
+            this.type = parameter.ParameterType;
         }
 
         public ParameterDefinition Parameter { get; private set; }

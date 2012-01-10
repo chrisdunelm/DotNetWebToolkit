@@ -21,23 +21,23 @@ namespace Cil2Js.Output {
 
         private List<MethodReference> staticConstructors = new List<MethodReference>();
 
-        private void Add(TypeReference tRef) {
-            var cctor = tRef.GetMethods().FirstOrDefault(x => x.Name == ".cctor");
+        private void Add(TypeReference tRef, Ctx ctx) {
+            var cctor = tRef.Resolve().Methods.FirstOrDefault(x => x.Name == ".cctor");
             if (cctor != null) {
-                this.staticConstructors.Add(cctor);
+                this.staticConstructors.Add(cctor.FullResolve(ctx));
             }
         }
 
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             if (e.IsStatic) {
-                this.Add(e.Field.DeclaringType);
+                this.Add(e.Field.DeclaringType, e.Ctx);
             }
             return e;
         }
 
         protected override ICode VisitCall(ExprCall e) {
             if (e.IsStatic) {
-                this.Add(e.CallMethod.DeclaringType);
+                this.Add(e.CallMethod.DeclaringType, e.Ctx);
             }
             return e;
         }

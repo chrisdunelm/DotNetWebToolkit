@@ -6,6 +6,7 @@ using Mono.Cecil;
 using Cil2Js.Ast;
 using Mono.Cecil.Cil;
 using Cil2Js.Utils;
+using System.Diagnostics;
 
 namespace Cil2Js.Analysis {
     class CilProcessor {
@@ -22,7 +23,6 @@ namespace Cil2Js.Analysis {
         private Stack<Expr> stack;
         private Expr[] locals, args;
         private Dictionary<Instruction, ExprVarInstResult> instResults;
-        private ExprVarThis @this;
 
         public Stmt Process(Instruction inst) {
             switch (inst.OpCode.Code) {
@@ -178,12 +178,12 @@ namespace Cil2Js.Analysis {
                 return this.Cast(this.ctx.Int32);
             case Code.Conv_I:
                 return this.Cast(this.ctx.IntPtr);
-            case Code.Castclass:
-                return this.Cast((TypeReference)inst.Operand);
+            //case Code.Castclass:
+            //    return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
-            case Code.Ldftn:
-                return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, (MethodReference)inst.Operand));
+            //case Code.Ldftn:
+            //    return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, ((MethodReference)inst.Operand).FullResolve(this.ctx)));
             case Code.Dup:
                 return this.Dup();
             case Code.Ret:
@@ -198,7 +198,7 @@ namespace Cil2Js.Analysis {
             case 0:
                 return new StmtReturn(this.ctx, null);
             case 1:
-                return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.GetResolvedReturnType(this.ctx.TRef)));
+                return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.ReturnType.FullResolve(this.ctx)));
             default:
                 throw new InvalidOperationException("Stack size incorrect for return instruction: " + this.stack.Count);
             }
@@ -210,7 +210,7 @@ namespace Cil2Js.Analysis {
 
         private Stmt LdArg(int idx, bool adjust) {
             Expr expr;
-            if (this.ctx.MRef.HasThis && adjust) {
+            if ((this.ctx.MRef.HasThis || this.ctx.MDef.IsConstructor) && adjust) {
                 if (idx == 0) {
                     expr = this.ctx.This;
                 } else {
@@ -280,15 +280,19 @@ namespace Cil2Js.Analysis {
             }
         }
 
-        private Stmt Call(Instruction inst, bool isVirtualCall) {
-            var callingRef = (MethodReference)inst.Operand;
+        private Stmt Call(Instruction inst, bool isVirtualCallInst) {
+            var callingRef = ((MethodReference)inst.Operand).FullResolve(this.ctx);
+            bool isVirtualCall = isVirtualCallInst && callingRef.Resolve().IsVirtual;
             var numArgs = callingRef.Parameters.Count;
             var argExprs = new Expr[numArgs];
             for (int i = numArgs - 1; i >= 0; i--) {
                 argExprs[i] = this.stack.Pop();
             }
             for (int i = 0; i < numArgs; i++) {
-                var argType = callingRef.Parameters[i].GetResolvedType(callingRef.DeclaringType, callingRef);
+                var argType = callingRef.Parameters[i].ParameterType.FullResolve(callingRef);
+                if (argType.IsGenericParameter) {
+                    throw new InvalidOperationException();
+                }
                 argExprs[i] = this.CastIfRequired(argExprs[i], argType);
             }
             var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
@@ -301,14 +305,14 @@ namespace Cil2Js.Analysis {
         }
 
         private Stmt NewObj(Instruction inst) {
-            var ctorRef = (MethodReference)inst.Operand;
+            var ctorRef = ((MethodReference)inst.Operand).FullResolve(this.ctx);
             var numArgs = ctorRef.Parameters.Count;
             var argExprs = new Expr[numArgs];
             for (int i = numArgs - 1; i >= 0; i--) {
                 argExprs[i] = this.stack.Pop();
             }
             for (int i = 0; i < numArgs; i++) {
-                var argType = ctorRef.Parameters[i].GetResolvedType(ctorRef.DeclaringType, ctorRef);
+                var argType = ctorRef.Parameters[i].ParameterType.FullResolve(ctorRef);
                 argExprs[i] = this.CastIfRequired(argExprs[i], argType);
             }
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
@@ -317,31 +321,36 @@ namespace Cil2Js.Analysis {
 
         private Stmt LoadField(Instruction inst) {
             var obj = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, obj, (FieldReference)inst.Operand);
+            var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprFieldAccess(this.ctx, obj, fRef);
             return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StoreField(Instruction inst) {
             var value = this.stack.Pop();
             var obj = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, obj, (FieldReference)inst.Operand);
+            var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprFieldAccess(this.ctx, obj, fRef);
             return new StmtAssignment(this.ctx, expr, value);
         }
 
         private Stmt LoadStaticField(Instruction inst) {
-            var expr = new ExprFieldAccess(this.ctx, null, (FieldReference)inst.Operand);
+            var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprFieldAccess(this.ctx, null, fRef);
             return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StoreStaticField(Instruction inst) {
             var value = this.stack.Pop();
-            var expr = new ExprFieldAccess(this.ctx, null, (FieldReference)inst.Operand);
+            var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprFieldAccess(this.ctx, null, fRef);
             return new StmtAssignment(this.ctx, expr, value);
         }
 
         private Stmt NewArray(Instruction inst) {
             var exprNumElements = this.stack.Pop();
-            var expr = new ExprNewArray(this.ctx, (TypeReference)inst.Operand, exprNumElements);
+            var elementType = ((TypeReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprNewArray(this.ctx, elementType, exprNumElements);
             return this.SsaLocalAssignment(expr);
         }
 

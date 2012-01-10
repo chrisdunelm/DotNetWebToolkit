@@ -49,38 +49,6 @@ namespace Cil2Js.Utils {
 
         public static readonly IEqualityComparer<FieldReference> FieldReqEqComparerInstance = new FieldRefEqComparer();
 
-        //class BaseFirstComparer : IComparer<TypeDefinition> {
-
-        //    public static IComparer<TypeDefinition> Instance = new BaseFirstComparer();
-
-        //    private BaseFirstComparer() { }
-
-        //    private bool IsABaseOfB(TypeDefinition a, TypeDefinition b) {
-        //        var t = b;
-        //        for (; ; ) {
-        //            t = t.GetBaseType();
-        //            if (t == null) {
-        //                return false;
-        //            }
-        //            if (t == a) {
-        //                return true;
-        //            }
-        //        }
-        //    }
-
-        //    public int Compare(TypeDefinition x, TypeDefinition y) {
-        //        // Return less than zero if x is more base than y
-        //        if (this.IsABaseOfB(x, y)) {
-        //            return -1;
-        //        }
-        //        if (this.IsABaseOfB(y, x)) {
-        //            return 1;
-        //        }
-        //        return 0;
-        //    }
-
-        //}
-
         class BaseFirstComparer : IComparer<TypeReference> {
 
             private bool IsABaseOfB(TypeReference a, TypeReference b) {
@@ -109,10 +77,6 @@ namespace Cil2Js.Utils {
         }
 
         public static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
-
-        //public static IEnumerable<TypeDefinition> OrderByBaseFirst(this IEnumerable<TypeDefinition> types) {
-        //    return types.OrderBy(x => x, BaseFirstComparer.Instance);
-        //}
 
         //public static MethodDefinition GetBasemostMethodInTypeHierarchy(this MethodDefinition method) {
         //    var m = method;

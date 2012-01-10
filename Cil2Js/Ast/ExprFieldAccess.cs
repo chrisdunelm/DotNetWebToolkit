@@ -12,7 +12,7 @@ namespace Cil2Js.Ast {
             : base(ctx) {
             this.Obj = obj;
             this.Field = field;
-            this.type = field.GetResolvedType();
+            this.type = field.FieldType.FullResolve(field);
             //if (field.FieldType.IsGenericParameter) {
             //    var declType = field.DeclaringType;
             //    if (!declType.IsGenericInstance) {

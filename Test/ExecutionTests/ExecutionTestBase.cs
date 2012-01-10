@@ -61,8 +61,9 @@ namespace Test.ExecutionTests {
                 return (bool)arg ? "true" : "false";
             case TypeCode.Int32:
             case TypeCode.Double:
-            case TypeCode.String:
                 return arg.ToString();
+            case TypeCode.String:
+                return "\"" + arg.ToString() + "\"";
             default:
                 throw new NotImplementedException("Cannot convert: " + tc);
             }

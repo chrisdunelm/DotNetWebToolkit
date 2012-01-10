@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Ast {
     public class ExprVarLocal : ExprVar {
@@ -15,7 +16,7 @@ namespace Cil2Js.Ast {
         public ExprVarLocal(Ctx ctx, TypeReference type, string name = null)
             : base(ctx) {
             //this.Var = new VariableDefinition(name, type);
-            this.type = type;
+            this.type = type.FullResolve(ctx);
             this.Name = name;
         }
 

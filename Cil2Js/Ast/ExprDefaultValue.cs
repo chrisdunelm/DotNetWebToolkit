@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Ast {
     public class ExprDefaultValue : Expr {
 
         public ExprDefaultValue(Ctx ctx, TypeReference type)
             : base(ctx) {
-            this.type = type;
+            //if (type.IsGenericParameter) {
+            //    throw new ArgumentException("Cannot be generic parameter");
+            //}
+            this.type = type.FullResolve(ctx);
         }
 
         private TypeReference type;

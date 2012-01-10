@@ -50,19 +50,33 @@ namespace Test {
         }
 
         class C1<T> {
+            public C1(T i) { this.Value = i; }
             public T Value { get; set; }
         }
 
         public static int T1() {
-            var c = new C1<int>();
-            c.Value = 2;
-            var d = new C1<bool>();
-            d.Value = true;
-            return d.Value ? c.Value : (1 - c.Value);
+            var c = new C1<int>(2);
+            return c.Value;
+        }
+
+        public static int T2() {
+            var c = new C1<int>(2);
+            c.Value = 3;
+            return 0;
+        }
+
+        class C2<T> {
+            public T t;
+        }
+
+        public static int T3() {
+            var c = new C2<int>();
+            c.t = 5;
+            return c.t;
         }
 
         static void Main(string[] args) {
-            //var mi = typeof(Program).GetMethod("T1");
+            //var mi = typeof(Program).GetMethod("T3");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 

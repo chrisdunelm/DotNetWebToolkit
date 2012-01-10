@@ -23,9 +23,7 @@ namespace Cil2Js.Utils {
         public static string V(ICode c) {
             var method = c.Ctx.MRef;
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0} {1}({2})",
-                method.ReturnType.FullName, method.FullName,
-                string.Join(", ", method.Parameters.Select(x => string.Format("{0} {1}", x.ParameterType.FullName, x.Name))));
+            sb.Append(method.FullName);
             var seen = new HashSet<ICode>() { c };
             var todo = new Queue<Stmt>();
             todo.Enqueue((Stmt)c);
@@ -276,7 +274,7 @@ namespace Cil2Js.Utils {
 
         protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             if (e.IsStatic) {
-                this.code.Append(e.Field.DeclaringType.Name);
+                this.code.Append(e.Field.DeclaringType.FullName);
             } else {
                 this.Visit(e.Obj);
             }

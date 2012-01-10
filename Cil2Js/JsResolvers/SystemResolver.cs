@@ -13,7 +13,7 @@ namespace Cil2Js.JsResolvers {
             var ctx = call.Ctx;
             var _this = call.Args.ElementAt(0);
             var mRef = ((ExprMethodReference)call.Args.ElementAt(1)).Method;
-            var args = mRef.Parameters.Select(x => new ExprVarLocal(ctx, x.GetResolvedType(mRef.DeclaringType, mRef))).ToArray();
+            var args = mRef.Parameters.Select(x => new ExprVarLocal(ctx, x.ParameterType)).ToArray();
             var boundCall = new ExprCall(ctx, mRef, _this, args, false);
             var innerStmt = boundCall.Type.IsVoid() ?
                 (Stmt)new StmtWrapExpr(ctx, boundCall) :

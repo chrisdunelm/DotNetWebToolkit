@@ -44,19 +44,28 @@ namespace Cil2Js.Output {
             var methodsSeen = new Dictionary<MethodReference, int>(rootMethods.ToDictionary(x => x, x => 1), TypeExtensions.MethodRefEqComparerInstance);
             // Each type, with the count of how often it is referenced directly (newobj only at the moment).
             var typesSeen = new Dictionary<TypeReference, int>(TypeExtensions.TypeRefEqComparerInstance);
+            // ASTs of all methods
             var methodAsts = new Dictionary<MethodReference, ICode>(TypeExtensions.MethodRefEqComparerInstance);
-            var nonVirtualMethodCallCounts = new Dictionary<MethodReference, int>(TypeExtensions.MethodRefEqComparerInstance);
-            foreach (var rootMethod in rootMethods) {
-                nonVirtualMethodCallCounts.Add(rootMethod, 1);
-            }
             // Each field, with the count of how often it is referenced.
             var fieldAccesses = new Dictionary<FieldReference, int>(TypeExtensions.FieldReqEqComparerInstance);
+            // All calls that require resolving in special ways, not just by calling the called method
+            var resolvedCalls = new Dictionary<ICall, JsResolved>();
+            // Each type records which virtual methods have their NewSlot definitions
+            var virtualCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
+            // Each type with all virtual methods in that type that are referenced
+            //var allVirtualMethods = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
 
             while (todo.Any()) {
                 var mRef = todo.Pop();
                 var mDef = mRef.Resolve();
                 var tRef = mRef.DeclaringType;
                 var tDef = tRef.Resolve();
+                if (tRef.HasGenericParameters) {
+                    throw new InvalidOperationException("Type must not have generic parameters");
+                }
+                if (mRef.HasGenericParameters) {
+                    throw new InvalidOperationException("Method must not have generic parameters");
+                }
                 if (mDef.IsAbstract) {
                     throw new InvalidOperationException("Cannot transcode an abstract method");
                 }
@@ -75,7 +84,6 @@ namespace Cil2Js.Output {
 
                 var ast = Transcoder.ToAst(mRef, tRef, verbose);
                 var ctx = ast.Ctx;
-                
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
@@ -92,10 +100,15 @@ namespace Cil2Js.Output {
 
                 if (mDef.IsConstructor && !mDef.IsStatic) {
                     // Instance constructor; add instance field initialisation and final return of 'this'
-                    var initStmts = tDef.Fields.Where(x => !x.IsStatic)
-                        .Select(x => new StmtAssignment(ctx,
-                            new ExprFieldAccess(ctx, ctx.This, x),
-                            new ExprDefaultValue(ctx, x.FieldType)))
+                    var fields = tRef.Resolve().Fields.ToArray();
+                    var initStmts = fields.Where(x => !x.IsStatic)
+                        .Select(x => {
+                            var f = x.FullResolve(ctx);
+                            var assign = new StmtAssignment(ctx,
+                                new ExprFieldAccess(ctx, ctx.This, f),
+                                new ExprDefaultValue(ctx, f.FieldType));
+                            return assign;
+                        })
                         .ToArray();
                     var returnStmt = new StmtReturn(ctx, ctx.This);
                     ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
@@ -116,6 +129,18 @@ namespace Cil2Js.Output {
                     ast = new StmtBlock(ctx, (Stmt)ast, rewrite);
                 }
 
+                var vCalls = VisitorFindCalls.V(ast).Where(x => x.IsVirtualCall).ToArray();
+                foreach (var vCall in vCalls) {
+                    // (_ = obj)[vIdx](_, ... args ...)
+                    var tempObj = new ExprVarLocal(ctx, vCall.Obj.Type);
+                    var jsVCall = new ExprJsVirtualCall(ctx,
+                        vCall.CallMethod,
+                        new ExprAssignment(ctx, tempObj, vCall.Obj),
+                        tempObj,
+                        vCall.Args);
+                    ast = VisitorReplace.V(ast, vCall, jsVCall);
+                }
+
                 methodAsts.Add(mRef, ast);
 
                 var fieldRefs = VisitorFindFieldAccesses.V(ast);
@@ -123,12 +148,32 @@ namespace Cil2Js.Output {
                     fieldAccesses[fieldRef] = fieldAccesses.ValueOrDefault(fieldRef) + 1;
                 }
 
+                var calledMethods = new List<ICall>();
                 var calls = VisitorFindCalls.V(ast);
                 foreach (var call in calls.Where(x => x.ExprType == Expr.NodeType.NewObj)) {
                     // Add reference to each type constructed (direct access to type variable)
-                    typesSeen[call.Type] = typesSeen.ValueOrDefault(call.Type, 0) + 1;
+                    typesSeen[call.Type] = typesSeen.ValueOrDefault(call.Type) + 1;
                 }
                 foreach (var call in calls) {
+                    var resolved = JsCallResolver.Resolve(call);
+                    if (resolved != null) {
+                        resolvedCalls.Add(call, resolved);
+                        continue;
+                    }
+                    if (call.CallMethod.DeclaringType.Resolve().IsInterface) {
+                        throw new Exception();
+                        //continue;
+                    }
+                    if (call.IsVirtualCall) {
+                        var mBasemost = call.CallMethod.GetBasemostMethod();
+                        var methodSet = virtualCalls.ValueOrDefault(mBasemost.DeclaringType, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
+                        methodSet.Add(mBasemost);
+                        // Methods that require transcoding are added to 'todo' later
+                        continue;
+                    }
+                    calledMethods.Add(call);
+                }
+                foreach (var call in calledMethods) {
                     if (methodsSeen.ContainsKey(call.CallMethod)) {
                         methodsSeen[call.CallMethod]++;
                     } else {
@@ -136,10 +181,39 @@ namespace Cil2Js.Output {
                         todo.Push(call.CallMethod);
                     }
                 }
+
+                if (!todo.Any()) {
+                    // Scan all virtual and interface calls and add any required methods
+                    var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
+                    var requireMethods =
+                        from type in typesSeen.Keys
+                        let methods = type.Resolve().Methods
+                        from method in methods
+                        where method.IsVirtual && !method.IsAbstract
+                        let mResolved = method.FullResolve(type, null)
+                        let mBasemost = mResolved.GetBasemostMethod()
+                        where virtualRoots.Contains(mBasemost)
+                        select new { type, mResolved };
+                    var requireMethodsArray = requireMethods.ToArray();
+                    foreach (var required in requireMethodsArray) {
+                        var requiredMethod = required.mResolved;
+                        if (!methodsSeen.ContainsKey(requiredMethod)) {
+                            methodsSeen.Add(requiredMethod, 1); // TODO: How to properly handle count?
+                            todo.Push(requiredMethod);
+                        }
+                        //var type = required.type;
+                        //var z = allVirtualMethods.ValueOrDefault(type, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
+                        //z.Add(requiredMethod);
+                    }
+                }
             }
 
             // Locally name all instance fields; base type names must not be re-used in derived types
             var instanceFields = fieldAccesses.Where(x => !x.Key.Resolve().IsStatic).ToArray();
+            //var orderedInstanceFields = instanceFields
+            //    .Select(x => new { field = x.Key, type = x.Key.DeclaringType, count = x.Value })
+            //    .OrderByDescending(x => x.type, TypeExtensions.BaseFirstComparerInstance)
+            //    .ToArray();
             // TODO: This names all instance fields globally. IT CAN BE DONE BETTER.
             var instanceFieldNameGen = new NameGenerator();
             var instanceFieldNames = instanceFields.OrderByDescending(x => x.Value).Select(x => new { f = x.Key, name = instanceFieldNameGen.GetNewName() }).ToArray();
@@ -200,18 +274,45 @@ namespace Cil2Js.Output {
             // Create list of all static field names
             var staticFieldNames = staticFields.Select(x => new { f = x.Key, name = globalNames[x.Key] });
             // Create map of all fields
-            var fieldNames = instanceFieldNames.Concat(staticFieldNames).ToDictionary(x => x.f, x => x.name);
-
+            var fieldNames = instanceFieldNames.Concat(staticFieldNames).ToDictionary(x => x.f, x => x.name, TypeExtensions.FieldReqEqComparerInstance);
             // Create map of type names
             var typeNames = typesSeen
                 .Where(x => x.Value > 0)
                 .ToDictionary(x => x.Key, x => globalNames[x.Key], TypeExtensions.TypeRefEqComparerInstance);
+
+            // Create virtual call tables
+            var virtualCallIndices = new Dictionary<MethodReference, int>(TypeExtensions.MethodRefEqComparerInstance);
+            var allVirtualMethods = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
+            typesSeen.Select(x=>x.Key).TypeTreeTraverse(x => x, (type, vCalls) => {
+                var mNewSlots = virtualCalls.ValueOrDefault(type).EmptyIfNull().ToArray();
+                int idx = vCalls.Length;
+                foreach (var mNewSlot in mNewSlots) {
+                    virtualCallIndices[mNewSlot] = idx++;
+                }
+                var ms = type.Resolve().Methods.Select(x => x.FullResolve(type, null)).ToArray();
+                var vCallsWithThisType = vCalls.Concat(mNewSlots).ToArray();
+                if (vCallsWithThisType.Length > 0) {
+                    for (int i = 0; i < vCalls.Length; i++) {
+                        var mVCall = vCallsWithThisType[i];
+                        foreach (var m in ms) {
+                            if (m.Match(mVCall)) {
+                                vCallsWithThisType[i] = m;
+                            }
+                        }
+                    }
+                    var typeVMethods = new HashSet<MethodReference>(vCallsWithThisType, TypeExtensions.MethodRefEqComparerInstance);
+                    allVirtualMethods.Add(type, typeVMethods);
+                }
+                return vCallsWithThisType;
+            }, new MethodReference[0]);
 
             var resolver = new JsMethod.Resolver {
                 LocalVarNames = localVarNames,
                 MethodNames = methodNames,
                 FieldNames = fieldNames,
                 TypeNames = typeNames,
+                ResolvedCalls = resolvedCalls,
+                VirtualCallIndices = virtualCallIndices,
             };
 
             var js = new StringBuilder();
@@ -225,17 +326,29 @@ namespace Cil2Js.Output {
             }
 
             // Construct static fields
-            foreach (var field in staticFields.Select(x=>x.Key)) {
+            foreach (var field in staticFields.Select(x => x.Key)) {
                 js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType));
+                js.AppendLine();
             }
 
             // Construct type data
             foreach (var type in typesSeen.Where(x => x.Value > 0).Select(x => x.Key)) {
-                js.AppendFormat("var {0}={{}};", typeNames[type]);
+                js.AppendFormat("var {0}={{", typeNames[type]);
+                var methods = allVirtualMethods.ValueOrDefault(type);
+                if (methods != null) {
+                    var idxs = methods
+                        .Select(x => new { m = x, idx = virtualCallIndices[x.GetBasemostMethod()] })
+                        .OrderBy(x => x.idx)
+                        .ToArray();
+                    var s = string.Join(", ", idxs.Select(x => methodNames[x.m]));
+                    js.AppendFormat("_:[{0}]", s);
+                }
+                js.Append("};");
                 js.AppendLine();
             }
 
             var jsStr = js.ToString();
+            //Console.WriteLine(jsStr);
             return jsStr;
             /*
             var todo = new Queue<MethodReference>();

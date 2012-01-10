@@ -7,9 +7,9 @@ using Cil2Js.Ast;
 namespace Cil2Js.Analysis {
     public class VisitorReplace : AstRecursiveVisitor {
 
-        public static ICode V(ICode c, ICode find, ICode replace) {
+        public static ICode V(ICode ast, ICode find, ICode replace) {
             var v = new VisitorReplace(find, replace);
-            return v.Visit(c);
+            return v.Visit(ast);
         }
 
         public VisitorReplace(ICode find, ICode replace) {

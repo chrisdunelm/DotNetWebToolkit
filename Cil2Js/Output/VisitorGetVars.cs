@@ -7,7 +7,7 @@ using Cil2Js.Ast;
 
 namespace Cil2Js.Output {
 
-    public class VisitorGetVars : AstVisitor {
+    public class VisitorGetVars : JsAstVisitor {
 
         public static IEnumerable<ExprVar> V(ICode ast) {
             var v = new VisitorGetVars();
