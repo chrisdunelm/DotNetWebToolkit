@@ -60,6 +60,7 @@
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
     <Compile Include="ExecutionTests\TestGenerics.cs" />
+    <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
     <Compile Include="ExecutionTests\TestList.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />

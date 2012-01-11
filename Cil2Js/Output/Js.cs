@@ -165,7 +165,7 @@ namespace Cil2Js.Output {
                         //continue;
                     }
                     if (call.IsVirtualCall) {
-                        var mBasemost = call.CallMethod.GetBasemostMethod();
+                        var mBasemost = call.CallMethod.GetBasemostMethod(null);
                         var methodSet = virtualCalls.ValueOrDefault(mBasemost.DeclaringType, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
                         methodSet.Add(mBasemost);
                         // Methods that require transcoding are added to 'todo' later
@@ -184,26 +184,23 @@ namespace Cil2Js.Output {
 
                 if (!todo.Any()) {
                     // Scan all virtual and interface calls and add any required methods
+                    // Need care to handle virtual methods with generic arguments
                     var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
                     var requireMethods =
                         from type in typesSeen.Keys
-                        let methods = type.Resolve().Methods
+                        let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
+                        let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
+                        let methods = type.EnumResolvedMethods(mVRoots)
                         from method in methods
-                        where method.IsVirtual && !method.IsAbstract
-                        let mResolved = method.FullResolve(type, null)
-                        let mBasemost = mResolved.GetBasemostMethod()
-                        where virtualRoots.Contains(mBasemost)
-                        select new { type, mResolved };
+                        let methodDef = method.Resolve()
+                        where methodDef.IsVirtual && !methodDef.IsAbstract
+                        let mBasemost = method.GetBasemostMethod(method)
+                        where virtualRoots.Contains(mBasemost) && !methodsSeen.ContainsKey(method)
+                        select method;
                     var requireMethodsArray = requireMethods.ToArray();
-                    foreach (var required in requireMethodsArray) {
-                        var requiredMethod = required.mResolved;
-                        if (!methodsSeen.ContainsKey(requiredMethod)) {
-                            methodsSeen.Add(requiredMethod, 1); // TODO: How to properly handle count?
-                            todo.Push(requiredMethod);
-                        }
-                        //var type = required.type;
-                        //var z = allVirtualMethods.ValueOrDefault(type, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
-                        //z.Add(requiredMethod);
+                    foreach (var method in requireMethodsArray) {
+                        methodsSeen.Add(method, 1); // TODO: How to properly handle count?
+                        todo.Push(method);
                     }
                 }
             }
@@ -283,13 +280,20 @@ namespace Cil2Js.Output {
             // Create virtual call tables
             var virtualCallIndices = new Dictionary<MethodReference, int>(TypeExtensions.MethodRefEqComparerInstance);
             var allVirtualMethods = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
-            typesSeen.Select(x=>x.Key).TypeTreeTraverse(x => x, (type, vCalls) => {
+            typesSeen.Select(x => x.Key).TypeTreeTraverse(x => x, (type, vCalls) => {
                 var mNewSlots = virtualCalls.ValueOrDefault(type).EmptyIfNull().ToArray();
                 int idx = vCalls.Length;
                 foreach (var mNewSlot in mNewSlots) {
                     virtualCallIndices[mNewSlot] = idx++;
                 }
-                var ms = type.Resolve().Methods.Select(x => x.FullResolve(type, null)).ToArray();
+                var typesAndBases = type.EnumThisAllBaseTypes().ToArray();
+                var mVRoots = typesAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray();
+                //var ms = type.Resolve().Methods.Select(x => {
+                //    var xBasemost = x.GetBasemostMethod(null);
+                //    var mScope = mVRoots.FirstOrDefault(y => y.IsGenericInstanceOf(xBasemost));
+                //    return x.FullResolve(type, mScope);
+                //}).ToArray();
+                var ms = type.EnumResolvedMethods(mVRoots).ToArray();
                 var vCallsWithThisType = vCalls.Concat(mNewSlots).ToArray();
                 if (vCallsWithThisType.Length > 0) {
                     for (int i = 0; i < vCalls.Length; i++) {
@@ -336,8 +340,13 @@ namespace Cil2Js.Output {
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 var methods = allVirtualMethods.ValueOrDefault(type);
                 if (methods != null) {
+                    var typesAndBases = type.EnumThisAllBaseTypes().ToArray();
+                    //var m
                     var idxs = methods
-                        .Select(x => new { m = x, idx = virtualCallIndices[x.GetBasemostMethod()] })
+                        .Select(x => {
+                            var xBasemost = x.GetBasemostMethod(x);
+                            return new { m = x, idx = virtualCallIndices[xBasemost] };
+                        })
                         .OrderBy(x => x.idx)
                         .ToArray();
                     var s = string.Join(", ", idxs.Select(x => methodNames[x.m]));

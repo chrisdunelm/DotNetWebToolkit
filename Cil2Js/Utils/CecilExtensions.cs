@@ -61,7 +61,7 @@ namespace Cil2Js.Utils {
             return tRef.Resolve().BaseType;
         }
 
-        public static MethodReference GetBaseMethod(this MethodReference mRef) {
+        public static MethodReference GetBaseMethod(this MethodReference mRef, MethodReference scopeMethod) {
             var mDef = mRef.Resolve();
             if (mDef.IsNewSlot) {
                 return null;
@@ -76,7 +76,7 @@ namespace Cil2Js.Utils {
             for (; ; ) {
                 var baseTypeDef = baseType.Resolve();
                 foreach (var m in baseTypeDef.Methods.Where(x => x.IsVirtual)) {
-                    var mResolved = m.FullResolve(baseType, null);
+                    var mResolved = m.FullResolve(baseType, scopeMethod);
                     if (mRef.Match(mResolved)) {
                         return mResolved;
                     }
@@ -89,11 +89,11 @@ namespace Cil2Js.Utils {
             throw new InvalidOperationException("Cannot find base method");
         }
 
-        public static MethodReference GetBasemostMethod(this MethodReference mRef) {
+        public static MethodReference GetBasemostMethod(this MethodReference mRef, MethodReference scopeMethod) {
             var m = mRef;
             for (; ; ) {
                 var curM = m;
-                m = m.GetBaseMethod();
+                m = m.GetBaseMethod(scopeMethod);
                 if (m == null) {
                     return curM;
                 }
@@ -104,6 +104,12 @@ namespace Cil2Js.Utils {
             if (a.Name != b.Name) {
                 return false;
             }
+            if (a.IsGenericInstance != b.IsGenericInstance) {
+                return false;
+            }
+            if (a.GenericParameters.Count != b.GenericParameters.Count) {
+                return false;
+            }
             if (!TypeExtensions.TypeRefEqComparerInstance.Equals(a.ReturnType, b.ReturnType)) {
                 return false;
             }
@@ -112,7 +118,28 @@ namespace Cil2Js.Utils {
             if (!aParamTypes.SequenceEqual(bParamTypes, TypeExtensions.TypeRefEqComparerInstance)) {
                 return false;
             }
-            // TODO: More checks
+            if (a.IsGenericInstance) {
+                var aGenInst = (GenericInstanceMethod)a;
+                var bGenInst = (GenericInstanceMethod)b;
+                if (!aGenInst.GenericArguments.SequenceEqual(bGenInst.GenericArguments, TypeExtensions.TypeRefEqComparerInstance)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool MatchLoose(this MethodReference a, MethodReference b) {
+            if (a.Name != b.Name) {
+                return false;
+            }
+            if (a.Parameters.Count != b.Parameters.Count) {
+                return false;
+            }
+            var aArgCount = a.IsGenericInstance ? ((GenericInstanceMethod)a).GenericArguments.Count : a.GenericParameters.Count;
+            var bArgCount = b.IsGenericInstance ? ((GenericInstanceMethod)b).GenericArguments.Count : b.GenericParameters.Count;
+            if (aArgCount != bArgCount) {
+                return false;
+            }
             return true;
         }
 
@@ -176,6 +203,9 @@ namespace Cil2Js.Utils {
                     return type;
                 }
             case MetadataType.MVar: {
+                    if (scopeMethod == null) {
+                        return self;
+                    }
                     var scope = (GenericInstanceMethod)scopeMethod;
                     var param = (GenericParameter)self;
                     var type = scope.GenericArguments[param.Position];
@@ -257,7 +287,16 @@ namespace Cil2Js.Utils {
                     return m2;
                 }
             }
-            return m ?? self;
+            var mSelf = m ?? self;
+            if (mSelf.HasGenericParameters) {
+                var m2 = new GenericInstanceMethod(mSelf);
+                foreach (var genParam in mSelf.GenericParameters) {
+                    var genArg = genParam.FullResolve(scopeType, scopeMethod);
+                    m2.GenericArguments.Add(genArg);
+                }
+                return m2;
+            }
+            return mSelf;
         }
 
         public static FieldReference FullResolve(this FieldReference self, Ctx ctx) {
@@ -291,6 +330,45 @@ namespace Cil2Js.Utils {
                 }
                 var newState = action(x.item, state);
                 states.Add(x.type, newState);
+            }
+        }
+
+        public static bool IsGenericInstanceOf(this MethodReference mGenInst, MethodReference m) {
+            if (!mGenInst.IsGenericInstance) {
+                return false;
+            }
+            if (m.IsGenericInstance) {
+                var genInst = (GenericInstanceMethod)mGenInst;
+                var m2 = (GenericInstanceMethod)m;
+                return TypeExtensions.MethodRefEqComparerInstance.Equals(genInst.ElementMethod, m2.ElementMethod);
+            } else {
+                if (!m.HasGenericParameters) {
+                    return false;
+                }
+                var genInst = (GenericInstanceMethod)mGenInst;
+                return TypeExtensions.MethodRefEqComparerInstance.Equals(genInst.ElementMethod, m);
+            }
+        }
+
+        public static IEnumerable<TypeReference> EnumThisAllBaseTypes(this TypeReference type) {
+            var t = type;
+            for (; ; ) {
+                yield return t;
+                t = t.GetBaseType();
+                if (t == null) {
+                    break;
+                }
+            }
+        }
+
+        public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, IEnumerable<MethodReference> baseMethods) {
+            var tDef = type.Resolve();
+            foreach (var m in tDef.Methods) {
+                var mScopes = baseMethods.Where(x => x.MatchLoose(m)).DefaultIfEmpty().ToArray();
+                foreach (var mScope in mScopes) {
+                    var mResolved = m.FullResolve(type, mScope);
+                    yield return mResolved;
+                }
             }
         }
 

@@ -607,7 +607,7 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
-            var mBasemost = e.CallMethod.GetBasemostMethod();
+            var mBasemost = e.CallMethod.GetBasemostMethod(null);
             int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
             this.Visit(e.ObjInit);
             this.js.AppendFormat("._._[{0}]", vTableIndex);

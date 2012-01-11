@@ -80,8 +80,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestSimpleClasses() { Verbose = true };
-            t.TestStaticCctorCalledOnlyOnce();
+            var t = new TestGenericVirtualCalls() { Verbose = true };
+            t.TestGenericMethodVCallMultipleInstantiations();
             return;
 
             //var t = new TestCecilExtensions();
