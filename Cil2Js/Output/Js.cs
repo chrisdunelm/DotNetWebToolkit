@@ -190,7 +190,7 @@ namespace Cil2Js.Output {
                         from type in typesSeen.Keys
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
-                        let methods = type.EnumResolvedMethods(mVRoots)
+                        let methods = type.EnumResolvedMethods(mVRoots).ToArray()
                         from method in methods
                         let methodDef = method.Resolve()
                         where methodDef.IsVirtual && !methodDef.IsAbstract
@@ -286,20 +286,15 @@ namespace Cil2Js.Output {
                 foreach (var mNewSlot in mNewSlots) {
                     virtualCallIndices[mNewSlot] = idx++;
                 }
-                var typesAndBases = type.EnumThisAllBaseTypes().ToArray();
-                var mVRoots = typesAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray();
-                //var ms = type.Resolve().Methods.Select(x => {
-                //    var xBasemost = x.GetBasemostMethod(null);
-                //    var mScope = mVRoots.FirstOrDefault(y => y.IsGenericInstanceOf(xBasemost));
-                //    return x.FullResolve(type, mScope);
-                //}).ToArray();
-                var ms = type.EnumResolvedMethods(mVRoots).ToArray();
                 var vCallsWithThisType = vCalls.Concat(mNewSlots).ToArray();
                 if (vCallsWithThisType.Length > 0) {
+                    var typesAndBases = type.EnumThisAllBaseTypes().ToArray();
+                    var mVRoots = typesAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray();
+                    var ms = type.EnumResolvedMethods(mVRoots).ToArray();
                     for (int i = 0; i < vCalls.Length; i++) {
                         var mVCall = vCallsWithThisType[i];
                         foreach (var m in ms) {
-                            if (m.Match(mVCall)) {
+                            if (m.MatchMethodOnly(mVCall)) {
                                 vCallsWithThisType[i] = m;
                             }
                         }

@@ -28,6 +28,8 @@ namespace Cil2Js.Ast {
             MethodReference,
             DefaultValue,
             Assignment,
+            Box,
+            Unbox,
 
             Max = 1000
         }

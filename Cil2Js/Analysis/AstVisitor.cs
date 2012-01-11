@@ -291,6 +291,10 @@ namespace Cil2Js.Analysis {
                 return this.VisitMethodReference((ExprMethodReference)e);
             case Expr.NodeType.Assignment:
                 return this.VisitAssignment((ExprAssignment)e);
+            case Expr.NodeType.Box:
+                return this.VisitBox((ExprBox)e);
+            case Expr.NodeType.Unbox:
+                return this.VisitUnbox((ExprUnbox)e);
             default:
                 if ((int)e.ExprType >= (int)Expr.NodeType.Max) {
                     return e;
@@ -481,6 +485,26 @@ namespace Cil2Js.Analysis {
             var expr = (Expr)this.Visit(e.Expr);
             if (target != e.Target || expr != e.Expr) {
                 return new ExprAssignment(e.Ctx, target, expr);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitBox(ExprBox e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprBox(e.Ctx, expr);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitUnbox(ExprUnbox e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprUnbox(e.Ctx, expr);
             } else {
                 return e;
             }

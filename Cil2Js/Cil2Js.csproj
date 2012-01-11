@@ -106,6 +106,7 @@
     <Compile Include="Ast\ExprArrayLength.cs" />
     <Compile Include="Ast\ExprAssignment.cs" />
     <Compile Include="Ast\ExprBinary.cs" />
+    <Compile Include="Ast\ExprBox.cs" />
     <Compile Include="Ast\ExprCall.cs" />
     <Compile Include="Ast\ExprCast.cs" />
     <Compile Include="Ast\ExprDefaultValue.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
+    <Compile Include="Ast\ExprUnbox.cs" />
     <Compile Include="Ast\ExprVarThis.cs" />
     <Compile Include="Ast\ExprUnary.cs" />
     <Compile Include="Ast\ExprVar.cs" />

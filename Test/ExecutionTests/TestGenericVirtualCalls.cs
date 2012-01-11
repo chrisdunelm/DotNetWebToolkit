@@ -41,12 +41,29 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
         public void TestGenericMethodVCallMultipleInstantiations() {
             Func<bool, int, int, int> f = (b, x, y) => {
                 var c = b ? new C2() : new C2.A();
                 var i = c.M<int>(x, y);
                 var j = c.M<bool>(x > 50, y > 50) ? 100 : -100;
                 return i + j;
+            };
+            this.Test(f);
+        }
+
+        class C3<T> {
+            public virtual T M<U>(U x, U y) where U : T { return x; }
+            public class A<TA> : C3<TA> {
+                public override TA M<U>(U x, U y) { return y; }
+            }
+        }
+
+        [Test]
+        public void TestGenericMethodInGenericTypeVCall() {
+            Func<bool, int, int, int> f = (b, x, y) => {
+                var c = b ? new C3<int>() : new C3<bool>.A<int>();
+                return c.M<int>(x, y);
             };
             this.Test(f);
         }

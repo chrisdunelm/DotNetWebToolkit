@@ -769,5 +769,15 @@ namespace Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitBox(ExprBox e) {
+            this.Visit(e.Expr);
+            return e;
+        }
+
+        protected override ICode VisitUnbox(ExprUnbox e) {
+            this.Visit(e.Expr);
+            return e;
+        }
+
     }
 }

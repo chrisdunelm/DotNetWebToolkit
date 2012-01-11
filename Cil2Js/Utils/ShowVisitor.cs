@@ -398,5 +398,19 @@ namespace Cil2Js.Utils {
             return s;
         }
 
+        protected override ICode VisitBox(ExprBox e) {
+            this.code.Append("box(");
+            this.Visit(e.Expr);
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitUnbox(ExprUnbox e) {
+            this.code.Append("unbox(");
+            this.Visit(e.Expr);
+            this.code.Append(")");
+            return e;
+        }
+
     }
 }

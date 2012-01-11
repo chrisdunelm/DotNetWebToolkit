@@ -186,6 +186,10 @@ namespace Cil2Js.Analysis {
             //    return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, ((MethodReference)inst.Operand).FullResolve(this.ctx)));
             case Code.Dup:
                 return this.Dup();
+            case Code.Box:
+                return this.Box(inst);
+            case Code.Unbox_Any:
+                return this.Unbox(inst);
             case Code.Ret:
                 throw new InvalidOperationException("Should not see this here: " + inst);
             default:
@@ -380,6 +384,18 @@ namespace Cil2Js.Analysis {
             var value = this.stack.Peek();
             this.stack.Push(value);
             return null;
+        }
+
+        private Stmt Box(Instruction inst) {
+            var value = this.stack.Pop();
+            var expr = new ExprBox(this.ctx, value);
+            return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt Unbox(Instruction inst) {
+            var value = this.stack.Pop();
+            var expr = new ExprUnbox(this.ctx, value);
+            return this.SsaLocalAssignment(expr);
         }
 
     }

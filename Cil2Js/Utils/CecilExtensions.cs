@@ -74,11 +74,10 @@ namespace Cil2Js.Utils {
                 return null;
             }
             for (; ; ) {
-                var baseTypeDef = baseType.Resolve();
-                foreach (var m in baseTypeDef.Methods.Where(x => x.IsVirtual)) {
-                    var mResolved = m.FullResolve(baseType, scopeMethod);
-                    if (mRef.Match(mResolved)) {
-                        return mResolved;
+                var methods = baseType.EnumResolvedMethods(new[] { scopeMethod }).ToArray();
+                foreach (var m in methods) {
+                    if (mRef.MatchMethodOnly(m)) {
+                        return m;
                     }
                 }
                 baseType = baseType.GetBaseType();
@@ -100,7 +99,7 @@ namespace Cil2Js.Utils {
             }
         }
 
-        public static bool Match(this MethodReference a, MethodReference b) {
+        public static bool MatchMethodOnly(this MethodReference a, MethodReference b) {
             if (a.Name != b.Name) {
                 return false;
             }
@@ -128,7 +127,7 @@ namespace Cil2Js.Utils {
             return true;
         }
 
-        public static bool MatchLoose(this MethodReference a, MethodReference b) {
+        public static bool MatchMethodOnlyLoose(this MethodReference a, MethodReference b) {
             if (a.Name != b.Name) {
                 return false;
             }
@@ -258,19 +257,11 @@ namespace Cil2Js.Utils {
                             throw new InvalidOperationException("Either all or none should be generic parameters");
                         }
                         foreach (var a in selfGenInst.GenericArguments) {
-                            var gp = new GenericParameter(m);
+                            var gp = new GenericParameter(a.Name, m);
                             m.GenericParameters.Add(gp);
                         }
                     }
                 } else {
-                    foreach (var a in self.GenericParameters) {
-                        m.GenericParameters.Add(a);
-                    }
-                }
-                if (self.GenericParameters.Any(x => x.IsGenericParameter)) {
-                    if (!self.GenericParameters.All(x => x.IsGenericParameter)) {
-                        throw new InvalidOperationException("Either all or none should be generic parameters");
-                    }
                     foreach (var a in self.GenericParameters) {
                         m.GenericParameters.Add(a);
                     }
@@ -364,7 +355,7 @@ namespace Cil2Js.Utils {
         public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, IEnumerable<MethodReference> baseMethods) {
             var tDef = type.Resolve();
             foreach (var m in tDef.Methods) {
-                var mScopes = baseMethods.Where(x => x.MatchLoose(m)).DefaultIfEmpty().ToArray();
+                var mScopes = baseMethods.Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
                 foreach (var mScope in mScopes) {
                     var mResolved = m.FullResolve(type, mScope);
                     yield return mResolved;

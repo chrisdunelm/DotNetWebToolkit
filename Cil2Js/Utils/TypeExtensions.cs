@@ -10,10 +10,16 @@ namespace Cil2Js.Utils {
         class TypeRefEqComparer : IEqualityComparer<TypeReference> {
 
             public bool Equals(TypeReference x, TypeReference y) {
+                if (x.IsGenericParameter && y.IsGenericParameter) {
+                    return true;
+                }
                 return x.FullName == y.FullName;
             }
 
             public int GetHashCode(TypeReference obj) {
+                if (obj.IsGenericParameter) {
+                    return 0;
+                }
                 return obj.FullName.GetHashCode();
             }
 
@@ -24,11 +30,14 @@ namespace Cil2Js.Utils {
         class MethodRefEqComparer : IEqualityComparer<MethodReference> {
 
             public bool Equals(MethodReference x, MethodReference y) {
-                return x.FullName == y.FullName;
+                if (!x.MatchMethodOnly(y)) {
+                    return false;
+                }
+                return TypeRefEqComparerInstance.Equals(x.DeclaringType, y.DeclaringType);
             }
 
             public int GetHashCode(MethodReference obj) {
-                return obj.FullName.GetHashCode();
+                return obj.Name.GetHashCode() ^ TypeRefEqComparerInstance.GetHashCode(obj.DeclaringType);
             }
 
         }

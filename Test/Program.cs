@@ -81,7 +81,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestGenericVirtualCalls() { Verbose = true };
-            t.TestGenericMethodVCallMultipleInstantiations();
+            t.TestGenericMethodInGenericTypeVCall();
             return;
 
             //var t = new TestCecilExtensions();
