@@ -32,9 +32,27 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Integer division not yet supported - currently performs floating point division")]
-        public void TestIntegerDiv() {
+        [Test]
+        public void TestIntegerDiv1() {
             Func<int, int, int> f = (a, b) => a / b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestIntegerDiv2() {
+            Func<int, int, int> f = (a, b) => (-a) / b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestIntegerDiv3() {
+            Func<int, int, int> f = (a, b) => a / (-b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestIntegerDiv4() {
+            Func<int, int, int> f = (a, b) => (-a) / (-b);
             this.Test(f);
         }
 

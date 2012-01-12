@@ -345,6 +345,10 @@ namespace Cil2Js.Output {
             { BinaryOp.Or, "||" },
         };
         protected override ICode VisitBinary(ExprBinary e) {
+            var forceInt = e.Type.IsInt32(); // TODO: Other integer types too
+            if (forceInt) {
+                this.js.Append("~~");
+            }
             this.js.Append("(");
             this.Visit(e.Left);
             this.js.AppendFormat(" {0} ", binaryOps[e.Op]);

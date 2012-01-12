@@ -69,6 +69,7 @@ namespace Cil2Js.Analysis {
             case Code.Ldarg:
             case Code.Ldarg_S:
                 return this.LdArg(((ParameterDefinition)inst.Operand).Index, false);
+            case Code.Starg:
             case Code.Starg_S:
                 return this.StArg(((ParameterDefinition)inst.Operand).Index);
             case Code.Ldloc_0:
@@ -91,6 +92,8 @@ namespace Cil2Js.Analysis {
                 return this.StLoc(3);
             case Code.Stloc_S:
                 return this.StLoc(((VariableDefinition)inst.Operand).Index);
+            case Code.Neg:
+                return this.SsaLocalAssignment(this.Unary(UnaryOp.Negate));
             case Code.Add:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Add));
             case Code.Sub:
