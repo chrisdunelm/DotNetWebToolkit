@@ -109,7 +109,7 @@ namespace Test.ExecutionTests {
                             if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
                                 jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
                             }
-                            Assert.That(jsResult, Is.EqualTo(runResults[i].Item1));
+                            Assert.That(jsResult, Is.EqualTo(runResults[i].Item1).Within(0.00001));
                         }
                     } finally {
                         Thread.Sleep(100);
