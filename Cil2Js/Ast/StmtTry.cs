@@ -35,12 +35,12 @@ namespace Cil2Js.Ast {
         }
 
         public class Catch {
-            public Catch(Stmt stmt, ExprVar exceptionObject) {
+            public Catch(Stmt stmt, ExprVar exceptionVar) {
                 this.Stmt = stmt;
-                this.ExceptionObject = exceptionObject;
+                this.ExceptionVar = exceptionVar;
             }
             public Stmt Stmt { get; private set; }
-            public ExprVar ExceptionObject { get; private set; }
+            public ExprVar ExceptionVar { get; private set; }
         }
 
         public StmtTry(Ctx ctx, Instruction @try, Instruction @catch, Instruction @finally, TypeReference catchType)

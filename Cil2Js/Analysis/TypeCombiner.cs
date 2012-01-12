@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using Cil2Js.Ast;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Analysis {
     static class TypeCombiner {

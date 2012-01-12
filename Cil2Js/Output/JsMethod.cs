@@ -345,15 +345,18 @@ namespace Cil2Js.Output {
             { BinaryOp.Or, "||" },
         };
         protected override ICode VisitBinary(ExprBinary e) {
-            var forceInt = e.Type.IsInt32(); // TODO: Other integer types too
+            var forceInt = e.Op == BinaryOp.Div && e.Type.IsInt32(); // TODO: Other integer types too
             if (forceInt) {
-                this.js.Append("~~");
+                this.js.Append("(~~");
             }
             this.js.Append("(");
             this.Visit(e.Left);
             this.js.AppendFormat(" {0} ", binaryOps[e.Op]);
             this.Visit(e.Right);
             this.js.Append(")");
+            if (forceInt) {
+                this.js.Append(")");
+            }
             return e;
         }
 
@@ -705,12 +708,12 @@ namespace Cil2Js.Output {
             this.indent--;
             foreach (var @catch in s.Catches.EmptyIfNull()) {
                 // TODO: Implement full exception processing (need some runtime type information to be able to do this)
-                if (!(@catch.ExceptionObject.Type.IsObject() || @catch.ExceptionObject.Type.IsException())) {
-                    throw new NotImplementedException("Cannot yet handle 'catch' of type: " + @catch.ExceptionObject.Type.Name);
+                if (!(@catch.ExceptionVar.Type.IsObject() || @catch.ExceptionVar.Type.IsException())) {
+                    throw new NotImplementedException("Cannot yet handle 'catch' of type: " + @catch.ExceptionVar.Type.Name);
                 }
                 this.NewLine();
                 this.js.Append("} catch(");
-                this.Visit(@catch.ExceptionObject);
+                this.Visit(@catch.ExceptionVar);
                 this.js.Append(") {");
                 this.indent++;
                 this.Visit(@catch.Stmt);

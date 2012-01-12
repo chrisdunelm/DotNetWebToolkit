@@ -80,8 +80,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestString() { Verbose = true };
-            t.TestCharAccess();
+            var t = new TestArithmetic() { Verbose = true };
+            t.TestDoubleDiv();
             return;
 
             //var t = new TestCecilExtensions();

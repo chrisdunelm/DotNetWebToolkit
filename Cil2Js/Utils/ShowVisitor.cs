@@ -341,7 +341,7 @@ namespace Cil2Js.Utils {
             foreach (var @catch in s.Catches.EmptyIfNull()) {
                 this.NewLine();
                 this.code.Append("} catch (");
-                this.Visit(@catch.ExceptionObject);
+                this.Visit(@catch.ExceptionVar);
                 this.code.Append(") {");
                 this.indent++;
                 this.Visit(@catch.Stmt);

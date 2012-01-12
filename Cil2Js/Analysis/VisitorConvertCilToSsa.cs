@@ -93,7 +93,7 @@ namespace Cil2Js.Analysis {
                 // will conglomerate all the necessary variables
                 if (sTry.Catches != null) {
                     var catch0 = sTry.Catches.First();
-                    this.CreateOrMergeBsi(catch0.Stmt, new Expr[] { catch0.ExceptionObject }, locals, args);
+                    this.CreateOrMergeBsi(catch0.Stmt, new Expr[] { catch0.ExceptionVar }, locals, args);
                 }
                 if (sTry.Finally != null) {
                     this.CreateOrMergeBsi(sTry.Finally, new Expr[0], locals, args);

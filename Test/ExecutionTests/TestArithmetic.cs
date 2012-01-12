@@ -8,6 +8,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Cil2Js;
 using Cil2Js.Utils;
+using Test.Utils;
 
 namespace Test.ExecutionTests {
 
@@ -33,33 +34,21 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestIntegerDiv1() {
-            Func<int, int, int> f = (a, b) => a / b;
-            this.Test(f);
+        public void TestIntegerDiv() {
+            this.Test((Func<int, int, int>)TestIntegerDivFunc);
         }
-
-        [Test]
-        public void TestIntegerDiv2() {
-            Func<int, int, int> f = (a, b) => (-a) / b;
-            this.Test(f);
-        }
-
-        [Test]
-        public void TestIntegerDiv3() {
-            Func<int, int, int> f = (a, b) => a / (-b);
-            this.Test(f);
-        }
-
-        [Test]
-        public void TestIntegerDiv4() {
-            Func<int, int, int> f = (a, b) => (-a) / (-b);
-            this.Test(f);
+        [IterationCount(100)]
+        private int TestIntegerDivFunc([ParamAny]int a, [ParamNonZero]int b) {
+            return a / b;
         }
 
         [Test]
         public void TestDoubleDiv() {
-            Func<double, double, double> f = (a, b) => a / b;
-            this.Test(f);
+            this.Test((Func<double, double, double>)TestDoubleDivFunc);
+        }
+        [IterationCount(100)]
+        private double TestDoubleDivFunc([ParamAny]double a, [ParamNonZero]double b) {
+            return a / b;
         }
 
         [Test]

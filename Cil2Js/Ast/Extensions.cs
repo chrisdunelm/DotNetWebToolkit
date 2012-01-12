@@ -9,38 +9,6 @@ using Cil2Js.Analysis;
 namespace Cil2Js.Ast {
     public static class Extensions {
 
-        public static bool IsSame(this TypeReference type, TypeReference other) {
-            return type.FullName == other.FullName;
-        }
-
-        public static bool IsVoid(this TypeReference type) {
-            return type.FullName == "System.Void";
-        }
-
-        public static bool IsObject(this TypeReference type) {
-            return type.FullName == "System.Object";
-        }
-
-        public static bool IsBoolean(this TypeReference type) {
-            return type.FullName == "System.Boolean";
-        }
-
-        public static bool IsInt32(this TypeReference type) {
-            return type.FullName == "System.Int32";
-        }
-
-        public static bool IsString(this TypeReference type) {
-            return type.FullName == "System.String";
-        }
-
-        public static bool IsChar(this TypeReference type) {
-            return type.FullName == "System.Char";
-        }
-
-        public static bool IsException(this TypeReference type) {
-            return type.FullName == "System.Exception";
-        }
-
         public static bool DoesEqual(this Expr a, Expr b) {
             return VisitorSameExpr.AreSame(a, b, false);
         }
@@ -73,40 +41,6 @@ namespace Cil2Js.Ast {
                 var xNot = x.Ctx.ExprGen.Not(x);
                 return xNot.DoesEqualExact(y);
             });
-        }
-
-        private static IEnumerable<T[]> Permutations<T>(T[] set) {
-            if (set.Length == 1) {
-                yield return set;
-            } else {
-                for (int i = 0; i < set.Length; i++) {
-                    T first = set[i];
-                    T[] rest = set.Take(i).Concat(set.Skip(i + 1)).ToArray();
-                    foreach (var r in Permutations(rest)) {
-                        yield return new[] { first }.Concat(r).ToArray();
-                    }
-                }
-            }
-        }
-
-        public static TResult Perms<T, TResult>(this Tuple<T, T> ab, Func<T, T, TResult> fn) {
-            foreach (var permutation in Permutations(new[] { ab.Item1, ab.Item2 })) {
-                var ret = fn(permutation[0], permutation[1]);
-                if (!ret.IsDefault()) {
-                    return ret;
-                }
-            }
-            return default(TResult);
-        }
-
-        public static TResult Perms<T, TResult>(this Tuple<T, T, T> abc, Func<T, T, T, TResult> fn) {
-            foreach (var permutation in Permutations(new[] { abc.Item1, abc.Item2, abc.Item3 })) {
-                var ret = fn(permutation[0], permutation[1], permutation[2]);
-                if (!ret.IsDefault()) {
-                    return ret;
-                }
-            }
-            return default(TResult);
         }
 
         public static bool IsLiteralBoolean(this Expr e, bool value) {

@@ -63,7 +63,7 @@ namespace Cil2Js.Analysis {
                     var sCatch = s.Catches.First();
                     var @catch = this.RemoveContinuation(sCatch.Stmt);
                     if ((@try.Item2 == null || @catch.Item2 == null || @try.Item2 == @catch.Item2) && (@try.Item2 != null || @catch.Item2 != null)) {
-                        var newTry = new StmtTry(s.Ctx, @try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionObject) }, null);
+                        var newTry = new StmtTry(s.Ctx, @try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionVar) }, null);
                         return new StmtBlock(s.Ctx, newTry, @try.Item2 ?? @catch.Item2);
                     }
                     // Special case

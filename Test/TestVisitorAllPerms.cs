@@ -12,7 +12,7 @@ namespace Test {
     [TestFixture]
     public class TestVisitorAllPerms : TestBase {
 
-        [Test]
+        [Test, Ignore]
         public void Test() {
             var exprGen = Ctx.ExprGen;
             Expr e;

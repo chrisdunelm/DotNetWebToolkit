@@ -156,6 +156,42 @@ namespace Cil2Js.Utils {
             return true;
         }
 
+        private static IEnumerable<T[]> Permutations<T>(T[] set) {
+            if (set.Length == 1) {
+                yield return set;
+            } else {
+                for (int i = 0; i < set.Length; i++) {
+                    T first = set[i];
+                    T[] rest = set.Take(i).Concat(set.Skip(i + 1)).ToArray();
+                    foreach (var r in Permutations(rest)) {
+                        yield return new[] { first }.Concat(r).ToArray();
+                    }
+                }
+            }
+        }
+
+        [DebuggerStepThrough]
+        public static TResult Perms<T, TResult>(this Tuple<T, T> ab, Func<T, T, TResult> fn) {
+            foreach (var permutation in Permutations(new[] { ab.Item1, ab.Item2 })) {
+                var ret = fn(permutation[0], permutation[1]);
+                if (!ret.IsDefault()) {
+                    return ret;
+                }
+            }
+            return default(TResult);
+        }
+
+        [DebuggerStepThrough]
+        public static TResult Perms<T, TResult>(this Tuple<T, T, T> abc, Func<T, T, T, TResult> fn) {
+            foreach (var permutation in Permutations(new[] { abc.Item1, abc.Item2, abc.Item3 })) {
+                var ret = fn(permutation[0], permutation[1], permutation[2]);
+                if (!ret.IsDefault()) {
+                    return ret;
+                }
+            }
+            return default(TResult);
+        }
+
         [DebuggerStepThrough]
         public static bool IsExternal(this MethodDefinition method) {
             return method.HasBody && method.RVA == 0;

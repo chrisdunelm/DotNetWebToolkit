@@ -127,8 +127,8 @@ namespace Cil2Js.Analysis {
             if (s.Catches != null) {
                 foreach (var @catch in s.Catches) {
                     var stmt = (Stmt)this.Visit(@catch.Stmt);
-                    var exObj = (ExprVar)this.Visit(@catch.ExceptionObject);
-                    if ((stmt != @catch.Stmt || exObj != @catch.ExceptionObject) && catches == null) {
+                    var exObj = (ExprVar)this.Visit(@catch.ExceptionVar);
+                    if ((stmt != @catch.Stmt || exObj != @catch.ExceptionVar) && catches == null) {
                         catches = new List<StmtTry.Catch>(s.Catches.TakeWhile(x => x != @catch));
                     }
                     if (catches != null) {

@@ -28,9 +28,8 @@ namespace Test.Utils {
         }
 
         public static MethodDefinition GetMethod(MethodInfo methodInfo) {
-            var type = GetType(methodInfo.DeclaringType);
-            // Doesn't handle lots of things. E.g. overloading
-            var method = type.Methods.First(x => x.Name == methodInfo.Name);
+            var module = GetModule();
+            var method = module.Import(methodInfo).Resolve();
             return method;
         }
 

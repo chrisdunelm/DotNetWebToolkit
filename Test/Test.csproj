@@ -54,7 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
+    <Compile Include="Utils\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
@@ -79,7 +79,9 @@
     <Compile Include="TestVisitorAllPerms.cs" />
     <Compile Include="Utils\CecilHelper.cs" />
     <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\IterationCountAttribute.cs" />
     <Compile Include="Utils\JsRunner.cs" />
+    <Compile Include="Utils\ParamAttribute.cs" />
     <Compile Include="Utils\QCheck.cs" />
     <Compile Include="Utils\TestBase.cs" />
     <Compile Include="Utils\VisitorCreatePerms.cs" />

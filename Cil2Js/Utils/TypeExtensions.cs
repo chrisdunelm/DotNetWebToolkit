@@ -87,81 +87,73 @@ namespace Cil2Js.Utils {
 
         public static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
 
-        //public static MethodDefinition GetBasemostMethodInTypeHierarchy(this MethodDefinition method) {
-        //    var m = method;
-        //    for (; ; ) {
-        //        if (m.IsNewSlot) {
-        //            return m;
-        //        }
-        //        m = m.GetBaseMethodInTypeHierarchy();
-        //        if (m == null) {
-        //            throw new InvalidOperationException("Error in type hierarchy");
-        //        }
-        //    }
-        //}
+        public static bool IsSame(this TypeReference type, TypeReference other) {
+            return TypeExtensions.TypeRefEqComparerInstance.Equals(type, other);
+        }
 
-        //public static MethodReference GetBasemostMethodInTypeHierarchy(this MethodReference method) {
-        //    for (; ; ) {
-        //        var mDef = method.Resolve();
-        //        if (mDef.IsNewSlot) {
-        //            return method;
-        //        }
-        //        method.DeclaringType.
-        //    }
-        //}
+        public static bool IsVoid(this TypeReference type) {
+            return type.MetadataType == MetadataType.Void;
+        }
 
-        //public static MethodDefinition GetBaseMethodInTypeHierarchy(this MethodDefinition method) {
-        //    return GetBaseMethodInTypeHierarchy(method.DeclaringType, method);
-        //}
+        public static bool IsObject(this TypeReference type) {
+            return type.MetadataType == MetadataType.Object;
+        }
 
-        //static MethodDefinition GetBaseMethodInTypeHierarchy(TypeDefinition type, MethodDefinition method) {
-        //    TypeDefinition @base = GetBaseType(type);
-        //    while (@base != null) {
-        //        MethodDefinition base_method = TryMatchMethod(@base, method);
-        //        if (base_method != null)
-        //            return base_method;
+        public static bool IsBoolean(this TypeReference type) {
+            return type.MetadataType == MetadataType.Boolean;
+        }
 
-        //        @base = GetBaseType(@base);
-        //    }
+        public static bool IsByte(this TypeReference type) {
+            return type.MetadataType == MetadataType.Byte;
+        }
 
-        //    return null;
-        //}
+        public static bool IsSByte(this TypeReference type) {
+            return type.MetadataType == MetadataType.SByte;
+        }
 
-        //public static MethodDefinition GetBaseMethodInInterfaceHierarchy(this MethodDefinition method) {
-        //    return GetBaseMethodInInterfaceHierarchy(method.DeclaringType, method);
-        //}
+        public static bool IsInt16(this TypeReference type) {
+            return type.MetadataType == MetadataType.Int16;
+        }
 
-        //static MethodDefinition GetBaseMethodInInterfaceHierarchy(TypeDefinition type, MethodDefinition method) {
-        //    if (!type.HasInterfaces)
-        //        return null;
+        public static bool IsUInt16(this TypeReference type) {
+            return type.MetadataType == MetadataType.UInt16;
+        }
 
-        //    foreach (TypeReference interface_ref in type.Interfaces) {
-        //        TypeDefinition @interface = interface_ref.Resolve();
-        //        if (@interface == null)
-        //            continue;
+        public static bool IsInt32(this TypeReference type) {
+            return type.MetadataType == MetadataType.Int32;
+        }
 
-        //        MethodDefinition base_method = TryMatchMethod(@interface, method);
-        //        if (base_method != null)
-        //            return base_method;
+        public static bool IsUInt32(this TypeReference type) {
+            return type.MetadataType == MetadataType.UInt32;
+        }
 
-        //        base_method = GetBaseMethodInInterfaceHierarchy(@interface, method);
-        //        if (base_method != null)
-        //            return base_method;
-        //    }
+        public static bool IsInt64(this TypeReference type) {
+            return type.MetadataType == MetadataType.Int64;
+        }
 
-        //    return null;
-        //}
+        public static bool IsUInt64(this TypeReference type) {
+            return type.MetadataType == MetadataType.UInt64;
+        }
 
-        //public static MethodDefinition TryMatchMethod(this TypeDefinition type, MethodDefinition method) {
-        //    if (!type.HasMethods)
-        //        return null;
+        public static bool IsString(this TypeReference type) {
+            return type.MetadataType == MetadataType.String;
+        }
 
-        //    foreach (MethodDefinition candidate in type.Methods)
-        //        if (MethodMatch(candidate, method))
-        //            return candidate;
+        public static bool IsChar(this TypeReference type) {
+            return type.MetadataType == MetadataType.Char;
+        }
 
-        //    return null;
-        //}
+        public static bool IsException(this TypeReference type) {
+            return type.FullName == "System.Exception";
+        }
+
+        public static bool IsInteger(this TypeReference type) {
+            return
+                type.IsByte() || type.IsSByte() ||
+                type.IsInt16() || type.IsUInt16() ||
+                type.IsInt32() || type.IsUInt32() ||
+                type.IsInt64() || type.IsUInt64();
+        }
 
         public static bool MethodMatch(this MethodDefinition candidate, MethodDefinition method) {
             if (!candidate.IsVirtual)
