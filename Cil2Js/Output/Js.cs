@@ -101,8 +101,8 @@ namespace Cil2Js.Output {
 
                 if (mDef.IsConstructor && !mDef.IsStatic) {
                     // Instance constructor; add instance field initialisation and final return of 'this'
-                    var fields = tRef.Resolve().Fields.ToArray();
-                    var initStmts = fields.Where(x => !x.IsStatic)
+                    var fields = fieldAccesses.Keys.Where(x => x.DeclaringType.IsSame(tRef));
+                    var initStmts = fields.Where(x => !x.Resolve().IsStatic)
                         .Select(x => {
                             var f = x.FullResolve(ctx);
                             var assign = new StmtAssignment(ctx,
