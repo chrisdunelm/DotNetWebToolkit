@@ -181,8 +181,8 @@ namespace Cil2Js.Analysis {
                 return this.Cast(this.ctx.Int32);
             case Code.Conv_I:
                 return this.Cast(this.ctx.IntPtr);
-            //case Code.Castclass:
-            //    return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
+            case Code.Castclass:
+                return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
             case Code.Ldftn:
