@@ -55,6 +55,9 @@ namespace Cil2Js.Output {
             var virtualCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
             // Each interface type records which interface methods are called
             var interfaceCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
+            // All instance constructors must be updated after all methods have been processed, to initialise all referenced
+            // instance fields in the type. This has to be done later, so the list of referenced fields in complete
+            var instanceConstructors = new List<Ctx>();
 
             while (todo.Any()) {
                 var mRef = todo.Pop();
@@ -100,19 +103,20 @@ namespace Cil2Js.Output {
                 }
 
                 if (mDef.IsConstructor && !mDef.IsStatic) {
-                    // Instance constructor; add instance field initialisation and final return of 'this'
-                    var fields = fieldAccesses.Keys.Where(x => x.DeclaringType.IsSame(tRef));
-                    var initStmts = fields.Where(x => !x.Resolve().IsStatic)
-                        .Select(x => {
-                            var f = x.FullResolve(ctx);
-                            var assign = new StmtAssignment(ctx,
-                                new ExprFieldAccess(ctx, ctx.This, f),
-                                new ExprDefaultValue(ctx, f.FieldType));
-                            return assign;
-                        })
-                        .ToArray();
-                    var returnStmt = new StmtReturn(ctx, ctx.This);
-                    ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
+                    instanceConstructors.Add(ctx);
+                    //// Instance constructor; add instance field initialisation and final return of 'this'
+                    //var fields = fieldAccesses.Keys.Where(x => x.DeclaringType.IsSame(tRef));
+                    //var initStmts = fields.Where(x => !x.Resolve().IsStatic)
+                    //    .Select(x => {
+                    //        var f = x.FullResolve(ctx);
+                    //        var assign = new StmtAssignment(ctx,
+                    //            new ExprFieldAccess(ctx, ctx.This, f),
+                    //            new ExprDefaultValue(ctx, f.FieldType));
+                    //        return assign;
+                    //    })
+                    //    .ToArray();
+                    //var returnStmt = new StmtReturn(ctx, ctx.This);
+                    //ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
                 }
 
                 var cctors = VisitorFindStaticConstructors.V(ast).Where(x => !TypeExtensions.MethodRefEqComparerInstance.Equals(x, mRef)).ToArray();
@@ -223,6 +227,24 @@ namespace Cil2Js.Output {
                         todo.Push(method);
                     }
                 }
+            }
+
+            // Update all instance constructors to initialise instance fields, and add final 'return' statement
+            foreach (var ctx in instanceConstructors) {
+                var fields = fieldAccesses.Keys.Where(x => x.DeclaringType.IsSame(ctx.TRef));
+                var initStmts = fields.Where(x => !x.Resolve().IsStatic)
+                    .Select(x => {
+                        var f = x.FullResolve(ctx.TRef, ctx.MRef);
+                        var assign = new StmtAssignment(ctx,
+                            new ExprFieldAccess(ctx, ctx.This, f),
+                            new ExprDefaultValue(ctx, f.FieldType));
+                        return assign;
+                    })
+                    .ToArray();
+                var returnStmt = new StmtReturn(ctx, ctx.This);
+                var ast = methodAsts[ctx.MRef];
+                ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
+                methodAsts[ctx.MRef] = ast;
             }
 
             // Locally name all instance fields; base type names must not be re-used in derived types
