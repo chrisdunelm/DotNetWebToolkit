@@ -8,6 +8,7 @@ using Cil2Js.Ast;
 using Cil2Js.JsResolvers;
 using Cil2Js.Utils;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace Cil2Js.Output {
     public class Js {
@@ -52,8 +53,8 @@ namespace Cil2Js.Output {
             var resolvedCalls = new Dictionary<ICall, JsResolved>();
             // Each type records which virtual methods have their NewSlot definitions
             var virtualCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
-            // Each type with all virtual methods in that type that are referenced
-            //var allVirtualMethods = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
+            // Each interface type records which interface methods are called
+            var interfaceCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
 
             while (todo.Any()) {
                 var mRef = todo.Pop();
@@ -133,11 +134,7 @@ namespace Cil2Js.Output {
                 foreach (var vCall in vCalls) {
                     // (_ = obj)[vIdx](_, ... args ...)
                     var tempObj = new ExprVarLocal(ctx, vCall.Obj.Type);
-                    var jsVCall = new ExprJsVirtualCall(ctx,
-                        vCall.CallMethod,
-                        new ExprAssignment(ctx, tempObj, vCall.Obj),
-                        tempObj,
-                        vCall.Args);
+                    var jsVCall = new ExprJsVirtualCall(ctx, vCall.CallMethod, new ExprAssignment(ctx, tempObj, vCall.Obj), tempObj, vCall.Args);
                     ast = VisitorReplace.V(ast, vCall, jsVCall);
                 }
 
@@ -161,8 +158,10 @@ namespace Cil2Js.Output {
                         continue;
                     }
                     if (call.CallMethod.DeclaringType.Resolve().IsInterface) {
-                        throw new Exception();
-                        //continue;
+                        var methodSet = interfaceCalls.ValueOrDefault(call.CallMethod.DeclaringType, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
+                        methodSet.Add(call.CallMethod);
+                        // Methods that require transcoding are added to 'todo' later
+                        continue;
                     }
                     if (call.IsVirtualCall) {
                         var mBasemost = call.CallMethod.GetBasemostMethod(null);
@@ -183,7 +182,7 @@ namespace Cil2Js.Output {
                 }
 
                 if (!todo.Any()) {
-                    // Scan all virtual and interface calls and add any required methods
+                    // Scan all virtual calls and add any required methods
                     // Need care to handle virtual methods with generic arguments
                     var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
                     var requireMethods =
@@ -192,14 +191,35 @@ namespace Cil2Js.Output {
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
                         let methods = type.EnumResolvedMethods(mVRoots).ToArray()
                         from method in methods
+                        where !methodsSeen.ContainsKey(method)
                         let methodDef = method.Resolve()
                         where methodDef.IsVirtual && !methodDef.IsAbstract
                         let mBasemost = method.GetBasemostMethod(method)
-                        where virtualRoots.Contains(mBasemost) && !methodsSeen.ContainsKey(method)
+                        where virtualRoots.Contains(mBasemost)
                         select method;
                     var requireMethodsArray = requireMethods.ToArray();
                     foreach (var method in requireMethodsArray) {
                         methodsSeen.Add(method, 1); // TODO: How to properly handle count?
+                        todo.Push(method);
+                    }
+                    // Scan all interface calls and add any required methods
+                    var iFaceMethods =
+                        from type in typesSeen.Keys
+                        from iFace in interfaceCalls
+                        let iFaceType = iFace.Key
+                        let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
+                        where typeAndBases.Any(x => x.DoesImplement(iFaceType))
+                        let methods = type.EnumResolvedMethods(iFace.Value).ToArray()
+                        from method in methods
+                        where !methodsSeen.ContainsKey(method)
+                        let methodDef = method.Resolve()
+                        where methodDef.IsVirtual && !methodDef.IsAbstract
+                        from iFaceMethod in iFace.Value
+                        where method.IsImplementationOf(iFaceMethod)
+                        select method;
+                    var iFaceMethodsArray = iFaceMethods.ToArray();
+                    foreach (var method in iFaceMethodsArray) {
+                        methodsSeen.Add(method, 1);
                         todo.Push(method);
                     }
                 }
@@ -305,6 +325,12 @@ namespace Cil2Js.Output {
                 return vCallsWithThisType;
             }, new MethodReference[0]);
 
+            // Create interface call tables
+            var interfaceNameGen = new NameGenerator();
+            // TODO: Doesn't take use frequency into account yet
+            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName());
+            var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i);
+
             var resolver = new JsMethod.Resolver {
                 LocalVarNames = localVarNames,
                 MethodNames = methodNames,
@@ -312,6 +338,8 @@ namespace Cil2Js.Output {
                 TypeNames = typeNames,
                 ResolvedCalls = resolvedCalls,
                 VirtualCallIndices = virtualCallIndices,
+                InterfaceCallIndices = interfaceCallIndices,
+                InterfaceNames = interfaceNames,
             };
 
             var js = new StringBuilder();
@@ -332,10 +360,11 @@ namespace Cil2Js.Output {
 
             // Construct type data
             foreach (var type in typesSeen.Where(x => x.Value > 0).Select(x => x.Key)) {
+                var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
+                bool needComma = false;
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 var methods = allVirtualMethods.ValueOrDefault(type);
                 if (methods != null) {
-                    var typesAndBases = type.EnumThisAllBaseTypes().ToArray();
                     //var m
                     var idxs = methods
                         .Select(x => {
@@ -346,6 +375,27 @@ namespace Cil2Js.Output {
                         .ToArray();
                     var s = string.Join(", ", idxs.Select(x => methodNames[x.m]));
                     js.AppendFormat("_:[{0}]", s);
+                    needComma = true;
+                }
+                var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
+                foreach (var iFace in implementedIFaces) {
+                    if (needComma) {
+                        js.Append(", ");
+                    } else {
+                        needComma = true;
+                    }
+                    var iFaceName = interfaceNames[iFace.Key];
+                    js.AppendFormat("{0}:[", iFaceName);
+                    var qInterfaceTableNames =
+                        from iMethod in iFace.Value
+                        let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
+                        let idx = interfaceCallIndices[iMethod]
+                        orderby idx
+                        let methodName = methodNames[tMethod]
+                        select methodName;
+                    var interfaceTableNames = qInterfaceTableNames.ToArray();
+                    js.Append(string.Join(", ", interfaceTableNames));
+                    js.Append("]");
                 }
                 js.Append("};");
                 js.AppendLine();

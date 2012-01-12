@@ -109,11 +109,13 @@ namespace Cil2Js.Utils {
             if (a.GenericParameters.Count != b.GenericParameters.Count) {
                 return false;
             }
-            if (!TypeExtensions.TypeRefEqComparerInstance.Equals(a.ReturnType, b.ReturnType)) {
+            var aReturnType = a.ReturnType.FullResolve(a);
+            var bReturnType = b.ReturnType.FullResolve(b);
+            if (!TypeExtensions.TypeRefEqComparerInstance.Equals(aReturnType, bReturnType)) {
                 return false;
             }
-            var aParamTypes = a.Parameters.Select(x => x.ParameterType).ToArray();
-            var bParamTypes = b.Parameters.Select(x => x.ParameterType).ToArray();
+            var aParamTypes = a.Parameters.Select(x => x.ParameterType.FullResolve(a)).ToArray();
+            var bParamTypes = b.Parameters.Select(x => x.ParameterType.FullResolve(b)).ToArray();
             if (!aParamTypes.SequenceEqual(bParamTypes, TypeExtensions.TypeRefEqComparerInstance)) {
                 return false;
             }
@@ -341,6 +343,20 @@ namespace Cil2Js.Utils {
             }
         }
 
+        public static bool IsImplementationOf(this MethodReference method, MethodReference iFaceMethod) {
+            if (method.MatchMethodOnly(iFaceMethod)) {
+                return true;
+            }
+            var mDef = method.Resolve();
+            if (mDef.Overrides.Any(x => {
+                var xResolved = x.FullResolve(method.DeclaringType, method);
+                return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
+            })) {
+                return true;
+            }
+            return false;
+        }
+
         public static IEnumerable<TypeReference> EnumThisAllBaseTypes(this TypeReference type) {
             var t = type;
             for (; ; ) {
@@ -352,10 +368,14 @@ namespace Cil2Js.Utils {
             }
         }
 
+        public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, params MethodReference[] baseMethods) {
+            return type.EnumResolvedMethods((IEnumerable<MethodReference>)baseMethods);
+        }
+
         public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, IEnumerable<MethodReference> baseMethods) {
             var tDef = type.Resolve();
             foreach (var m in tDef.Methods) {
-                var mScopes = baseMethods.Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
+                var mScopes = baseMethods.EmptyIfNull().Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
                 foreach (var mScope in mScopes) {
                     var mResolved = m.FullResolve(type, mScope);
                     yield return mResolved;

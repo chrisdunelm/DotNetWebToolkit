@@ -33,7 +33,7 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestInterface() {
             Func<bool, int> f = b => {
-                var i = b ? (CTestInterface.I)new CTestInterface.A() : new CTestInterface.B();
+                var i = b ? (CTestInterface.I)new CTestInterface.A() : (CTestInterface.I)new CTestInterface.B();
                 return i.GetA();
             };
             this.Test(f);
@@ -47,8 +47,6 @@ namespace Test.ExecutionTests {
             };
             this.Test(f);
         }
-
-
 
         [Test]
         public void TestInheritedInterface() {

@@ -17,6 +17,8 @@ namespace Cil2Js.Output {
             public Dictionary<TypeReference, string> TypeNames { get; set; }
             public Dictionary<ICall, JsResolved> ResolvedCalls { get; set; }
             public Dictionary<MethodReference, int> VirtualCallIndices { get; set; }
+            public Dictionary<MethodReference, int> InterfaceCallIndices { get; set; }
+            public Dictionary<TypeReference, string> InterfaceNames { get; set; }
         }
 
         //public class Resolver {
@@ -607,11 +609,20 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
-            var mBasemost = e.CallMethod.GetBasemostMethod(null);
-            int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
-            this.Visit(e.ObjInit);
-            this.js.AppendFormat("._._[{0}]", vTableIndex);
-            this.CallAppendArgs(e);
+            var isIFacecall = e.CallMethod.DeclaringType.Resolve().IsInterface;
+            if (isIFacecall) {
+                var iTableIndex = this.resolver.InterfaceCallIndices[e.CallMethod];
+                var iFaceName = this.resolver.InterfaceNames[e.CallMethod.DeclaringType];
+                this.Visit(e.ObjInit);
+                this.js.AppendFormat("._.{0}[{1}]", iFaceName, iTableIndex);
+                this.CallAppendArgs(e);
+            } else {
+                var mBasemost = e.CallMethod.GetBasemostMethod(null);
+                int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
+                this.Visit(e.ObjInit);
+                this.js.AppendFormat("._._[{0}]", vTableIndex);
+                this.CallAppendArgs(e);
+            }
             return e;
         }
 

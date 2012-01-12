@@ -59,6 +59,7 @@
     <Compile Include="ExecutionTests\TestArrays.cs" />
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
+    <Compile Include="ExecutionTests\TestGenericInterfaces.cs" />
     <Compile Include="ExecutionTests\TestGenerics.cs" />
     <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
     <Compile Include="ExecutionTests\TestList.cs" />
