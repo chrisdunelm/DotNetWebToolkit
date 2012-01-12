@@ -229,17 +229,19 @@ namespace Cil2Js.Output {
                 }
             }
 
+            var instanceFieldsByType = fieldAccesses
+                .Where(x => !x.Key.Resolve().IsStatic)
+                .ToLookup(x => x.Key.DeclaringType.FullResolve(x.Key), TypeExtensions.TypeRefEqComparerInstance);
             // Update all instance constructors to initialise instance fields, and add final 'return' statement
             foreach (var ctx in instanceConstructors) {
-                var fields = fieldAccesses.Keys.Where(x => x.DeclaringType.IsSame(ctx.TRef));
-                var initStmts = fields.Where(x => !x.Resolve().IsStatic)
-                    .Select(x => {
-                        var f = x.FullResolve(ctx.TRef, ctx.MRef);
-                        var assign = new StmtAssignment(ctx,
-                            new ExprFieldAccess(ctx, ctx.This, f),
-                            new ExprDefaultValue(ctx, f.FieldType));
-                        return assign;
-                    })
+                var fields = instanceFieldsByType[ctx.TRef].Select(x => x.Key);
+                var initStmts = fields.Select(x => {
+                    var f = x.FullResolve(ctx.TRef, ctx.MRef);
+                    var assign = new StmtAssignment(ctx,
+                        new ExprFieldAccess(ctx, ctx.This, f),
+                        new ExprDefaultValue(ctx, f.FieldType));
+                    return assign;
+                })
                     .ToArray();
                 var returnStmt = new StmtReturn(ctx, ctx.This);
                 var ast = methodAsts[ctx.MRef];
@@ -248,14 +250,23 @@ namespace Cil2Js.Output {
             }
 
             // Locally name all instance fields; base type names must not be re-used in derived types
-            var instanceFields = fieldAccesses.Where(x => !x.Key.Resolve().IsStatic).ToArray();
-            //var orderedInstanceFields = instanceFields
-            //    .Select(x => new { field = x.Key, type = x.Key.DeclaringType, count = x.Value })
-            //    .OrderByDescending(x => x.type, TypeExtensions.BaseFirstComparerInstance)
-            //    .ToArray();
-            // TODO: This names all instance fields globally. IT CAN BE DONE BETTER.
+            var instanceFieldsIndexed = new Dictionary<int, Tuple<IEnumerable<FieldReference>, int>>(); // <index, Tuple<all fields, total use count>>
+            instanceFieldsByType.TypeTreeTraverse(x => x.Key, (fields, idx) => {
+                var ordered = fields.OrderByDescending(x => x.Value).ToArray(); // Order by usage count, highest first
+                foreach (var field in ordered) {
+                    var idxInfo = instanceFieldsIndexed.ValueOrDefault(idx, () => Tuple.Create(Enumerable.Empty<FieldReference>(), 0));
+                    var newIdxInfo = Tuple.Create((IEnumerable<FieldReference>)idxInfo.Item1.Concat(field.Key).ToArray(), idxInfo.Item2 + field.Value);
+                    instanceFieldsIndexed[idx] = newIdxInfo;
+                    idx++;
+                }
+                return idx;
+            }, 0);
+            var orderedInstanceFields = instanceFieldsIndexed.OrderByDescending(x => x.Value.Item2).ToArray();
             var instanceFieldNameGen = new NameGenerator();
-            var instanceFieldNames = instanceFields.OrderByDescending(x => x.Value).Select(x => new { f = x.Key, name = instanceFieldNameGen.GetNewName() }).ToArray();
+            var instanceFieldNames = orderedInstanceFields
+                .Select(x => new { name = instanceFieldNameGen.GetNewName(), fields = x.Value.Item1 })
+                .SelectMany(x => x.fields.Select(y => new { f = y, name = x.name }))
+                .ToArray();
             // Prepare list of static fields for global naming
             var staticFields = fieldAccesses.Where(x => x.Key.Resolve().IsStatic).ToArray();
 
