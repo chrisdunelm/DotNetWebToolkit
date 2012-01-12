@@ -85,6 +85,7 @@
     <Compile Include="Utils\QCheck.cs" />
     <Compile Include="Utils\TestBase.cs" />
     <Compile Include="Utils\VisitorCreatePerms.cs" />
+    <Compile Include="Utils\WithinAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cecil\Mono.Cecil.csproj">

@@ -12,6 +12,7 @@ using Test.Utils;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Chrome;
 using System.Threading;
+using NUnit.Framework.Constraints;
 
 namespace Test.Utils {
     public class ExecutionTestBase {
@@ -107,6 +108,7 @@ namespace Test.Utils {
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
+            var withinAttr = (WithinAttribute)mi.GetCustomAttributes(typeof(WithinAttribute), false).FirstOrDefault();
             var icAttr = (IterationCountAttribute)mi.GetCustomAttributes(typeof(IterationCountAttribute), false).FirstOrDefault();
             int iterationCount;
             if (icAttr != null) {
@@ -128,8 +130,8 @@ namespace Test.Utils {
                 return Tuple.Create(r, e);
             }).ToArray();
 
-            using (var chrome = NamespaceSetup.ChromeService != null ?
-                new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
+            using (var chrome = //NamespaceSetup.ChromeService != null ?
+                //new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
                 new ChromeDriver()) {
                 try {
                     for (int i = 0; i < args.Length; i++) {
@@ -142,7 +144,12 @@ namespace Test.Utils {
                         if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
                             jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
                         }
-                        Assert.That(jsResult, Is.EqualTo(runResults[i].Item1).Within(0.00001));
+                        EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
+                        IResolveConstraint expected = equalTo;
+                        if (withinAttr != null) {
+                            expected = equalTo.Within(withinAttr.Delta);
+                        }
+                        Assert.That(jsResult, expected);
                     }
                 } finally {
                     chrome.Quit();
@@ -153,24 +160,24 @@ namespace Test.Utils {
 
     }
 
-    [SetUpFixture]
-    public class NamespaceSetup {
+    //[SetUpFixture]
+    //public class NamespaceSetup {
 
-        public static ChromeDriverService ChromeService;
+    //    public static ChromeDriverService ChromeService;
 
-        [SetUp]
-        public void Setup() {
-            ChromeService = ChromeDriverService.CreateDefaultService();
-            ChromeService.Start();
+    //    [SetUp]
+    //    public void Setup() {
+    //        ChromeService = ChromeDriverService.CreateDefaultService();
+    //        ChromeService.Start();
 
-        }
+    //    }
 
-        [TearDown]
-        public void Teardown() {
-            ChromeService.Dispose();
-            ChromeService = null;
-        }
+    //    [TearDown]
+    //    public void Teardown() {
+    //        ChromeService.Dispose();
+    //        ChromeService = null;
+    //    }
 
-    }
+    //}
 
 }

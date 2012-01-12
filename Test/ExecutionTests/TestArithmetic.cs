@@ -46,7 +46,7 @@ namespace Test.ExecutionTests {
         public void TestDoubleDiv() {
             this.Test((Func<double, double, double>)TestDoubleDivFunc);
         }
-        [IterationCount(100)]
+        [IterationCount(100), Within(0.0001)]
         private double TestDoubleDivFunc([ParamAny]double a, [ParamNonZero]double b) {
             return a / b;
         }
