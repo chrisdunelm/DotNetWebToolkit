@@ -33,13 +33,13 @@ namespace Test.ExecutionTests {
         }
 
         [Test, Ignore("Integer division not yet supported - currently performs floating point division")]
-        public void TestDiv() {
+        public void TestIntegerDiv() {
             Func<int, int, int> f = (a, b) => a / b;
             this.Test(f);
         }
 
         [Test, Ignore("Test fails due to precision problem")]
-        public void TestDiv2() {
+        public void TestDoubleDiv() {
             Func<double, double, double> f = (a, b) => a / b;
             this.Test(f);
         }

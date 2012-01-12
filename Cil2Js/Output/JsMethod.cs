@@ -578,8 +578,25 @@ namespace Cil2Js.Output {
             var resolved = this.resolver.ResolvedCalls.ValueOrDefault(e);
             if (resolved != null) {
                 switch (resolved.Type) {
-                //case JsResolvedType.Method:
-                //    break;
+                case JsResolvedType.Method:
+                    var methodResolved = (JsResolvedMethod)resolved;
+                    if (methodResolved.Obj != null) {
+                        this.Visit(methodResolved.Obj);
+                        this.js.Append(".");
+                    }
+                    this.js.Append(methodResolved.MethodName);
+                    this.js.Append("(");
+                    bool first = true;
+                    foreach (var arg in methodResolved.Args.EmptyIfNull()) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            this.js.Append(", ");
+                        }
+                        this.Visit(arg);
+                    }
+                    this.js.Append(")");
+                    break;
                 case JsResolvedType.Property:
                     var propertyResolved = (JsResolvedProperty)resolved;
                     this.Visit(propertyResolved.Obj);

@@ -182,8 +182,8 @@ namespace Cil2Js.Analysis {
             //    return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
-            //case Code.Ldftn:
-            //    return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, ((MethodReference)inst.Operand).FullResolve(this.ctx)));
+            case Code.Ldftn:
+                return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, ((MethodReference)inst.Operand).FullResolve(this.ctx)));
             case Code.Dup:
                 return this.Dup();
             case Code.Box:

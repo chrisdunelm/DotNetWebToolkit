@@ -172,10 +172,12 @@ namespace Cil2Js.Utils {
             case MetadataType.Double:
             case MetadataType.IntPtr:
             case MetadataType.UIntPtr:
+            case MetadataType.Char:
             case MetadataType.Object:
             case MetadataType.String:
                 return self;
             case MetadataType.Class:
+            case MetadataType.ValueType:
                 if (self.HasGenericParameters) {
                     var ret = new GenericInstanceType(self);
                     foreach (var arg in self.GenericParameters) {
