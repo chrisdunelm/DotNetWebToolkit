@@ -46,7 +46,7 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestEnumerator() {
+        public void TestEnumerable() {
             Func<int, int, int, int> f = (a, b, c) => {
                 IEnumerable<int> array = new[] { a, b, c };
                 var ret = 0;
@@ -54,6 +54,39 @@ namespace Test.ExecutionTests {
                     ret += i;
                 }
                 return ret;
+            };
+            this.Test(f);
+        }
+
+        class CTestIEnumerableWithTwoTypes {
+            public int Value;
+        }
+
+        [Test]
+        public void TestIEnumerableWithTwoTypes() {
+            Func<int, int, int, int, int, int, int> f = (a, b, c, x, y, z) => {
+                IEnumerable<int> array1 = new[] { a, b, c };
+                IEnumerable<CTestIEnumerableWithTwoTypes> array2 = new[]{
+                    new CTestIEnumerableWithTwoTypes{Value = x},
+                    new CTestIEnumerableWithTwoTypes{Value = y},
+                    new CTestIEnumerableWithTwoTypes{Value = z}};
+                var ret = 0;
+                foreach (var i in array1) {
+                    ret += i;
+                }
+                foreach (var v in array2) {
+                    ret += v.Value;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestICollection() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                ICollection<int> array = new[] { a, b, c };
+                return a;
             };
             this.Test(f);
         }

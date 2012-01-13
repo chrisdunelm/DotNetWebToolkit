@@ -59,8 +59,8 @@ namespace Cil2Js.Output {
             // instance fields in the type. This has to be done later, so the list of referenced fields in complete
             var instanceConstructors = new List<Ctx>();
 
-            var tArray = rootMethods.First().Module.Import(typeof(int[]));
-            typesSeen.Add(tArray, 1);
+            //var tArray = rootMethods.First().Module.Import(typeof(int[]));
+            //typesSeen.Add(tArray, 1);
 
             while (todo.Any()) {
                 var mRef = todo.Pop();
@@ -138,6 +138,10 @@ namespace Cil2Js.Output {
                 var fieldRefs = VisitorFindFieldAccesses.V(ast);
                 foreach (var fieldRef in fieldRefs) {
                     fieldAccesses[fieldRef] = fieldAccesses.ValueOrDefault(fieldRef) + 1;
+                }
+                var arrayRefs = VisitorFindNewArrays.V(ast);
+                foreach (var arrayRef in arrayRefs) {
+                    typesSeen.Add(arrayRef, 1);
                 }
 
                 var calledMethods = new List<ICall>();

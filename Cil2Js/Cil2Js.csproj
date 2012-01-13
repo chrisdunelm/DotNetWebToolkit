@@ -163,6 +163,7 @@
     <Compile Include="Output\NameGenerator.cs" />
     <Compile Include="Output\VisitorFindCalls.cs" />
     <Compile Include="Output\VisitorFindFieldAccesses.cs" />
+    <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
     <Compile Include="Output\VisitorResolveCalls.cs" />
