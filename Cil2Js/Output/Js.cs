@@ -123,6 +123,7 @@ namespace Cil2Js.Output {
                 }
 
             restartCalls:
+                // TODO: Improve this...
                 var allCalls = VisitorFindCalls.V(ast).ToArray();
                 var vCalls = allCalls.Where(x => x.IsVirtualCall && x.ExprType != (Expr.NodeType)JsExprType.JsVirtualCall).ToArray();
                 foreach (var vCall in vCalls) {
@@ -196,7 +197,7 @@ namespace Cil2Js.Output {
                         let mBasemost = method.GetBasemostMethod(method)
                         where virtualRoots.Contains(mBasemost)
                         select method;
-                    var requireMethodsArray = requireMethods.ToArray();
+                    var requireMethodsArray = requireMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in requireMethodsArray) {
                         methodsSeen.Add(method, 1); // TODO: How to properly handle count?
                         todo.Push(method);
@@ -216,7 +217,7 @@ namespace Cil2Js.Output {
                         from iFaceMethod in iFace.Value
                         where method.IsImplementationOf(iFaceMethod)
                         select method;
-                    var iFaceMethodsArray = iFaceMethods.ToArray();
+                    var iFaceMethodsArray = iFaceMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in iFaceMethodsArray) {
                         methodsSeen.Add(method, 1);
                         todo.Push(method);
