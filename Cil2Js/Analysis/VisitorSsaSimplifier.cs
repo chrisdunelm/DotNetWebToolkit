@@ -84,27 +84,19 @@ namespace Cil2Js.Analysis {
             protected override ICode VisitAssignment(StmtAssignment s) {
                 var aInfo = this.GetAInfo(s.Target);
                 aInfo.assignment = s;
+                if (VisitorFindSpecials.Any(s.Expr, Expr.Special.PossibleSideEffects)) {
+                    aInfo.mustKeep = true;
+                }
                 this.Visit(s.Target);
                 this.Visit(s.Expr);
                 return s;
             }
-
-            //protected override ICode VisitCall(ExprCall e) {
-            //    if ((e.Specials & Expr.Special.PossibleSideEffects) != 0) {
-            //        var aInfo = this.assignments.ValueOrDefault(e.Obj, 
-            //    }
-            //    return base.VisitCall(e);
-            //}
 
             private int inPhiCount = 0;
 
             protected override ICode VisitVarPhi(ExprVarPhi e) {
                 // Variables within phi's cannot be removed
                 this.inPhiCount++;
-                //foreach (var expr in e.Exprs.OfType<ExprVar>()) {
-                //    var aInfo = this.GetAInfo(expr);
-                //    aInfo.mustKeep = true;
-                //}
                 var ret = base.VisitVarPhi(e);
                 this.inPhiCount--;
                 return ret;
@@ -118,14 +110,6 @@ namespace Cil2Js.Analysis {
                 }
                 return base.VisitVarLocal(e);
             }
-
-            //protected override ICode VisitFieldAccess(ExprFieldAccess e) {
-            //    var aInfo = this.assignments.ValueOrDefault(e);
-            //    if (aInfo != null) {
-            //        aInfo.count++;
-            //    }
-            //    return base.VisitFieldAccess(e);
-            //}
 
         }
 
