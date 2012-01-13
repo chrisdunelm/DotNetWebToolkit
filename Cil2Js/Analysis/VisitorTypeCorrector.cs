@@ -13,13 +13,11 @@ namespace Cil2Js.Analysis {
             for (; ; ) {
                 var v = new VisitorTypeCorrector {
                     nowReplace = nowReplace
-                    //thisForceToBoolean = new HashSet<ExprVarLocal>(forceToBoolean)
                 };
                 ast = v.Visit(ast);
                 if (!v.toReplace.Any()) {
                     return ast;
                 }
-                //forceToBoolean = v.newforceToBoolean;
                 nowReplace = v.toReplace;
             }
         }
@@ -28,9 +26,6 @@ namespace Cil2Js.Analysis {
 
         private Dictionary<ExprVar, ExprVarLocal> nowReplace;
         private Dictionary<ExprVar, ExprVarLocal> toReplace = new Dictionary<ExprVar, ExprVarLocal>();
-
-        //private HashSet<ExprVarLocal> thisForceToBoolean;
-        //private List<ExprVarLocal> newforceToBoolean = new List<ExprVarLocal>();
 
         protected override ICode VisitAssignment(StmtAssignment s) {
             if (this.nowReplace.ContainsKey(s.Target)) {
@@ -42,38 +37,6 @@ namespace Cil2Js.Analysis {
             }
             return base.VisitAssignment(s);
         }
-
-        //protected override ICode VisitAssignment(StmtAssignment s) {
-        //    if (this.thisForceToBoolean.Contains(s.Target)) {
-        //        if (!s.Expr.Type.IsBoolean()) {
-        //            if (s.Expr.ExprType == Expr.NodeType.VarLocal) {
-        //                this.newforceToBoolean.Add((ExprVarLocal)s.Expr);
-        //            } else if (s.Expr.ExprType == Expr.NodeType.Literal) {
-        //                var eExprLiteral = (ExprLiteral)s.Expr;
-        //                if (s.Expr.Type.IsInt32()) {
-        //                    return new StmtAssignment(s.Ctx, s.Target, new ExprLiteral(s.Ctx, ((int)eExprLiteral.Value) != 0 ? true : false, s.Ctx.Boolean));
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return s;
-        //}
-
-        //protected override ICode VisitAssignment(ExprAssignment e) {
-        //    if (this.thisForceToBoolean.Contains(e.Target)) {
-        //        if (!e.Expr.Type.IsBoolean()) {
-        //            if (e.Expr.ExprType == Expr.NodeType.VarLocal) {
-        //                this.newforceToBoolean.Add((ExprVarLocal)e.Expr);
-        //            } else if (e.Expr.ExprType == Expr.NodeType.Literal) {
-        //                var eExprLiteral = (ExprLiteral)e.Expr;
-        //                if (e.Expr.Type.IsInt32()) {
-        //                    return new ExprAssignment(e.Ctx, e.Target, new ExprLiteral(e.Ctx, ((int)eExprLiteral.Value) != 0 ? true : false, e.Ctx.Boolean));
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return e;
-        //}
 
         private Expr ConvertToBoolean(Expr e) {
             if (e.ExprType == Expr.NodeType.Literal) {
@@ -114,17 +77,8 @@ namespace Cil2Js.Analysis {
             if (e.Op == BinaryOp.Equal || e.Op == BinaryOp.NotEqual) {
                 if (e.Right.Type.IsBoolean() && !e.Left.Type.IsBoolean()) {
                     return new ExprBinary(e.Ctx, e.Op, e.Type, this.ConvertToBoolean(e.Left), e.Right);
-                    //if (e.Left.ExprType != Expr.NodeType.VarLocal) {
-                    //    throw new InvalidOperationException("VarLoval expected");
-                    //}
-                    //this.newforceToBoolean.Add((ExprVarLocal)e.Left);
                 } else if (e.Left.Type.IsBoolean() && !e.Right.Type.IsBoolean()) {
                     return new ExprBinary(e.Ctx, e.Op, e.Type, e.Left, this.ConvertToBoolean(e.Right));
-                    //this.MarkToConvertToBoolean(e.Right);
-                    //if (e.Right.ExprType != Expr.NodeType.VarLocal) {
-                    //    throw new InvalidOperationException("VarLoval expected");
-                    //}
-                    //this.newforceToBoolean.Add((ExprVarLocal)e.Right);
                 }
             }
             return base.VisitBinary(e);
