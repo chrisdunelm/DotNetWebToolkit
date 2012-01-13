@@ -67,9 +67,9 @@ namespace Test.ExecutionTests {
             Func<int, int, int, int, int, int, int> f = (a, b, c, x, y, z) => {
                 IEnumerable<int> array1 = new[] { a, b, c };
                 IEnumerable<CTestIEnumerableWithTwoTypes> array2 = new[]{
-                    new CTestIEnumerableWithTwoTypes{Value = x},
-                    new CTestIEnumerableWithTwoTypes{Value = y},
-                    new CTestIEnumerableWithTwoTypes{Value = z}};
+                    new CTestIEnumerableWithTwoTypes { Value = x },
+                    new CTestIEnumerableWithTwoTypes { Value = y },
+                    new CTestIEnumerableWithTwoTypes { Value = z } };
                 var ret = 0;
                 foreach (var i in array1) {
                     ret += i;
@@ -85,8 +85,35 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestICollection() {
             Func<int, int, int, int> f = (a, b, c) => {
-                ICollection<int> array = new[] { a, b, c };
-                return a;
+                ICollection<int> collection = new[] { a, b, c };
+                var ret = 0;
+                ret += collection.Count;
+                ret += collection.IsReadOnly ? 4 : -4;
+                ret += collection.Contains(a) ? 5 : -5;
+                ret += collection.Contains(b) ? 6 : -6;
+                ret += collection.Contains(c) ? 7 : -7;
+                ret += collection.Contains(0) ? 8 : -8;
+                ret += collection.Contains(1) ? 9 : -9;
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestIList() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                IList<int> list = new[] { a, b, c };
+                int ret = 0;
+                for (int i = 0; i < 3; i++) {
+                    ret += list[i];
+                    list[i]++;
+                    ret -= list[i];
+                }
+                ret += list.IndexOf(a);
+                ret += list.IndexOf(b);
+                ret += list.IndexOf(c);
+                ret += list.IndexOf(-1);
+                return ret;
             };
             this.Test(f);
         }

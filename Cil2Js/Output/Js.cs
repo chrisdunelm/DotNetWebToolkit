@@ -59,9 +59,6 @@ namespace Cil2Js.Output {
             // instance fields in the type. This has to be done later, so the list of referenced fields in complete
             var instanceConstructors = new List<Ctx>();
 
-            //var tArray = rootMethods.First().Module.Import(typeof(int[]));
-            //typesSeen.Add(tArray, 1);
-
             while (todo.Any()) {
                 var mRef = todo.Pop();
                 var mDef = mRef.Resolve();
@@ -125,12 +122,15 @@ namespace Cil2Js.Output {
                     ast = new StmtBlock(ctx, (Stmt)ast, rewrite);
                 }
 
-                var vCalls = VisitorFindCalls.V(ast).Where(x => x.IsVirtualCall).ToArray();
+            restartCalls:
+                var allCalls = VisitorFindCalls.V(ast).ToArray();
+                var vCalls = allCalls.Where(x => x.IsVirtualCall && x.ExprType != (Expr.NodeType)JsExprType.JsVirtualCall).ToArray();
                 foreach (var vCall in vCalls) {
                     // (_ = obj)[vIdx](_, ... args ...)
                     var tempObj = new ExprVarLocal(ctx, vCall.Obj.Type);
                     var jsVCall = new ExprJsVirtualCall(ctx, vCall.CallMethod, new ExprAssignment(ctx, tempObj, vCall.Obj), tempObj, vCall.Args);
-                    ast = VisitorReplace.V(ast, vCall, jsVCall);
+                    ast = VisitorJsReplace.V(ast, vCall, jsVCall);
+                    goto restartCalls;
                 }
 
                 methodAsts.Add(mRef, ast);
@@ -356,8 +356,8 @@ namespace Cil2Js.Output {
             // Create interface call tables
             var interfaceNameGen = new NameGenerator();
             // TODO: Doesn't take use frequency into account yet
-            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName());
-            var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i);
+            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName(), TypeExtensions.TypeRefEqComparerInstance);
+            var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i, TypeExtensions.MethodRefEqComparerInstance);
 
             var resolver = new JsMethod.Resolver {
                 LocalVarNames = localVarNames,

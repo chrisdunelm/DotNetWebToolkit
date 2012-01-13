@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 namespace Cil2Js.Utils {
-    class GenericArrayMethods<T> {
+    class GenericArrayMethods<T> : IList<T>, ICollection<T>, IEnumerable<T> {
 
         class GenericEnumerator : IEnumerator<T> {
             public GenericEnumerator(T[] array) {
@@ -37,6 +37,70 @@ namespace Cil2Js.Utils {
 
         public virtual IEnumerator<T> GetEnumerator() {
             return new GenericEnumerator((T[])(object)this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return this.GetEnumerator();
+        }
+
+        public virtual int Count {
+            get {
+                return ((T[])(object)this).Length;
+            }
+        }
+
+        public virtual bool IsReadOnly {
+            get {
+                return true;
+            }
+        }
+
+        public virtual bool Contains(T item) {
+            return this.IndexOf(item) >= 0;
+        }
+
+
+        public virtual int IndexOf(T item) {
+            var array=(T[])(object)this;
+            for (int i = 0, n = array.Length; i < n; i++) {
+                if (object.Equals(array[i], item)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public virtual void Insert(int index, T item) {
+            throw new NotSupportedException();
+        }
+
+        public virtual void RemoveAt(int index) {
+            throw new NotSupportedException();
+        }
+
+        public virtual T this[int index] {
+            get {
+                return ((T[])(object)this)[index];
+            }
+            set {
+                ((T[])(object)this)[index] = value;
+            }
+        }
+
+        public virtual void Add(T item) {
+            throw new NotSupportedException();
+        }
+
+        public virtual void Clear() {
+            throw new NotSupportedException();
+        }
+
+        public virtual void CopyTo(T[] array, int arrayIndex) {
+            throw new NotSupportedException();
+        }
+
+        public virtual bool Remove(T item) {
+            throw new NotSupportedException();
         }
 
     }

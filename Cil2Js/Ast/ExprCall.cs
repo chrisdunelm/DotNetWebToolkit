@@ -41,5 +41,10 @@ namespace Cil2Js.Ast {
             get { return Special.PossibleSideEffects; }
         }
 
+        public override string ToString() {
+            return string.Format("{0}.{1}({2})", this.IsStatic ? (object)this.CallMethod.DeclaringType : this.Obj, this.CallMethod.Name,
+                string.Join(", ", this.Args));
+        }
+
     }
 }

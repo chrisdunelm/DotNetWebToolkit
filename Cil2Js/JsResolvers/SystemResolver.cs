@@ -28,5 +28,12 @@ namespace Cil2Js.JsResolvers {
             return new JsResolvedExpr(e);
         }
 
+        public static JsResolved ObjectEquals(ICall call) {
+            // TODO: This doesn't handle value types
+            var ctx = call.Ctx;
+            var e = ctx.ExprGen.Equal(call.Obj, call.Args.First());
+            return new JsResolvedExpr(e);
+        }
+
     }
 }

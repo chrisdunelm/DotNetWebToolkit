@@ -101,6 +101,7 @@
     <Compile Include="Analysis\VisitorSubstitute.cs" />
     <Compile Include="Analysis\VisitorSwitchSequencing.cs" />
     <Compile Include="Analysis\VisitorTryCatchFinallySequencing.cs" />
+    <Compile Include="Analysis\VisitorTypeCorrector.cs" />
     <Compile Include="Ast\Ctx.cs" />
     <Compile Include="Ast\Expr.cs" />
     <Compile Include="Ast\ExprArrayLength.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
+    <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorResolveCalls.cs" />
     <Compile Include="Output\VisitorResolveFieldAccess.cs" />
     <Compile Include="Transcoder.cs" />

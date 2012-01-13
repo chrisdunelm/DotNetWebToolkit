@@ -133,6 +133,8 @@ namespace Cil2Js.JsResolvers {
             { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), StringResolver.IndexOf },
             { M.Def(TString, "System.String.Substring", TInt32), StringResolver.Substring },
             { M.Def(TString, "System.String.Substring", TInt32, TInt32), StringResolver.Substring },
+
+            { M.Def(TBoolean, "System.Object.Equals", TObject), SystemResolver.ObjectEquals },
         };
 
         public static JsResolved Resolve(ICall call) {

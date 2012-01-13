@@ -77,27 +77,44 @@ namespace Cil2Js.Analysis {
 
             private Dictionary<ExprVar, AssignmentInfo> assignments = new Dictionary<ExprVar, AssignmentInfo>();
 
+            private AssignmentInfo GetAInfo(ExprVar e) {
+                return this.assignments.ValueOrDefault(e, () => new AssignmentInfo(), true);
+            }
+
             protected override ICode VisitAssignment(StmtAssignment s) {
-                var aInfo = this.assignments.ValueOrDefault((ExprVar)s.Target, () => new AssignmentInfo(), true);
+                var aInfo = this.GetAInfo(s.Target);
                 aInfo.assignment = s;
                 this.Visit(s.Target);
                 this.Visit(s.Expr);
                 return s;
             }
 
+            //protected override ICode VisitCall(ExprCall e) {
+            //    if ((e.Specials & Expr.Special.PossibleSideEffects) != 0) {
+            //        var aInfo = this.assignments.ValueOrDefault(e.Obj, 
+            //    }
+            //    return base.VisitCall(e);
+            //}
+
+            private int inPhiCount = 0;
+
             protected override ICode VisitVarPhi(ExprVarPhi e) {
                 // Variables within phi's cannot be removed
-                foreach (var expr in e.Exprs.Where(x => x.ExprType == Expr.NodeType.VarLocal).Cast<ExprVar>()) {
-                    var aInfo = this.assignments.ValueOrDefault(expr, () => new AssignmentInfo(), true);
-                    aInfo.mustKeep = true;
-                }
-                return base.VisitVarPhi(e);
+                this.inPhiCount++;
+                //foreach (var expr in e.Exprs.OfType<ExprVar>()) {
+                //    var aInfo = this.GetAInfo(expr);
+                //    aInfo.mustKeep = true;
+                //}
+                var ret = base.VisitVarPhi(e);
+                this.inPhiCount--;
+                return ret;
             }
 
             protected override ICode VisitVarLocal(ExprVarLocal e) {
-                var aInfo = this.assignments.ValueOrDefault(e);
-                if (aInfo != null) {
-                    aInfo.count++;
+                var aInfo = this.GetAInfo(e);
+                aInfo.count++;
+                if (this.inPhiCount > 0) {
+                    aInfo.mustKeep = true;
                 }
                 return base.VisitVarLocal(e);
             }

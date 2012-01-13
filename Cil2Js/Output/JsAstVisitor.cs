@@ -83,13 +83,23 @@ namespace Cil2Js.Output {
 
         protected virtual ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
             this.ThrowOnNoOverride();
-            this.Visit(e.ObjInit);
-            this.Visit(e.ObjRef);
+            var objInit = (Expr)this.Visit(e.ObjInit);
+            var objRef = (Expr)this.Visit(e.ObjRef);
+            List<Expr> args = null;
             foreach (var arg in e.Args) {
-                this.Visit(arg);
+                var newArg = (Expr)this.Visit(arg);
+                if (newArg != arg && args==null) {
+                    args = new List<Expr>(e.Args.TakeWhile(x => x != arg));
+                }
+                if (args != null) {
+                    args.Add(newArg);
+                }
             }
-            // TODO: Handle properly
-            return e;
+            if (objInit != e.ObjInit || objRef != e.ObjRef || args != null) {
+                return new ExprJsVirtualCall(e.Ctx, e.CallMethod, objInit, objRef, args ?? e.Args);
+            } else {
+                return e;
+            }
         }
 
     }

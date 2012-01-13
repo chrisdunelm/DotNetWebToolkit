@@ -155,7 +155,7 @@ namespace Cil2Js.Output {
             { BinaryOp.BitwiseXor, "^" },
             { BinaryOp.And, "&&" },
             { BinaryOp.Equal, "===" },
-            { BinaryOp.NotEqual, "!=" },
+            { BinaryOp.NotEqual, "!==" },
             { BinaryOp.LessThan, "<" },
             { BinaryOp.LessThanOrEqual, "<=" },
             { BinaryOp.GreaterThan, ">" },
@@ -163,7 +163,7 @@ namespace Cil2Js.Output {
             { BinaryOp.Or, "||" },
         };
         protected override ICode VisitBinary(ExprBinary e) {
-            var forceInt = e.Op == BinaryOp.Div && e.Type.IsInt32(); // TODO: Other integer types too
+            var forceInt = e.Op == BinaryOp.Div && e.Type.IsInteger();
             if (forceInt) {
                 this.js.Append("(~~");
             }
@@ -342,7 +342,7 @@ namespace Cil2Js.Output {
                 return e;
             }
             if (mDef.DeclaringType.IsInterface) {
-                throw new NotImplementedException("Cannot handle interface calls");
+                throw new InvalidOperationException("Interface calls should never occur here");
             }
             if (e.IsVirtualCall) {
                 throw new InvalidOperationException("Virtual calls should never occur here");

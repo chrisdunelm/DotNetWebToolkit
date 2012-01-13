@@ -55,7 +55,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestArrays() { Verbose = true };
-            t.TestIEnumerableWithTwoTypes();
+            t.TestIList();
             return;
 
             //var t = new TestCecilExtensions();
