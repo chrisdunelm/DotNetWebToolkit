@@ -56,7 +56,7 @@ namespace Cil2Js.Utils {
         }
 
         public virtual bool Contains(T item) {
-            return this.IndexOf(item) >= 0;
+            return ((IList<T>)this).IndexOf(item) >= 0;
         }
 
 
