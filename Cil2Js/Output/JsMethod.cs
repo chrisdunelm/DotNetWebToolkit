@@ -400,9 +400,9 @@ namespace Cil2Js.Output {
         }
 
         protected override ICode VisitNewArray(ExprNewArray e) {
-            this.js.Append("function() { var a = new Array(");
+            this.js.Append("function() { var _ = new Array(");
             this.Visit(e.ExprNumElements);
-            this.js.AppendFormat("); a._ = {0}; for (var i = a.length-1; i >= 0; i--) a[i] = {1}; return a; }}()",
+            this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
                 this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
             return e;
         }
