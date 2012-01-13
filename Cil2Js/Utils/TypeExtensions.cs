@@ -155,84 +155,80 @@ namespace Cil2Js.Utils {
                 type.IsInt64() || type.IsUInt64();
         }
 
-        public static bool MethodMatch(this MethodDefinition candidate, MethodDefinition method) {
-            if (!candidate.IsVirtual)
-                return false;
+        //public static bool MethodMatch(this MethodDefinition candidate, MethodDefinition method) {
+        //    if (!candidate.IsVirtual)
+        //        return false;
 
-            if (candidate.Name != method.Name)
-                return false;
+        //    if (candidate.Name != method.Name)
+        //        return false;
 
-            if (!TypeMatch(candidate.ReturnType, method.ReturnType))
-                return false;
+        //    if (!TypeMatch(candidate.ReturnType, method.ReturnType))
+        //        return false;
 
-            if (candidate.Parameters.Count != method.Parameters.Count)
-                return false;
+        //    if (candidate.Parameters.Count != method.Parameters.Count)
+        //        return false;
 
-            for (int i = 0; i < candidate.Parameters.Count; i++)
-                if (!TypeMatch(candidate.Parameters[i].ParameterType, method.Parameters[i].ParameterType))
-                    return false;
+        //    for (int i = 0; i < candidate.Parameters.Count; i++)
+        //        if (!TypeMatch(candidate.Parameters[i].ParameterType, method.Parameters[i].ParameterType))
+        //            return false;
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        static bool TypeMatch(IModifierType a, IModifierType b) {
-            if (!TypeMatch(a.ModifierType, b.ModifierType))
-                return false;
+        //static bool TypeMatch(IModifierType a, IModifierType b) {
+        //    if (!TypeMatch(a.ModifierType, b.ModifierType))
+        //        return false;
 
-            return TypeMatch(a.ElementType, b.ElementType);
-        }
+        //    return TypeMatch(a.ElementType, b.ElementType);
+        //}
 
-        static bool TypeMatch(TypeSpecification a, TypeSpecification b) {
-            if (a is GenericInstanceType)
-                return TypeMatch((GenericInstanceType)a, (GenericInstanceType)b);
+        //static bool TypeMatch(TypeSpecification a, TypeSpecification b) {
+        //    if (a is GenericInstanceType)
+        //        return TypeMatch((GenericInstanceType)a, (GenericInstanceType)b);
 
-            if (a is IModifierType)
-                return TypeMatch((IModifierType)a, (IModifierType)b);
+        //    if (a is IModifierType)
+        //        return TypeMatch((IModifierType)a, (IModifierType)b);
 
-            return TypeMatch(a.ElementType, b.ElementType);
-        }
+        //    return TypeMatch(a.ElementType, b.ElementType);
+        //}
 
-        static bool TypeMatch(GenericInstanceType a, GenericInstanceType b) {
-            if (!TypeMatch(a.ElementType, b.ElementType))
-                return false;
+        //static bool TypeMatch(GenericInstanceType a, GenericInstanceType b) {
+        //    if (!TypeMatch(a.ElementType, b.ElementType))
+        //        return false;
 
-            if (a.GenericArguments.Count != b.GenericArguments.Count)
-                return false;
+        //    if (a.GenericArguments.Count != b.GenericArguments.Count)
+        //        return false;
 
-            if (a.GenericArguments.Count == 0)
-                return true;
+        //    if (a.GenericArguments.Count == 0)
+        //        return true;
 
-            for (int i = 0; i < a.GenericArguments.Count; i++)
-                if (!TypeMatch(a.GenericArguments[i], b.GenericArguments[i]))
-                    return false;
+        //    for (int i = 0; i < a.GenericArguments.Count; i++)
+        //        if (!TypeMatch(a.GenericArguments[i], b.GenericArguments[i]))
+        //            return false;
 
-            return true;
-        }
+        //    return true;
+        //}
 
-        static bool TypeMatch(TypeReference a, TypeReference b) {
-            if (a is GenericParameter)
-                return true;
+        //static bool TypeMatch(TypeReference a, TypeReference b) {
+        //    if (a is GenericParameter)
+        //        return true;
 
-            if (a is TypeSpecification || b is TypeSpecification) {
-                if (a.GetType() != b.GetType())
-                    return false;
+        //    if (a is TypeSpecification || b is TypeSpecification) {
+        //        if (a.GetType() != b.GetType())
+        //            return false;
 
-                return TypeMatch((TypeSpecification)a, (TypeSpecification)b);
-            }
+        //        return TypeMatch((TypeSpecification)a, (TypeSpecification)b);
+        //    }
 
-            return a.FullName == b.FullName;
-        }
+        //    return a.FullName == b.FullName;
+        //}
 
-        public static TypeDefinition GetBaseType(this TypeDefinition type) {
-            if (type == null || type.BaseType == null)
-                return null;
+        //public static TypeDefinition GetBaseType(this TypeDefinition type) {
+        //    if (type == null || type.BaseType == null)
+        //        return null;
 
-            return type.BaseType.Resolve();
-        }
-
-        public static bool DoesImplement(this TypeReference t, TypeReference iFace) {
-            return t.Resolve().Interfaces.Any(x => TypeMatch(x, iFace));
-        }
+        //    return type.BaseType.Resolve();
+        //}
 
         public static bool IsAssignableTo(this TypeReference from, TypeReference to) {
             // Rules from ECMA-335 partition III page 21
@@ -241,7 +237,7 @@ namespace Cil2Js.Utils {
                 return true;
             }
             // Rule 1
-            if (TypeMatch(from, to)) {
+            if (from.IsSame(to)) {
                 return true;
             }
             // Rule 7
@@ -249,16 +245,16 @@ namespace Cil2Js.Utils {
                 return from.GetElementType().IsAssignableTo(to.GetElementType());
             }
             // Rule 3
-            var baseFrom = from.Resolve().GetBaseType();
+            var baseFrom = from.GetBaseType();
             while (baseFrom != null) {
-                if (TypeMatch(baseFrom, to)) {
+                if (baseFrom.IsSame(to)) {
                     return true;
                 }
                 baseFrom = baseFrom.GetBaseType();
             }
             var toDef = to.Resolve();
             if (toDef.IsInterface) {
-                if (from.DoesImplement(toDef)) {
+                if (from.DoesImplement(to)) {
                     return true;
                 }
             }
@@ -267,45 +263,32 @@ namespace Cil2Js.Utils {
             return false;
         }
 
-        /// <summary>
-        /// Returns the method in 'type' that implements the interface method 'iFaceMethod'
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="iFaceMethod"></param>
-        /// <returns></returns>
-        public static MethodDefinition GetInterfaceMethod(this TypeDefinition type, MethodDefinition iFaceMethod) {
-            return type.EnumThisAndBases().SelectMany(x => x.Methods).First(m => {
-                // Explicit implementation
-                if (m.Overrides.Any(x => x.FullName == iFaceMethod.FullName)) {
-                    return true;
-                }
-                // Implicit implementation
-                return m.MethodMatch(iFaceMethod);
-            });
-        }
+        ///// <summary>
+        ///// Returns the method in 'type' that implements the interface method 'iFaceMethod'
+        ///// </summary>
+        ///// <param name="type"></param>
+        ///// <param name="iFaceMethod"></param>
+        ///// <returns></returns>
+        //public static MethodDefinition GetInterfaceMethod(this TypeDefinition type, MethodDefinition iFaceMethod) {
+        //    return type.EnumThisAllBaseTypes().SelectMany(x => x.Methods).First(m => {
+        //        // Explicit implementation
+        //        if (m.Overrides.Any(x => x.FullName == iFaceMethod.FullName)) {
+        //            return true;
+        //        }
+        //        // Implicit implementation
+        //        return m.MethodMatch(iFaceMethod);
+        //    });
+        //}
 
-        public static IEnumerable<TypeDefinition> EnumThisAndBases(this TypeDefinition type) {
-            for (; ; ) {
-                yield return type;
-                type = type.GetBaseType();
-                if (type == null) {
-                    break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns all interfaces that 'type' implements, including inheritance
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static IEnumerable<TypeDefinition> GetAllInterfaces(this TypeDefinition type) {
-            IEnumerable<TypeDefinition> allInterfaces = Enumerable.Empty<TypeDefinition>();
-            foreach (var t in type.EnumThisAndBases()) {
-                allInterfaces = allInterfaces.Union(t.Interfaces.Select(x => x.Resolve()));
-            }
-            return allInterfaces;
-        }
+        //public static IEnumerable<TypeDefinition> EnumThisAndBases(this TypeDefinition type) {
+        //    for (; ; ) {
+        //        yield return type;
+        //        type = type.GetBaseType();
+        //        if (type == null) {
+        //            break;
+        //        }
+        //    }
+        //}
 
     }
 }

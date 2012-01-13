@@ -192,10 +192,5 @@ namespace Cil2Js.Utils {
             return default(TResult);
         }
 
-        [DebuggerStepThrough]
-        public static bool IsExternal(this MethodDefinition method) {
-            return method.HasBody && method.RVA == 0;
-        }
-
     }
 }

@@ -171,6 +171,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />
     <Compile Include="Utils\Extensions.cs" />
+    <Compile Include="Utils\GenericArrayMethods.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />
     <Compile Include="Utils\TypeExtensions.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />

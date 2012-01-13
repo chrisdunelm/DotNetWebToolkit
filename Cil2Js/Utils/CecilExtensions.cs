@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Cil2Js.Ast;
 using Mono.Cecil;
@@ -8,31 +11,13 @@ using Mono.Cecil;
 namespace Cil2Js.Utils {
     public static class CecilExtensions {
 
-        //public static GenericInstanceType MakeGenericType(this TypeReference typeRef, params TypeReference[] args) {
-        //    if (typeRef.GenericParameters.Count != args.Length) {
-        //        throw new ArgumentException("Wrong number of generic arguments");
-        //    }
-        //    var ret = new GenericInstanceType(typeRef);
-        //    foreach (var arg in args) {
-        //        ret.GenericArguments.Add(arg);
-        //    }
-        //    return ret;
-        //}
-
-        //public static GenericInstanceMethod MakeGenericMethod(this MethodReference methodRef, params TypeReference[] args) {
-        //    if (methodRef.GenericParameters.Count != args.Length) {
-        //        throw new ArgumentException("Wrong number of generic arguments");
-        //    }
-        //    var ret = new GenericInstanceMethod(methodRef);
-        //    foreach (var arg in args) {
-        //        ret.GenericArguments.Add(arg);
-        //    }
-        //    return ret;
-        //}
-
         public static TypeReference GetBaseType(this TypeReference tRef) {
             if (tRef == null) {
                 throw new ArgumentNullException("typeRef");
+            }
+            if (tRef.IsArray) {
+                var tArray = tRef.Module.Import(typeof(Array));
+                return tArray;
             }
             if (tRef.IsDefinition) {
                 return ((TypeDefinition)tRef).BaseType;
@@ -41,6 +26,10 @@ namespace Cil2Js.Utils {
                 var tGenInst = (GenericInstanceType)tRef;
                 var genericDef = tGenInst.GetElementType();
                 var baseType = genericDef.GetBaseType();
+                if (baseType == null) {
+                    // Generic interfaces may have no base type
+                    return null;
+                }
                 if (baseType.IsGenericInstance) {
                     var baseTypeGenInst = (GenericInstanceType)baseType;
                     var baseTypeWithGenArgs = new GenericInstanceType(baseType.GetElementType());
@@ -361,13 +350,10 @@ namespace Cil2Js.Utils {
 
         public static IEnumerable<TypeReference> EnumThisAllBaseTypes(this TypeReference type) {
             var t = type;
-            for (; ; ) {
+            do {
                 yield return t;
                 t = t.GetBaseType();
-                if (t == null) {
-                    break;
-                }
-            }
+            } while (t != null);
         }
 
         public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, params MethodReference[] baseMethods) {
@@ -375,14 +361,86 @@ namespace Cil2Js.Utils {
         }
 
         public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, IEnumerable<MethodReference> baseMethods) {
-            var tDef = type.Resolve();
-            foreach (var m in tDef.Methods) {
-                var mScopes = baseMethods.EmptyIfNull().Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
-                foreach (var mScope in mScopes) {
-                    var mResolved = m.FullResolve(type, mScope);
-                    yield return mResolved;
+            if (type.IsArray) {
+                // Special processing for arrays - they are not normal - add all generic interface methods
+                var module = type.Module;
+                var elType = type.GetElementType();
+                var arrayMethodsType = module.Import(typeof(GenericArrayMethods<>)).MakeGeneric(elType);
+                var ms = arrayMethodsType.EnumResolvedMethods().ToArray();
+                return ms;
+            } else {
+                var ret = new List<MethodReference>();
+                var tDef = type.Resolve();
+                foreach (var m in tDef.Methods) {
+                    var mScopes = baseMethods.EmptyIfNull().Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
+                    foreach (var mScope in mScopes) {
+                        var mResolved = m.FullResolve(type, mScope);
+                        ret.Add(mResolved);
+                    }
                 }
+                return ret;
             }
+        }
+
+        [DebuggerStepThrough]
+        public static bool IsExternal(this MethodDefinition method) {
+            return method.HasBody && method.RVA == 0;
+        }
+
+        public static TypeReference MakeGeneric(this TypeReference t, params TypeReference[] args) {
+            if (t.GenericParameters.Count != args.Length) {
+                throw new ArgumentException("Wrong number of generic arguments");
+            }
+            var tGeneric = new GenericInstanceType(t);
+            foreach (var arg in args) {
+                tGeneric.GenericArguments.Add(arg);
+            }
+            return tGeneric;
+        }
+
+        public static TypeReference MakeArray(this TypeReference t) {
+            return new ArrayType(t);
+        }
+
+        public static MethodReference MakeGeneric(this MethodReference m, params TypeReference[] args) {
+            if (m.GenericParameters.Count != args.Length) {
+                throw new ArgumentException("Wrong number of generic arguments");
+            }
+            var mGeneric = new GenericInstanceMethod(m);
+            foreach (var arg in args) {
+                mGeneric.GenericArguments.Add(arg);
+            }
+            return mGeneric;
+        }
+
+        /// <summary>
+        /// Returns all interfaces that 'type' implements, including inheritance
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static IEnumerable<TypeReference> EnumAllInterfaces(this TypeReference type) {
+            if (type.IsArray) {
+                // Special processing for arrays - they are not normal
+                var elType = type.GetElementType();
+                var module = type.Module;
+                var nonGenericIFaces = module.Import(typeof(Array)).EnumAllInterfaces();
+                var iListGeneric = module.Import(typeof(IList<>)).MakeGeneric(elType);
+                var iCollectionGeneric = module.Import(typeof(ICollection<>)).MakeGeneric(elType);
+                var iEnumerableGeneric = module.Import(typeof(IEnumerable<>)).MakeGeneric(elType);
+                var arrayIFaces = nonGenericIFaces.Concat(new[] { iListGeneric, iCollectionGeneric, iEnumerableGeneric }).ToArray();
+                return arrayIFaces;
+            }
+            var allIFaces = type.EnumThisAllBaseTypes().SelectMany(x => {
+                var xDef = x.Resolve();
+                var iFaces = xDef.Interfaces;
+                var resolvedIFaces = iFaces.Select(y => y.FullResolve(x, null)).ToArray();
+                return resolvedIFaces;
+            }).ToArray();
+            return allIFaces;
+        }
+
+        public static bool DoesImplement(this TypeReference t, TypeReference iFace) {
+            return t.EnumAllInterfaces().Any(x => x.IsSame(iFace));
         }
 
     }

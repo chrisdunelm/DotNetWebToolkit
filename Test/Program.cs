@@ -50,12 +50,12 @@ namespace Test {
         }
 
         static void Main(string[] args) {
-            var mi = typeof(Program).GetMethod("T0");
-            var js = Transcoder.ToJs(mi, true);
-            Console.WriteLine(js);
+            //var mi = typeof(Program).GetMethod("T0");
+            //var js = Transcoder.ToJs(mi, true);
+            //Console.WriteLine(js);
 
-            //var t = new TestArithmetic() { Verbose = true };
-            //t.TestDoubleDiv();
+            var t = new TestArrays() { Verbose = true };
+            t.TestEnumerator();
             return;
 
             //var t = new TestCecilExtensions();

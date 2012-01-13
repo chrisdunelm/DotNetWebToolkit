@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Cil2Js.Utils;
 
 namespace Cil2Js.Ast {
     public class ExprNewArray : Expr {
@@ -10,10 +11,12 @@ namespace Cil2Js.Ast {
         public ExprNewArray(Ctx ctx, TypeReference elementType, Expr exprNumElements)
             : base(ctx) {
             this.ExprNumElements = exprNumElements;
-            this.type = new ArrayType(elementType);
+            this.ElementType = elementType;
+            this.type = elementType.MakeArray();
         }
 
         public Expr ExprNumElements { get; private set; }
+        public TypeReference ElementType { get; private set; }
         private TypeReference type;
 
         public override Expr.NodeType ExprType {

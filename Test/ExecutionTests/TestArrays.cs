@@ -45,5 +45,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestEnumerator() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                IEnumerable<int> array = new[] { a, b, c };
+                var ret = 0;
+                foreach (var i in array) {
+                    ret += i;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
     }
 }
