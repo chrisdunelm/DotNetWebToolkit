@@ -30,21 +30,21 @@ namespace Test {
             }
         }
 
-        [Test, Ignore]
-        public void TestGetInterfaceMethodImplicit() {
-            var type = CecilHelper.GetType(typeof(A.B));
-            var iMethod = CecilHelper.GetMethod(typeof(A.I1).GetMethod("M"));
-            var m = type.GetInterfaceMethod(iMethod);
-            Assert.That(m, Is.EqualTo(CecilHelper.GetMethod(typeof(A.B).GetMethod("M"))));
-        }
+        //[Test, Ignore]
+        //public void TestGetInterfaceMethodImplicit() {
+        //    var type = CecilHelper.GetType(typeof(A.B));
+        //    var iMethod = CecilHelper.GetMethod(typeof(A.I1).GetMethod("M"));
+        //    var m = type.GetInterfaceMethod(iMethod);
+        //    Assert.That(m, Is.EqualTo(CecilHelper.GetMethod(typeof(A.B).GetMethod("M"))));
+        //}
 
-        [Test, Ignore]
-        public void TestGetInterfaceMethodExplicit() {
-            var type = CecilHelper.GetType(typeof(A.B));
-            var iMethod = CecilHelper.GetMethod(typeof(A.I1).GetMethod("N"));
-            var m = type.GetInterfaceMethod(iMethod);
-            Assert.That(m, Is.EqualTo(CecilHelper.GetMethod(typeof(A.B).GetMethod("Test.TestUtils.A.I1.N", BindingFlags.NonPublic | BindingFlags.Instance))));
-        }
+        //[Test, Ignore]
+        //public void TestGetInterfaceMethodExplicit() {
+        //    var type = CecilHelper.GetType(typeof(A.B));
+        //    var iMethod = CecilHelper.GetMethod(typeof(A.I1).GetMethod("N"));
+        //    var m = type.GetInterfaceMethod(iMethod);
+        //    Assert.That(m, Is.EqualTo(CecilHelper.GetMethod(typeof(A.B).GetMethod("Test.TestUtils.A.I1.N", BindingFlags.NonPublic | BindingFlags.Instance))));
+        //}
 
     }
 
