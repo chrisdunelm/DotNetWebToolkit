@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestArrays() { Verbose = true };
-            t.TestIList();
+            var t = new TestList() { Verbose = true };
+            t.TestAddGetIndex();
             return;
 
             //var t = new TestCecilExtensions();

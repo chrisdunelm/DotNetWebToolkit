@@ -61,8 +61,7 @@ namespace Cil2Js.Analysis {
                         if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
                             c2 = VisitorReplace.V(c2, a.assignment, null);
                         }
-                    }
-                    if (a.count == 2 || IsSimple(a.assignment.Expr)) {
+                    } else if (a.count == 2 || IsSimple(a.assignment.Expr)) {
                         c2 = (new Updater(a.assignment.Target)).Visit(c2);
                     }
                 }

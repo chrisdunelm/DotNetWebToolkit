@@ -142,7 +142,7 @@ namespace Cil2Js.Output {
                 }
                 var arrayRefs = VisitorFindNewArrays.V(ast);
                 foreach (var arrayRef in arrayRefs) {
-                    typesSeen.Add(arrayRef, 1);
+                    typesSeen[arrayRef] = typesSeen.ValueOrDefault(arrayRef) + 1;
                 }
 
                 var calledMethods = new List<ICall>();
