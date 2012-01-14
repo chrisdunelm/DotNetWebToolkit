@@ -14,7 +14,8 @@ using OpenQA.Selenium.Chrome;
 using System.Threading;
 using NUnit.Framework.Constraints;
 
-namespace Test.Utils {
+// Namespace delibrately wrong - it must be set to the same namespace as the tests themselves
+namespace Test.ExecutionTests {
     public class ExecutionTestBase {
 
         private const int defaultTestIterations = 20;
@@ -130,8 +131,8 @@ namespace Test.Utils {
                 return Tuple.Create(r, e);
             }).ToArray();
 
-            using (var chrome = //NamespaceSetup.ChromeService != null ?
-                //new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
+            using (var chrome = NamespaceSetup.ChromeService != null ?
+                new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
                 new ChromeDriver()) {
                 try {
                     for (int i = 0; i < args.Length; i++) {
@@ -160,24 +161,24 @@ namespace Test.Utils {
 
     }
 
-    //[SetUpFixture]
-    //public class NamespaceSetup {
+    [SetUpFixture]
+    public class NamespaceSetup {
 
-    //    public static ChromeDriverService ChromeService;
+        public static ChromeDriverService ChromeService;
 
-    //    [SetUp]
-    //    public void Setup() {
-    //        ChromeService = ChromeDriverService.CreateDefaultService();
-    //        ChromeService.Start();
+        [SetUp]
+        public void Setup() {
+            ChromeService = ChromeDriverService.CreateDefaultService();
+            ChromeService.Start();
 
-    //    }
+        }
 
-    //    [TearDown]
-    //    public void Teardown() {
-    //        ChromeService.Dispose();
-    //        ChromeService = null;
-    //    }
+        [TearDown]
+        public void Teardown() {
+            ChromeService.Dispose();
+            ChromeService = null;
+        }
 
-    //}
+    }
 
 }
