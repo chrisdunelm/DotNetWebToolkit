@@ -7,7 +7,7 @@ using DotNetWebToolkit.Attributes;
 namespace DotNetWebToolkit.Web {
 
     [JsClass]
-    public class CanvasRenderingContext {
+    public abstract class CanvasRenderingContext {
     }
 
 }
