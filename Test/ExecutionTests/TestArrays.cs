@@ -118,5 +118,16 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestArrayCopy() {
+            Func<int, int, int, int, int> f = (a, b, c, d) => {
+                var array1 = new[] { a, b, c, d };
+                var array2 = new int[2];
+                Array.Copy(array1, 1, array2, 0, 2);
+                return array2[0] + array2[1];
+            };
+            this.Test(f);
+        }
+
     }
 }
