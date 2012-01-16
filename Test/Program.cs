@@ -4,18 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Mono.Cecil;
-using Cil2Js.Analysis;
-using Cil2Js.Ast;
-using Cil2Js.Utils;
-using Cil2Js.Output;
+using DotNetWebToolkit.Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Output;
 using FsCheck.Fluent;
 using FsCheck;
 using Test.ExecutionTests;
 using System.Linq.Expressions;
 using Test.Utils;
-using Cil2Js;
-using Cil2Js.Attributes;
-using Cil2Js.Web;
+using DotNetWebToolkit;
+using DotNetWebToolkit.Attributes;
+using DotNetWebToolkit.Web;
 
 namespace Test {
 

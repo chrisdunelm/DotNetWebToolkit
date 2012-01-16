@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
-using Cil2Js.Analysis;
-using Cil2Js.Ast;
-using Cil2Js.JsResolvers;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.JsResolvers;
+using DotNetWebToolkit.Cil2Js.Utils;
 using System.Reflection;
 using System.Diagnostics;
 
-namespace Cil2Js.Output {
+namespace DotNetWebToolkit.Cil2Js.Output {
     public class Js {
 
         class ExprVarCluster : ExprVar {

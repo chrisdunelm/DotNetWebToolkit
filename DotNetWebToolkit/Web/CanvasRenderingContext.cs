@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Attributes;
+using DotNetWebToolkit.Attributes;
 
-namespace Cil2Js.Web {
+namespace DotNetWebToolkit.Web {
 
     [JsClass]
     public class CanvasRenderingContext {

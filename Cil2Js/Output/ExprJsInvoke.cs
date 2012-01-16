@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
-namespace Cil2Js.Output {
+namespace DotNetWebToolkit.Cil2Js.Output {
     public class ExprJsInvoke : Expr {
 
         public ExprJsInvoke(Ctx ctx, Expr methodToInvoke, IEnumerable<Expr> args, TypeReference returnType)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.Utils {
     class GenericArrayMethods<T> : IList<T>, ICollection<T>, IEnumerable<T> {
 
         class GenericEnumerator : IEnumerator<T> {

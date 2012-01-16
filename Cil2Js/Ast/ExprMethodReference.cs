@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprMethodReference : Expr {
 
         public ExprMethodReference(Ctx ctx, MethodReference method)

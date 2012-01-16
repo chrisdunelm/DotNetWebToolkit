@@ -5,7 +5,7 @@ using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprVarInstResult : ExprVar {
 
         public ExprVarInstResult(Ctx ctx, Instruction inst, TypeReference type)

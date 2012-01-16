@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Analysis;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
-namespace Cil2Js.Output {
+namespace DotNetWebToolkit.Cil2Js.Output {
     public class VisitorFindFieldAccesses : AstVisitor {
 
         public static IEnumerable<FieldReference> V(ICode ast) {

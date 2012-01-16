@@ -5,10 +5,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
-namespace Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.Utils {
     public static class CecilExtensions {
 
         public static TypeReference GetBaseType(this TypeReference tRef) {

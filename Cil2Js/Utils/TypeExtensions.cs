@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
-namespace Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.Utils {
     public static class TypeExtensions {
 
         class TypeRefEqComparer : IEqualityComparer<TypeReference> {

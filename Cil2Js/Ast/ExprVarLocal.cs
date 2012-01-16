@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprVarLocal : ExprVar {
 
         public ExprVarLocal(Ctx ctx, TypeReference type, string name = null)

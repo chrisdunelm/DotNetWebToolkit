@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
-using Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Analysis;
 using NUnit.Framework.Constraints;
 using Test.Utils;
 

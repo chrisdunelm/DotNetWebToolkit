@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprCast : Expr {
 
         public ExprCast(Ctx ctx, Expr expr, TypeReference castTo)

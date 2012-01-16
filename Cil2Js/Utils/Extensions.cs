@@ -6,7 +6,7 @@ using Mono.Cecil.Cil;
 using System.Diagnostics;
 using Mono.Cecil;
 
-namespace Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.Utils {
     public static class Extensions {
 
         [DebuggerStepThrough]

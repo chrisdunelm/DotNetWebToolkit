@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 
-namespace Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         private const string TVoid = "System.Void";

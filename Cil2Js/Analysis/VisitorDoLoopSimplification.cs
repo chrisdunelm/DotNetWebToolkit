@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
     public class VisitorDoLoopSimplification : AstRecursiveVisitor {
 
         public static ICode V(MethodDefinition method, ICode c) {

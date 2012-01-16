@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
     public class VisitorBooleanSimplification : AstRecursiveVisitor {
 
         // Implements the Quine-McCluskey algorithm; see http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm

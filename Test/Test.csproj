@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Test</RootNamespace>
     <AssemblyName>Test</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FsCheck">
@@ -94,8 +96,12 @@
       <Name>Mono.Cecil</Name>
     </ProjectReference>
     <ProjectReference Include="..\Cil2Js\Cil2Js.csproj">
-      <Project>{1BC431AB-58C6-4D60-95C2-885FDD784CE0}</Project>
+      <Project>{1bc431ab-58c6-4d60-95c2-885fdd784ce0}</Project>
       <Name>Cil2Js</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DotNetWebToolkit\DotNetWebToolkit.csproj">
+      <Project>{1f3e8e8c-0806-42aa-872b-78f5231f490f}</Project>
+      <Name>DotNetWebToolkit</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

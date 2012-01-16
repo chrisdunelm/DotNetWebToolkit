@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Analysis;
 using Mono.Cecil;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprTernary : Expr {
 
         public ExprTernary(Ctx ctx, Expr condition, Expr ifTrue, Expr ifFalse)

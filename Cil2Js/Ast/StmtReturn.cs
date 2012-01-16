@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
 
     [DebuggerTypeProxy(typeof(DebugView))]
     public class StmtReturn : Stmt {

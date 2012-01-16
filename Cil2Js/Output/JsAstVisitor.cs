@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Analysis;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Ast;
 
-namespace Cil2Js.Output {
+namespace DotNetWebToolkit.Cil2Js.Output {
 
     public enum JsExprType {
         First = Expr.NodeType.Max,

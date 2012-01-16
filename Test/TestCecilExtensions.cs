@@ -5,7 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Mono.Cecil;
 using System.Reflection;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace Test {
 

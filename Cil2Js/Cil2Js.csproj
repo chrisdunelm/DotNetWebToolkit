@@ -8,9 +8,9 @@
     <ProjectGuid>{1BC431AB-58C6-4D60-95C2-885FDD784CE0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Cil2Js</RootNamespace>
-    <AssemblyName>Cil2Js</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <RootNamespace>DotNetWebToolkit.Cil2Js</RootNamespace>
+    <AssemblyName>DotNetWebToolkit.Cil2Js</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +45,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -54,6 +57,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -143,8 +147,6 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
-    <Compile Include="Attributes\ExportAttribute.cs" />
-    <Compile Include="Attributes\JsClassAttribute.cs" />
     <Compile Include="JsResolvers\ArrayResolver.cs" />
     <Compile Include="JsResolvers\EnvironmentResolver.cs" />
     <Compile Include="JsResolvers\JsCallResolver.cs" />
@@ -183,12 +185,6 @@
     <Compile Include="Utils\GenericArrayMethods.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />
     <Compile Include="Utils\TypeExtensions.cs" />
-    <Compile Include="Web\CanvasRenderingContext.cs" />
-    <Compile Include="Web\CanvasRenderingContext2D.cs" />
-    <Compile Include="Web\Document.cs" />
-    <Compile Include="Web\HtmlCanvasElement.cs" />
-    <Compile Include="Web\HtmlElement.cs" />
-    <Compile Include="Web\Window.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\cecil\Mono.Cecil.csproj">

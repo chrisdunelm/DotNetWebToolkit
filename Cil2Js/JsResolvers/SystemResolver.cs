@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
-using Cil2Js.Output;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Output;
+using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     static class SystemResolver {
 
         public static Expr ActionFunc_ctor(ICall call) {

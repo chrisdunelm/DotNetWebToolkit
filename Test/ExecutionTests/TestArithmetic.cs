@@ -6,8 +6,7 @@ using NUnit.Framework;
 using System.Linq.Expressions;
 using System.Reflection;
 using Mono.Cecil;
-using Cil2Js;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 using Test.Utils;
 
 namespace Test.ExecutionTests {

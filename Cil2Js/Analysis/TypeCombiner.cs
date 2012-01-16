@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
-using Cil2Js.Ast;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
     static class TypeCombiner {
 
         public static TypeReference Combine(Ctx ctx, Expr a, Expr b) {

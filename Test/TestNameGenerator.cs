@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Output;
+using DotNetWebToolkit.Cil2Js.Output;
 using NUnit.Framework;
 
 namespace Test {

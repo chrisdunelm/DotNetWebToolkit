@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace Cil2Js.Output {
+namespace DotNetWebToolkit.Cil2Js.Output {
     public class ExprJsVirtualCall : Expr, ICall {
 
         public ExprJsVirtualCall(Ctx ctx, MethodReference callMethod, Expr objInit, Expr objRef, IEnumerable<Expr> args)

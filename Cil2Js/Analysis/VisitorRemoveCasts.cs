@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Utils;
 using Mono.Cecil;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
     public class VisitorRemoveCasts : AstVisitor {
 
         public static ICode V(ICode ast) {

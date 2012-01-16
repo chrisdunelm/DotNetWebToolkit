@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
-using Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Analysis;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprVarPhi : ExprVar {
 
         public ExprVarPhi(Ctx ctx)

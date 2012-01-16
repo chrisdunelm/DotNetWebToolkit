@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Cil2Js.Ast {
+namespace DotNetWebToolkit.Cil2Js.Ast {
     public class StmtDoLoop : Stmt {
 
         public StmtDoLoop(Ctx ctx, Stmt body, Expr @while)

@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
 using System.Diagnostics;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
 
     [DebuggerTypeProxy(typeof(DebugView))]
     public class StmtCil : Stmt {

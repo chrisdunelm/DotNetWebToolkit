@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Attributes;
+using DotNetWebToolkit.Attributes;
 
 #pragma warning disable 0626
 
-namespace Cil2Js.Web {
+namespace DotNetWebToolkit.Web {
 
     public enum CanvasContext {
         TwoD,

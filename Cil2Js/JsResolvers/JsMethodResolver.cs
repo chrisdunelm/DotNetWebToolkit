@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         private static Dictionary<M, Func<Ctx, Stmt>> methodMap = new Dictionary<M, Func<Ctx, Stmt>>(M.ValueEqComparer) {

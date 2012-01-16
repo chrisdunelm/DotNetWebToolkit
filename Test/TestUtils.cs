@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
-using Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.Utils;
 using Test.Utils;
 using System.Reflection;
 

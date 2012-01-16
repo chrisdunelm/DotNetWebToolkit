@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
-namespace Cil2Js.Analysis {
+namespace DotNetWebToolkit.Cil2Js.Analysis {
     public class VisitorConditionRemoval : AstRecursiveVisitor {
         // Removes conditions that are known to be true,
         // because previous 'if' or 'do' statements have already checked them

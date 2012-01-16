@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Cil2Js.Analysis;
+using DotNetWebToolkit.Cil2Js.Analysis;
 using Mono.Cecil;
-using Cil2Js.Ast;
-using Cil2Js.Output;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Output;
 
-namespace Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.Utils {
     public class ShowVisitor : JsAstVisitor {
 
         private static string GetStmtName(Stmt s) {
