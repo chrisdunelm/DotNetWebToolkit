@@ -335,9 +335,8 @@ namespace Cil2Js.Utils {
         }
 
         public static bool IsImplementationOf(this MethodReference method, MethodReference iFaceMethod) {
-            if (method.MatchMethodOnly(iFaceMethod)) {
-                return true;
-            }
+            // TODO: This way of sorting out interfaces is not efficient.
+            // Better to have a method that returns the interface map for a type
             var mDef = method.Resolve();
             if (mDef.Overrides.Any(x => {
                 var xResolved = x.FullResolve(method.DeclaringType, method);
@@ -345,7 +344,14 @@ namespace Cil2Js.Utils {
             })) {
                 return true;
             }
-            return false;
+            var allMethods = method.DeclaringType.FullResolve(method).EnumResolvedMethods(method, iFaceMethod).ToArray();
+            if (allMethods.SelectMany(x => x.Resolve().Overrides).Any(x => {
+                var xResolved = x.FullResolve(method.DeclaringType, method);
+                return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
+            })) {
+                return false;
+            }
+            return method.MatchMethodOnly(iFaceMethod);
         }
 
         public static IEnumerable<TypeReference> EnumThisAllBaseTypes(this TypeReference type) {
