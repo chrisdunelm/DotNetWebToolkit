@@ -193,6 +193,8 @@ namespace Cil2Js.Analysis {
                 return this.Box(inst);
             case Code.Unbox_Any:
                 return this.Unbox(inst);
+            case Code.Volatile: // Ignore
+                return null;
             case Code.Ret:
                 throw new InvalidOperationException("Should not see this here: " + inst);
             default:

@@ -54,10 +54,7 @@ namespace Cil2Js.Analysis {
         public static ICode V(ICode ast) {
             var v = new VisitorConvertCilToSsa(ast);
             ast = v.Visit(ast);
-            // Convert all InstResults to normal Vars
-            //var vFindInstResults = new VisitorFindInstResults();
-            //vFindInstResults.Visit(c);
-            foreach (var instResult in v.instResults.Values) {//vFindInstResults.instResults) {
+            foreach (var instResult in v.instResults.Values) {
                 var var = new ExprVarLocal(ast.Ctx, instResult.Type);
                 ast = VisitorReplace.V(ast, instResult, var);
             }

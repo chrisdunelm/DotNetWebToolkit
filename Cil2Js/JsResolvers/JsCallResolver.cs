@@ -77,7 +77,7 @@ namespace Cil2Js.JsResolvers {
             var mRef = call.CallMethod;
             var mDef = mRef.Resolve();
             // A call that needs translating into a javascript call
-            var m = new M(mRef);
+            var m = new M(mDef);
             var fn = callMap.ValueOrDefault(m);
             if (fn != null) {
                 var resolved = fn(call);

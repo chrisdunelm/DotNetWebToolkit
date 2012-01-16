@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestList() { Verbose = true };
-            t.TestAddGetIndex();
+            var t = new TestFuncsClosures() { Verbose = true };
+            t.TestAction1Closure();
             return;
 
         }
