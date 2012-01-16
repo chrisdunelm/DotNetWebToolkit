@@ -10,7 +10,7 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestList : ExecutionTestBase {
 
-        [Test, Ignore("List<> not yet supported")]
+        [Test]
         public void TestAddGetIndex() {
             Func<int, int, int, int> f = (a, b, c) => {
                 var list = new List<int> { a, b, c };
