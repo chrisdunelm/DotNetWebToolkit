@@ -122,6 +122,32 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        interface IExplicitInterface {
+            int I { get; }
+        }
+        class CExplicitInterface1 : IExplicitInterface {
+            public int I { get { return 0; } }
+            int IExplicitInterface.I {
+                get { return 3; }
+            }
+        }
+        class CExplicitInterface2 : IExplicitInterface {
+            int IExplicitInterface.I {
+                get { return 4; }
+            }
+            public int I { get { return 0; } }
+        }
+
+        [Test]
+        public void TestExplicitInterface() {
+            Func<int> f = () => {
+                IExplicitInterface i1 = new CExplicitInterface1();
+                IExplicitInterface i2 = new CExplicitInterface2();
+                return i1.I + i2.I;
+            };
+            this.Test(f);
+        }
+
     }
 
 }
