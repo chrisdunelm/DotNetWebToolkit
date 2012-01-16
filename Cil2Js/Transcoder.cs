@@ -12,9 +12,15 @@ using Cil2Js.Utils;
 namespace Cil2Js {
     public static class Transcoder {
 
+
+
         public static ICode ToAst(MethodReference mRef, TypeReference tRef, bool verbose = false) {
-            var mDef = mRef.Resolve();
-            var ast = AstGenerator.CreateBlockedCilAst(tRef, mRef);
+            var ctx = new Ctx(tRef, mRef);
+            return ToAst(ctx, verbose);
+        }
+
+        public static ICode ToAst(Ctx ctx, bool verbose = false) {
+            var ast = AstGenerator.CreateBlockedCilAst(ctx);
             int step = 0;
             Action<Stmt, string> print = (s, name) => {
                 if (verbose) {
@@ -34,7 +40,7 @@ namespace Cil2Js {
                 return s1;
             };
             print(ast, null);
-            ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s, tRef, mRef), ast, "VisitorConvertCilToSsa");
+            ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
             HashSet<Expr> booleanSimplification = new HashSet<Expr>();
             for (int i = 0; ; i++) {

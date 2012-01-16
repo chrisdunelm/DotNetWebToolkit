@@ -19,6 +19,32 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestManyAdds() {
+            Func<int, int> f = a => {
+                var list = new List<int>();
+                for (int i = 0; i < a; i++) {
+                    list.Add(i);
+                }
+                int r = 0;
+                for (int i = 0; i < list.Count; i++) {
+                    r += list[i];
+                }
+                return r;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestClear() {
+            Func<int> f = () => {
+                var list = new List<int> { 1 };
+                list.Clear();
+                return list.Count;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

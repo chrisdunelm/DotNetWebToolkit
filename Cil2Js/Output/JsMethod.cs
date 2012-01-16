@@ -25,11 +25,11 @@ namespace Cil2Js.Output {
         public static string Create(MethodReference mRef, Resolver resolver, ICode ast) {
             var mDef = mRef.Resolve();
             if (mDef.IsAbstract) {
-                throw new ArgumentException("Cannot transcode an abstract method");
+                throw new ArgumentException("Should never need to transcode an abstract method");
             }
-            if (mDef.IsInternalCall) {
-                throw new ArgumentException("Cannot transcode an internal method");
-            }
+            //if (mDef.IsInternalCall) {
+            //    throw new ArgumentException("Cannot transcode an internal method");
+            //}
             var tRef = mRef.DeclaringType;
             var tDef = tRef.Resolve();
 

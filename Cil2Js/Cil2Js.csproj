@@ -148,6 +148,8 @@
     <Compile Include="JsResolvers\ArrayResolver.cs" />
     <Compile Include="JsResolvers\EnvironmentResolver.cs" />
     <Compile Include="JsResolvers\JsCallResolver.cs" />
+    <Compile Include="JsResolvers\JsMethodResolver.cs" />
+    <Compile Include="JsResolvers\JsResolver.cs" />
     <Compile Include="JsResolvers\StringResolver.cs" />
     <Compile Include="JsResolvers\SystemResolver.cs" />
     <Compile Include="JsResolvers\ThrowHelperResolver.cs" />

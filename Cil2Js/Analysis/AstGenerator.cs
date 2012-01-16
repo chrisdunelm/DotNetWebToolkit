@@ -107,13 +107,13 @@ namespace Cil2Js.Analysis {
 
         }
 
-        public static Stmt CreateBlockedCilAst(TypeReference tRef, MethodReference mRef) {
-            var gen = new AstGenerator(tRef, mRef);
+        public static Stmt CreateBlockedCilAst(Ctx ctx) {
+            var gen = new AstGenerator(ctx);
             return gen.Create();
         }
 
-        private AstGenerator(TypeReference tRef, MethodReference mRef) {
-            this.ctx = new Ctx(tRef, mRef);
+        private AstGenerator(Ctx ctx) {
+            this.ctx = ctx;
             this.endBlock = new StmtCil(this.ctx, null, null, StmtCil.SpecialBlock.End);
         }
 

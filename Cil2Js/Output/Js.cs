@@ -62,34 +62,37 @@ namespace Cil2Js.Output {
                 var mDef = mRef.Resolve();
                 var tRef = mRef.DeclaringType;
                 var tDef = tRef.Resolve();
-                if (tRef.HasGenericParameters) {
-                    throw new InvalidOperationException("Type must not have generic parameters");
-                }
-                if (mRef.HasGenericParameters) {
-                    throw new InvalidOperationException("Method must not have generic parameters");
-                }
-                if (mDef.IsAbstract) {
-                    throw new InvalidOperationException("Cannot transcode an abstract method");
-                }
-                if (mDef.IsInternalCall) {
-                    throw new InvalidOperationException("Cannot transcode an internal call");
-                }
-                if (mDef.IsExternal()) {
-                    throw new InvalidOperationException("Cannot transcode an external method");
-                }
-                if (!mDef.HasBody) {
-                    throw new InvalidOperationException("Cannot transcode method without body");
-                }
-                if (!typesSeen.ContainsKey(tRef)) {
-                    typesSeen.Add(tRef, 0);
-                }
+                var ctx = new Ctx(tRef, mRef);
+                var ast = (ICode)JsResolver.ResolveMethod(ctx);
+                if (ast == null) {
+                    if (tRef.HasGenericParameters) {
+                        throw new InvalidOperationException("Type must not have generic parameters");
+                    }
+                    if (mRef.HasGenericParameters) {
+                        throw new InvalidOperationException("Method must not have generic parameters");
+                    }
+                    if (mDef.IsAbstract) {
+                        throw new InvalidOperationException("Cannot transcode an abstract method");
+                    }
+                    if (mDef.IsInternalCall) {
+                        throw new InvalidOperationException("Cannot transcode an internal call");
+                    }
+                    if (mDef.IsExternal()) {
+                        throw new InvalidOperationException("Cannot transcode an external method");
+                    }
+                    if (!mDef.HasBody) {
+                        throw new InvalidOperationException("Cannot transcode method without body");
+                    }
+                    if (!typesSeen.ContainsKey(tRef)) {
+                        typesSeen.Add(tRef, 0);
+                    }
 
-                var ast = Transcoder.ToAst(mRef, tRef, verbose);
-                var ctx = ast.Ctx;
+                    ast = Transcoder.ToAst(ctx, verbose);
+                }
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
-                    var vResolveCalls = new VisitorResolveCalls(JsCallResolver.Resolve);
+                    var vResolveCalls = new VisitorResolveCalls(JsResolver.ResolveCall);
                     ast = vResolveCalls.Visit(ast);
                     if (ast == astOrg) {
                         break;

@@ -51,8 +51,8 @@ namespace Cil2Js.Analysis {
         // If ending in 'if', 'then' and 'else' will both have continuations only
         // 'try' statements will have only 0 or 1 catch clauses
 
-        public static ICode V(ICode ast, TypeReference tRef, MethodReference mRef) {
-            var v = new VisitorConvertCilToSsa(ast, tRef, mRef);
+        public static ICode V(ICode ast) {
+            var v = new VisitorConvertCilToSsa(ast);
             ast = v.Visit(ast);
             // Convert all InstResults to normal Vars
             //var vFindInstResults = new VisitorFindInstResults();
@@ -64,7 +64,7 @@ namespace Cil2Js.Analysis {
             return ast;
         }
 
-        private VisitorConvertCilToSsa(ICode root, TypeReference tRef, MethodReference mRef) {
+        private VisitorConvertCilToSsa(ICode root) {
             this.ctx = root.Ctx;
             var v = new VisitorFindInstResults();
             v.Visit(root);
