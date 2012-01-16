@@ -146,9 +146,11 @@
     <Compile Include="Attributes\ExportAttribute.cs" />
     <Compile Include="Attributes\JsClassAttribute.cs" />
     <Compile Include="JsResolvers\ArrayResolver.cs" />
+    <Compile Include="JsResolvers\EnvironmentResolver.cs" />
     <Compile Include="JsResolvers\JsCallResolver.cs" />
     <Compile Include="JsResolvers\StringResolver.cs" />
     <Compile Include="JsResolvers\SystemResolver.cs" />
+    <Compile Include="JsResolvers\ThrowHelperResolver.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
