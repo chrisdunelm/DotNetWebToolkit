@@ -14,7 +14,6 @@ using OpenQA.Selenium.Chrome;
 using System.Threading;
 using NUnit.Framework.Constraints;
 
-// Namespace delibrately wrong - it must be set to the same namespace as the tests themselves
 namespace Test.ExecutionTests {
     public class ExecutionTestBase {
 
