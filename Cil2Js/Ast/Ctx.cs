@@ -14,7 +14,7 @@ namespace Cil2Js.Ast {
             this.MDef = mRef.Resolve();
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
-            this.This = MDef.IsStatic ? null : new ExprVarThis(this, tRef);
+            this.This = this.MDef.IsStatic ? null : new ExprVarThis(this, tRef);
         }
 
         public TypeReference TRef { get; private set; }
@@ -28,6 +28,7 @@ namespace Cil2Js.Ast {
 
         public Expr.Gen ExprGen { get; private set; }
 
+        public TypeReference Void { get { return this.TypeSystem.Void; } }
         public TypeReference Object { get { return this.TypeSystem.Object; } }
         public TypeReference Int32 { get { return this.TypeSystem.Int32; } }
         public TypeReference Boolean { get { return this.TypeSystem.Boolean; } }
