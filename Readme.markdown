@@ -1,5 +1,5 @@
-Cil2Js
-======
+Dot Net Web Toolkit
+===================
 
 The project aim is to convert libraries/executables written C#, F#, VB, *(...add your own .NET langauge here)*
 to JavaScript.
@@ -13,7 +13,7 @@ with Visual Studio controlling the browsers execution of the generated JavaScrip
 Current Status
 --------------
 
-Cil2Js is currently mostly non-functional. Lots of things will not be successully converted to JavaScript.
+Dot Net Web Toolkit is currently mostly non-functional. Lots of things will not be successully converted to JavaScript.
 However, the following should work:
 
 - Classes with static, instance and virtual methods
@@ -35,12 +35,12 @@ But there's much more that's missing/broken/bad:
 How to use
 ----------
 Download and build the Visual Studio 2010 solution.
-The library **Cil2Js** allows a method to be converted to JavaScript:
+The library **DotNetWebToolkit.Cil2Js** allows a method to be converted to JavaScript:
 
 ``` C#
 using System;
 using System.Reflection;
-using Cil2Js;
+using DotNetWebToolkit.Cil2Js;
 
 namespace Test {
     class Program {
@@ -98,7 +98,7 @@ in to convert is always renamed 'main'.
 
 ----
 
-Cil2Js uses Mono.Cecil internally for reading .NET binaries, and the transcoder will accept a
+Dot Net Web Toolkit uses Mono.Cecil internally for reading .NET binaries, and the transcoder will accept a
 Cecil MethodDefinition:
 
 ``` C#
@@ -115,7 +115,7 @@ The transcoder allows this to be retreived, and the ShowVisitor helper class wil
 ``` C#
 using System;
 using System.Reflection;
-using Cil2Js;
+using DotNetWebToolkit.Cil2Js;
 
 namespace Test {
   class Program {
