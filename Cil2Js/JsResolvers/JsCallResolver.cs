@@ -138,6 +138,11 @@ namespace Cil2Js.JsResolvers {
             { M.Def(TBoolean, "System.Object.Equals", TObject), SystemResolver.ObjectEquals },
 
             { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ArrayResolver.Copy },
+
+            { M.Def(TString, "System.Environment.GetResourceFromDefault", TString), EnvironmentResolver.GetResourceFromDefault },
+
+            { M.Def(TString, "System.ThrowHelper.GetResourceName", "System.ExceptionResource"), ThrowHelperResolver.GetResourceName },
+            { M.Def(TString, "System.ThrowHelper.GetArgumentName", "System.ExceptionArgument"), ThrowHelperResolver.GetArgumentName },
         };
 
         public static Expr Resolve(ICall call) {
