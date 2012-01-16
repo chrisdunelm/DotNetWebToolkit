@@ -49,8 +49,6 @@ namespace Cil2Js.Output {
             var methodAsts = new Dictionary<MethodReference, ICode>(TypeExtensions.MethodRefEqComparerInstance);
             // Each field, with the count of how often it is referenced.
             var fieldAccesses = new Dictionary<FieldReference, int>(TypeExtensions.FieldReqEqComparerInstance);
-            // All calls that require resolving in special ways, not just by calling the called method
-            var resolvedCalls = new Dictionary<ICall, JsResolved>();
             // Each type records which virtual methods have their NewSlot definitions
             var virtualCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
             // Each interface type records which interface methods are called
@@ -152,11 +150,6 @@ namespace Cil2Js.Output {
                     typesSeen[call.Type] = typesSeen.ValueOrDefault(call.Type) + 1;
                 }
                 foreach (var call in calls) {
-                    var resolved = JsCallResolver.Resolve(call);
-                    if (resolved != null) {
-                        resolvedCalls.Add(call, resolved);
-                        continue;
-                    }
                     if (call.CallMethod.DeclaringType.Resolve().IsInterface) {
                         var methodSet = interfaceCalls.ValueOrDefault(call.CallMethod.DeclaringType, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
                         methodSet.Add(call.CallMethod);
@@ -365,7 +358,6 @@ namespace Cil2Js.Output {
                 MethodNames = methodNames,
                 FieldNames = fieldNames,
                 TypeNames = typeNames,
-                ResolvedCalls = resolvedCalls,
                 VirtualCallIndices = virtualCallIndices,
                 InterfaceCallIndices = interfaceCallIndices,
                 InterfaceNames = interfaceNames,
@@ -394,7 +386,6 @@ namespace Cil2Js.Output {
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 var methods = allVirtualMethods.ValueOrDefault(type);
                 if (methods != null) {
-                    //var m
                     var idxs = methods
                         .Select(x => {
                             var xBasemost = x.GetBasemostMethod(x);

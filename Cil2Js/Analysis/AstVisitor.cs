@@ -86,17 +86,34 @@ namespace Cil2Js.Analysis {
             throw new InvalidOperationException("Non-recursive visitor, cannot handle continuations");
         }
 
-        protected StmtBlock HandleBlock(StmtBlock s, Func<Stmt, Stmt> fn) {
-            List<Stmt> stNew = null;
-            foreach (var stmt in s.Statements) {
-                var o = fn(stmt);
-                if (o != stmt && stNew == null) {
-                    stNew = new List<Stmt>(s.Statements.TakeWhile(x => x != stmt));
+        protected IEnumerable<T> HandleList<T>(IEnumerable<T> items, Func<T, T> fn) where T : class {
+            List<T> newItems = null;
+            int i = 0;
+            foreach (var item in items) {
+                var o = fn(item);
+                if (!object.ReferenceEquals(o, item) && newItems == null) {
+                    newItems = new List<T>(items.Take(i));
                 }
-                if (stNew != null) {
-                    stNew.Add(o);
+                if (newItems != null) {
+                    newItems.Add(o);
                 }
+                i++;
             }
+            return newItems;
+        }
+
+        protected StmtBlock HandleBlock(StmtBlock s, Func<Stmt, Stmt> fn) {
+            //List<Stmt> stNew = null;
+            //foreach (var stmt in s.Statements) {
+            //    var o = fn(stmt);
+            //    if (o != stmt && stNew == null) {
+            //        stNew = new List<Stmt>(s.Statements.TakeWhile(x => x != stmt));
+            //    }
+            //    if (stNew != null) {
+            //        stNew.Add(o);
+            //    }
+            //}
+            var stNew = this.HandleList(s.Statements, fn);
             if (stNew == null) {
                 return s;
             } else {
@@ -218,16 +235,17 @@ namespace Cil2Js.Analysis {
         protected T HandleCall<T>(T call, Func<MethodReference, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
             this.ThrowOnNoOverride();
             var obj = (Expr)this.Visit(call.Obj);
-            List<Expr> argsNew = null;
-            foreach (var arg in call.Args) {
-                var o = (Expr)this.Visit(arg);
-                if (o != arg && argsNew == null) {
-                    argsNew = new List<Expr>(call.Args.TakeWhile(x => x != arg));
-                }
-                if (argsNew != null) {
-                    argsNew.Add(o);
-                }
-            }
+            var argsNew = this.HandleList(call.Args, x => (Expr)this.Visit(x));
+            //List<Expr> argsNew = null;
+            //foreach (var arg in call.Args) {
+            //    var o = (Expr)this.Visit(arg);
+            //    if (o != arg && argsNew == null) {
+            //        argsNew = new List<Expr>(call.Args.TakeWhile(x => x != arg));
+            //    }
+            //    if (argsNew != null) {
+            //        argsNew.Add(o);
+            //    }
+            //}
             if (argsNew == null && obj == call.Obj) {
                 return call;
             } else {
@@ -381,22 +399,23 @@ namespace Cil2Js.Analysis {
 
         protected virtual ICode VisitVarPhi(ExprVarPhi e) {
             this.ThrowOnNoOverride();
-            List<ICode> c = null;
-            int count = 0;
-            foreach (var expr in e.Exprs) {
-                var o = this.Visit(expr);
-                if (o != expr && c == null) {
-                    c = new List<ICode>(e.Exprs.Take(count));
-                }
-                if (c != null) {
-                    c.Add(o);
-                }
-                count++;
-            }
+            //List<ICode> c = null;
+            //int count = 0;
+            //foreach (var expr in e.Exprs) {
+            //    var o = this.Visit(expr);
+            //    if (o != expr && c == null) {
+            //        c = new List<ICode>(e.Exprs.Take(count));
+            //    }
+            //    if (c != null) {
+            //        c.Add(o);
+            //    }
+            //    count++;
+            //}
+            var c = this.HandleList(e.Exprs, x => (Expr)this.Visit(x));
             if (c == null) {
                 return e;
             } else {
-                var exprs = c.Cast<Expr>().SelectMany(x => {
+                var exprs = c.SelectMany(x => {
                     if (x == null) {
                         return Enumerable.Empty<Expr>();
                     }

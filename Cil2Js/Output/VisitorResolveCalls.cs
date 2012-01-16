@@ -9,26 +9,15 @@ namespace Cil2Js.Output {
 
     public class VisitorResolveCalls : JsAstVisitor {
 
-        public VisitorResolveCalls(Func<ICall, JsResolved> fnCallResolver) {
+        public VisitorResolveCalls(Func<ICall, Expr> fnCallResolver) {
             this.fnCallResolver = fnCallResolver;
         }
 
-        private Func<ICall, JsResolved> fnCallResolver;
+        private Func<ICall, Expr> fnCallResolver;
 
         private ICode VisitCall(ICall call) {
             var resolved = this.fnCallResolver(call);
-            if (resolved == null) {
-                return null;
-            }
-            switch (resolved.Type) {
-            case JsResolvedType.Expr:
-                return ((JsResolvedExpr)resolved).Expr;
-            case JsResolvedType.Method:
-            case JsResolvedType.Property:
-                return null;
-            default:
-                throw new NotImplementedException("Cannot handle: " + resolved.Type);
-            }
+            return resolved;
         }
 
         protected override ICode VisitCall(ExprCall e) {

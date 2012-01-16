@@ -17,6 +17,7 @@ namespace Cil2Js.JsResolvers {
         private const string TString = "System.String";
         private const string TChar = "System.Char";
         private const string TInt32 = "System.Int32";
+        private const string TArray = "System.Array";
 
         private static string ArrayOf(string type) {
             return type + "[]";
@@ -82,7 +83,7 @@ namespace Cil2Js.JsResolvers {
 
         }
 
-        private static Dictionary<M, Func<ICall, JsResolved>> map = new Dictionary<M, Func<ICall, JsResolved>>(M.ValueEqComparer) {
+        private static Dictionary<M, Func<ICall, Expr>> map = new Dictionary<M, Func<ICall, Expr>>(M.ValueEqComparer) {
             { M.Def(TVoid, "System.Action..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
             { M.Def(TVoid, "System.Action`1..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
             { M.Def(TVoid, "System.Action`2..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
@@ -135,34 +136,38 @@ namespace Cil2Js.JsResolvers {
             { M.Def(TString, "System.String.Substring", TInt32, TInt32), StringResolver.Substring },
 
             { M.Def(TBoolean, "System.Object.Equals", TObject), SystemResolver.ObjectEquals },
+
+            { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ArrayResolver.Copy },
         };
 
-        public static JsResolved Resolve(ICall call) {
-            var method = call.CallMethod.Resolve();
+        public static Expr Resolve(ICall call) {
+            var mRef = call.CallMethod;
+            var mDef = mRef.Resolve();
             // A call that needs translating into a javascript call
-            var m = new M(method);
+            var m = new M(mDef);
             var fn = map.ValueOrDefault(m);
             if (fn != null) {
                 var resolved = fn(call);
                 return resolved;
             }
             // A call that is defined in JS only
-            var type = method.DeclaringType;
+            var type = mDef.DeclaringType;
             var jsClass = type.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Cil2Js.Attributes.JsClassAttribute");
             if (jsClass != null) {
-                if (method.IsExternal()) {
-                    if (method.IsSetter || method.IsGetter) {
-                        var propertyName = JsCase(method.Name.Substring(4));
-                        if (method.IsStatic) {
-                            propertyName = JsCase(method.DeclaringType.Name) + "." + propertyName;
+                if (mDef.IsExternal()) {
+                    var ctx = call.Ctx;
+                    if (mDef.IsSetter || mDef.IsGetter) {
+                        var propertyName = JsCase(mDef.Name.Substring(4));
+                        if (mDef.IsStatic) {
+                            propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
                         }
-                        return new JsResolvedProperty(call.Obj, propertyName);
+                        return new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
                     } else {
-                        var methodName = JsCase(method.Name);
-                        if (method.IsStatic) {
-                            methodName = JsCase(method.DeclaringType.Name) + "." + methodName;
+                        var methodName = JsCase(mDef.Name);
+                        if (mDef.IsStatic) {
+                            methodName = JsCase(mDef.DeclaringType.Name) + "." + methodName;
                         }
-                        return new JsResolvedMethod(call.Obj, methodName, call.Args);
+                        return new ExprJsResolvedMethod(ctx, call.Type, call.Obj, methodName, call.Args);
                     }
                 }
             }

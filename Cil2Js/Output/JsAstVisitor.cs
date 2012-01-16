@@ -15,6 +15,9 @@ namespace Cil2Js.Output {
         JsVarMethodReference,
         JsEmptyFunction,
         JsVirtualCall,
+        JsArrayLiteral,
+        JsResolvedMethod,
+        JsResolvedProperty,
     }
 
     public class JsAstVisitor : AstVisitor {
@@ -38,6 +41,12 @@ namespace Cil2Js.Output {
                 return this.VisitJsVarMethodReference((ExprJsVarMethodReference)e);
             case JsExprType.JsVirtualCall:
                 return this.VisitJsVirtualCall((ExprJsVirtualCall)e);
+            case JsExprType.JsArrayLiteral:
+                return this.VisitJsArrayLiteral((ExprJsArrayLiteral)e);
+            case JsExprType.JsResolvedMethod:
+                return this.VisitJsResolvedMethod((ExprJsResolvedMethod)e);
+            case JsExprType.JsResolvedProperty:
+                return this.VisitJsResolvedProperty((ExprJsResolvedProperty)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
@@ -50,12 +59,9 @@ namespace Cil2Js.Output {
         protected virtual ICode VisitJsFunction(ExprJsFunction e) {
             this.ThrowOnNoOverride();
             var body = (Stmt)this.Visit(e.Body);
-            foreach (var arg in e.Args) {
-                this.Visit(arg);
-            }
-            // TODO: Handle properly
-            if (body != e.Body) {
-                return new ExprJsFunction(e.Ctx, e.Args, body);
+            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
+            if (body != e.Body || args != null) {
+                return new ExprJsFunction(e.Ctx, args ?? e.Args, body);
             } else {
                 return e;
             }
@@ -63,12 +69,13 @@ namespace Cil2Js.Output {
 
         protected virtual ICode VisitJsInvoke(ExprJsInvoke e) {
             this.ThrowOnNoOverride();
-            this.Visit(e.MethodToInvoke);
-            foreach (var arg in e.Args) {
-                this.Visit(arg);
+            var methodToInvoke = (Expr)this.Visit(e.MethodToInvoke);
+            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
+            if (methodToInvoke != e.MethodToInvoke || args != null) {
+                return new ExprJsInvoke(e.Ctx, methodToInvoke, args ?? e.Args, e.Type);
+            } else {
+                return e;
             }
-            // TODO: Handle properly
-            return e;
         }
 
         protected virtual ICode VisitJsEmptyFunction(ExprJsEmptyFunction e) {
@@ -85,18 +92,41 @@ namespace Cil2Js.Output {
             this.ThrowOnNoOverride();
             var objInit = (Expr)this.Visit(e.ObjInit);
             var objRef = (Expr)this.Visit(e.ObjRef);
-            List<Expr> args = null;
-            foreach (var arg in e.Args) {
-                var newArg = (Expr)this.Visit(arg);
-                if (newArg != arg && args==null) {
-                    args = new List<Expr>(e.Args.TakeWhile(x => x != arg));
-                }
-                if (args != null) {
-                    args.Add(newArg);
-                }
-            }
+            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
             if (objInit != e.ObjInit || objRef != e.ObjRef || args != null) {
                 return new ExprJsVirtualCall(e.Ctx, e.CallMethod, objInit, objRef, args ?? e.Args);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsArrayLiteral(ExprJsArrayLiteral e) {
+            this.ThrowOnNoOverride();
+            var elements = this.HandleList(e.Elements, x => (Expr)this.Visit(x));
+            if (elements != null) {
+                return new ExprJsArrayLiteral(e.Ctx, e.ElementType, elements);
+            } else {
+                return e;
+            }
+
+        }
+
+        protected virtual ICode VisitJsResolvedMethod(ExprJsResolvedMethod e) {
+            this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(e.Obj);
+            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
+            if (obj != e.Obj || args != null) {
+                return new ExprJsResolvedMethod(e.Ctx, e.Type, obj, e.MethodName, args ?? e.Args);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
+            this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(e.Obj);
+            if (obj != e.Obj) {
+                return new ExprJsResolvedProperty(e.Ctx, e.Type, obj, e.PropertyName);
             } else {
                 return e;
             }

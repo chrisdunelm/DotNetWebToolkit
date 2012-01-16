@@ -15,7 +15,6 @@ namespace Cil2Js.Output {
             public Dictionary<MethodReference, string> MethodNames { get; set; }
             public Dictionary<FieldReference, string> FieldNames { get; set; }
             public Dictionary<TypeReference, string> TypeNames { get; set; }
-            public Dictionary<ICall, JsResolved> ResolvedCalls { get; set; }
             public Dictionary<MethodReference, int> VirtualCallIndices { get; set; }
             public Dictionary<MethodReference, int> InterfaceCallIndices { get; set; }
             public Dictionary<TypeReference, string> InterfaceNames { get; set; }
@@ -303,44 +302,6 @@ namespace Cil2Js.Output {
         protected override ICode VisitCall(ExprCall e) {
             var mRef = e.CallMethod;
             var mDef = mRef.Resolve();
-            var resolved = this.resolver.ResolvedCalls.ValueOrDefault(e);
-            if (resolved != null) {
-                switch (resolved.Type) {
-                case JsResolvedType.Method:
-                    var methodResolved = (JsResolvedMethod)resolved;
-                    if (methodResolved.Obj != null) {
-                        this.Visit(methodResolved.Obj);
-                        this.js.Append(".");
-                    }
-                    this.js.Append(methodResolved.MethodName);
-                    this.js.Append("(");
-                    bool first = true;
-                    foreach (var arg in methodResolved.Args.EmptyIfNull()) {
-                        if (first) {
-                            first = false;
-                        } else {
-                            this.js.Append(", ");
-                        }
-                        this.Visit(arg);
-                    }
-                    this.js.Append(")");
-                    break;
-                case JsResolvedType.Property:
-                    var propertyResolved = (JsResolvedProperty)resolved;
-                    this.Visit(propertyResolved.Obj);
-                    this.js.Append(".");
-                    this.js.Append(propertyResolved.PropertyName);
-                    if (e.Args.Count() == 1) {
-                        // Property setter, so emit ' = ...'
-                        this.js.Append(" = ");
-                        this.Visit(e.Args.First());
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException("Cannot handle: " + resolved.Type);
-                }
-                return e;
-            }
             if (mDef.DeclaringType.IsInterface) {
                 throw new InvalidOperationException("Interface calls should never occur here");
             }
@@ -479,6 +440,16 @@ namespace Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitBox(ExprBox e) {
+            this.Visit(e.Expr);
+            return e;
+        }
+
+        protected override ICode VisitUnbox(ExprUnbox e) {
+            this.Visit(e.Expr);
+            return e;
+        }
+
         protected override ICode VisitJsFunction(ExprJsFunction e) {
             this.js.Append("(function(");
             bool needComma = false;
@@ -525,13 +496,39 @@ namespace Cil2Js.Output {
             return e;
         }
 
-        protected override ICode VisitBox(ExprBox e) {
-            this.Visit(e.Expr);
+        protected override ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
+            if (e.Obj != null) {
+                this.Visit(e.Obj);
+                this.js.Append(".");
+            }
+            this.js.Append(e.PropertyName);
             return e;
         }
 
-        protected override ICode VisitUnbox(ExprUnbox e) {
-            this.Visit(e.Expr);
+        protected override ICode VisitJsResolvedMethod(ExprJsResolvedMethod e) {
+            if (e.Obj != null) {
+                this.Visit(e.Obj);
+                this.js.Append(".");
+            }
+            this.js.Append(e.MethodName);
+            this.js.Append("(");
+            foreach (var arg in e.Args) {
+                this.Visit(arg);
+                this.js.Append(", ");
+            }
+            this.js.Length -= 2;
+            this.js.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsArrayLiteral(ExprJsArrayLiteral e) {
+            this.js.Append("[");
+            foreach (var element in e.Elements) {
+                this.Visit(element);
+                this.js.Append(", ");
+            }
+            this.js.Length -= 2;
+            this.js.Append("]");
             return e;
         }
 

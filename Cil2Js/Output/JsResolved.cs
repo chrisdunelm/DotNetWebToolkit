@@ -3,29 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cil2Js.Ast;
+using Mono.Cecil;
 
 namespace Cil2Js.Output {
 
-    public enum JsResolvedType {
-        Method,
-        Property,
-        /// <summary>
-        /// The call is resolved by providing a new Expr to replace the call expression.
-        /// </summary>
-        Expr,
-    }
+    public class ExprJsResolvedMethod : Expr {
 
-    public abstract class JsResolved {
+        public ExprJsResolvedMethod(Ctx ctx, TypeReference returnType, Expr obj, string methodName, params Expr[] args)
+            : this(ctx, returnType, obj, methodName, (IEnumerable<Expr>)args) {
+        }
 
-        public abstract JsResolvedType Type { get; }
-
-    }
-
-    public class JsResolvedMethod : JsResolved {
-
-        public JsResolvedMethod(Expr obj, string methodName, params Expr[] args) : this(obj, methodName, (IEnumerable<Expr>)args) { }
-
-        public JsResolvedMethod(Expr obj, string methodName, IEnumerable<Expr> args) {
+        public ExprJsResolvedMethod(Ctx ctx, TypeReference returnType, Expr obj, string methodName, IEnumerable<Expr> args)
+            : base(ctx) {
+            this.returnType = returnType;
             this.Obj = obj;
             this.MethodName = methodName;
             this.Args = args;
@@ -34,55 +24,37 @@ namespace Cil2Js.Output {
         public Expr Obj { get; private set; }
         public string MethodName { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
+        private TypeReference returnType;
 
-        public override JsResolvedType Type {
-            get { return JsResolvedType.Method; }
+        public override Expr.NodeType ExprType {
+            get { return (Expr.NodeType)JsExprType.JsResolvedMethod; }
         }
 
+        public override TypeReference Type {
+            get { return this.returnType; }
+        }
     }
 
-    public class JsResolvedProperty : JsResolved {
+    public class ExprJsResolvedProperty : Expr {
 
-        public JsResolvedProperty(Expr obj, string propertyName) {
+        public ExprJsResolvedProperty(Ctx ctx, TypeReference returnType, Expr obj, string propertyName)
+            : base(ctx) {
             this.Obj = obj;
             this.PropertyName = propertyName;
+            this.returnType = returnType;
         }
 
         public Expr Obj { get; private set; }
         public string PropertyName { get; private set; }
+        private TypeReference returnType;
 
-        public override JsResolvedType Type {
-            get { return JsResolvedType.Property; }
+        public override Expr.NodeType ExprType {
+            get { return (Expr.NodeType)JsExprType.JsResolvedProperty; }
         }
 
-    }
-
-    //public class JsResolvedNameRef : JsResolved {
-
-    //    public JsResolvedNameRef(NameRef nameRef) {
-    //        this.NameRef = nameRef;
-    //    }
-
-    //    public NameRef NameRef { get; private set; }
-
-    //    public override JsResolvedType Type {
-    //        get { return JsResolvedType.NameRef; }
-    //    }
-
-    //}
-
-    public class JsResolvedExpr : JsResolved {
-
-        public JsResolvedExpr(Expr expr) {
-            this.Expr = expr;
+        public override TypeReference Type {
+            get { return this.returnType; }
         }
-
-        public Expr Expr { get; private set; }
-
-        public override JsResolvedType Type {
-            get { return JsResolvedType.Expr; }
-        }
-
     }
 
 }

@@ -9,7 +9,7 @@ using Cil2Js.Utils;
 namespace Cil2Js.JsResolvers {
     static class SystemResolver {
 
-        public static JsResolved ActionFunc_ctor(ICall call) {
+        public static Expr ActionFunc_ctor(ICall call) {
             var ctx = call.Ctx;
             var _this = call.Args.ElementAt(0);
             var mRef = ((ExprMethodReference)call.Args.ElementAt(1)).Method;
@@ -19,20 +19,20 @@ namespace Cil2Js.JsResolvers {
                 (Stmt)new StmtWrapExpr(ctx, boundCall) :
                 (Stmt)new StmtReturn(ctx, boundCall);
             Expr e = new ExprJsFunction(ctx, args, innerStmt);
-            return new JsResolvedExpr(e);
+            return e;
         }
 
-        public static JsResolved ActionFunc_Invoke(ICall call) {
+        public static Expr ActionFunc_Invoke(ICall call) {
             var ctx = call.Ctx;
             Expr e = new ExprJsInvoke(ctx, call.Obj, call.Args, call.Type);
-            return new JsResolvedExpr(e);
+            return e;
         }
 
-        public static JsResolved ObjectEquals(ICall call) {
+        public static Expr ObjectEquals(ICall call) {
             // TODO: This doesn't handle value types
             var ctx = call.Ctx;
             var e = ctx.ExprGen.Equal(call.Obj, call.Args.First());
-            return new JsResolvedExpr(e);
+            return e;
         }
 
     }
