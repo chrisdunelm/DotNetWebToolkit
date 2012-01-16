@@ -58,8 +58,6 @@ namespace Test {
             t.TestAddGetIndex();
             return;
 
-            //var t = new TestCecilExtensions();
-            //t.TestMethodBasesV2();
         }
 
     }
