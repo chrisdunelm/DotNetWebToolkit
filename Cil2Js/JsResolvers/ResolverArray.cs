@@ -7,7 +7,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    static class ArrayResolver {
+    static class ResolverArray {
 
         public static Expr Copy(ICall call) {
             // d = arg[0].slice(arg[1],arg[4]+arg[1])
@@ -25,30 +25,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return copy;
         }
 
-        public static Stmt Clear(Ctx ctx) {
+        public static Stmt Clear(Ctx ctx, List<TypeReference> newTypesSeen) {
             var m = ctx.MRef;
             var array = new ExprVarParameter(ctx, m.Parameters[0]);
             var index = new ExprVarParameter(ctx, m.Parameters[1]);
             var length = new ExprVarParameter(ctx, m.Parameters[2]);
             var arrayElementType = array.Type.GetElementType();
             var i = new ExprVarLocal(ctx, ctx.Int32);
-            var b = new ExprVarLocal(ctx, ctx.Boolean);
-            var stmt = new StmtBlock(ctx,
-                new StmtAssignment(ctx, i, new ExprLiteral(ctx, 0, ctx.Int32)),
-                new StmtDoLoop(ctx,
-                    new StmtBlock(ctx,
-                        new StmtAssignment(ctx, b, new ExprBinary(ctx, BinaryOp.LessThan, ctx.Boolean, i, length)),
-                        new StmtIf(ctx, b,
-                            new StmtBlock(ctx,
-                                new StmtAssignment(ctx,
-                                    new ExprVarArrayAccess(ctx, array, new ExprBinary(ctx, BinaryOp.Add, ctx.Int32, i, index)),
-                                    new ExprDefaultValue(ctx, arrayElementType)),
-                                new StmtAssignment(ctx, i, new ExprBinary(ctx, BinaryOp.Add, ctx.Int32, i, new ExprLiteral(ctx, 1, ctx.Int32)))
-                                ),
-                            null)
-                        ),
-                    b)
-                );
+            var value = new ExprDefaultValue(ctx, arrayElementType);
+            var js = "for ({0}=0; {0}<{1}; {0}++) {{ {2}[{3}+{0}]={4}; }}";
+            var stmt = new StmtJsExplicitFunction(ctx, js, i, length, array, index, value);
             return stmt;
         }
 

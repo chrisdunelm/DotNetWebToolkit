@@ -67,7 +67,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     if (t == null) {
                         return false;
                     }
-                    if (t.FullName == a.FullName) {
+                    if (t.IsSame(a)) {
                         return true;
                     }
                 }
@@ -85,7 +85,40 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         }
 
-        public static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
+        private static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
+
+        private static bool IsABaseOfB(TypeReference a, TypeReference b) {
+            var t = b;
+            for (; ; ) {
+                t = t.GetBaseType();
+                if (t == null) {
+                    return false;
+                }
+                if (t.IsSame(a)) {
+                    return true;
+                }
+            }
+        }
+
+        public static IEnumerable<T> OrderByBaseFirst<T>(this IEnumerable<T> en, Func<T, TypeReference> selector) {
+            // TODO: Make this more efficient.
+            // Cannot use built-in sort/orderby, as set is only partially ordered
+            var ret = new List<T>();
+            foreach (var item in en) {
+                bool inserted = false;
+                for (int i = 0; i < ret.Count; i++) {
+                    if (IsABaseOfB(selector(item), selector(ret[i]))) {
+                        ret.Insert(i, item);
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    ret.Add(item);
+                }
+            }
+            return ret;
+        }
 
         public static bool IsSame(this TypeReference type, TypeReference other) {
             return TypeExtensions.TypeRefEqComparerInstance.Equals(type, other);

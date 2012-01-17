@@ -63,7 +63,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var tRef = mRef.DeclaringType;
                 var tDef = tRef.Resolve();
                 var ctx = new Ctx(tRef, mRef);
-                var ast = (ICode)JsResolver.ResolveMethod(ctx);
+                var newTypesSeen = new List<TypeReference>();
+                var ast = (ICode)JsResolver.ResolveMethod(ctx, newTypesSeen);
+                foreach (var type in newTypesSeen) {
+                    if (!typesSeen.ContainsKey(type)) {
+                        typesSeen.Add(type, 1);
+                    }
+                }
                 if (ast == null) {
                     if (tRef.HasGenericParameters) {
                         throw new InvalidOperationException("Type must not have generic parameters");
@@ -92,8 +98,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
-                    var vResolveCalls = new VisitorResolveCalls(JsResolver.ResolveCall);
-                    ast = vResolveCalls.Visit(ast);
+                    ast = VisitorJsResolveAll.V(ast);
                     if (ast == astOrg) {
                         break;
                     }
@@ -145,10 +150,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 foreach (var arrayRef in arrayRefs) {
                     typesSeen[arrayRef] = typesSeen.ValueOrDefault(arrayRef) + 1;
                 }
+                var types = VisitorFindRequiredTypes.V(ast);
+                foreach (var type in types) {
+                    typesSeen[type] = typesSeen.ValueOrDefault(type) + 1;
+                }
 
                 var calledMethods = new List<ICall>();
                 var calls = VisitorFindCalls.V(ast);
-                foreach (var call in calls.Where(x => x.ExprType == Expr.NodeType.NewObj)) {
+                foreach (var call in calls.Where(x => x.ExprType == Expr.NodeType.NewObj || x.IsVirtualCall)) {
                     // Add reference to each type constructed (direct access to type variable)
                     typesSeen[call.Type] = typesSeen.ValueOrDefault(call.Type) + 1;
                 }
@@ -218,6 +227,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         methodsSeen.Add(method, 1);
                         todo.Push(method);
                     }
+                }
+            }
+
+            // Add all base types of all seen types to typesSeen
+            var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
+            foreach (var type in typesSeenCopy) {
+                var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
+                foreach (var baseType in bases) {
+                    typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
                 }
             }
 
@@ -350,11 +368,29 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return vCallsWithThisType;
             }, new MethodReference[0]);
 
-            // Create interface call tables
-            var interfaceNameGen = new NameGenerator();
-            // TODO: Doesn't take use frequency into account yet
-            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName(), TypeExtensions.TypeRefEqComparerInstance);
+            //// Create interface call tables
+            //var interfaceNameGen = new NameGenerator();
+            //// TODO: Doesn't take use frequency into account yet
+            //var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName(), TypeExtensions.TypeRefEqComparerInstance);
+            //var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i, TypeExtensions.MethodRefEqComparerInstance);
+
+            var typeData = Enum.GetValues(typeof(TypeData)).Cast<TypeData>().ToArray();
+
+            // Name all items that are within the type information
+            var needTypeInformationNaming =
+                interfaceCalls.Select(x => new { item = (object)x.Key, count = 1 })
+                .Concat(typeData.Select(x => new { item = (object)x, count = 1 }))
+                .OrderByDescending(x => x.count)
+                .ToArray();
+            var typeInformationNameGen = new NameGenerator();
+            var typeInformationNames = needTypeInformationNaming.ToDictionary(x => x.item, x => typeInformationNameGen.GetNewName());
+
+            // Create map of interfaces to their names
+            var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => typeInformationNames[x], TypeExtensions.TypeRefEqComparerInstance);
             var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i, TypeExtensions.MethodRefEqComparerInstance);
+
+            // Create map of type data constants
+            var typeDataNames = typeData.ToDictionary(x => x, x => typeInformationNames[x]);
 
             var resolver = new JsMethod.Resolver {
                 LocalVarNames = localVarNames,
@@ -364,6 +400,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 VirtualCallIndices = virtualCallIndices,
                 InterfaceCallIndices = interfaceCallIndices,
                 InterfaceNames = interfaceNames,
+                TypeDataNames = typeDataNames,
             };
 
             var js = new StringBuilder();
@@ -383,10 +420,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
 
             // Construct type data
-            foreach (var type in typesSeen.Where(x => x.Value > 0).Select(x => x.Key)) {
-                var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
-                bool needComma = false;
+            var typesSeenOrdered = typesSeen
+                .Where(x => x.Value > 0)
+                .Select(x => x.Key)
+                //.OrderBy(x => x, TypeExtensions.BaseFirstComparerInstance)
+                .OrderByBaseFirst(x => x)
+                .ToArray();
+            foreach (var type in typesSeenOrdered) {
                 js.AppendFormat("var {0}={{", typeNames[type]);
+                // Type information
+                var baseType = type.GetBaseType();
+                // TODO: Use auto-naming on these
+                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name);
+                js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
+                // Virtual method table
+                var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
                 var methods = allVirtualMethods.ValueOrDefault(type);
                 if (methods != null) {
                     var idxs = methods
@@ -396,17 +445,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         })
                         .OrderBy(x => x.idx)
                         .ToArray();
-                    var s = string.Join(", ", idxs.Select(x => methodNames[x.m]));
-                    js.AppendFormat("_:[{0}]", s);
-                    needComma = true;
+                    var s = string.Join(", ", idxs.Select(x => methodNames.ValueOrDefault(x.m, "null")));
+                    js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.VTable], s);
                 }
+                // Interface tables
                 var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
                 foreach (var iFace in implementedIFaces) {
-                    if (needComma) {
-                        js.Append(", ");
-                    } else {
-                        needComma = true;
-                    }
+                    js.Append(", ");
                     var iFaceName = interfaceNames[iFace.Key];
                     js.AppendFormat("{0}:[", iFaceName);
                     var qInterfaceTableNames =
@@ -420,8 +465,19 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     js.Append(string.Join(", ", interfaceTableNames));
                     js.Append("]");
                 }
+                // end
                 js.Append("};");
                 js.AppendLine();
+            }
+            // Add type of each type, if System.RuntimeType has been seen
+            var typeRuntimeType = typesSeen.Keys.FirstOrDefault(x => x.FullName == "System.RuntimeType");
+            if (typeRuntimeType != null) {
+                foreach (var type in typesSeenOrdered) {
+                    js.Append(typeNames[type]);
+                    js.Append("._ = ");
+                }
+                js.Append(typeNames[typeRuntimeType]);
+                js.Append(";");
             }
 
             var jsStr = js.ToString();

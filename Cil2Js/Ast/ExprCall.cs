@@ -18,6 +18,10 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.returnType = callMethod.ReturnType.FullResolve(callMethod);
         }
 
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, params Expr[] args)
+            : this(ctx, callMethod, obj, (IEnumerable<Expr>)args, false) {
+        }
+
         public Expr Obj { get; private set; }
         public MethodReference CallMethod { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }

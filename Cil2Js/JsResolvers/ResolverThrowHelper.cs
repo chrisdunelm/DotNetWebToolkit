@@ -5,7 +5,7 @@ using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    static class ThrowHelperResolver {
+    static class ResolverThrowHelper {
 
         // TODO: These may not be required finally.
         // But the IL implementations use a large switch statement that cannot be converted to JS

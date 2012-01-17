@@ -22,6 +22,8 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             DoLoop,
             Return,
             Break,
+
+            Max = 1000,
         }
 
         public Stmt(Ctx ctx) {

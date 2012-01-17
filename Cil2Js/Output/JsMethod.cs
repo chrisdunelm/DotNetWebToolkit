@@ -18,6 +18,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             public Dictionary<MethodReference, int> VirtualCallIndices { get; set; }
             public Dictionary<MethodReference, int> InterfaceCallIndices { get; set; }
             public Dictionary<TypeReference, string> InterfaceNames { get; set; }
+            public Dictionary<TypeData, string> TypeDataNames { get; set; }
         }
 
         private const int tabSize = 4;
@@ -114,6 +115,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitVar(ExprVar e) {
             this.js.Append(this.resolver.LocalVarNames[e]);
+            // Extra var processing
             this.vars.Add(e);
             if (e.ExprType == Expr.NodeType.VarParameter) {
                 if (!this.parameters.ContainsKey(((ExprVarParameter)e).Parameter)) {
@@ -254,14 +256,24 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Value == null) {
                 this.js.Append("null");
-            } else if (e.Value is string) {
-                this.js.AppendFormat("\"{0}\"", e.Value);
-            } else if (e.Value is char) {
-                this.js.AppendFormat("'{0}'", e.Value);
-            } else if (e.Type.IsBoolean()) {
-                this.js.Append((bool)e.Value ? "true" : "false");
             } else {
-                this.js.Append(e.Value);
+                object value;
+                var mdt = e.Type.MetadataType;
+                switch (mdt) {
+                case MetadataType.String:
+                    value = "\"" + e.Value + "\"";
+                    break;
+                case MetadataType.Char:
+                    value = "\'" + e.Value + "\'";
+                    break;
+                case MetadataType.Boolean:
+                    value = (bool)e.Value ? "true" : "false";
+                    break;
+                default:
+                    value = e.Value;
+                    break;
+                }
+                this.js.Append(value);
             }
             return e;
         }
@@ -326,7 +338,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var mBasemost = e.CallMethod.GetBasemostMethod(null);
                 int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
                 this.Visit(e.ObjInit);
-                this.js.AppendFormat("._._[{0}]", vTableIndex);
+                this.js.AppendFormat("._.{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
                 this.CallAppendArgs(e);
             }
             return e;
@@ -349,7 +361,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitNewObj(ExprNewObj e) {
             var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
-            this.js.Append("({_:");
+            this.js.AppendFormat("({{{0}:", this.resolver.TypeDataNames[TypeData.VTable]);
             this.js.Append(this.resolver.TypeNames[e.Type]);
             this.js.Append("}");
             foreach (var arg in e.Args) {
@@ -363,7 +375,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitNewArray(ExprNewArray e) {
             this.js.Append("function() { var _ = new Array(");
             this.Visit(e.ExprNumElements);
-            this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
+            this.js.AppendFormat("); _.{0} = {1}; for (var i = _.length-1; i >= 0; i--) _[i] = {2}; return _; }}()",
+                this.resolver.TypeDataNames[TypeData.VTable],
                 this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
             return e;
         }
@@ -432,8 +445,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitCast(ExprCast e) {
-            this.Visit(e.Expr);
-            return e;
+            throw new InvalidOperationException("This should never occur");
+        }
+
+        protected override ICode VisitIsInst(ExprIsInst e) {
+            // TODO: All of it
+            throw new Exception();
         }
 
         protected override ICode VisitEmpty(StmtEmpty s) {
@@ -448,6 +465,74 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitUnbox(ExprUnbox e) {
             this.Visit(e.Expr);
             return e;
+        }
+
+        protected override ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
+            var tokenType = e.Member.MetadataToken.TokenType;
+            switch (tokenType) {
+            case TokenType.TypeRef:
+            case TokenType.TypeDef:
+                var type = (TypeReference)e.Member;
+                var typeName = this.resolver.TypeNames[type];
+                this.js.Append(typeName);
+                break;
+            default:
+                throw new NotImplementedException("Cannot handle runtime-handle type: " + tokenType);
+            }
+            return e;
+        }
+
+        private void HandleExplicitJs(string js, IEnumerable<Expr> exprs) {
+            var es = exprs.ToArray();
+            int ofs = 0;
+            Func<char> getC = () => ofs < js.Length ? js[ofs++] : '\0';
+            for (; ; ) {
+                var c = getC();
+                switch (c) {
+                case '\0':
+                    return;
+                case '{':
+                    c = getC();
+                    if (c == '{') {
+                        this.js.Append('{');
+                    } else {
+                        if (!char.IsDigit(c)) {
+                            throw new InvalidOperationException("Invalid explicit javascript function");
+                        }
+                        var numStr = c.ToString();
+                        for (; ; ) {
+                            c = getC();
+                            if (c == '}') {
+                                break;
+                            }
+                            if (!char.IsDigit(c)) {
+                                throw new InvalidOperationException("Invalid explicit javascript function");
+                            }
+                            numStr += c;
+                        }
+                        var num = int.Parse(numStr);
+                        var expr = es[num];
+                        this.Visit(expr);
+                    }
+                    break;
+                case '}':
+                    c = getC();
+                    if (c != '}') {
+                        throw new InvalidOperationException("Invalid explicit javascript function");
+                    }
+                    this.js.Append('}');
+                    break;
+                default:
+                    this.js.Append(c);
+                    break;
+                }
+            }
+        }
+
+        protected override ICode VisitJsExplicitFunction(StmtJsExplicitFunction s) {
+            this.NewLine();
+            this.HandleExplicitJs(s.JavaScript, s.Exprs);
+            return s;
         }
 
         protected override ICode VisitJsFunction(ExprJsFunction e) {
@@ -529,6 +614,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
             this.js.Length -= 2;
             this.js.Append("]");
+            return e;
+        }
+
+        protected override ICode VisitJsTypeData(ExprJsTypeData e) {
+            var name = this.resolver.TypeDataNames[e.TypeData];
+            this.js.Append(name);
+            return e;
+        }
+
+        protected override ICode VisitJsTypeVarName(ExprJsTypeVarName e) {
+            var name = this.resolver.TypeNames[e.TypeRef];
+            this.js.Append(name);
+            return e;
+        }
+
+        protected override ICode VisitJsExplicit(ExprJsExplicit e) {
+            this.HandleExplicitJs(e.JavaScript, e.Exprs);
             return e;
         }
 

@@ -12,6 +12,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.TDef = tRef.Resolve();
             this.MRef = mRef;
             this.MDef = mRef.Resolve();
+            this.Module = mRef.Module;
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
             this.This = this.MDef.IsStatic ? null : new ExprVarThis(this, tRef);
@@ -24,6 +25,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public ExprVarThis This { get; private set; }
 
+        public ModuleDefinition Module { get; private set; }
         public TypeSystem TypeSystem { get; private set; }
 
         public Expr.Gen ExprGen { get; private set; }

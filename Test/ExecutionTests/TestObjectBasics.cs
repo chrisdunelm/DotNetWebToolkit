@@ -28,6 +28,17 @@ namespace Test.ExecutionTests {
             this.TestTrue(f);
         }
 
+        [Test]
+        public void TestBaseType() {
+            Func<bool> f = () => {
+                string s = "str";
+                var sType = s.GetType();
+                var baseType = sType.BaseType;
+                return typeof(object) == baseType;
+            };
+            this.TestTrue(f);
+        }
+
     }
 
 }

@@ -6,71 +6,74 @@ using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Utils;
+using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         private static Dictionary<M, Func<ICall, Expr>> callMap = new Dictionary<M, Func<ICall, Expr>>(M.ValueEqComparer) {
-            { M.Def(TVoid, "System.Action..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`1..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`2..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`3..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`4..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`5..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`6..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`7..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action`8..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Action.Invoke"), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`1.Invoke", (string)null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`2.Invoke", (string)null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`3.Invoke", (string)null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`4.Invoke", (string)null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`5.Invoke", (string)null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`6.Invoke", (string)null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`7.Invoke", (string)null, null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Action`8.Invoke", (string)null, null, null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(TVoid, "System.Func`1..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`2..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`3..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`4..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`5..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`6..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`7..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`8..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(TVoid, "System.Func`9..ctor", TObject, TIntPtr), SystemResolver.ActionFunc_ctor },
-            { M.Def(null, "System.Func`1.Invoke"), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`2.Invoke", (string)null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`3.Invoke", (string)null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`4.Invoke", (string)null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`5.Invoke", (string)null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`6.Invoke", (string)null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`7.Invoke", (string)null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`8.Invoke", (string)null, null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
-            { M.Def(null, "System.Func`9.Invoke", (string)null, null, null, null, null, null, null, null), SystemResolver.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`1..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`2..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`3..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`4..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`5..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`6..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`7..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action`8..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Action.Invoke"), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`1.Invoke", (string)null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`2.Invoke", (string)null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`3.Invoke", (string)null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`4.Invoke", (string)null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`5.Invoke", (string)null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`6.Invoke", (string)null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`7.Invoke", (string)null, null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Action`8.Invoke", (string)null, null, null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(TVoid, "System.Func`1..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`2..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`3..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`4..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`5..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`6..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`7..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`8..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(TVoid, "System.Func`9..ctor", TObject, TIntPtr), ResolverSystem.ActionFunc_ctor },
+            { M.Def(null, "System.Func`1.Invoke"), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`2.Invoke", (string)null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`3.Invoke", (string)null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`4.Invoke", (string)null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`5.Invoke", (string)null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`6.Invoke", (string)null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`7.Invoke", (string)null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`8.Invoke", (string)null, null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
+            { M.Def(null, "System.Func`9.Invoke", (string)null, null, null, null, null, null, null, null), ResolverSystem.ActionFunc_Invoke },
 
-            { M.Def(TBoolean, "System.String.op_Equality", TString, TString), StringResolver.op_Equality },
-            { M.Def(TInt32, "System.String.get_Length"), StringResolver.get_Length },
-            { M.Def(TChar, "System.String.get_Chars", TInt32), StringResolver.get_Chars },
-            { M.Def(TString, "System.String.Concat", TString, TString), StringResolver.ConcatStrings },
-            { M.Def(TString, "System.String.Concat", TString, TString, TString), StringResolver.ConcatStrings },
-            { M.Def(TString, "System.String.Concat", TString, TString, TString, TString), StringResolver.ConcatStrings },
-            { M.Def(TString, "System.String.Concat", ArrayOf(TString)), StringResolver.ConcatStringsMany },
-            { M.Def(TInt32, "System.String.IndexOf", TChar), StringResolver.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TString), StringResolver.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TChar, TInt32), StringResolver.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), StringResolver.IndexOf },
-            { M.Def(TString, "System.String.Substring", TInt32), StringResolver.Substring },
-            { M.Def(TString, "System.String.Substring", TInt32, TInt32), StringResolver.Substring },
+            { M.Def(TBoolean, "System.String.op_Equality", TString, TString), ResolverString.op_Equality },
+            { M.Def(TInt32, "System.String.get_Length"), ResolverString.get_Length },
+            { M.Def(TChar, "System.String.get_Chars", TInt32), ResolverString.get_Chars },
+            { M.Def(TString, "System.String.Concat", TString, TString), ResolverString.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", TString, TString, TString), ResolverString.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", TString, TString, TString, TString), ResolverString.ConcatStrings },
+            { M.Def(TString, "System.String.Concat", ArrayOf(TString)), ResolverString.ConcatStringsMany },
+            { M.Def(TInt32, "System.String.IndexOf", TChar), ResolverString.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TString), ResolverString.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TChar, TInt32), ResolverString.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), ResolverString.IndexOf },
+            { M.Def(TString, "System.String.Substring", TInt32), ResolverString.Substring },
+            { M.Def(TString, "System.String.Substring", TInt32, TInt32), ResolverString.Substring },
 
-            { M.Def(TBoolean, "System.Object.Equals", TObject), SystemResolver.ObjectEquals },
+            { M.Def(TBoolean, "System.Object.Equals", TObject), ResolverSystem.ObjectEquals },
 
-            { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ArrayResolver.Copy },
-            //{ M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ArrayResolver.Clear },
+            { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ResolverArray.Copy },
 
-            { M.Def(TString, "System.Environment.GetResourceFromDefault", TString), EnvironmentResolver.GetResourceFromDefault },
+            { M.Def(TString, "System.Environment.GetResourceFromDefault", TString), ResolverEnvironment.GetResourceFromDefault },
 
-            { M.Def(TString, "System.ThrowHelper.GetResourceName", "System.ExceptionResource"), ThrowHelperResolver.GetResourceName },
-            { M.Def(TString, "System.ThrowHelper.GetArgumentName", "System.ExceptionArgument"), ThrowHelperResolver.GetArgumentName },
+            { M.Def(TString, "System.ThrowHelper.GetResourceName", "System.ExceptionResource"), ResolverThrowHelper.GetResourceName },
+            { M.Def(TString, "System.ThrowHelper.GetArgumentName", "System.ExceptionArgument"), ResolverThrowHelper.GetArgumentName },
+
+            { M.Def(TBoolean, "System.Type.op_Equality", TType, TType), ResolverType.op_Equality },
+            { M.Def(TType, "System.Type.GetTypeFromHandle", "System.RuntimeTypeHandle"), ResolverType.GetTypeFromHandle },
         };
 
         public static Expr ResolveCall(ICall call) {
@@ -85,7 +88,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
             // A call that is defined in JS only
             var type = mDef.DeclaringType;
-            var jsClass = type.CustomAttributes.FirstOrDefault(x => x.AttributeType.FullName == "Cil2Js.Attributes.JsClassAttribute");
+            var jsClass = type.GetCustomAttribute<JsClassAttribute>();
             if (jsClass != null) {
                 if (mDef.IsExternal()) {
                     var ctx = call.Ctx;

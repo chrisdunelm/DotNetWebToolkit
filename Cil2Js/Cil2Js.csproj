@@ -116,12 +116,15 @@
     <Compile Include="Ast\ExprCast.cs" />
     <Compile Include="Ast\ExprDefaultValue.cs" />
     <Compile Include="Ast\ExprFieldAccess.cs" />
+    <Compile Include="Ast\ExprIsInst.cs" />
     <Compile Include="Ast\ExprLiteral.cs" />
     <Compile Include="Ast\ExprMethodReference.cs" />
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
+    <Compile Include="Ast\ExprRuntimeHandle.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
     <Compile Include="Ast\ExprUnbox.cs" />
+    <Compile Include="Ast\ExprVariableAddress.cs" />
     <Compile Include="Ast\ExprVarThis.cs" />
     <Compile Include="Ast\ExprUnary.cs" />
     <Compile Include="Ast\ExprVar.cs" />
@@ -147,18 +150,26 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
-    <Compile Include="JsResolvers\ArrayResolver.cs" />
-    <Compile Include="JsResolvers\EnvironmentResolver.cs" />
+    <Compile Include="JsResolvers\ResolverArray.cs" />
+    <Compile Include="JsResolvers\ResolverEnvironment.cs" />
+    <Compile Include="JsResolvers\IJsImpl.cs" />
+    <Compile Include="JsResolvers\InternalFunctions.cs" />
+    <Compile Include="JsResolvers\JsAttribute.cs" />
     <Compile Include="JsResolvers\JsCallResolver.cs" />
+    <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs" />
     <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />
-    <Compile Include="JsResolvers\StringResolver.cs" />
-    <Compile Include="JsResolvers\SystemResolver.cs" />
-    <Compile Include="JsResolvers\ThrowHelperResolver.cs" />
+    <Compile Include="JsResolvers\ResolverString.cs" />
+    <Compile Include="JsResolvers\ResolverSystem.cs" />
+    <Compile Include="JsResolvers\ResolverThrowHelper.cs" />
+    <Compile Include="JsResolvers\ResolverType.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
+    <Compile Include="Output\ExprJsExplicit.cs" />
     <Compile Include="Output\ExprJsFunction.cs" />
+    <Compile Include="Output\ExprJsTypeData.cs" />
+    <Compile Include="Output\ExprJsTypeVarName.cs" />
     <Compile Include="Output\ExprJsVarMethodReference.cs" />
     <Compile Include="Output\ExprJsVirtualCall.cs" />
     <Compile Include="Output\JsAstVisitor.cs" />
@@ -170,14 +181,16 @@
     </Compile>
     <Compile Include="Output\JsMethod.cs" />
     <Compile Include="Output\NameGenerator.cs" />
+    <Compile Include="Output\StmtJsExplicitFunction.cs" />
+    <Compile Include="Output\TypeData.cs" />
     <Compile Include="Output\VisitorFindCalls.cs" />
     <Compile Include="Output\VisitorFindFieldAccesses.cs" />
+    <Compile Include="Output\VisitorFindRequiredTypes.cs" />
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />
-    <Compile Include="Output\VisitorResolveCalls.cs" />
-    <Compile Include="Output\VisitorResolveFieldAccess.cs" />
+    <Compile Include="Output\VisitorJsResolveAll.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />
@@ -190,6 +203,10 @@
     <ProjectReference Include="..\cecil\Mono.Cecil.csproj">
       <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
       <Name>Mono.Cecil</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DotNetWebToolkit\DotNetWebToolkit.csproj">
+      <Project>{1f3e8e8c-0806-42aa-872b-78f5231f490f}</Project>
+      <Name>DotNetWebToolkit</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

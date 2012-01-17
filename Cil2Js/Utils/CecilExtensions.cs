@@ -299,7 +299,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static void TypeTreeTraverse<T, TState>(this IEnumerable<T> en, Func<T, TypeReference> selectType, Func<T, TState, TState> action, TState initState = default(TState)) {
-            var ordered = en.Select(x => new { item = x, type = selectType(x) }).OrderBy(x => x.type, TypeExtensions.BaseFirstComparerInstance).ToArray();
+            var ordered = en.Select(x => new { item = x, type = selectType(x) }).OrderByBaseFirst(x => x.type).ToArray();
             var states = new Dictionary<TypeReference, TState>(TypeExtensions.TypeRefEqComparerInstance);
             foreach (var x in ordered) {
                 var baseType = x.type.GetBaseType();
@@ -447,6 +447,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static bool DoesImplement(this TypeReference t, TypeReference iFace) {
             return t.EnumAllInterfaces().Any(x => x.IsSame(iFace));
+        }
+
+        public static CustomAttribute GetCustomAttribute<TAttr>(this TypeDefinition t) {
+            return t.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        }
+
+        public static CustomAttribute GetCustomAttribute<TAttr>(this MethodDefinition m) {
+            return m.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
         }
 
     }

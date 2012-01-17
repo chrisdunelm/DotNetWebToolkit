@@ -15,6 +15,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         private const string TChar = "System.Char";
         private const string TInt32 = "System.Int32";
         private const string TArray = "System.Array";
+        private const string TType = "System.Type";
 
         private static string ArrayOf(string type) {
             return type + "[]";

@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestFuncsClosures() { Verbose = true };
-            t.TestAction1Closure();
+            var t = new TestObjectBasics() { Verbose = true };
+            t.TestBaseType();
             return;
 
         }

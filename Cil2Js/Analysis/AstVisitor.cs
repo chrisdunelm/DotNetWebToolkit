@@ -65,7 +65,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Stmt.NodeType.Empty:
                 return this.VisitEmpty((StmtEmpty)s);
             default:
-                throw new NotImplementedException("Cannot handle: " + s.StmtType);
+                if ((int)s.StmtType >= (int)Stmt.NodeType.Max) {
+                    return s;
+                } else {
+                    throw new NotImplementedException("Cannot handle: " + s.StmtType);
+                }
             }
         }
 
@@ -279,6 +283,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitDefaultValue((ExprDefaultValue)e);
             case Expr.NodeType.Cast:
                 return this.VisitCast((ExprCast)e);
+            case Expr.NodeType.IsInst:
+                return this.VisitIsInst((ExprIsInst)e);
             case Expr.NodeType.NewObj:
                 return this.VisitNewObj((ExprNewObj)e);
             case Expr.NodeType.FieldAccess:
@@ -313,6 +319,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitBox((ExprBox)e);
             case Expr.NodeType.Unbox:
                 return this.VisitUnbox((ExprUnbox)e);
+            case Expr.NodeType.RuntimeHandle:
+                return this.VisitRuntimeHandle((ExprRuntimeHandle)e);
             default:
                 if ((int)e.ExprType >= (int)Expr.NodeType.Max) {
                     return e;
@@ -332,6 +340,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
                 return new ExprCast(e.Ctx, expr, e.Type);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitIsInst(ExprIsInst e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprIsInst(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }
@@ -513,7 +531,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprBox(e.Ctx, expr);
+                return new ExprBox(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }
@@ -523,10 +541,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprUnbox(e.Ctx, expr);
+                return new ExprUnbox(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }
+        }
+
+        protected virtual ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
+            this.ThrowOnNoOverride();
+            return e;
         }
 
     }
