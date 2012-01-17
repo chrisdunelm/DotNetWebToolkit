@@ -44,6 +44,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitBinary(e);
         }
 
+        protected override ICode VisitUnbox(ExprUnboxAny e) {
+            if (e.Type.IsValueType) {
+                return base.VisitUnbox(e);
+            } else {
+                // On ref-type, unbox-any becomes a castclass
+                var expr = (Expr)this.Visit(e.Expr);
+                var cast = new ExprCast(e.Ctx, expr, e.Type);
+                return cast;
+            }
+        }
+
         protected override ICode VisitCast(ExprCast e) {
             var ctx = e.Ctx;
             var js = "if ({0}) return {1}; throw {2};";

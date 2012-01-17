@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestObjectBasics() { Verbose = true };
-            t.TestGetHashCode();
+            var t = new TestNullables() { Verbose = true };
+            t.TestJustNull();
             return;
 
         }

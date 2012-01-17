@@ -59,6 +59,7 @@
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
+    <Compile Include="ExecutionTests\TestBoxing.cs" />
     <Compile Include="ExecutionTests\TestCasting.cs" />
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
@@ -70,6 +71,7 @@
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
     <Compile Include="ExecutionTests\TestMethodCalls.cs" />
+    <Compile Include="ExecutionTests\TestNullables.cs" />
     <Compile Include="ExecutionTests\TestObjectBasics.cs" />
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="ExecutionTests\TestSimpleInterfaces.cs" />

@@ -202,7 +202,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Box:
                 return this.Box(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Unbox_Any:
-                return this.Unbox(((TypeReference)inst.Operand).FullResolve(this.ctx));
+                return this.UnboxAny(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Volatile: // Ignore
                 return null;
             case Code.Ret:
@@ -429,9 +429,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(expr);
         }
 
-        private Stmt Unbox(TypeReference type) {
+        private Stmt UnboxAny(TypeReference type) {
             var value = this.stack.Pop();
-            var expr = new ExprUnbox(this.ctx, value, type);
+            var expr = new ExprUnboxAny(this.ctx, value, type);
             return this.SsaLocalAssignment(expr);
         }
 

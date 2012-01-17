@@ -458,12 +458,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitBox(ExprBox e) {
+            this.js.Append("{v:");
             this.Visit(e.Expr);
+            this.js.Append(",_:");
+            this.js.Append(this.resolver.TypeNames[e.Type]);
+            this.js.Append("}");
             return e;
         }
 
-        protected override ICode VisitUnbox(ExprUnbox e) {
+        protected override ICode VisitUnbox(ExprUnboxAny e) {
             this.Visit(e.Expr);
+            this.js.Append(".v");
             return e;
         }
 

@@ -318,7 +318,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Expr.NodeType.Box:
                 return this.VisitBox((ExprBox)e);
             case Expr.NodeType.Unbox:
-                return this.VisitUnbox((ExprUnbox)e);
+                return this.VisitUnbox((ExprUnboxAny)e);
             case Expr.NodeType.RuntimeHandle:
                 return this.VisitRuntimeHandle((ExprRuntimeHandle)e);
             default:
@@ -537,11 +537,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
         }
 
-        protected virtual ICode VisitUnbox(ExprUnbox e) {
+        protected virtual ICode VisitUnbox(ExprUnboxAny e) {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprUnbox(e.Ctx, expr, e.Type);
+                return new ExprUnboxAny(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }

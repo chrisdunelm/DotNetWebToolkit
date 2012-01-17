@@ -158,7 +158,7 @@ namespace Test.ExecutionTests {
 
         }
 
-        public void TestTrue(Func<bool> d) {
+        protected void TestTrue(Func<bool> d) {
             var method = CecilHelper.GetMethod(d);
             var js = Js.CreateFrom(method, this.Verbose);
             using (var chrome = NamespaceSetup.ChromeService != null ?
