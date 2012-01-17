@@ -7,7 +7,7 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
-    public class VisitorFindFieldAccesses : AstVisitor {
+    public class VisitorFindFieldAccesses : JsAstVisitor {
 
         public static IEnumerable<FieldReference> V(ICode ast) {
             var v = new VisitorFindFieldAccesses();

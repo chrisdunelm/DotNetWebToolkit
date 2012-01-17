@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
@@ -9,6 +11,47 @@ using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     static class ResolverSystem {
+
+        private static int hashCode = 0;
+        public static Stmt Object_Ctor(Ctx ctx, List<TypeReference> newTypesSeen) {
+            Expression<Func<int>> eHashCode = () => hashCode;
+            var field = (FieldInfo)((MemberExpression)eHashCode.Body).Member;
+            var f = ctx.Module.Import(field);
+            var fExpr = new ExprFieldAccess(ctx, null, f);
+            var stmt = new StmtJsExplicitFunction(ctx, "{0}.$=++{1};", ctx.This, fExpr);
+            return stmt;
+        }
+
+        public static Stmt Object_GetType(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var js = "return typeof({0})==\"string\"?{1}:{0}.{2}";
+            var stringType = new ExprJsTypeVarName(ctx, ctx.String);
+            var vTable = new ExprJsTypeData(ctx, TypeData.VTable);
+            var stmt = new StmtJsExplicitFunction(ctx, js, ctx.This, stringType, vTable);
+            var typeRuntimeType = Type.GetType("System.RuntimeType");
+            var tt = ctx.Module.Import(typeRuntimeType);
+            newTypesSeen.Add(tt);
+            return stmt;
+        }
+
+        public static Stmt Object_GetHashCode(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.$;", ctx.This);
+            return stmt;
+        }
+
+        public static Expr Object_Equals(ICall call) {
+            // TODO: This doesn't handle value types
+            var ctx = call.Ctx;
+            var e = ctx.ExprGen.Equal(call.Obj, call.Args.First());
+            return e;
+        }
+
+        public static Stmt IntPtrCtor(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var field = ctx.TDef.Fields.Where(x => !x.IsStatic).Single();
+            var stmt = new StmtAssignment(ctx,
+                new ExprFieldAccess(ctx, ctx.This, field),
+                new ExprVarParameter(ctx, ctx.MRef.Parameters.First()));
+            return stmt;
+        }
 
         public static Expr ActionFunc_ctor(ICall call) {
             var ctx = call.Ctx;
@@ -29,29 +72,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return e;
         }
 
-        public static Expr ObjectEquals(ICall call) {
-            // TODO: This doesn't handle value types
-            var ctx = call.Ctx;
-            var e = ctx.ExprGen.Equal(call.Obj, call.Args.First());
-            return e;
-        }
-
-        public static Stmt IntPtrCtor(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var field = ctx.TDef.Fields.Where(x => !x.IsStatic).Single();
-            var stmt = new StmtAssignment(ctx,
-                new ExprFieldAccess(ctx, ctx.This, field),
-                new ExprVarParameter(ctx, ctx.MRef.Parameters.First()));
-            return stmt;
-        }
-
-        public static Stmt Object_GetType(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var js = "return typeof({0})==\"string\"?{1}:{0}.{2}";
-            var stringType = new ExprJsTypeVarName(ctx, ctx.String);
-            var vTable = new ExprJsTypeData(ctx, TypeData.VTable);
-            var stmt = new StmtJsExplicitFunction(ctx, js, ctx.This, stringType, vTable);
-            var typeRuntimeType = Type.GetType("System.RuntimeType");
-            var tt = ctx.Module.Import(typeRuntimeType);
-            newTypesSeen.Add(tt);
+        public static Stmt Int32_GetHashCode(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var stmt = new StmtReturn(ctx, ctx.This);
             return stmt;
         }
 

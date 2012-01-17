@@ -361,7 +361,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitNewObj(ExprNewObj e) {
             var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
-            this.js.AppendFormat("({{{0}:", this.resolver.TypeDataNames[TypeData.VTable]);
+            this.js.Append("({_:");
             this.js.Append(this.resolver.TypeNames[e.Type]);
             this.js.Append("}");
             foreach (var arg in e.Args) {

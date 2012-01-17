@@ -13,8 +13,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         private static Dictionary<M, Func<Ctx, List<TypeReference>, Stmt>> methodMap = new Dictionary<M,Func<Ctx,List<TypeReference>,Stmt>>(M.ValueEqComparer) {
             { M.Def(TVoid, "System.IntPtr..ctor", TInt32), ResolverSystem.IntPtrCtor },
             { M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ResolverArray.Clear },
+            { M.Def(TVoid, "System.Object..ctor"), ResolverSystem.Object_Ctor },
             { M.Def(TType, "System.Object.GetType"), ResolverSystem.Object_GetType },
+            { M.Def(TInt32, "System.Object.GetHashCode"), ResolverSystem.Object_GetHashCode },
             { M.Def(TType, "System.RuntimeType.get_BaseType"), ResolverType.get_BaseType },
+            { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
         };
 
         public static Stmt ResolveMethod(Ctx ctx, List<TypeReference> newTypesSeen) {

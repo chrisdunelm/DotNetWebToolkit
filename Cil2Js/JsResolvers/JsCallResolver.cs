@@ -63,7 +63,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TString, "System.String.Substring", TInt32), ResolverString.Substring },
             { M.Def(TString, "System.String.Substring", TInt32, TInt32), ResolverString.Substring },
 
-            { M.Def(TBoolean, "System.Object.Equals", TObject), ResolverSystem.ObjectEquals },
+            { M.Def(TBoolean, "System.Object.Equals", TObject), ResolverSystem.Object_Equals },
 
             { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ResolverArray.Copy },
 

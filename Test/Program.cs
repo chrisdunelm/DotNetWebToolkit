@@ -55,7 +55,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestObjectBasics() { Verbose = true };
-            t.TestBaseType();
+            t.TestGetHashCode();
             return;
 
         }
