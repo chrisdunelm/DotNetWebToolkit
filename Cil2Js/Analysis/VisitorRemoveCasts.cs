@@ -40,6 +40,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             if (convertToType.Resolve().IsEnum) {
                 return e;
             }
+            if (!convertToType.IsValueType && e.Value == null) {
+                return new ExprLiteral(e.Ctx, null, convertToType);
+            }
             throw new NotImplementedException("Cannot convert");
         }
 

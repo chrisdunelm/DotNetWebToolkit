@@ -37,11 +37,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return stmt;
         }
 
-        public static Expr Object_Equals(ICall call) {
-            // TODO: This doesn't handle value types
-            var ctx = call.Ctx;
-            var e = ctx.ExprGen.Equal(call.Obj, call.Args.First());
-            return e;
+        public static Stmt Object_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}._==={1}._&&{0}==={1};", ctx.This, p0);
+            return stmt;
+        }
+
+        public static Stmt TrivialValueType_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}._==={1}._&&{0}.v==={1}.v;", ctx.This, p0);
+            return stmt;
         }
 
         public static Stmt IntPtrCtor(Ctx ctx, List<TypeReference> newTypesSeen) {

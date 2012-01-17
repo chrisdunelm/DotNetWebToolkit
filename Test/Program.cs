@@ -54,8 +54,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestNullables() { Verbose = true };
-            t.TestJustNull();
+            var t = new TestCasting() { Verbose = true };
+            t.TestCastArrayContents();
             return;
 
         }

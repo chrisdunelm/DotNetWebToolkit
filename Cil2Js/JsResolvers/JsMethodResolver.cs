@@ -11,13 +11,26 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         private static Dictionary<M, Func<Ctx, List<TypeReference>, Stmt>> methodMap = new Dictionary<M,Func<Ctx,List<TypeReference>,Stmt>>(M.ValueEqComparer) {
-            { M.Def(TVoid, "System.IntPtr..ctor", TInt32), ResolverSystem.IntPtrCtor },
-            { M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ResolverArray.Clear },
             { M.Def(TVoid, "System.Object..ctor"), ResolverSystem.Object_Ctor },
+            { M.Def(TBoolean, "System.Object.Equals", TObject), ResolverSystem.Object_Equals },
             { M.Def(TType, "System.Object.GetType"), ResolverSystem.Object_GetType },
             { M.Def(TInt32, "System.Object.GetHashCode"), ResolverSystem.Object_GetHashCode },
+
+            { M.Def(TVoid, "System.IntPtr..ctor", TInt32), ResolverSystem.IntPtrCtor },
+            { M.Def(TBoolean, "System.IntPtr.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
+
+            { M.Def(TBoolean, "System.Boolean.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
+
+            { M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ResolverArray.Clear },
+            
             { M.Def(TType, "System.RuntimeType.get_BaseType"), ResolverType.get_BaseType },
+            { M.Def(TType, "System.RuntimeType.GetElementType"), ResolverType.GetElementType },
+            { M.Def(TBoolean, "System.RuntimeType.get_IsArray"), ResolverType.get_IsArray },
+            
+            { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
+            
+            { M.Def(TBoolean, "System.String.Equals", TObject), ResolverSystem.Object_Equals },
         };
 
         public static Stmt ResolveMethod(Ctx ctx, List<TypeReference> newTypesSeen) {

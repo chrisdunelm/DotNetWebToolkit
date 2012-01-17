@@ -30,6 +30,38 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestCastArray() {
+            Func<bool> f = () => {
+                var a = new[] { 1 };
+                object o = ForceObject(a);
+                var b = (int[])o;
+                return b.GetType() == typeof(int[]);
+            };
+            this.TestTrue(f);
+        }
+
+        [Test]
+        public void TestCastArrayContents() {
+            Func<bool> f = () => {
+                var a = new[] { "a" };
+                object o = ForceObject(a);
+                var b = (object[])o;
+                return b.GetType() == typeof(object[]);
+            };
+            this.TestTrue(f);
+        }
+
+        [Test]
+        public void TestCastInterface() {
+            Func<bool> f = () => {
+                object o = new[] { 1 };
+                var i = (IList<int>)o;
+                return i.Count == 1;
+            };
+            this.TestTrue(f);
+        }
+
+        [Test]
         public void TestIsType() {
             Func<bool> f = () => {
                 object o = "string";

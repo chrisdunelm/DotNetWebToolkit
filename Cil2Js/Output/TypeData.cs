@@ -11,6 +11,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         Name,
         Namespace,
         BaseType,
+        IsValueType,
+        IsArray,
+        ElementType,
 
     }
 }

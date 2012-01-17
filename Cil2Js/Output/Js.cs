@@ -434,36 +434,41 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name);
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
-                // Virtual method table
-                var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
-                var methods = allVirtualMethods.ValueOrDefault(type);
-                if (methods != null) {
-                    var idxs = methods
-                        .Select(x => {
-                            var xBasemost = x.GetBasemostMethod(x);
-                            return new { m = x, idx = virtualCallIndices[xBasemost] };
-                        })
-                        .OrderBy(x => x.idx)
-                        .ToArray();
-                    var s = string.Join(", ", idxs.Select(x => methodNames.ValueOrDefault(x.m, "null")));
-                    js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.VTable], s);
-                }
-                // Interface tables
-                var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
-                foreach (var iFace in implementedIFaces) {
-                    js.Append(", ");
-                    var iFaceName = interfaceNames[iFace.Key];
-                    js.AppendFormat("{0}:[", iFaceName);
-                    var qInterfaceTableNames =
-                        from iMethod in iFace.Value
-                        let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
-                        let idx = interfaceCallIndices[iMethod]
-                        orderby idx
-                        let methodName = methodNames[tMethod]
-                        select methodName;
-                    var interfaceTableNames = qInterfaceTableNames.ToArray();
-                    js.Append(string.Join(", ", interfaceTableNames));
-                    js.Append("]");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], type.IsValueType ? "true" : "false");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames[type.GetElementType()] : "null");
+                if (!type.Resolve().IsInterface) {
+                    // Virtual method table
+                    var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
+                    var methods = allVirtualMethods.ValueOrDefault(type);
+                    if (methods != null) {
+                        var idxs = methods
+                            .Select(x => {
+                                var xBasemost = x.GetBasemostMethod(x);
+                                return new { m = x, idx = virtualCallIndices[xBasemost] };
+                            })
+                            .OrderBy(x => x.idx)
+                            .ToArray();
+                        var s = string.Join(", ", idxs.Select(x => methodNames.ValueOrDefault(x.m, "null")));
+                        js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.VTable], s);
+                    }
+                    // Interface tables
+                    var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
+                    foreach (var iFace in implementedIFaces) {
+                        js.Append(", ");
+                        var iFaceName = interfaceNames[iFace.Key];
+                        js.AppendFormat("{0}:[", iFaceName);
+                        var qInterfaceTableNames =
+                            from iMethod in iFace.Value
+                            let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
+                            let idx = interfaceCallIndices[iMethod]
+                            orderby idx
+                            let methodName = methodNames[tMethod]
+                            select methodName;
+                        var interfaceTableNames = qInterfaceTableNames.ToArray();
+                        js.Append(string.Join(", ", interfaceTableNames));
+                        js.Append("]");
+                    }
                 }
                 // end
                 js.Append("};");

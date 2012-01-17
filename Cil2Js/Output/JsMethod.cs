@@ -375,8 +375,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitNewArray(ExprNewArray e) {
             this.js.Append("function() { var _ = new Array(");
             this.Visit(e.ExprNumElements);
-            this.js.AppendFormat("); _.{0} = {1}; for (var i = _.length-1; i >= 0; i--) _[i] = {2}; return _; }}()",
-                this.resolver.TypeDataNames[TypeData.VTable],
+            this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
                 this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
             return e;
         }
@@ -477,6 +476,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             switch (tokenType) {
             case TokenType.TypeRef:
             case TokenType.TypeDef:
+            case TokenType.TypeSpec:
                 var type = (TypeReference)e.Member;
                 var typeName = this.resolver.TypeNames[type];
                 this.js.Append(typeName);
