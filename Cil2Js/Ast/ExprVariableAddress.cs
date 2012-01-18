@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
-    public class ExprBox : Expr {
+    class ExprVariableAddress : Expr {
 
-        public ExprBox(Ctx ctx, Expr expr, TypeReference type)
+        public ExprVariableAddress(Ctx ctx, ExprVar variable)
             : base(ctx) {
-            this.Expr = expr;
-            this.type = type;
-            // Note that 'type' may not be the same as Expr.type, but it will always be assignment compatible
+            this.Variable = variable;
+            this.type = ctx.Module.Import(typeof(IntPtr));
         }
 
-        public Expr Expr { get; private set; }
+        public ExprVar Variable { get; private set; }
         private TypeReference type;
 
         public override Expr.NodeType ExprType {
-            get { return NodeType.Box; }
+            get { return NodeType.VariableAddress; }
         }
 
         public override TypeReference Type {

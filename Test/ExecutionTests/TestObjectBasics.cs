@@ -9,7 +9,7 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestObjectBasics : ExecutionTestBase {
 
-        [Test, Ignore("Hashcode cannot yet be returned")]
+        [Test]
         public void TestGetHashCode() {
             Func<bool> f = () => {
                 var a = new object();
@@ -24,6 +24,17 @@ namespace Test.ExecutionTests {
                     return false;
                 }
                 return true;
+            };
+            this.TestTrue(f);
+        }
+
+        [Test]
+        public void TestBaseType() {
+            Func<bool> f = () => {
+                string s = "str";
+                var sType = s.GetType();
+                var baseType = sType.BaseType;
+                return typeof(object) == baseType;
             };
             this.TestTrue(f);
         }

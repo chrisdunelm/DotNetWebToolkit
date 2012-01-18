@@ -18,6 +18,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         JsArrayLiteral,
         JsResolvedMethod,
         JsResolvedProperty,
+        JsTypeData,
+        JsTypeVarName,
+        JsExplicit,
+    }
+
+    public enum JsStmtType {
+        First = Stmt.NodeType.Max,
+
+        JsExplicitFunction,
     }
 
     public class JsAstVisitor : AstVisitor {
@@ -26,6 +35,30 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         public JsAstVisitor(bool throwOnNoOverride)
             : base(throwOnNoOverride) {
+        }
+
+        protected override ICode VisitStmt(Stmt s) {
+            var jsStmtType = (JsStmtType)s.StmtType;
+            switch (jsStmtType) {
+            case JsStmtType.JsExplicitFunction:
+                return this.VisitJsExplicitFunction((StmtJsExplicitFunction)s);
+            default:
+                if ((int)jsStmtType >= (int)JsStmtType.First) {
+                    throw new NotImplementedException("Cannot handle: " + jsStmtType);
+                } else {
+                    return base.VisitStmt(s);
+                }
+            }
+        }
+
+        protected virtual ICode VisitJsExplicitFunction(StmtJsExplicitFunction s) {
+            this.ThrowOnNoOverride();
+            var exprs = this.HandleList(s.Exprs, x => (Expr)this.Visit(x));
+            if (exprs != null) {
+                return new StmtJsExplicitFunction(s.Ctx, s.JavaScript, exprs);
+            } else {
+                return s;
+            }
         }
 
         protected override ICode VisitExpr(Expr e) {
@@ -47,6 +80,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return this.VisitJsResolvedMethod((ExprJsResolvedMethod)e);
             case JsExprType.JsResolvedProperty:
                 return this.VisitJsResolvedProperty((ExprJsResolvedProperty)e);
+            case JsExprType.JsTypeData:
+                return this.VisitJsTypeData((ExprJsTypeData)e);
+            case JsExprType.JsTypeVarName:
+                return this.VisitJsTypeVarName((ExprJsTypeVarName)e);
+            case JsExprType.JsExplicit:
+                return this.VisitJsExplicit((ExprJsExplicit)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
@@ -127,6 +166,26 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var obj = (Expr)this.Visit(e.Obj);
             if (obj != e.Obj) {
                 return new ExprJsResolvedProperty(e.Ctx, e.Type, obj, e.PropertyName);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsTypeData(ExprJsTypeData e) {
+            this.ThrowOnNoOverride();
+            return e;
+        }
+
+        protected virtual ICode VisitJsTypeVarName(ExprJsTypeVarName e) {
+            this.ThrowOnNoOverride();
+            return e;
+        }
+
+        protected virtual ICode VisitJsExplicit(ExprJsExplicit e) {
+            this.ThrowOnNoOverride();
+            var exprs = this.HandleList(e.Exprs, x => (Expr)this.Visit(x));
+            if (exprs != null) {
+                return new ExprJsExplicit(e.Ctx, e.JavaScript, e.Type, exprs);
             } else {
                 return e;
             }

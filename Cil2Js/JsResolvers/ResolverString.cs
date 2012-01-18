@@ -7,7 +7,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    static class StringResolver {
+    static class ResolverString {
 
         public static Expr op_Equality(ICall call) {
             var left = call.Args.ElementAt(0);

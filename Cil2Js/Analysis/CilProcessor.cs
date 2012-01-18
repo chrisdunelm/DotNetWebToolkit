@@ -82,6 +82,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.LdLoc(3);
             case Code.Ldloc_S:
                 return this.LdLoc(((VariableDefinition)inst.Operand).Index);
+            case Code.Ldloca:
+            case Code.Ldloca_S:
+                return this.LdLoca(((VariableDefinition)inst.Operand).Index);
             case Code.Stloc_0:
                 return this.StLoc(0);
             case Code.Stloc_1:
@@ -113,6 +116,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Clt:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan, this.ctx.TypeSystem.Boolean));
             case Code.Cgt:
+            case Code.Cgt_Un: // HACK
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan, this.ctx.TypeSystem.Boolean));
             case Code.Br_S:
             case Code.Br:
@@ -158,6 +162,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Call(inst, false);
             case Code.Newobj:
                 return this.NewObj(inst);
+            case Code.Initobj:
+                return this.InitObj(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Newarr:
                 return this.NewArray(inst);
             case Code.Ldlen:
@@ -172,6 +178,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.StoreStaticField(inst);
             case Code.Ldelem_I4:
             case Code.Ldelem_Any:
+            case Code.Ldelem_Ref:
                 return this.LoadElem(inst);
             case Code.Stelem_I4:
             case Code.Stelem_Ref:
@@ -183,16 +190,20 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Cast(this.ctx.IntPtr);
             case Code.Castclass:
                 return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
+            case Code.Isinst:
+                return this.IsInst(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Throw:
                 return new StmtThrow(this.ctx, this.stack.Pop());
             case Code.Ldftn:
                 return this.SsaLocalAssignment(new ExprMethodReference(this.ctx, ((MethodReference)inst.Operand).FullResolve(this.ctx)));
+            case Code.Ldtoken:
+                return this.LoadToken((MemberReference)inst.Operand);
             case Code.Dup:
                 return this.Dup();
             case Code.Box:
-                return this.Box(inst);
+                return this.Box(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Unbox_Any:
-                return this.Unbox(inst);
+                return this.UnboxAny(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Volatile: // Ignore
                 return null;
             case Code.Ret:
@@ -207,7 +218,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case 0:
                 return new StmtReturn(this.ctx, null);
             case 1:
-                return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.ReturnType.FullResolve(this.ctx)));
+                return new StmtReturn(this.ctx, this.stack.Pop());
+                //return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.ReturnType.FullResolve(this.ctx)));
             default:
                 throw new InvalidOperationException("Stack size incorrect for return instruction: " + this.stack.Count);
             }
@@ -243,6 +255,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(this.locals[idx]);
         }
 
+        private Stmt LdLoca(int idx) {
+            var expr = new ExprVariableAddress(this.ctx, (ExprVar)this.locals[idx]);
+            this.stack.Push(expr);
+            return null;
+        }
+
         private Stmt StLoc(int idx) {
             var expr = this.stack.Pop();
             var target = new ExprVarLocal(this.ctx, expr.Type);
@@ -263,6 +281,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt SsaLocalAssignment(Expr expr) {
+            if (expr.Type == null) {
+                Debugger.Break();
+            }
             var target = new ExprVarLocal(this.ctx, expr.Type);
             var assignment = new StmtAssignment(this.ctx, target, expr);
             this.stack.Push(target);
@@ -276,9 +297,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt Cast(TypeReference toType) {
-            var expr = new ExprCast(this.ctx, this.stack.Pop(), toType);
-            this.stack.Push(expr);
-            return null;
+            var expr = this.stack.Pop();
+            var cast = this.CastIfRequired(expr, toType);
+            return this.SsaLocalAssignment(cast);
+        }
+
+        private Stmt IsInst(TypeReference toType) {
+            var expr = new ExprIsInst(this.ctx, this.stack.Pop(), toType);
+            return this.SsaLocalAssignment(expr);
         }
 
         private Expr CastIfRequired(Expr expr, TypeReference requireType) {
@@ -326,6 +352,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
             return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt InitObj(TypeReference type) {
+            var expr = (ExprVariableAddress)this.stack.Pop();
+            var defaultValue = new ExprDefaultValue(this.ctx, type);
+            var stmt = new StmtAssignment(this.ctx, expr.Variable, defaultValue);
+            return stmt;
         }
 
         private Stmt LoadField(Instruction inst) {
@@ -391,15 +424,20 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return null;
         }
 
-        private Stmt Box(Instruction inst) {
+        private Stmt Box(TypeReference type) {
             var value = this.stack.Pop();
-            var expr = new ExprBox(this.ctx, value);
+            var expr = new ExprBox(this.ctx, value, type);
             return this.SsaLocalAssignment(expr);
         }
 
-        private Stmt Unbox(Instruction inst) {
+        private Stmt UnboxAny(TypeReference type) {
             var value = this.stack.Pop();
-            var expr = new ExprUnbox(this.ctx, value);
+            var expr = new ExprUnboxAny(this.ctx, value, type);
+            return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt LoadToken(MemberReference member) {
+            var expr = new ExprRuntimeHandle(this.ctx, member);
             return this.SsaLocalAssignment(expr);
         }
 

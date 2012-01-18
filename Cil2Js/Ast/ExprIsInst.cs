@@ -2,27 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
-    public class ExprBox : Expr {
+    public class ExprIsInst : Expr {
 
-        public ExprBox(Ctx ctx, Expr expr, TypeReference type)
+        public ExprIsInst(Ctx ctx, Expr expr, TypeReference toType)
             : base(ctx) {
             this.Expr = expr;
-            this.type = type;
-            // Note that 'type' may not be the same as Expr.type, but it will always be assignment compatible
+            this.toType = toType;
         }
 
         public Expr Expr { get; private set; }
-        private TypeReference type;
+        private TypeReference toType;
 
         public override Expr.NodeType ExprType {
-            get { return NodeType.Box; }
+            get { return NodeType.IsInst; }
         }
 
         public override TypeReference Type {
-            get { return this.type; }
+            get { return this.toType; }
         }
 
     }

@@ -25,11 +25,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             ArrayAccess,
             ArrayLength,
             Cast,
+            IsInst,
             MethodReference,
             DefaultValue,
             Assignment,
             Box,
             Unbox,
+            RuntimeHandle,
+            VariableAddress,
 
             Max = 1000
         }

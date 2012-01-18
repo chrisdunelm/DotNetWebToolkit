@@ -192,5 +192,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return default(TResult);
         }
 
+        [DebuggerStepThrough]
+        public static IEnumerable<T> EmptyOf<T>(this IEnumerable<T> en) {
+            return Enumerable.Empty<T>();
+        }
+
     }
 }

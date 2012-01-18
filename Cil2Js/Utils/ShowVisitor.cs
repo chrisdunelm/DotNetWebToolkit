@@ -322,6 +322,12 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
+        protected override ICode VisitIsInst(ExprIsInst e) {
+            this.code.AppendFormat("({0}?)", e.Type);
+            this.Visit(e.Expr);
+            return e;
+        }
+
         protected override ICode VisitThrow(StmtThrow s) {
             this.NewLine();
             this.code.Append("throw");
@@ -405,10 +411,20 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
-        protected override ICode VisitUnbox(ExprUnbox e) {
+        protected override ICode VisitUnbox(ExprUnboxAny e) {
             this.code.Append("unbox(");
             this.Visit(e.Expr);
             this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitDefaultValue(ExprDefaultValue e) {
+            this.code.AppendFormat("default({0})", e.Type.Name);
+            return e;
+        }
+
+        protected override ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
+            this.code.AppendFormat("{0}<{1}>", e.Type.Name, e.Member.Name);
             return e;
         }
 
