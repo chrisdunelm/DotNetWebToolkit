@@ -70,6 +70,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         typesSeen.Add(type, 1);
                     }
                 }
+                foreach (var iFace in tRef.EnumAllInterfaces()) {
+                    if (!typesSeen.ContainsKey(iFace)) {
+                        typesSeen.Add(iFace, 1);
+                    }
+                }
                 if (ast == null) {
                     if (tRef.HasGenericParameters) {
                         throw new InvalidOperationException("Type must not have generic parameters");
@@ -237,6 +242,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 foreach (var baseType in bases) {
                     typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
                 }
+                if (type.IsArray) {
+                    var elType = type.GetElementType().FullResolve(type, null);
+                    typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
+                    bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
+                    foreach (var baseType in bases) {
+                        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
+                    }
+                }
             }
 
             var instanceFieldsByType = fieldAccesses
@@ -368,12 +381,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return vCallsWithThisType;
             }, new MethodReference[0]);
 
-            //// Create interface call tables
-            //var interfaceNameGen = new NameGenerator();
-            //// TODO: Doesn't take use frequency into account yet
-            //var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => interfaceNameGen.GetNewName(), TypeExtensions.TypeRefEqComparerInstance);
-            //var interfaceCallIndices = interfaceCalls.SelectMany(x => x.Value.Select((m, i) => new { m, i })).ToDictionary(x => x.m, x => x.i, TypeExtensions.MethodRefEqComparerInstance);
-
             var typeData = Enum.GetValues(typeof(TypeData)).Cast<TypeData>().ToArray();
 
             // Name all items that are within the type information
@@ -423,52 +430,59 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var typesSeenOrdered = typesSeen
                 .Where(x => x.Value > 0)
                 .Select(x => x.Key)
-                //.OrderBy(x => x, TypeExtensions.BaseFirstComparerInstance)
-                .OrderByBaseFirst(x => x)
+                .OrderByReferencedFirst(x => x)
                 .ToArray();
             foreach (var type in typesSeenOrdered) {
+                var tDef = type.Resolve();
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 // Type information
                 var baseType = type.GetBaseType();
-                // TODO: Use auto-naming on these
-                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name);
+                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name());
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], type.IsValueType ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames[type.GetElementType()] : "null");
-                if (!type.Resolve().IsInterface) {
-                    // Virtual method table
-                    var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
-                    var methods = allVirtualMethods.ValueOrDefault(type);
-                    if (methods != null) {
-                        var idxs = methods
-                            .Select(x => {
-                                var xBasemost = x.GetBasemostMethod(x);
-                                return new { m = x, idx = virtualCallIndices[xBasemost] };
-                            })
-                            .OrderBy(x => x.idx)
-                            .ToArray();
-                        var s = string.Join(", ", idxs.Select(x => methodNames.ValueOrDefault(x.m, "null")));
-                        js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.VTable], s);
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames.ValueOrDefault(type.GetElementType(), "null") : "null");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
+                if (!tDef.IsInterface) {
+                    var allInterfaces = type.EnumAllInterfaces().ToArray();
+                    js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.Interfaces],
+                        string.Join(", ", allInterfaces.Select(x => typeNames.ValueOrDefault(x)).Where(x => x != null)));
+                    if (!tDef.IsAbstract) {
+                        // Virtual method table, only needed on concrete types
+                        var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
+                        var methods = allVirtualMethods.ValueOrDefault(type);
+                        if (methods != null) {
+                            var idxs = methods
+                                .Select(x => {
+                                    var xBasemost = x.GetBasemostMethod(x);
+                                    return new { m = x, idx = virtualCallIndices[xBasemost] };
+                                })
+                                .OrderBy(x => x.idx)
+                                .ToArray();
+                            var s = string.Join(", ", idxs.Select(x => methodNames.ValueOrDefault(x.m, "null")));
+                            js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.VTable], s);
+                        }
+                        // Interface tables, only needed on concrete types
+                        var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
+                        foreach (var iFace in implementedIFaces) {
+                            js.Append(", ");
+                            var iFaceName = interfaceNames[iFace.Key];
+                            js.AppendFormat("{0}:[", iFaceName);
+                            var qInterfaceTableNames =
+                                from iMethod in iFace.Value
+                                let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
+                                let idx = interfaceCallIndices[iMethod]
+                                orderby idx
+                                let methodName = methodNames[tMethod]
+                                select methodName;
+                            var interfaceTableNames = qInterfaceTableNames.ToArray();
+                            js.Append(string.Join(", ", interfaceTableNames));
+                            js.Append("]");
+                        }
                     }
-                    // Interface tables
-                    var implementedIFaces = interfaceCalls.Where(x => typeAndBases.Any(y => y.DoesImplement(x.Key))).ToArray();
-                    foreach (var iFace in implementedIFaces) {
-                        js.Append(", ");
-                        var iFaceName = interfaceNames[iFace.Key];
-                        js.AppendFormat("{0}:[", iFaceName);
-                        var qInterfaceTableNames =
-                            from iMethod in iFace.Value
-                            let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
-                            let idx = interfaceCallIndices[iMethod]
-                            orderby idx
-                            let methodName = methodNames[tMethod]
-                            select methodName;
-                        var interfaceTableNames = qInterfaceTableNames.ToArray();
-                        js.Append(string.Join(", ", interfaceTableNames));
-                        js.Append("]");
-                    }
+                } else {
+                    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
                 }
                 // end
                 js.Append("};");

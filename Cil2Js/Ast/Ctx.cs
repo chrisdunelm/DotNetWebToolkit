@@ -16,6 +16,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
             this.This = this.MDef.IsStatic ? null : new ExprVarThis(this, tRef);
+            this.type = new Lazy<TypeReference>(() => this.Module.Import(typeof(Type)));
         }
 
         public TypeReference TRef { get; private set; }
@@ -37,6 +38,9 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public TypeReference Char { get { return this.TypeSystem.Char; } }
         public TypeReference String { get { return this.TypeSystem.String; } }
         public TypeReference IntPtr { get { return this.TypeSystem.IntPtr; } }
+
+        private Lazy<TypeReference> type;
+        public TypeReference Type { get { return this.type.Value; } }
 
     }
 }

@@ -73,6 +73,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TBoolean, "System.Type.op_Equality", TType, TType), ResolverType.op_Equality },
             { M.Def(TBoolean, "System.Type.op_Inequality", TType, TType), ResolverType.op_Inequality },
             { M.Def(TType, "System.Type.GetTypeFromHandle", "System.RuntimeTypeHandle"), ResolverType.GetTypeFromHandle },
+
+            { M.Def(TBoolean, "System.RuntimeTypeHandle.IsInterface", "System.RuntimeType"), ResolverSystem.RuntimeTypeHandle_IsInterface },
         };
 
         public static Expr ResolveCall(ICall call) {

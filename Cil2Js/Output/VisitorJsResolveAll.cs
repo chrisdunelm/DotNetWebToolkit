@@ -36,6 +36,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
         }
 
+        protected override ICode VisitNewArray(ExprNewArray e) {
+            var ctx = e.Ctx;
+            var miCreateMethod = typeof(InternalFunctions).GetMethod("CreateArray");
+            var mCreateMethod = ctx.Module.Import(miCreateMethod).MakeGeneric(e.ElementType);
+            var expr = new ExprCall(ctx, mCreateMethod, null, e.ExprNumElements);
+            return expr;
+        }
+
         protected override ICode VisitBinary(ExprBinary e) {
             if (e.Op == BinaryOp.GreaterThan && !e.Left.Type.IsValueType && !e.Right.Type.IsValueType) {
                 // C# compiles <obj> != null to <obj> > null. Change to inequality
@@ -77,15 +85,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitIsInst(ExprIsInst e) {
             var ctx = e.Ctx;
+            var eExpr = new ExprVarLocal(ctx, e.Expr.Type);
+            var eExprAssign = new ExprAssignment(ctx, eExpr, e.Expr);
             var miIsAssignableTo = ((Func<Type, Type, bool>)InternalFunctions.IsAssignableTo).Method;
             var mIsAssignableTo = ctx.Module.Import(miIsAssignableTo);
             var miGetType = typeof(object).GetMethod("GetType");
             var mGetType = ctx.Module.Import(miGetType);
-            var fromType = new ExprCall(ctx, mGetType, e.Expr);
+            var fromType = new ExprCall(ctx, mGetType, eExprAssign);
             var toType = new ExprJsTypeVarName(ctx, e.Type);
             var isAssignableCall = new ExprCall(ctx, mIsAssignableTo, null, fromType, toType);
             var eNull = new ExprLiteral(ctx, null, ctx.Object);
-            var expr = new ExprTernary(ctx, isAssignableCall, e.Expr, eNull);
+            var expr = new ExprTernary(ctx, isAssignableCall, eExpr, eNull);
             return expr;
         }
 

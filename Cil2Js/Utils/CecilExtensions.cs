@@ -299,7 +299,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static void TypeTreeTraverse<T, TState>(this IEnumerable<T> en, Func<T, TypeReference> selectType, Func<T, TState, TState> action, TState initState = default(TState)) {
-            var ordered = en.Select(x => new { item = x, type = selectType(x) }).OrderByBaseFirst(x => x.type).ToArray();
+            var ordered = en.Select(x => new { item = x, type = selectType(x) }).OrderByReferencedFirst(x => x.type).ToArray();
             var states = new Dictionary<TypeReference, TState>(TypeExtensions.TypeRefEqComparerInstance);
             foreach (var x in ordered) {
                 var baseType = x.type.GetBaseType();
@@ -455,6 +455,24 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static CustomAttribute GetCustomAttribute<TAttr>(this MethodDefinition m) {
             return m.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        }
+
+        public static string Name(this TypeReference t) {
+            var fullName = t.FullName;
+            int depth = 0;
+            for (int i = fullName.Length - 1; i >= 0; i--) {
+                var c = fullName[i];
+                if (c == '<') {
+                    depth--;
+                }
+                if (c == '>') {
+                    depth++;
+                }
+                if (depth == 0 && c == '.') {
+                    return fullName.Substring(i + 1);
+                }
+            }
+            return fullName;
         }
 
     }

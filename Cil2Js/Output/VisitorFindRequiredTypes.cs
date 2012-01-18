@@ -23,16 +23,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitBox(e);
         }
 
-        protected override ICode VisitJsTypeData(ExprJsTypeData e) {
-            // TODO:
-            //this.types.Add(e.Ty
-            return base.VisitJsTypeData(e);
-        }
-
         protected override ICode VisitJsTypeVarName(ExprJsTypeVarName e) {
             this.types.Add(e.TypeRef);
             return base.VisitJsTypeVarName(e);
         }
 
+        //override VisitC
+        protected override ICode VisitJsInvoke(ExprJsInvoke e) {
+            this.types.Add(e.Type);
+            return base.VisitJsInvoke(e);
+        }
     }
 }

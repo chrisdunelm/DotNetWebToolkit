@@ -58,56 +58,40 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static readonly IEqualityComparer<FieldReference> FieldReqEqComparerInstance = new FieldRefEqComparer();
 
-        class BaseFirstComparer : IComparer<TypeReference> {
-
-            private bool IsABaseOfB(TypeReference a, TypeReference b) {
-                var t = b;
-                for (; ; ) {
-                    t = t.GetBaseType();
-                    if (t == null) {
-                        return false;
-                    }
-                    if (t.IsSame(a)) {
-                        return true;
-                    }
-                }
+        private static bool IsABeforeB(TypeReference a, TypeReference b) {
+            // Interfaces always come first
+            var aDef  =a.Resolve();
+            var bDef=b.Resolve();
+            if (aDef.IsInterface && !bDef.IsInterface) {
+                return true;
             }
-
-            public int Compare(TypeReference x, TypeReference y) {
-                if (this.IsABaseOfB(x, y)) {
-                    return -1;
-                }
-                if (this.IsABaseOfB(y, x)) {
-                    return 1;
-                }
-                return 0;
-            }
-
-        }
-
-        private static readonly IComparer<TypeReference> BaseFirstComparerInstance = new BaseFirstComparer();
-
-        private static bool IsABaseOfB(TypeReference a, TypeReference b) {
-            var t = b;
-            for (; ; ) {
-                t = t.GetBaseType();
-                if (t == null) {
-                    return false;
-                }
+            // Check base-type
+            var t = b.GetBaseType();
+            while (t != null) {
                 if (t.IsSame(a)) {
+                    // a is a base-type of b
+                    return true;
+                }
+                t = t.GetBaseType();
+            }
+            // Check array element-type
+            if (b.IsArray) {
+                var bElType = b.GetElementType();
+                if (bElType.IsSame(a)) {
                     return true;
                 }
             }
+            return false;
         }
 
-        public static IEnumerable<T> OrderByBaseFirst<T>(this IEnumerable<T> en, Func<T, TypeReference> selector) {
+        public static IEnumerable<T> OrderByReferencedFirst<T>(this IEnumerable<T> en, Func<T, TypeReference> selector) {
             // TODO: Make this more efficient.
             // Cannot use built-in sort/orderby, as set is only partially ordered
             var ret = new List<T>();
             foreach (var item in en) {
                 bool inserted = false;
                 for (int i = 0; i < ret.Count; i++) {
-                    if (IsABaseOfB(selector(item), selector(ret[i]))) {
+                    if (IsABeforeB(selector(item), selector(ret[i]))) {
                         ret.Insert(i, item);
                         inserted = true;
                         break;
@@ -295,33 +279,6 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
             return false;
         }
-
-        ///// <summary>
-        ///// Returns the method in 'type' that implements the interface method 'iFaceMethod'
-        ///// </summary>
-        ///// <param name="type"></param>
-        ///// <param name="iFaceMethod"></param>
-        ///// <returns></returns>
-        //public static MethodDefinition GetInterfaceMethod(this TypeDefinition type, MethodDefinition iFaceMethod) {
-        //    return type.EnumThisAllBaseTypes().SelectMany(x => x.Methods).First(m => {
-        //        // Explicit implementation
-        //        if (m.Overrides.Any(x => x.FullName == iFaceMethod.FullName)) {
-        //            return true;
-        //        }
-        //        // Implicit implementation
-        //        return m.MethodMatch(iFaceMethod);
-        //    });
-        //}
-
-        //public static IEnumerable<TypeDefinition> EnumThisAndBases(this TypeDefinition type) {
-        //    for (; ; ) {
-        //        yield return type;
-        //        type = type.GetBaseType();
-        //        if (type == null) {
-        //            break;
-        //        }
-        //    }
-        //}
 
     }
 }

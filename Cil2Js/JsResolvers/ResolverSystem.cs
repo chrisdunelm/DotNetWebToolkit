@@ -81,5 +81,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return stmt;
         }
 
+        public static Expr RuntimeTypeHandle_IsInterface(ICall call) {
+            var ctx = call.Ctx;
+            var runtimeType = call.Args.First();
+            var eTypeData = new ExprJsTypeData(ctx, TypeData.IsInterface);
+            var expr = new ExprJsExplicit(ctx, "{0}.{1}", ctx.Boolean, runtimeType, eTypeData);
+            return expr;
+        }
+
     }
 }

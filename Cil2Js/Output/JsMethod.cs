@@ -41,17 +41,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var sb = new StringBuilder();
             // Method declaration
             var methodName = resolver.MethodNames[mRef];
-            var pNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y], "_")).ToArray();
+            var parameterNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y], "_")).ToArray();
             if (!mDef.IsStatic) {
                 var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x], "_");
-                pNames = pNames.Prepend(thisName).ToArray();
+                parameterNames = parameterNames.Prepend(thisName).ToArray();
             }
-            sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", pNames));
+            sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", parameterNames));
             // Variable declarations
             var declVars = v.vars
                 .Select(x => new { name = resolver.LocalVarNames[x], type = x.Type })
-                .Where(x => !pNames.Contains(x.name))
-                .Select(x => x.name + " = " + DefaultValuer.Get(x.type))
+                .Where(x => !parameterNames.Contains(x.name))
+                .Select(x => x.name)
                 .Distinct() // Bit of a hack, but works for now
                 .ToArray();
             if (declVars.Any()) {
@@ -373,11 +373,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitNewArray(ExprNewArray e) {
-            this.js.Append("function() { var _ = new Array(");
-            this.Visit(e.ExprNumElements);
-            this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
-                this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
-            return e;
+            //this.js.Append("function() { var _ = new Array(");
+            //this.Visit(e.ExprNumElements);
+            //this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
+            //    this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
+            //return e;
+            throw new InvalidOperationException("Should never get here");
         }
 
         protected override ICode VisitArrayLength(ExprArrayLength e) {
@@ -448,8 +449,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitIsInst(ExprIsInst e) {
-            // TODO: All of it
-            throw new Exception();
+            throw new InvalidOperationException("This should never occur");
         }
 
         protected override ICode VisitEmpty(StmtEmpty s) {
