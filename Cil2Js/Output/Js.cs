@@ -444,10 +444,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames.ValueOrDefault(type.GetElementType(), "null") : "null");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
+                var assignableTo = typesSeenOrdered.Where(x => type.IsAssignableTo(x)).ToArray();
+                js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
                 if (!tDef.IsInterface) {
-                    var allInterfaces = type.EnumAllInterfaces().ToArray();
-                    js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.Interfaces],
-                        string.Join(", ", allInterfaces.Select(x => typeNames.ValueOrDefault(x)).Where(x => x != null)));
+                    //var allInterfaces = type.EnumAllInterfaces().ToArray();
+                    //js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.Interfaces],
+                    //    string.Join(", ", allInterfaces.Select(x => typeNames.ValueOrDefault(x)).Where(x => x != null)));
                     if (!tDef.IsAbstract) {
                         // Virtual method table, only needed on concrete types
                         var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
@@ -481,8 +483,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             js.Append("]");
                         }
                     }
-                } else {
-                    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
+                //} else {
+                //    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
                 }
                 // end
                 js.Append("};");

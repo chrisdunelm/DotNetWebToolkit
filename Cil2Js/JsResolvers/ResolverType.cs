@@ -53,16 +53,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return stmt;
         }
 
-        public static Stmt GetInterfaces(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var eInterfaces = new ExprJsTypeData(ctx, TypeData.Interfaces);
-            var ret = new ExprVarLocal(ctx, ctx.Type);
-            var typeArrayType = ctx.Type.MakeArray();
-            var arrayType = new ExprJsTypeVarName(ctx, typeArrayType);
-            var js = "{2}={0}.{1}.slice(0); {2}._={3}; return {2};";
-            var stmt = new StmtJsExplicitFunction(ctx,js, ctx.This, eInterfaces, ret, arrayType);
-            newTypesSeen.Add(typeArrayType);
-            return stmt;
-        }
+        //public static Stmt GetInterfaces(Ctx ctx, List<TypeReference> newTypesSeen) {
+        //    var eInterfaces = new ExprJsTypeData(ctx, TypeData.Interfaces);
+        //    var ret = new ExprVarLocal(ctx, ctx.Type);
+        //    var typeArrayType = ctx.Type.MakeArray();
+        //    var arrayType = new ExprJsTypeVarName(ctx, typeArrayType);
+        //    var js = "{2}={0}.{1}.slice(0); {2}._={3}; return {2};";
+        //    var stmt = new StmtJsExplicitFunction(ctx,js, ctx.This, eInterfaces, ret, arrayType);
+        //    newTypesSeen.Add(typeArrayType);
+        //    return stmt;
+        //}
 
         public static Stmt GetAttributeFlagsImpl(Ctx ctx, List<TypeReference> newTypesSeen) {
             var stmt = new StmtJsExplicitFunction(ctx, "return 0;");

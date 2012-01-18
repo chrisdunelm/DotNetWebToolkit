@@ -59,20 +59,23 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static readonly IEqualityComparer<FieldReference> FieldReqEqComparerInstance = new FieldRefEqComparer();
 
         private static bool IsABeforeB(TypeReference a, TypeReference b) {
-            // Interfaces always come first
-            var aDef  =a.Resolve();
-            var bDef=b.Resolve();
-            if (aDef.IsInterface && !bDef.IsInterface) {
+            //// Interfaces always come first
+            //var aDef  =a.Resolve();
+            //var bDef=b.Resolve();
+            //if (aDef.IsInterface && !bDef.IsInterface) {
+            //    return true;
+            //}
+            //// Check base-type
+            //var t = b.GetBaseType();
+            //while (t != null) {
+            //    if (t.IsSame(a)) {
+            //        // a is a base-type of b
+            //        return true;
+            //    }
+            //    t = t.GetBaseType();
+            //}
+            if (b.IsAssignableTo(a)) {
                 return true;
-            }
-            // Check base-type
-            var t = b.GetBaseType();
-            while (t != null) {
-                if (t.IsSame(a)) {
-                    // a is a base-type of b
-                    return true;
-                }
-                t = t.GetBaseType();
             }
             // Check array element-type
             if (b.IsArray) {

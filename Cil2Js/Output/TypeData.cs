@@ -15,7 +15,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         IsArray,
         ElementType,
         IsInterface,
-        Interfaces,
+        //Interfaces,
+        AssignableTo,
 
     }
 }
