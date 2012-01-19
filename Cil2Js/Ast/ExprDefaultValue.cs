@@ -10,9 +10,6 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public ExprDefaultValue(Ctx ctx, TypeReference type)
             : base(ctx) {
-            //if (type.IsGenericParameter) {
-            //    throw new ArgumentException("Cannot be generic parameter");
-            //}
             this.type = type.FullResolve(ctx);
         }
 
