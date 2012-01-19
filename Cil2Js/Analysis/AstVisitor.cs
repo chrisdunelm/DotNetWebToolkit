@@ -547,12 +547,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         protected virtual ICode VisitVariableAddress(ExprVariableAddress e) {
             this.ThrowOnNoOverride();
-            var variable = (ExprVar)this.Visit(e.Variable);
-            if (variable != e.Variable) {
-                return new ExprVariableAddress(e.Ctx, variable);
-            } else {
-                return e;
-            }
+            return e;
+            //var variable = (ExprVar)this.Visit(e.Variable);
+            //if (variable != e.Variable) {
+            //    return new ExprVariableAddress(e.Ctx, variable);
+            //} else {
+            //    return e;
+            //}
         }
 
         protected virtual ICode VisitFieldAddress(ExprFieldAddress e) {

@@ -10,7 +10,7 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestNullables : ExecutionTestBase {
 
-        [Test, Ignore("Value types not yet supported")]
+        [Test]
         public void TestJustNull() {
             Func<bool> f = () => {
                 int? i = null;

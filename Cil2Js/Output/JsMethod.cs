@@ -28,9 +28,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (mDef.IsAbstract) {
                 throw new ArgumentException("Should never need to transcode an abstract method");
             }
-            //if (mDef.IsInternalCall) {
-            //    throw new ArgumentException("Cannot transcode an internal method");
-            //}
             var tRef = mRef.DeclaringType;
             var tDef = tRef.Resolve();
 
@@ -51,7 +48,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var declVars = v.vars
                 .Select(x => new { name = resolver.LocalVarNames[x], type = x.Type })
                 .Where(x => !parameterNames.Contains(x.name))
-                .Select(x => x.name)
+                .Select(x => {
+                    var name = x.name;
+                    if (x.type.IsValueType) {
+                        name += " = " + DefaultValuer.Get(x.type, resolver.FieldNames);
+                    }
+                    return name;
+                })
                 .Distinct() // Bit of a hack, but works for now
                 .ToArray();
             if (declVars.Any()) {
@@ -501,7 +504,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
-            this.Visit(e.Variable);
+            //this.Visit(e.Variable);
             return e;
         }
 

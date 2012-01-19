@@ -57,6 +57,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     if (a.mustKeep) {
                         continue;
                     }
+                    if (a.assignment == null) {
+                        continue;
+                    }
                     if (a.count == 1) {
                         if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
                             c2 = VisitorReplace.V(c2, a.assignment, null);

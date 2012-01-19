@@ -67,7 +67,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             v.Visit(root);
             this.instResults = v.instResults.ToDictionary(x => x.Inst);
             this.CreateOrMergeBsi((Stmt)root, new ExprVarPhi[0],
-                this.ctx.MDef.Body.Variables.Select(x => (Expr)null).ToArray(),
+                this.ctx.MDef.Body.Variables.Select(x => (Expr)new ExprVarLocal(this.ctx, x.VariableType.FullResolve(this.ctx))).ToArray(),
                 this.ctx.MRef.Parameters.Select(x =>
                     (Expr)new ExprVarParameter(this.ctx, x)
                     ).ToArray());

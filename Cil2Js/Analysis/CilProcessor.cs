@@ -258,7 +258,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt LdLoca(int idx) {
-            var expr = new ExprVariableAddress(this.ctx, (ExprVar)this.locals[idx]);
+            var type = this.ctx.MDef.Body.Variables[idx].VariableType.FullResolve(this.ctx);
+            //var v = new ExprVarLocal(this.ctx, type);
+            //this.locals[idx] = v;
+            //var v = (ExprVar)this.locals[idx];
+            var expr = new ExprVariableAddress(this.ctx, idx, type);
+            //return this.SsaLocalAssignment(expr);
             this.stack.Push(expr);
             return null;
         }
@@ -310,6 +315,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Expr CastIfRequired(Expr expr, TypeReference requireType) {
+            if (expr.Type.IsPointer) {
+                var ptrType = (PointerType)expr.Type;
+                var elType = ptrType.ElementType;
+                if (elType.IsAssignableTo(requireType)) {
+                    return this.locals[((ExprVariableAddress)expr).Index];
+                }
+            }
             if (expr.Type.IsAssignableTo(requireType)) {
                 return expr;
             } else {
@@ -357,10 +369,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt InitObj(TypeReference type) {
-            var expr = (ExprVariableAddress)this.stack.Pop();
+            var ptr = (ExprVariableAddress)this.stack.Pop();
             var defaultValue = new ExprDefaultValue(this.ctx, type);
-            var stmt = new StmtAssignment(this.ctx, expr.Variable, defaultValue);
+            var v = (ExprVar)this.locals[ptr.Index];
+            var stmt = new StmtAssignment(this.ctx, v, defaultValue);
             return stmt;
+            //throw new Exception();
+            //var stmt = new StmtAssignment(this.ctx, expr.Variable, defaultValue);
+            //return stmt;
         }
 
         private Stmt LoadField(Instruction inst) {

@@ -57,16 +57,17 @@ namespace Test {
             public int x;
         }
 
+        static S1 GS1() {
+            return new S1();
+        }
+
         static void Main(string[] args) {
-            var s1 = new S1 { x = 1 };
-            object o = s1;
-            var s2 = (S1)o;
-            s2.x = 2;
+            var s1 = GS1();
             //var mi = typeof(Program).GetMethod("T0");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestArrays() { Verbose = true };
-            t.TestEnumerable();
+            var t = new TestValueTypes() { Verbose = true };
+            t.TestPassStructAsObjectWithMutation();
             return;
 
         }

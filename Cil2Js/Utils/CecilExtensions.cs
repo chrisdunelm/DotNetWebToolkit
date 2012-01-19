@@ -416,6 +416,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return new ArrayType(t);
         }
 
+        public static TypeReference MakePointer(this TypeReference t) {
+            return new PointerType(t);
+        }
+
         public static MethodReference MakeGeneric(this MethodReference m, params TypeReference[] args) {
             if (m.GenericParameters.Count != args.Length) {
                 throw new ArgumentException("Wrong number of generic arguments");

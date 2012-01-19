@@ -429,8 +429,8 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
-            this.code.Append("@");
-            this.Visit(e.Variable);
+            this.code.AppendFormat("@[local:{0}]", e.Index);
+            //this.Visit(e.Variable);
             return e;
         }
 

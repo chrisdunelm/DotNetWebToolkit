@@ -27,5 +27,11 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return string.Format("DefaultValue({0})", this.Type);
         }
 
+        public override Special Specials {
+            get {
+                return Special.PossibleSideEffects;
+            }
+        }
+
     }
 }
