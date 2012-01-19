@@ -31,7 +31,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             } else {
                 var fields = type.EnumResolvedFields().ToArray();
-                var defaultValue = "{" + string.Join(",", fields.Select(x => fieldNames[x] + ":" + Get(x.FieldType, fieldNames))) + "}";
+                var defaultValue = "{" + string.Join(",",
+                    fields.Where(x => fieldNames.ContainsKey(x))
+                    .Select(x => fieldNames[x] + ":" + Get(x.FieldType, fieldNames))) + "}";
                 return defaultValue;
             }
         }
