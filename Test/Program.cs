@@ -66,8 +66,8 @@ namespace Test {
             //var mi = typeof(Program).GetMethod("T0");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestValueTypes() { Verbose = true };
-            t.TestPassStructAsObjectWithMutation();
+            var t = new TestArrays() { Verbose = true };
+            t.TestICollection();
             return;
 
         }

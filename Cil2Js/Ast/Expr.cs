@@ -31,6 +31,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             Assignment,
             Box,
             Unbox,
+            Conv,
             RuntimeHandle,
             VariableAddress,
             FieldAddress,

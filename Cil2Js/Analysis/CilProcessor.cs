@@ -187,9 +187,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Stelem_Any:
                 return this.StoreElem(inst);
             case Code.Conv_I4:
-                return this.Cast(this.ctx.Int32);
+                return this.Conv(this.ctx.Int32);
             case Code.Conv_I:
-                return this.Cast(this.ctx.IntPtr);
+                return this.Conv(this.ctx.IntPtr);
             case Code.Castclass:
                 return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Isinst:
@@ -303,9 +303,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return assignment;
         }
 
+        private Stmt Conv(TypeReference convTo) {
+            var expr = this.stack.Pop();
+            var conv = new ExprConv(this.ctx, expr, convTo);
+            return this.SsaLocalAssignment(conv);
+        }
+
         private Stmt Cast(TypeReference toType) {
             var expr = this.stack.Pop();
-            var cast = this.CastIfRequired(expr, toType);
+            var cast = new ExprCast(this.ctx, expr, toType);
             return this.SsaLocalAssignment(cast);
         }
 
@@ -314,20 +320,20 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(expr);
         }
 
-        private Expr CastIfRequired(Expr expr, TypeReference requireType) {
-            if (expr.Type.IsPointer) {
-                var ptrType = (PointerType)expr.Type;
-                var elType = ptrType.ElementType;
-                if (elType.IsAssignableTo(requireType)) {
-                    return this.locals[((ExprVariableAddress)expr).Index];
-                }
-            }
-            if (expr.Type.IsAssignableTo(requireType)) {
-                return expr;
-            } else {
-                return new ExprCast(this.ctx, expr, requireType);
-            }
-        }
+        //private Expr CastIfRequired(Expr expr, TypeReference requireType) {
+        //    if (expr.Type.IsPointer) {
+        //        var ptrType = (PointerType)expr.Type;
+        //        var elType = ptrType.ElementType;
+        //        if (elType.IsAssignableTo(requireType)) {
+        //            return this.locals[((ExprVariableAddress)expr).Index];
+        //        }
+        //    }
+        //    if (expr.Type.IsAssignableTo(requireType)) {
+        //        return expr;
+        //    } else {
+        //        return new ExprCast(this.ctx, expr, requireType);
+        //    }
+        //}
 
         private Stmt Call(Instruction inst, bool isVirtualCallInst) {
             var callingRef = ((MethodReference)inst.Operand).FullResolve(this.ctx);
@@ -342,9 +348,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 if (argType.IsGenericParameter) {
                     throw new InvalidOperationException();
                 }
-                argExprs[i] = this.CastIfRequired(argExprs[i], argType);
+                argExprs[i] = this.DerefIfPointer(argExprs[i]);
             }
-            var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
+            //var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
+            var obj = callingRef.HasThis ? this.DerefIfPointer(this.stack.Pop()) : null;
             var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall);
             if (callingRef.ReturnType.IsVoid()) {
                 return new StmtWrapExpr(this.ctx, exprCall);
@@ -358,36 +365,42 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var numArgs = ctorRef.Parameters.Count;
             var argExprs = new Expr[numArgs];
             for (int i = numArgs - 1; i >= 0; i--) {
-                argExprs[i] = this.stack.Pop();
+                argExprs[i] = this.DerefIfPointer(this.stack.Pop());
             }
-            for (int i = 0; i < numArgs; i++) {
-                var argType = ctorRef.Parameters[i].ParameterType.FullResolve(ctorRef);
-                argExprs[i] = this.CastIfRequired(argExprs[i], argType);
-            }
+            //for (int i = 0; i < numArgs; i++) {
+            //    var argType = ctorRef.Parameters[i].ParameterType.FullResolve(ctorRef);
+            //    //argExprs[i] = this.CastIfRequired(argExprs[i], argType);
+            //    argExprs[i] = this.DerefIfPointer(argExprs[i]);
+            //}
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
             return this.SsaLocalAssignment(expr);
         }
 
+        private Expr DerefIfPointer(Expr e) {
+            if (e.ExprType == Expr.NodeType.VariableAddress) {
+                var eVAddr = (ExprVariableAddress)e;
+                var l = this.locals[eVAddr.Index];
+                return l;
+            }
+            return e;
+        }
+
         private Stmt InitObj(TypeReference type) {
-            var ptr = (ExprVariableAddress)this.stack.Pop();
             var defaultValue = new ExprDefaultValue(this.ctx, type);
-            var v = (ExprVar)this.locals[ptr.Index];
+            var v = (ExprVar)this.DerefIfPointer(this.stack.Pop());
             var stmt = new StmtAssignment(this.ctx, v, defaultValue);
             return stmt;
-            //throw new Exception();
-            //var stmt = new StmtAssignment(this.ctx, expr.Variable, defaultValue);
-            //return stmt;
         }
 
         private Stmt LoadField(Instruction inst) {
-            var obj = this.stack.Pop();
+            var obj = this.DerefIfPointer(this.stack.Pop());
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAccess(this.ctx, obj, fRef);
             return this.SsaLocalAssignment(expr);
         }
 
         private Stmt LoadFieldAddress(Instruction inst) {
-            var obj = this.stack.Pop();
+            var obj = this.DerefIfPointer(this.stack.Pop());
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAddress(this.ctx, obj, fRef);
             return this.SsaLocalAssignment(expr);
@@ -395,7 +408,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt StoreField(Instruction inst) {
             var value = this.stack.Pop();
-            var obj = this.stack.Pop();
+            var obj = this.DerefIfPointer(this.stack.Pop());
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAccess(this.ctx, obj, fRef);
             return new StmtAssignment(this.ctx, expr, value);

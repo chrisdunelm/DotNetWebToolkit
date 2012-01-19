@@ -16,34 +16,39 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private VisitorRemoveCasts() { }
 
-        protected override Ast.ICode VisitCast(ExprCast e) {
-            var expr = (Expr)this.Visit(e.Expr);
-            switch (expr.ExprType) {
-            case Expr.NodeType.Literal:
-                return this.Convert((ExprLiteral)expr, e.Type);
-            default:
+        private Expr Convert(Expr e, TypeReference toType) {
+            if (e == null) {
+                return null;
+            }
+            var eType = e.Type.FullResolve(e.Ctx);
+            if (eType.IsAssignableTo(toType)) {
                 return e;
             }
+            if (e.ExprType == Expr.NodeType.Literal) {
+                var eLit = (ExprLiteral)e;
+                if (toType.IsChar()) {
+                    if (eType.IsInt32()) {
+                        return new ExprLiteral(e.Ctx, (char)(int)eLit.Value, e.Ctx.Char);
+                    }
+                }
+                if (toType.IsBoolean()) {
+                    if (eType.IsInt32()) {
+                        return new ExprLiteral(e.Ctx, ((int)eLit.Value) != 0, e.Ctx.Boolean);
+                    }
+                }
+            }
+            return e;
         }
 
-        private Expr Convert(ExprLiteral e, TypeReference convertToType) {
-            if (convertToType.IsChar()) {
-                if (e.Type.IsInt32()) {
-                    return new ExprLiteral(e.Ctx, (char)(int)e.Value, e.Ctx.Char);
-                }
-            }
-            if (convertToType.IsBoolean()) {
-                if (e.Type.IsInt32()) {
-                    return new ExprLiteral(e.Ctx, ((int)e.Value) != 0, e.Ctx.Boolean);
-                }
-            }
-            if (convertToType.Resolve().IsEnum) {
-                return e;
-            }
-            if (!convertToType.IsValueType && e.Value == null) {
-                return new ExprLiteral(e.Ctx, null, convertToType);
-            }
-            throw new NotImplementedException("Cannot convert");
+        protected override ICode VisitCall(ExprCall e) {
+            var obj = this.Convert(e.Obj, e.CallMethod.DeclaringType);
+            var args = e.Args.Select((x, i) => this.Convert(x, e.CallMethod.Parameters[i].ParameterType.FullResolve(e.CallMethod))).ToArray();
+            return new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall);
+        }
+
+        protected override ICode VisitNewObj(ExprNewObj e) {
+            var args = e.Args.Select((x, i) => this.Convert(x, e.CallMethod.Parameters[i].ParameterType.FullResolve(e.CallMethod))).ToArray();
+            return new ExprNewObj(e.Ctx, e.CallMethod, args);
         }
 
     }

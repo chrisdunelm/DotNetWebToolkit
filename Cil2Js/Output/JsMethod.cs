@@ -451,6 +451,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitConv(ExprConv e) {
+            var fromType = e.Expr.Type;
+            var toType = e.Type;
+            var convToInteger = !fromType.IsInteger() && toType.IsInteger();
+            // TODO: Mask if required
+            // TODO: Sign/unsign if required
+            if (convToInteger) {
+                this.js.Append("(~~");
+            }
+            this.Visit(e.Expr);
+            if (convToInteger) {
+                this.js.Append(")");
+            }
+            return e;
+        }
+
         protected override ICode VisitCast(ExprCast e) {
             throw new InvalidOperationException("This should never occur");
         }
@@ -505,7 +521,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
             //this.Visit(e.Variable);
-            return e;
+            //return e;
+            throw new InvalidOperationException("Should never get here");
         }
 
         private void HandleExplicitJs(string js, IEnumerable<Expr> exprs) {

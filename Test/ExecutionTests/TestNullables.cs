@@ -19,7 +19,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Value types not yet supported")]
+        [Test]
         public void TestJustNotNull() {
             Func<bool> f = () => {
                 int? i = 3;

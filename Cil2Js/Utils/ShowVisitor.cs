@@ -446,5 +446,11 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
+        protected override ICode VisitConv(ExprConv e) {
+            this.code.AppendFormat("(conv:{0})", e.Type);
+            this.Visit(e.Expr);
+            return e;
+        }
+
     }
 }
