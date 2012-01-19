@@ -28,9 +28,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (mDef.IsAbstract) {
                 throw new ArgumentException("Should never need to transcode an abstract method");
             }
-            //if (mDef.IsInternalCall) {
-            //    throw new ArgumentException("Cannot transcode an internal method");
-            //}
             var tRef = mRef.DeclaringType;
             var tDef = tRef.Resolve();
 
@@ -51,7 +48,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var declVars = v.vars
                 .Select(x => new { name = resolver.LocalVarNames[x], type = x.Type })
                 .Where(x => !parameterNames.Contains(x.name))
-                .Select(x => x.name)
+                .Select(x => {
+                    var name = x.name;
+                    if (x.type.IsValueType) {
+                        name += " = " + DefaultValuer.Get(x.type, resolver.FieldNames);
+                    }
+                    return name;
+                })
                 .Distinct() // Bit of a hack, but works for now
                 .ToArray();
             if (declVars.Any()) {
@@ -279,7 +282,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitDefaultValue(ExprDefaultValue e) {
-            var value = DefaultValuer.Get(e.Type);
+            var value = DefaultValuer.Get(e.Type, this.resolver.FieldNames);
             this.js.Append(value);
             return e;
         }
@@ -353,6 +356,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitFieldAddress(ExprFieldAddress e) {
+            if (!e.IsStatic) {
+                this.Visit(e.Obj);
+                this.js.Append(".");
+            }
+            this.js.Append(this.resolver.FieldNames[e.Field]);
+            return e;
+        }
+
         protected override ICode VisitVarThis(ExprVarThis e) {
             this.js.Append(this.resolver.LocalVarNames[e]);
             return e;
@@ -373,11 +385,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitNewArray(ExprNewArray e) {
-            //this.js.Append("function() { var _ = new Array(");
-            //this.Visit(e.ExprNumElements);
-            //this.js.AppendFormat("); _._ = {0}; for (var i = _.length-1; i >= 0; i--) _[i] = {1}; return _; }}()",
-            //    this.resolver.TypeNames[e.Type], DefaultValuer.Get(e.ElementType));
-            //return e;
             throw new InvalidOperationException("Should never get here");
         }
 
@@ -444,6 +451,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitConv(ExprConv e) {
+            var fromType = e.Expr.Type;
+            var toType = e.Type;
+            var convToInteger = !fromType.IsInteger() && toType.IsInteger();
+            // TODO: Mask if required
+            // TODO: Sign/unsign if required
+            if (convToInteger) {
+                this.js.Append("(~~");
+            }
+            this.Visit(e.Expr);
+            if (convToInteger) {
+                this.js.Append(")");
+            }
+            return e;
+        }
+
         protected override ICode VisitCast(ExprCast e) {
             throw new InvalidOperationException("This should never occur");
         }
@@ -457,8 +480,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitBox(ExprBox e) {
+            if (!e.Type.IsValueType) {
+                return e;
+            }
             this.js.Append("{v:");
-            this.Visit(e.Expr);
+            if (e.Type.IsPrimitive) {
+                this.Visit(e.Expr);
+            } else {
+
+            }
             this.js.Append(",_:");
             this.js.Append(this.resolver.TypeNames[e.Type]);
             this.js.Append("}");
@@ -466,6 +496,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitUnbox(ExprUnboxAny e) {
+            // If it gets here, then the type being unboxed will be a value type.
+            // VisitorJsResolveAll changed ref-type unbox instructions into Cast expressions
             this.Visit(e.Expr);
             this.js.Append(".v");
             return e;
@@ -485,6 +517,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 throw new NotImplementedException("Cannot handle runtime-handle type: " + tokenType);
             }
             return e;
+        }
+
+        protected override ICode VisitVariableAddress(ExprVariableAddress e) {
+            //this.Visit(e.Variable);
+            //return e;
+            throw new InvalidOperationException("Should never get here");
         }
 
         private void HandleExplicitJs(string js, IEnumerable<Expr> exprs) {
@@ -636,6 +674,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitJsExplicit(ExprJsExplicit e) {
             this.HandleExplicitJs(e.JavaScript, e.Exprs);
+            return e;
+        }
+
+        protected override ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
+            var name = this.resolver.FieldNames[e.FieldRef];
+            this.js.Append(name);
             return e;
         }
 

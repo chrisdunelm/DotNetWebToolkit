@@ -388,6 +388,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
         }
 
+        public static IEnumerable<FieldReference> EnumResolvedFields(this TypeReference type) {
+            var tDef = type.Resolve();
+            foreach (var field in tDef.Fields) {
+                var fResolved = field.FullResolve(type, null);
+                yield return fResolved;
+            }
+        }
+
         [DebuggerStepThrough]
         public static bool IsExternal(this MethodDefinition method) {
             return method.HasBody && method.RVA == 0;
@@ -406,6 +414,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static TypeReference MakeArray(this TypeReference t) {
             return new ArrayType(t);
+        }
+
+        public static TypeReference MakePointer(this TypeReference t) {
+            return new PointerType(t);
         }
 
         public static MethodReference MakeGeneric(this MethodReference m, params TypeReference[] args) {

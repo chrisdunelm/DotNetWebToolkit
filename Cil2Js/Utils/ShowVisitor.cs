@@ -428,5 +428,29 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
+        protected override ICode VisitVariableAddress(ExprVariableAddress e) {
+            this.code.AppendFormat("@[local:{0}]", e.Index);
+            //this.Visit(e.Variable);
+            return e;
+        }
+
+        protected override ICode VisitFieldAddress(ExprFieldAddress e) {
+            this.code.Append("@");
+            if (e.IsStatic) {
+                this.code.Append(e.Field.DeclaringType.FullName);
+            } else {
+                this.Visit(e.Obj);
+            }
+            this.code.Append(".");
+            this.code.Append(e.Field.Name);
+            return e;
+        }
+
+        protected override ICode VisitConv(ExprConv e) {
+            this.code.AppendFormat("(conv:{0})", e.Type);
+            this.Visit(e.Expr);
+            return e;
+        }
+
     }
 }

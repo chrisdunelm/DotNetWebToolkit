@@ -230,22 +230,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            // Add all base types and array element-types of all seen types to typesSeen
-            var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
-            foreach (var type in typesSeenCopy) {
-                var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
-                foreach (var baseType in bases) {
-                    typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-                }
-                if (type.IsArray) {
-                    var elType = type.GetElementType().FullResolve(type, null);
-                    typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
-                    bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
-                    foreach (var baseType in bases) {
-                        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-                    }
-                }
-            }
+            //// Add all base types and array element-types of all seen types to typesSeen
+            //var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
+            //foreach (var type in typesSeenCopy) {
+            //    var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
+            //    foreach (var baseType in bases) {
+            //        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
+            //    }
+            //    if (type.IsArray) {
+            //        var elType = type.GetElementType().FullResolve(type, null);
+            //        typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
+            //        bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
+            //        foreach (var baseType in bases) {
+            //            typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
+            //        }
+            //    }
+            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
@@ -417,7 +417,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Construct static fields
             foreach (var field in staticFields.Select(x => x.Key)) {
-                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType));
+                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType, fieldNames));
                 js.AppendLine();
             }
 
@@ -434,7 +434,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var baseType = type.GetBaseType();
                 js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name());
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
-                //js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], type.IsValueType ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames.ValueOrDefault(type.GetElementType(), "null") : "null");
@@ -442,9 +441,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var assignableTo = typesSeenOrdered.Where(x => type.IsAssignableTo(x)).Where(x => !x.IsSame(type)).ToArray();
                 js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
                 if (!tDef.IsInterface) {
-                    //var allInterfaces = type.EnumAllInterfaces().ToArray();
-                    //js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.Interfaces],
-                    //    string.Join(", ", allInterfaces.Select(x => typeNames.ValueOrDefault(x)).Where(x => x != null)));
                     if (!tDef.IsAbstract) {
                         // Virtual method table, only needed on concrete types
                         var typeAndBases = type.EnumThisAllBaseTypes().ToArray();
@@ -478,8 +474,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             js.Append("]");
                         }
                     }
-                    //} else {
-                    //    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
                 }
                 // end
                 js.Append("};");

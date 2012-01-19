@@ -3,26 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
     public class DefaultValuer {
 
-        public static string Get(TypeReference type) {
+        public static string Get(TypeReference type, Dictionary<FieldReference, string> fieldNames) {
             if (!type.IsValueType) {
                 return "null";
             }
             if (type.IsPrimitive) {
-                switch (type.FullName) {
-                case "System.Boolean": return "false";
-                case "System.IntPtr":
-                case "System.UIntPtr":
-                case "System.Int16":
-                case "System.Int32": return "0";
-                case "System.Char": return @"'\x00'";
-                default: throw new NotImplementedException("Cannot handle: " + type.FullName);
+                var mdt = type.MetadataType;
+                switch (mdt) {
+                case MetadataType.Boolean: return "false";
+                case MetadataType.IntPtr:
+                case MetadataType.UIntPtr:
+                case MetadataType.Int16:
+                case MetadataType.Int32:
+                case MetadataType.Int64:
+                case MetadataType.UInt16:
+                case MetadataType.UInt32:
+                case MetadataType.UInt64:
+                case MetadataType.Byte:
+                case MetadataType.SByte: return "0";
+                case MetadataType.Char: return @"'\x00'";
+                default: throw new NotImplementedException("Cannot handle: " + mdt);
                 }
             } else {
-                throw new NotImplementedException("Cannot handle structs yet");
+                var fields = type.EnumResolvedFields().ToArray();
+                var defaultValue = "{" + string.Join(",",
+                    fields.Where(x => fieldNames.ContainsKey(x))
+                    .Select(x => fieldNames[x] + ":" + Get(x.FieldType, fieldNames))) + "}";
+                return defaultValue;
             }
         }
 

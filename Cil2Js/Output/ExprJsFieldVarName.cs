@@ -7,21 +7,21 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
-    public class ExprJsTypeVarName : Expr {
+    public class ExprJsFieldVarName : Expr {
 
-        public ExprJsTypeVarName(Ctx ctx, TypeReference type)
+        public ExprJsFieldVarName(Ctx ctx, FieldReference field)
             : base(ctx) {
-            this.TypeRef = type;
+            this.FieldRef = field;
         }
 
-        public TypeReference TypeRef { get; private set; }
+        public FieldReference FieldRef { get; private set; }
 
         public override Expr.NodeType ExprType {
-            get { return (Expr.NodeType)JsExprType.JsTypeVarName; }
+            get { return (Expr.NodeType)JsExprType.JsFieldVarName; }
         }
 
         public override TypeReference Type {
-            get { return this.Ctx.Type; }
+            get { throw new NotImplementedException(); }
         }
 
     }

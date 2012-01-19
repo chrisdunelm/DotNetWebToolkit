@@ -25,7 +25,7 @@ namespace Test.ExecutionTests {
                 }
                 return true;
             };
-            this.TestTrue(f);
+            this.Test();
         }
 
         [Test, Ignore("BaseType not supported")]
@@ -36,7 +36,7 @@ namespace Test.ExecutionTests {
                 var baseType = sType.BaseType;
                 return typeof(object) == baseType;
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
     }

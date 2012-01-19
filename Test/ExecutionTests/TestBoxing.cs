@@ -17,7 +17,7 @@ namespace Test.ExecutionTests {
                 object o = i;
                 return o.GetType() == typeof(int);
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
         [Test]
@@ -29,7 +29,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-
+        public void TestUnboxToWrongType() {
+            Func<bool> f = () => {
+                object o = 3;
+                try {
+                    short s = (short)o;
+                } catch {
+                    return true;
+                }
+                return false;
+            };
+            this.Test(f);
+        }
 
     }
 

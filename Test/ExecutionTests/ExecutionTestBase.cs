@@ -158,29 +158,6 @@ namespace Test.ExecutionTests {
 
         }
 
-        protected void TestTrue(Func<bool> d) {
-            var method = CecilHelper.GetMethod(d);
-            var js = Js.CreateFrom(method, this.Verbose);
-            using (var chrome = NamespaceSetup.ChromeService != null ?
-                new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
-                new ChromeDriver()) {
-                try {
-                    var arg = new object[0];
-                    if (!method.IsStatic) {
-                        arg = arg.Prepend(null).ToArray();
-                    }
-                    var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
-                    var jsResult = chrome.ExecuteScript(js + jsCall);
-                    if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                        jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
-                    }
-                    Assert.That(jsResult, Is.True);
-                } finally {
-                    chrome.Quit();
-                }
-            }
-        }
-
     }
 
     [SetUpFixture]
