@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
+using System.Reflection;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
 
@@ -20,6 +21,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, params Expr[] args)
             : this(ctx, callMethod, obj, (IEnumerable<Expr>)args, false) {
+        }
+
+        public ExprCall(Ctx ctx, MethodInfo callMethod, Expr obj, params Expr[] args)
+            : this(ctx, ctx.Module.Import(callMethod), obj, (IEnumerable<Expr>)args, callMethod.IsVirtual) {
+        }
+
+        public ExprCall(Ctx ctx, Delegate callMethod, Expr obj, params Expr[] args)
+            : this(ctx, ctx.Module.Import(callMethod.Method), obj, (IEnumerable<Expr>)args, callMethod.Method.IsVirtual) {
         }
 
         public Expr Obj { get; private set; }

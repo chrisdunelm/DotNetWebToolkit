@@ -24,11 +24,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ResolverArray.Clear },
             
             { M.Def(TVoid, "System.RuntimeType..cctor"), ResolverType.cctor },
-            { M.Def(TType, "System.RuntimeType.get_BaseType"), ResolverType.get_BaseType },
-            { M.Def(TType, "System.RuntimeType.GetElementType"), ResolverType.GetElementType },
-            { M.Def(TBoolean, "System.RuntimeType.IsArrayImpl"), ResolverType.IsArrayImpl },
-            { M.Def(ArrayOf(TType), "System.RuntimeType.GetInterfaces"), ResolverType.GetInterfaces },
-            { M.Def("System.Reflection.TypeAttributes", "System.RuntimeType.GetAttributeFlagsImpl"), ResolverType.GetAttributeFlagsImpl },
+            { M.Def(TString, "System.RuntimeType.get_FullName"), ResolverType.get_FullName },
             
             { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },

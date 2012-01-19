@@ -35,37 +35,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return call.Args.First();
         }
 
-        public static Stmt get_BaseType(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var eBaseType = new ExprJsTypeData(ctx, TypeData.BaseType);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1};", ctx.This, eBaseType);
-            return stmt;
-        }
-
-        public static Stmt GetElementType(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var eElementType = new ExprJsTypeData(ctx, TypeData.ElementType);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1};", ctx.This, eElementType);
-            return stmt;
-        }
-
-        public static Stmt IsArrayImpl(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var eIsArray = new ExprJsTypeData(ctx, TypeData.IsArray);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1};", ctx.This, eIsArray);
-            return stmt;
-        }
-
-        public static Stmt GetInterfaces(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var eInterfaces = new ExprJsTypeData(ctx, TypeData.Interfaces);
-            var ret = new ExprVarLocal(ctx, ctx.Type);
-            var typeArrayType = ctx.Type.MakeArray();
-            var arrayType = new ExprJsTypeVarName(ctx, typeArrayType);
-            var js = "{2}={0}.{1}.slice(0); {2}._={3}; return {2};";
-            var stmt = new StmtJsExplicitFunction(ctx,js, ctx.This, eInterfaces, ret, arrayType);
-            newTypesSeen.Add(typeArrayType);
-            return stmt;
-        }
-
-        public static Stmt GetAttributeFlagsImpl(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var stmt = new StmtJsExplicitFunction(ctx, "return 0;");
+        public static Stmt get_FullName(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
+            var eName = new ExprJsTypeData(ctx, TypeData.Name);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
             return stmt;
         }
 

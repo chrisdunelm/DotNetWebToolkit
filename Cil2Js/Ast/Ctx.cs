@@ -42,5 +42,9 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         private Lazy<TypeReference> type;
         public TypeReference Type { get { return this.type.Value; } }
 
+        public ExprVarParameter MethodParameter(int index) {
+            return new ExprVarParameter(this, this.MRef.Parameters[index]);
+        }
+
     }
 }

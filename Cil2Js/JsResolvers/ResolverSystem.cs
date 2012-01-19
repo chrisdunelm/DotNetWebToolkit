@@ -26,9 +26,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var js = "return typeof({0})==\"string\"?{1}:{0}._";
             var stringType = new ExprJsTypeVarName(ctx, ctx.String);
             var stmt = new StmtJsExplicitFunction(ctx, js, ctx.This, stringType);
-            var typeRuntimeType = Type.GetType("System.RuntimeType");
-            var tt = ctx.Module.Import(typeRuntimeType);
-            newTypesSeen.Add(tt);
+            var runtimeType = ctx.Module.Import(Type.GetType("System.RuntimeType"));
+            newTypesSeen.Add(runtimeType);
             return stmt;
         }
 
@@ -39,7 +38,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         public static Stmt Object_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}._==={1}._&&{0}==={1};", ctx.This, p0);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}==={1};", ctx.This, p0);
             return stmt;
         }
 

@@ -7,6 +7,10 @@ using Mono.Cecil;
 namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprNewObj : Expr, ICall {
 
+        public ExprNewObj(Ctx ctx, MethodReference ctor, params Expr[] args)
+            : this(ctx, ctor, (IEnumerable<Expr>)args) {
+        }
+
         public ExprNewObj(Ctx ctx, MethodReference ctor, IEnumerable<Expr> args)
             : base(ctx) {
             this.CallMethod = ctor;
