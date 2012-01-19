@@ -86,7 +86,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var mCtorEx = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var mGetType = ctx.Module.Import(typeof(object).GetMethod("GetType"));
                 var getTypeCall = new ExprCall(ctx, mGetType, obj);
-                // "Unable to cast object of type 'System.String' to type 'Test.ExecutionTests.TestCasting'."
                 var msgParts = new Expr[] {
                     new ExprLiteral(ctx, "Unable to cast object of type '", ctx.String),
                     new ExprCall(ctx, typeof(Type).GetProperty("FullName").GetMethod, getTypeCall),
@@ -99,6 +98,48 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var js = "if ({0}) return {1}; throw {2}";
                 var stmt = new StmtJsExplicitFunction(ctx, js, callCanAssignTo, obj, ctorEx);
                 return stmt;
+            }
+        }
+
+        [Js(typeof(DeepCopyValueTypeImpl))]
+        public static T DeepCopyValueType<T>(T o) {
+            throw new Exception();
+        }
+
+        class DeepCopyValueTypeImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                // Recursively deep-copy a value-type
+                var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var fields = type.EnumResolvedFields().ToArray();
+                var o = ctx.MethodParameter(0);
+                var eTypeName = new ExprJsTypeVarName(ctx, type);
+                var ofsFieldName = 1;
+                var ofsFieldValue = ofsFieldName + fields.Length;
+                var copy = string.Join(",", fields.Select((x, i) => "{" + (i + ofsFieldName) + "}:{" + (i + ofsFieldValue) + "}"));
+                var fieldValues = fields.Select(x => {
+                    var fieldAccess = new ExprJsExplicit(ctx, "{0}.{1}", x.FieldType, o, new ExprJsFieldVarName(ctx, x));
+                    var dc = ValueTypeDeepCopyIfRequired(x.FieldType, () => fieldAccess);
+                    return dc ?? fieldAccess;
+                }).ToArray();
+                var fieldNames = fields.Select(x => new ExprJsFieldVarName(ctx, x)).ToArray();
+                var js = "return {{" + copy + "}}";
+                return new StmtJsExplicitFunction(ctx, js, new Expr[] { eTypeName }.Concat(fieldNames).Concat(fieldValues));
+            }
+        }
+
+        public static Expr ValueTypeDeepCopyIfRequired(TypeReference type, Func<Expr> fnExpr) {
+            // If a value-type requires a deep-copy then return an expression that is the deep-copy.
+            // Otherwise return null
+            if (type.IsValueType && !type.IsPrimitive) {
+                var expr = fnExpr();
+                var ctx = expr.Ctx;
+                var dcGenDef = ((Func<object, object>)DeepCopyValueType).Method.GetGenericMethodDefinition();
+                var dc = ctx.Module.Import(dcGenDef);
+                var dcGen = dc.MakeGeneric(type);
+                var dcCall = new ExprCall(ctx, dcGen, null, expr);
+                return dcCall;
+            } else {
+                return null;
             }
         }
 

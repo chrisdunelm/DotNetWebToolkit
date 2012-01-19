@@ -388,6 +388,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
         }
 
+        public static IEnumerable<FieldReference> EnumResolvedFields(this TypeReference type) {
+            var tDef = type.Resolve();
+            foreach (var field in tDef.Fields) {
+                var fResolved = field.FullResolve(type, null);
+                yield return fResolved;
+            }
+        }
+
         [DebuggerStepThrough]
         public static bool IsExternal(this MethodDefinition method) {
             return method.HasBody && method.RVA == 0;

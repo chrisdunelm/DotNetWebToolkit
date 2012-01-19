@@ -16,7 +16,7 @@ namespace Test.ExecutionTests {
                 int? i = null;
                 return !i.HasValue;
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
         [Test, Ignore("Value types not yet supported")]
@@ -25,7 +25,7 @@ namespace Test.ExecutionTests {
                 int? i = 3;
                 return i.HasValue;
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
     }

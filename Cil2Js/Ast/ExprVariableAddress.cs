@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
-    class ExprVariableAddress : Expr {
+    public class ExprVariableAddress : Expr {
 
         public ExprVariableAddress(Ctx ctx, ExprVar variable)
             : base(ctx) {

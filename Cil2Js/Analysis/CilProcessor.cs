@@ -170,6 +170,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.LoadArrayLength();
             case Code.Ldfld:
                 return this.LoadField(inst);
+            case Code.Ldflda:
+                return this.LoadFieldAddress(inst);
             case Code.Stfld:
                 return this.StoreField(inst);
             case Code.Ldsfld:
@@ -365,6 +367,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var obj = this.stack.Pop();
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAccess(this.ctx, obj, fRef);
+            return this.SsaLocalAssignment(expr);
+        }
+
+        private Stmt LoadFieldAddress(Instruction inst) {
+            var obj = this.stack.Pop();
+            var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprFieldAddress(this.ctx, obj, fRef);
             return this.SsaLocalAssignment(expr);
         }
 

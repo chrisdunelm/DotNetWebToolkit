@@ -34,7 +34,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 this.index = -1;
             }
         }
-
+        
         public virtual IEnumerator<T> GetEnumerator() {
             return new GenericEnumerator((T[])(object)this);
         }

@@ -52,6 +52,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitBinary(e);
         }
 
+        protected override ICode VisitBox(ExprBox e) {
+            if (!e.Type.IsValueType) {
+                // For ref-types 'box' does nothing
+                return base.Visit(e.Expr);
+            }
+            var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
+            if (deepCopyExpr != null) {
+                var ctx = e.Ctx;
+                var eType = new ExprJsTypeVarName(ctx, e.Type);
+                var js = "{{v:{0},_:{1}}}";
+                var expr = new ExprJsExplicit(ctx, js, e.Type, deepCopyExpr, eType);
+                return expr;
+            }
+            return base.VisitBox(e);
+        }
+
         protected override ICode VisitUnbox(ExprUnboxAny e) {
             if (e.Type.IsValueType) {
                 return base.VisitUnbox(e);

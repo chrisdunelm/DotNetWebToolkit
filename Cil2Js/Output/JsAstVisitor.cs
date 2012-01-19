@@ -21,6 +21,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         JsTypeData,
         JsTypeVarName,
         JsExplicit,
+        JsFieldVarName,
     }
 
     public enum JsStmtType {
@@ -86,6 +87,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return this.VisitJsTypeVarName((ExprJsTypeVarName)e);
             case JsExprType.JsExplicit:
                 return this.VisitJsExplicit((ExprJsExplicit)e);
+            case JsExprType.JsFieldVarName:
+                return this.VisitJsFieldVarName((ExprJsFieldVarName)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
@@ -189,6 +192,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             } else {
                 return e;
             }
+        }
+
+        protected virtual ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
+            this.ThrowOnNoOverride();
+            return e;
         }
 
     }

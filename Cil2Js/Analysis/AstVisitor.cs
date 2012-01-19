@@ -321,6 +321,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitUnbox((ExprUnboxAny)e);
             case Expr.NodeType.RuntimeHandle:
                 return this.VisitRuntimeHandle((ExprRuntimeHandle)e);
+            case Expr.NodeType.VariableAddress:
+                return this.VisitVariableAddress((ExprVariableAddress)e);
+            case Expr.NodeType.FieldAddress:
+                return this.VisitFieldAddress((ExprFieldAddress)e);
             default:
                 if ((int)e.ExprType >= (int)Expr.NodeType.Max) {
                     return e;
@@ -417,18 +421,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         protected virtual ICode VisitVarPhi(ExprVarPhi e) {
             this.ThrowOnNoOverride();
-            //List<ICode> c = null;
-            //int count = 0;
-            //foreach (var expr in e.Exprs) {
-            //    var o = this.Visit(expr);
-            //    if (o != expr && c == null) {
-            //        c = new List<ICode>(e.Exprs.Take(count));
-            //    }
-            //    if (c != null) {
-            //        c.Add(o);
-            //    }
-            //    count++;
-            //}
             var c = this.HandleList(e.Exprs, x => (Expr)this.Visit(x));
             if (c == null) {
                 return e;
@@ -513,6 +505,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitMethodReference(ExprMethodReference e) {
+            this.ThrowOnNoOverride();
             return e;
         }
 
@@ -550,6 +543,26 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         protected virtual ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
             this.ThrowOnNoOverride();
             return e;
+        }
+
+        protected virtual ICode VisitVariableAddress(ExprVariableAddress e) {
+            this.ThrowOnNoOverride();
+            var variable = (ExprVar)this.Visit(e.Variable);
+            if (variable != e.Variable) {
+                return new ExprVariableAddress(e.Ctx, variable);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitFieldAddress(ExprFieldAddress e) {
+            this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(e.Obj);
+            if (obj != e.Obj) {
+                return new ExprFieldAddress(e.Ctx, obj, e.Field);
+            } else {
+                return e;
+            }
         }
 
     }

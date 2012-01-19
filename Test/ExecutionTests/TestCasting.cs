@@ -30,6 +30,16 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestNullCast() {
+            Func<bool> f = () => {
+                object o = ForceObject(null);
+                string s = (string)o;
+                return s == null;
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestCastArray() {
             Func<bool> f = () => {
                 var a = new[] { 1 };
@@ -37,7 +47,7 @@ namespace Test.ExecutionTests {
                 var b = (int[])o;
                 return b.GetType() == typeof(int[]);
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
         [Test]
@@ -48,7 +58,7 @@ namespace Test.ExecutionTests {
                 var i = (IList<int>)o;
                 return i.Count == 1;
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
         [Test]
@@ -64,7 +74,7 @@ namespace Test.ExecutionTests {
                 }
                 return true;
             };
-            this.TestTrue(f);
+            this.Test(f);
         }
 
         [Test]
@@ -73,7 +83,16 @@ namespace Test.ExecutionTests {
                 object i = 3;
                 return i is int;
             };
-            this.TestTrue(f);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestIsTypeNull() {
+            Func<bool> f = () => {
+                object o = ForceObject(null);
+                return o is string == false;
+            };
+            this.Test(f);
         }
 
     }

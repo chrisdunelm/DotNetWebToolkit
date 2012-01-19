@@ -28,10 +28,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitJsTypeVarName(e);
         }
 
-        //override VisitC
         protected override ICode VisitJsInvoke(ExprJsInvoke e) {
             this.types.Add(e.Type);
             return base.VisitJsInvoke(e);
+        }
+
+        protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
+            // Need to add the type of the base method of the virtual call, so
+            // the virtual method table is generated correctly
+            this.types.Add(e.CallMethod.DeclaringType);
+            return base.VisitJsVirtualCall(e);
         }
     }
 }

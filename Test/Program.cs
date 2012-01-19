@@ -49,12 +49,24 @@ namespace Test {
             }, 5000);
         }
 
+        static object GetNull() {
+            return null;
+        }
+
+        struct S1 {
+            public int x;
+        }
+
         static void Main(string[] args) {
+            var s1 = new S1 { x = 1 };
+            object o = s1;
+            var s2 = (S1)o;
+            s2.x = 2;
             //var mi = typeof(Program).GetMethod("T0");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestCasting() { Verbose = true };
-            t.TestCast();
+            var t = new TestArrays() { Verbose = true };
+            t.TestEnumerable();
             return;
 
         }

@@ -75,6 +75,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
 
             private Dictionary<ExprVar, AssignmentInfo> assignments = new Dictionary<ExprVar, AssignmentInfo>();
+            private int inPhiCount = 0;
 
             private AssignmentInfo GetAInfo(ExprVar e) {
                 return this.assignments.ValueOrDefault(e, () => new AssignmentInfo(), true);
@@ -90,8 +91,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 this.Visit(s.Expr);
                 return s;
             }
-
-            private int inPhiCount = 0;
 
             protected override ICode VisitVarPhi(ExprVarPhi e) {
                 // Variables within phi's cannot be removed
@@ -109,6 +108,22 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 }
                 return base.VisitVarLocal(e);
             }
+
+            // Needs work to work properly...
+            //protected override ICode VisitTry(StmtTry s) {
+            //    // Must not move operations in/out of try/catch/finally
+            //    var storeAssignments = this.assignments;
+            //    this.assignments = new Dictionary<ExprVar, AssignmentInfo>();
+            //    this.Visit(s.Try);
+            //    foreach (var @catch in s.Catches) {
+            //        this.assignments = new Dictionary<ExprVar, AssignmentInfo>();
+            //        this.Visit(@catch.Stmt);
+            //    }
+            //    this.assignments = new Dictionary<ExprVar, AssignmentInfo>();
+            //    this.Visit(s.Finally);
+            //    this.assignments = storeAssignments;
+            //    return s;
+            //}
 
         }
 

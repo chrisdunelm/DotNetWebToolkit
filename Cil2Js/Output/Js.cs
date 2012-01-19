@@ -230,22 +230,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            // Add all base types and array element-types of all seen types to typesSeen
-            var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
-            foreach (var type in typesSeenCopy) {
-                var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
-                foreach (var baseType in bases) {
-                    typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-                }
-                if (type.IsArray) {
-                    var elType = type.GetElementType().FullResolve(type, null);
-                    typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
-                    bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
-                    foreach (var baseType in bases) {
-                        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-                    }
-                }
-            }
+            //// Add all base types and array element-types of all seen types to typesSeen
+            //var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
+            //foreach (var type in typesSeenCopy) {
+            //    var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
+            //    foreach (var baseType in bases) {
+            //        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
+            //    }
+            //    if (type.IsArray) {
+            //        var elType = type.GetElementType().FullResolve(type, null);
+            //        typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
+            //        bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
+            //        foreach (var baseType in bases) {
+            //            typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
+            //        }
+            //    }
+            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
@@ -417,7 +417,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Construct static fields
             foreach (var field in staticFields.Select(x => x.Key)) {
-                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType));
+                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType, fieldNames));
                 js.AppendLine();
             }
 

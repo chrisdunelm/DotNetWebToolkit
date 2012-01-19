@@ -33,6 +33,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             Unbox,
             RuntimeHandle,
             VariableAddress,
+            FieldAddress,
 
             Max = 1000
         }
