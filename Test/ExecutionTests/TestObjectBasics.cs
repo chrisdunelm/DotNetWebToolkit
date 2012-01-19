@@ -28,7 +28,7 @@ namespace Test.ExecutionTests {
             this.TestTrue(f);
         }
 
-        [Test]
+        [Test, Ignore("BaseType not supported")]
         public void TestBaseType() {
             Func<bool> f = () => {
                 string s = "str";

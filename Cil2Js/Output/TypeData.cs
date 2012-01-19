@@ -10,7 +10,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         VTable,
         Name,
         Namespace,
-        BaseType,
+        //BaseType,
         IsValueType,
         IsArray,
         ElementType,

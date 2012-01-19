@@ -70,11 +70,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         typesSeen.Add(type, 1);
                     }
                 }
-                foreach (var iFace in tRef.EnumAllInterfaces()) {
-                    if (!typesSeen.ContainsKey(iFace)) {
-                        typesSeen.Add(iFace, 1);
-                    }
-                }
                 if (ast == null) {
                     if (tRef.HasGenericParameters) {
                         throw new InvalidOperationException("Type must not have generic parameters");
@@ -235,7 +230,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            // Add all base types of all seen types to typesSeen
+            // Add all base types and array element-types of all seen types to typesSeen
             var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
             foreach (var type in typesSeenCopy) {
                 var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
@@ -439,12 +434,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var baseType = type.GetBaseType();
                 js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name());
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
+                //js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.BaseType], baseType == null ? "null" : typeNames[baseType]);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], type.IsValueType ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames.ValueOrDefault(type.GetElementType(), "null") : "null");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
-                var assignableTo = typesSeenOrdered.Where(x => type.IsAssignableTo(x)).ToArray();
+                var assignableTo = typesSeenOrdered.Where(x => type.IsAssignableTo(x)).Where(x => !x.IsSame(type)).ToArray();
                 js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
                 if (!tDef.IsInterface) {
                     //var allInterfaces = type.EnumAllInterfaces().ToArray();
@@ -483,8 +478,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             js.Append("]");
                         }
                     }
-                //} else {
-                //    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
+                    //} else {
+                    //    js.AppendFormat(", {0}:[]", typeDataNames[TypeData.Interfaces]);
                 }
                 // end
                 js.Append("};");
