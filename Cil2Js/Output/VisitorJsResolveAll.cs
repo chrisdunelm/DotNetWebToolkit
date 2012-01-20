@@ -84,7 +84,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return expr;
         }
 
-        protected override ICode VisitUnbox(ExprUnboxAny e) {
+        protected override ICode VisitUnboxAny(ExprUnboxAny e) {
             if (e.Type.IsValueType) {
                 if (e.Type.IsNullable()) {
                     var ctx = e.Ctx;
@@ -97,7 +97,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var expr = new ExprJsExplicit(ctx, js, e.Type, temp, e.Expr, hasValue, value, defaultValue);
                     return expr;
                 } else {
-                    return base.VisitUnbox(e);
+                    return base.VisitUnboxAny(e);
                 }
             } else {
                 // On ref-type, unbox-any becomes a castclass

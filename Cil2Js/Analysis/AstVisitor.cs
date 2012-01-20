@@ -300,7 +300,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Expr.NodeType.Box:
                 return this.VisitBox((ExprBox)e);
             case Expr.NodeType.Unbox:
-                return this.VisitUnbox((ExprUnboxAny)e);
+                return this.VisitUnboxAny((ExprUnboxAny)e);
             case Expr.NodeType.RuntimeHandle:
                 return this.VisitRuntimeHandle((ExprRuntimeHandle)e);
             case Expr.NodeType.VariableAddress:
@@ -522,7 +522,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
         }
 
-        protected virtual ICode VisitUnbox(ExprUnboxAny e) {
+        protected virtual ICode VisitUnboxAny(ExprUnboxAny e) {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
@@ -540,12 +540,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         protected virtual ICode VisitVariableAddress(ExprVariableAddress e) {
             this.ThrowOnNoOverride();
             return e;
-            //var variable = (ExprVar)this.Visit(e.Variable);
-            //if (variable != e.Variable) {
-            //    return new ExprVariableAddress(e.Ctx, variable);
-            //} else {
-            //    return e;
-            //}
         }
 
         protected virtual ICode VisitFieldAddress(ExprFieldAddress e) {
