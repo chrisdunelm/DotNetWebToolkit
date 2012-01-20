@@ -65,8 +65,8 @@ namespace Test {
             //var mi = typeof(Program).GetMethod("T0");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestBoxing() { Verbose = true };
-            t.TestUnboxNullStruct();
+            var t = new TestList() { Verbose = true };
+            t.TestIndexOf();
             return;
 
         }

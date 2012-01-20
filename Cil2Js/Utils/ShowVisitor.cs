@@ -452,5 +452,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
+        protected override ICode VisitElementAddress(ExprElementAddress e) {
+            this.code.Append("@");
+            this.Visit(e.Array);
+            this.code.Append("[");
+            this.Visit(e.Index);
+            this.code.Append("]");
+            return e;
+        }
+
     }
 }

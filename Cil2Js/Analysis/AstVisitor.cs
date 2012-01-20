@@ -293,6 +293,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitArrayLength((ExprArrayLength)e);
             case Expr.NodeType.ArrayAccess:
                 return this.VisitVarArrayAccess((ExprVarArrayAccess)e);
+            case Expr.NodeType.ElementAddress:
+                return this.VisitElementAddress((ExprElementAddress)e);
             case Expr.NodeType.MethodReference:
                 return this.VisitMethodReference((ExprMethodReference)e);
             case Expr.NodeType.Assignment:
@@ -371,7 +373,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall));
+            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {
@@ -491,6 +493,17 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var index = (Expr)this.Visit(e.Index);
             if (array != e.Array || index != e.Index) {
                 return new ExprVarArrayAccess(e.Ctx, array, index);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitElementAddress(ExprElementAddress e) {
+            this.ThrowOnNoOverride();
+            var array = (Expr)this.Visit(e.Array);
+            var index = (Expr)this.Visit(e.Index);
+            if (array != e.Array || index != e.Index) {
+                return new ExprElementAddress(e.Ctx, array, index, ((PointerType)e.Type).ElementType);
             } else {
                 return e;
             }

@@ -45,7 +45,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("This requires the whole default comparer infrastructure to work, which isn't handled yet")]
+        [Test]
         public void TestIndexOf() {
             Func<int> f1ArgNone = () => {
                 var list = new List<int> { 1, 2, 3, 4 };

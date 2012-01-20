@@ -127,7 +127,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                                         }
                                     } else {
                                         var addIf = addIfs.ValueOrDefault(x.stmt);
-                                        if (addIf != null) {
+                                        if (addIf != null && addIf.Any()) {
                                             var @if = addIf.Aggregate((a, b) => s.Ctx.ExprGen.And(a, b));
                                             var newIf = new StmtIf(s.Ctx, @if, x.stmt, null);
                                             return new[] { new { stmt = (Stmt)newIf, to = x.to } };

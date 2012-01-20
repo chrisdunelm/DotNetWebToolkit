@@ -117,6 +117,7 @@
     <Compile Include="Ast\ExprCast.cs" />
     <Compile Include="Ast\ExprConv.cs" />
     <Compile Include="Ast\ExprDefaultValue.cs" />
+    <Compile Include="Ast\ExprElementAddress.cs" />
     <Compile Include="Ast\ExprFieldAccess.cs" />
     <Compile Include="Ast\ExprFieldAddress.cs" />
     <Compile Include="Ast\ExprIsInst.cs" />
@@ -153,13 +154,24 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="JsResolvers\IJsImpl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsResolvers\InternalFunctions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsResolvers\JsAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsResolvers\JsCallResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="JsResolvers\ResolverArray.cs" />
+    <Compile Include="JsResolvers\ResolverCollections.cs" />
     <Compile Include="JsResolvers\ResolverEnvironment.cs" />
-    <Compile Include="JsResolvers\IJsImpl.cs" />
-    <Compile Include="JsResolvers\InternalFunctions.cs" />
-    <Compile Include="JsResolvers\JsAttribute.cs" />
-    <Compile Include="JsResolvers\JsCallResolver.cs" />
-    <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs" />
     <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />
     <Compile Include="JsResolvers\ResolverString.cs" />

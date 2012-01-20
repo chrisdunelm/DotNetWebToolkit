@@ -405,6 +405,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitElementAddress(ExprElementAddress e) {
+            this.Visit(e.Array);
+            this.js.Append("[");
+            this.Visit(e.Index);
+            this.js.Append("]");
+            return e;
+        }
+
         protected override ICode VisitTry(StmtTry s) {
             this.NewLine();
             this.js.Append("try {");

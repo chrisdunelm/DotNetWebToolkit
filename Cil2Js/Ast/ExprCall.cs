@@ -10,13 +10,18 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
     public class ExprCall : Expr, ICall {
 
-        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall, TypeReference constrainedType)
             : base(ctx) {
             this.CallMethod = callMethod;
             this.Obj = obj;
             this.Args = args;
             this.IsVirtualCall = isVirtualCall;
+            this.ConstrainedType = constrainedType;
             this.returnType = callMethod.ReturnType.FullResolve(callMethod);
+        }
+
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
+            : this(ctx, callMethod, obj, args, isVirtualCall, null) {
         }
 
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, params Expr[] args)
@@ -35,6 +40,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public MethodReference CallMethod { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
         public bool IsVirtualCall { get; private set; }
+        public TypeReference ConstrainedType { get; private set; }
 
         private TypeReference returnType;
 

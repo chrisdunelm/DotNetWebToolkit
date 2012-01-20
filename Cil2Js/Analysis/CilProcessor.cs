@@ -23,8 +23,19 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private Stack<Expr> stack;
         private Expr[] locals, args;
         private Dictionary<Instruction, ExprVarInstResult> instResults;
+        private int constrainted = 0;
+        private TypeReference constrainedType = null;
+
+        private TypeReference ConstrainedType {
+            get {
+                return this.constrainted > 0 ? this.constrainedType : null;
+            }
+        }
 
         public Stmt Process(Instruction inst) {
+            if (this.constrainted > 0) {
+                this.constrainted--;
+            }
             switch (inst.OpCode.Code) {
             case Code.Nop:
                 return null;
@@ -185,6 +196,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Ldelem_Any:
             case Code.Ldelem_Ref:
                 return this.LoadElem(inst);
+            case Code.Ldelema:
+                return this.LoadElema(inst);
             case Code.Stelem_I4:
             case Code.Stelem_Ref:
             case Code.Stelem_Any:
@@ -209,7 +222,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Box(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Unbox_Any:
                 return this.UnboxAny(((TypeReference)inst.Operand).FullResolve(this.ctx));
+            case Code.Constrained:
+                this.constrainted = 2;
+                this.constrainedType = ((TypeReference)inst.Operand).FullResolve(this.ctx);
+                return null;
             case Code.Volatile: // Ignore
+            case Code.Readonly:
                 return null;
             case Code.Ret:
                 throw new InvalidOperationException("Should not see this here: " + inst);
@@ -341,7 +359,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 argExprs[i] = this.DerefIfPointer(argExprs[i]);
             }
             var obj = callingRef.HasThis ? this.DerefIfPointer(this.stack.Pop()) : null;
-            var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall);
+            var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall, this.ConstrainedType);
             if (callingRef.ReturnType.IsVoid()) {
                 return new StmtWrapExpr(this.ctx, exprCall);
             } else {
@@ -428,6 +446,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var array = this.stack.Pop();
             var arrayAccess = new ExprVarArrayAccess(this.ctx, array, index);
             return this.SsaLocalAssignment(arrayAccess);
+        }
+
+        private Stmt LoadElema(Instruction inst) {
+            var index = this.stack.Pop();
+            var array = this.stack.Pop();
+            var elementType = ((TypeReference)inst.Operand).FullResolve(this.ctx);
+            var expr = new ExprElementAddress(this.ctx, array, index, elementType);
+            return this.SsaLocalAssignment(expr);
         }
 
         private Stmt StoreElem(Instruction inst) {

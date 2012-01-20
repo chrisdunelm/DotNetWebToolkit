@@ -42,9 +42,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return stmt;
         }
 
-        public static Stmt TrivialValueType_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt TrivialBoxedValueType_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
             var stmt = new StmtJsExplicitFunction(ctx, "return {0}._==={1}._&&{0}.v==={1}.v;", ctx.This, p0);
+            return stmt;
+        }
+
+        public static Stmt TrivialValueType_Equals(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}==={1};", ctx.This, p0);
             return stmt;
         }
 

@@ -221,6 +221,16 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                         return self;
                     }
                 }
+            case MetadataType.RequiredModifier: {
+                    var reqMod = (RequiredModifierType)self;
+                    var elType = reqMod.ElementType.FullResolve(scopeType, scopeMethod);
+                    return elType;
+                }
+            //case MetadataType.Pinned: {
+            //        var pinned = (PinnedType)self;
+            //        var elType = pinned.ElementType.FullResolve(scopeType, scopeMethod);
+            //        return elType;
+            //    }
             default:
                 throw new NotImplementedException("Cannot handle: " + self.MetadataType);
             }

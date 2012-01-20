@@ -17,9 +17,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TInt32, "System.Object.GetHashCode"), ResolverSystem.Object_GetHashCode },
 
             { M.Def(TVoid, "System.IntPtr..ctor", TInt32), ResolverSystem.IntPtrCtor },
-            { M.Def(TBoolean, "System.IntPtr.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
+            { M.Def(TBoolean, "System.IntPtr.Equals", TObject), ResolverSystem.TrivialBoxedValueType_Equals },
 
-            { M.Def(TBoolean, "System.Boolean.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
+            { M.Def(TBoolean, "System.Boolean.Equals", TObject), ResolverSystem.TrivialBoxedValueType_Equals },
 
             { M.Def(TVoid, "System.Array.Clear", TArray, TInt32, TInt32), ResolverArray.Clear },
             
@@ -27,10 +27,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TString, "System.RuntimeType.get_FullName"), ResolverType.get_FullName },
             { M.Def(TString, "System.RuntimeType.ToString"), ResolverType.ToString },
             
-            { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
+            { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialBoxedValueType_Equals },
+            { M.Def(TBoolean, "System.Int32.Equals", TInt32), ResolverSystem.TrivialValueType_Equals },
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
             
             { M.Def(TBoolean, "System.String.Equals", TObject), ResolverSystem.Object_Equals },
+
+            // TODO: This is rubbish - must make it possible to match all generic arguments
+            { M.Def(null, "System.Collections.Generic.EqualityComparer`1<System.Int32>.CreateComparer"), ResolverCollections.EqualityComparer_CreateComparer },
 
         };
 

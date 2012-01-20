@@ -28,10 +28,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         public static Stmt Clear(Ctx ctx, List<TypeReference> newTypesSeen) {
-            var m = ctx.MRef;
-            var array = new ExprVarParameter(ctx, m.Parameters[0]);
-            var index = new ExprVarParameter(ctx, m.Parameters[1]);
-            var length = new ExprVarParameter(ctx, m.Parameters[2]);
+            var array = ctx.MethodParameter(0);
+            var index = ctx.MethodParameter(1);
+            var length = ctx.MethodParameter(2);
             var arrayElementType = array.Type.GetElementType();
             var i = new ExprVarLocal(ctx, ctx.Int32);
             var value = new ExprDefaultValue(ctx, arrayElementType);
@@ -41,8 +40,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         public static Expr InitializeArray(ICall call) {
-            //var array = ctx.MethodParameter(0);
-            //var fieldHandle = ctx.MethodParameter(1);
             var array = (ExprVar)call.Args.ElementAt(0);
             var initExpr = (ExprRuntimeHandle)call.Args.ElementAt(1);
             var initData = ((FieldDefinition)initExpr.Member).InitialValue;

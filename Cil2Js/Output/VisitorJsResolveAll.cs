@@ -23,6 +23,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (res != null) {
                 return this.Visit(res);
             }
+            if (e.ConstrainedType != null) {
+                if (e.ConstrainedType.IsValueType) {
+                    var impl = e.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(e.CallMethod));
+                    if (impl != null) {
+                        var constrainedCall = new ExprCall(e.Ctx, impl, e.Obj, e.Args, false, null);
+                        return constrainedCall;
+                    } else {
+                        throw new Exception();
+                    }
+                }
+            }
             if (e.IsVirtualCall) {
                 var ctx = e.Ctx;
                 var objIsVar = e.Obj.IsVar();
@@ -92,7 +103,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var cast = new ExprCast(e.Ctx, expr, e.Type);
                 return cast;
             }
-                var ctx = e.Ctx;
+            var ctx = e.Ctx;
             if (e.Type.IsNullable()) {
                 // If obj==null create Nullable with hasValue=false
                 // If obj.Type not assignable to e.InnerType throw InvalidCastEx

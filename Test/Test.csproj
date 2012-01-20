@@ -76,6 +76,7 @@
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="ExecutionTests\TestSimpleInterfaces.cs" />
     <Compile Include="ExecutionTests\TestString.cs" />
+    <Compile Include="ExecutionTests\TestStringBuilder.cs" />
     <Compile Include="ExecutionTests\TestSwitch.cs" />
     <Compile Include="ExecutionTests\TestType.cs" />
     <Compile Include="ExecutionTests\TestTypes.cs" />
