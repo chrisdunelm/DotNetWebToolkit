@@ -26,8 +26,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var js = "return typeof({0})==\"string\"?{1}:{0}._";
             var stringType = new ExprJsTypeVarName(ctx, ctx.String);
             var stmt = new StmtJsExplicitFunction(ctx, js, ctx.This, stringType);
-            var runtimeType = ctx.Module.Import(Type.GetType("System.RuntimeType"));
-            newTypesSeen.Add(runtimeType);
+            //var runtimeType = ctx.Module.Import(Type.GetType("System.RuntimeType"));
+            //newTypesSeen.Add(runtimeType);
             return stmt;
         }
 

@@ -491,5 +491,17 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return fullName;
         }
 
+        public static TypeReference GetNullableInnerType(this TypeReference t) {
+            return ((GenericInstanceType)t).GenericArguments[0];
+        }
+
+        public static TypeReference MakeNullable(this TypeReference t) {
+            if (!t.IsValueType) {
+                throw new ArgumentException("Nullable<T> must be value-type");
+            }
+            var nType = t.Module.Import(typeof(Nullable<>)).MakeGeneric(t);
+            return nType;
+        }
+
     }
 }

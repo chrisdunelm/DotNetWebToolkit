@@ -25,6 +25,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             
             { M.Def(TVoid, "System.RuntimeType..cctor"), ResolverType.cctor },
             { M.Def(TString, "System.RuntimeType.get_FullName"), ResolverType.get_FullName },
+            { M.Def(TString, "System.RuntimeType.ToString"), ResolverType.ToString },
             
             { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialValueType_Equals },
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },

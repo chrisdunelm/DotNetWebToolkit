@@ -69,6 +69,46 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestUnboxNullableToWrongType() {
+            Func<bool> f = () => {
+                int? i = Get3();
+                object o = i;
+                bool ret;
+                try {
+                    // Throws InvalidCastException("Specified cast is not valid.")
+                    short s = (short)o;
+                    ret = GetFalse(s != 0);
+                } catch (Exception e) {
+                    ret = e.Message == "Specified cast is not valid.";
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUnboxNullableIntoNormal() {
+            Func<bool> f = () => {
+                int? i = Get3();
+                object o = (object)i;
+                int j = (int)o;
+                return j == 3;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUnboxNormalIntoNullable() {
+            Func<bool> f = () => {
+                int i = Get3();
+                object o = (object)i;
+                int? j = (int)o;
+                return j == 3;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

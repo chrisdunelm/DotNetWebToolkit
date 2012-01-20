@@ -42,5 +42,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return stmt;
         }
 
+        public static Stmt ToString(Ctx ctx, List<TypeReference> newTypesSeen) {
+            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
+            var eName = new ExprJsTypeData(ctx, TypeData.Name);
+            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
+            return stmt;
+        }
+
     }
 }

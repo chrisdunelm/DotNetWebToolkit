@@ -45,5 +45,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitDefaultValue(e);
         }
 
+        protected override ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
+            if (e.Member is TypeReference) {
+                this.types.Add((TypeReference)e.Member);
+            }
+            return base.VisitRuntimeHandle(e);
+        }
+
     }
 }

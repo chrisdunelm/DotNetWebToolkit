@@ -75,7 +75,7 @@ namespace Test.ExecutionTests {
             Func<bool> f = () => {
                 int? i = Get3();
                 object o = (object)i;
-                if (o != null) {
+                if (o == null) {
                     return false;
                 }
                 int? j = (int?)o;

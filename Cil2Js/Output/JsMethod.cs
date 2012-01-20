@@ -487,11 +487,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitUnboxAny(ExprUnboxAny e) {
-            // If it gets here, then the type being unboxed will be a value type, except Nullable<>.
-            // VisitorJsResolveAll changed ref-type unbox instructions into Cast expressions
-            this.Visit(e.Expr);
-            this.js.Append(".v");
-            return e;
+            throw new InvalidOperationException("This should never occur");
         }
 
         protected override ICode VisitRuntimeHandle(ExprRuntimeHandle e) {
@@ -511,8 +507,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
-            //this.Visit(e.Variable);
-            //return e;
             throw new InvalidOperationException("Should never get here");
         }
 

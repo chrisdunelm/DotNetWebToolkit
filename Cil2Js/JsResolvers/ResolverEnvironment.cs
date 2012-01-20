@@ -14,5 +14,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return expr;
         }
 
+        public static Expr GetRuntimeResourceString(ICall call) {
+            var ctx = call.Ctx;
+            var expr = new ExprLiteral(ctx, "<GetRuntimeResourceString>", ctx.String);
+            return expr;
+        }
+
     }
 }

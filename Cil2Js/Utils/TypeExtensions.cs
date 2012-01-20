@@ -164,6 +164,17 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 type.IsInt64() || type.IsUInt64();
         }
 
+        public static bool IsBaseOfOrEqual(this TypeReference less, TypeReference more) {
+            var t = more;
+            do {
+                if (t.IsSame(less)) {
+                    return true;
+                }
+                t = t.GetBaseType();
+            } while (t != null);
+            return false;
+        }
+
         public static bool IsAssignableTo(this TypeReference from, TypeReference to) {
             // Rules from ECMA-335 partition III page 21
             // Rule 4

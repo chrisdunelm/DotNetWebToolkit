@@ -66,6 +66,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TVoid, "System.Array.Copy", TArray, TInt32, TArray, TInt32,TInt32, TBoolean), ResolverArray.Copy },
 
             { M.Def(TString, "System.Environment.GetResourceFromDefault", TString), ResolverEnvironment.GetResourceFromDefault },
+            { M.Def(TString, "System.Environment.GetRuntimeResourceString", TString, ArrayOf(TObject)), ResolverEnvironment.GetRuntimeResourceString },
 
             { M.Def(TString, "System.ThrowHelper.GetResourceName", "System.ExceptionResource"), ResolverThrowHelper.GetResourceName },
             { M.Def(TString, "System.ThrowHelper.GetArgumentName", "System.ExceptionArgument"), ResolverThrowHelper.GetArgumentName },

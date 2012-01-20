@@ -68,42 +68,47 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var ctx = e.Ctx;
             var eType = new ExprJsTypeVarName(ctx, e.Type);
             if (e.Type.IsNullable()) {
-                var genType = (GenericInstanceType)e.Type;
-                var innerType = genType.GenericArguments[0];
-                var temp = e.Expr.IsVar() ? null : new ExprVarLocal(ctx, e.Type);
-                var value = new ExprFieldAccess(ctx, temp ?? e.Expr, e.Type.GetField("value"));
-                var dcnExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(innerType, () => value);
+                var exprIsVar = e.Expr.IsVar();
+                var innerType = e.Type.GetNullableInnerType();
+                var innerTypeName = new ExprJsTypeVarName(ctx, innerType);
+                var temp = exprIsVar ? null : new ExprVarLocal(ctx, e.Type);
                 var fHasValue = new ExprJsFieldVarName(ctx, e.Type.GetField("hasValue"));
-                var nJs = e.Expr.IsVar() ? "({1}.{2}?{{v:{3},_:{4}}}:null)" : "(({0}={1}).{2}?{{v:{3},_:{4}}}:null)";
-                var nExpr = new ExprJsExplicit(ctx, nJs, e.Type, temp, e.Expr, fHasValue, dcnExpr ?? value, eType);
-                return nExpr;
+                var box = new ExprBox(ctx, new ExprFieldAccess(ctx, temp ?? e.Expr, e.Type.GetField("value")), innerType);
+                var nullableJs = exprIsVar ? "({1}.{2}?{3}:null)" : "(({0}={1}).{2}?{3}:null)";
+                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp, e.Expr, fHasValue, box);
+                return nullableExpr;
+            } else {
+                var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
+                var js = "{{v:{0},_:{1}}}";
+                var expr = new ExprJsExplicit(ctx, js, e.Type, deepCopyExpr ?? e.Expr, eType);
+                return expr;
             }
-            var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
-            var js = "{{v:{0},_:{1}}}";
-            var expr = new ExprJsExplicit(ctx, js, e.Type, deepCopyExpr ?? e.Expr, eType);
-            return expr;
         }
 
         protected override ICode VisitUnboxAny(ExprUnboxAny e) {
-            if (e.Type.IsValueType) {
-                if (e.Type.IsNullable()) {
-                    var ctx = e.Ctx;
-                    var temp = new ExprVarLocal(ctx, e.Type);
-                    var hasValue = new ExprJsFieldVarName(ctx, e.Type.GetField("hasValue"));
-                    var value = new ExprJsFieldVarName(ctx, e.Type.GetField("value"));
-                    var defaultValue = new ExprDefaultValue(ctx, ((GenericInstanceType)e.Type).GenericArguments[0]);
-                    // The Value has to be set even if hasValue==false, as Nullable.GetValueOrDefault() needs it
-                    var js = e.Expr.IsVar() ? "{{{2}:!!{1},{3}:{1}||{4}}}" : "{{{2}:!!({0}={1}),{3}:{0}||{4}}}";
-                    var expr = new ExprJsExplicit(ctx, js, e.Type, temp, e.Expr, hasValue, value, defaultValue);
-                    return expr;
-                } else {
-                    return base.VisitUnboxAny(e);
-                }
-            } else {
+            if (!e.Type.IsValueType) {
                 // On ref-type, unbox-any becomes a castclass
                 var expr = (Expr)this.Visit(e.Expr);
                 var cast = new ExprCast(e.Ctx, expr, e.Type);
                 return cast;
+            }
+                var ctx = e.Ctx;
+            if (e.Type.IsNullable()) {
+                // If obj==null create Nullable with hasValue=false
+                // If obj.Type not assignable to e.InnerType throw InvalidCastEx
+                var innerType = e.Type.GetNullableInnerType();
+                var unboxMethod = ((Func<object, int?>)InternalFunctions.UnboxAnyNullable<int>).Method.GetGenericMethodDefinition();
+                var mUnbox = ctx.Module.Import(unboxMethod).MakeGeneric(innerType);
+                var unboxAnyCall = new ExprCall(ctx, mUnbox, null, e.Expr);
+                return unboxAnyCall;
+            } else {
+                // If obj==null throw NullRefEx
+                // If obj.Type not assignable to e.Type throw InvalidCastEx
+                // otherwise unbox
+                var unboxMethod = ((Func<object, int>)InternalFunctions.UnboxAnyNonNullable<int>).Method.GetGenericMethodDefinition();
+                var mUnbox = ctx.Module.Import(unboxMethod).MakeGeneric(e.Type);
+                var unboxAnyCall = new ExprCall(ctx, mUnbox, null, e.Expr);
+                return unboxAnyCall;
             }
         }
 

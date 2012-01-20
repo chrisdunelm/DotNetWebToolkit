@@ -143,24 +143,52 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
         }
 
-        //[Js(typeof(BoxNullableImpl))]
-        //public static object BoxNullable<T>(T? o) where T : struct {
-        //    if (o.HasValue) {
-        //        return DeepCopyValueType(o.Value);
-        //    } else {
-        //        return null;
-        //    }
-        //}
+        [Js(typeof(UnboxAnyNullableImpl))]
+        public static T? UnboxAnyNullable<T>(object obj) where T : struct {
+            throw new Exception();
+        }
 
-        //class BoxNullableImpl : IJsImpl {
-        //    public Stmt GetImpl(Ctx ctx) {
-        //        var o = ctx.MethodParameter(0);
-        //        var hasValue = new ExprJsFieldVarName(ctx, 
-        //        var js = "return {0}.{1}?{3}:{0}.{2};";
-        //        var stmt = new StmtJsExplicitFunction(ctx, js, o);
-        //        return stmt;
-        //    }
-        //}
+        class UnboxAnyNullableImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                // If obj==null create Nullable with hasValue=false
+                // If obj.Type not assignable to e.InnerType throw InvalidCastEx
+                var obj = ctx.MethodParameter(0);
+                var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var nType = type.MakeNullable();
+                var nameHasValue = new ExprJsFieldVarName(ctx, nType.GetField("hasValue"));
+                var nameValue = new ExprJsFieldVarName(ctx, nType.GetField("value"));
+                var defaultValue = new ExprDefaultValue(ctx, type);
+                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj, new ExprJsTypeVarName(ctx, type));
+                var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
+                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
+                var js = "if (!{0}) return {{{1}:false,{2}:{3}}}; if (!{4}) throw {5}; return {{{1}:true,{2}:{0}.v}};";
+                var stmt = new StmtJsExplicitFunction(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
+                return stmt;
+            }
+        }
+
+        [Js(typeof(UnboxAnyNonNullableImpl))]
+        public static T UnboxAnyNonNullable<T>(object obj) where T : struct {
+            throw new Exception();
+        }
+
+        class UnboxAnyNonNullableImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                // If obj==null throw NullRefEx
+                // If obj.Type not assignable to e.Type throw InvalidCastEx
+                // otherwise unbox
+                var obj = ctx.MethodParameter(0);
+                var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var nullRefExCtor = ctx.Module.Import(typeof(NullReferenceException).GetConstructor(new[] { typeof(string) }));
+                var nullRefEx = new ExprNewObj(ctx, nullRefExCtor, new ExprLiteral(ctx, "Object reference not set to an instance of an object.", ctx.String));
+                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj, new ExprJsTypeVarName(ctx, type));
+                var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
+                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
+                var js = "if (!{0}) throw {1}; if (!{2}) throw {3}; return {0}.v;";
+                var stmt = new StmtJsExplicitFunction(ctx, js, obj, nullRefEx, canAssign, invCastEx);
+                return stmt;
+            }
+        }
 
 
     }

@@ -51,6 +51,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var fieldAccesses = new Dictionary<FieldReference, int>(TypeExtensions.FieldReqEqComparerInstance);
             // Each type records which virtual methods have their NewSlot definitions
             var virtualCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
+            // Each basemost virtual method records the least-derived type actually called
+            // This allows only virtual methods in more-derived types to be transcoded
+            var virtualCallExactMethods = new Dictionary<MethodReference, IEnumerable<TypeReference>>(TypeExtensions.MethodRefEqComparerInstance);
             // Each interface type records which interface methods are called
             var interfaceCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
             // All instance constructors must be updated after all methods have been processed, to initialise all referenced
@@ -160,6 +163,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         var mBasemost = call.CallMethod.GetBasemostMethod(null);
                         var methodSet = virtualCalls.ValueOrDefault(mBasemost.DeclaringType, () => new HashSet<MethodReference>(TypeExtensions.MethodRefEqComparerInstance), true);
                         methodSet.Add(mBasemost);
+                        var objType = call.Obj.Type;
+                        var already = virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull();
+                        if (!already.Any(x => x.IsBaseOfOrEqual(objType))) {
+                            virtualCallExactMethods[mBasemost] = already.Concat(objType).ToArray();
+                        }
                         // Methods that require transcoding are added to 'todo' later
                         continue;
                     }
@@ -175,6 +183,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
 
                 if (!todo.Any()) {
+                    // Add System.RuntimeType if any types have been seen
+                    if (typesSeen.Any(x => x.Value > 0) && !typesSeen.Any(x => x.Key.FullName == "System.RuntimeType")) {
+                        var runtimeType = ctx.Module.Import(Type.GetType("System.RuntimeType"));
+                        typesSeen.Add(runtimeType, 1);
+                    }
                     // Scan all virtual calls and add any required methods
                     // Need care to handle virtual methods with generic arguments
                     var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
@@ -188,6 +201,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         let methodDef = method.Resolve()
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
                         let mBasemost = method.GetBasemostMethod(method)
+                        where virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull().Any(x => x.IsBaseOfOrEqual(type) || type.IsBaseOfOrEqual(x))
                         where virtualRoots.Contains(mBasemost)
                         select method;
                     var requireMethodsArray = requireMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
@@ -216,6 +230,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         todo.Push(method);
                     }
                 }
+            }
+
+            // Add type count to System.RuntimeType
+            var runtimeTypeInc = typesSeen.Keys.FirstOrDefault(x => x.FullName == "System.RuntimeType");
+            if (runtimeTypeInc != null) {
+                typesSeen[runtimeTypeInc] += 2;
             }
 
             // Make sure fields of nullable types are named
