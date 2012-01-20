@@ -30,6 +30,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
             
             { M.Def(TBoolean, "System.String.Equals", TObject), ResolverSystem.Object_Equals },
+
         };
 
         public static Stmt ResolveMethod(Ctx ctx, List<TypeReference> newTypesSeen) {

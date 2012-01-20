@@ -476,7 +476,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt LoadToken(MemberReference member) {
             var expr = new ExprRuntimeHandle(this.ctx, member);
-            return this.SsaLocalAssignment(expr);
+            this.stack.Push(expr);
+            return null;
         }
 
     }

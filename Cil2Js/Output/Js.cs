@@ -230,22 +230,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            //// Add all base types and array element-types of all seen types to typesSeen
-            //var typesSeenCopy = typesSeen.Where(x => x.Value > 0).Select(x => x.Key).ToArray();
-            //foreach (var type in typesSeenCopy) {
-            //    var bases = type.EnumThisAllBaseTypes().Skip(1).ToArray();
-            //    foreach (var baseType in bases) {
-            //        typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-            //    }
-            //    if (type.IsArray) {
-            //        var elType = type.GetElementType().FullResolve(type, null);
-            //        typesSeen[elType] = typesSeen.ValueOrDefault(elType) + 1;
-            //        bases = elType.EnumThisAllBaseTypes().Skip(1).ToArray();
-            //        foreach (var baseType in bases) {
-            //            typesSeen[baseType] = typesSeen.ValueOrDefault(baseType) + 1;
-            //        }
-            //    }
-            //}
+            var nullables = typesSeen.Where(x => x.Key.Resolve().FullName == "System.Nullable`1").ToArray();
+            foreach (var nullable in nullables) {
+                foreach (var field in nullable.Key.EnumResolvedFields()) {
+                    fieldAccesses.Add(field, 1);
+                }
+            }
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)

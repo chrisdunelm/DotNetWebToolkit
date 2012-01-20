@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     static class ResolverArray {
@@ -36,6 +38,27 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var js = "for ({0}=0; {0}<{1}; {0}++) {{ {2}[{3}+{0}]={4}; }}";
             var stmt = new StmtJsExplicitFunction(ctx, js, i, length, array, index, value);
             return stmt;
+        }
+
+        public static Expr InitializeArray(ICall call) {
+            //var array = ctx.MethodParameter(0);
+            //var fieldHandle = ctx.MethodParameter(1);
+            var array = (ExprVar)call.Args.ElementAt(0);
+            var initExpr = (ExprRuntimeHandle)call.Args.ElementAt(1);
+            var initData = ((FieldDefinition)initExpr.Member).InitialValue;
+            var arrayElType = array.Type.GetElementType();
+
+            var values = new List<string>();
+            if (arrayElType.IsInt32()) {
+                for (int i = 0; i < initData.Length; i += 4) {
+                    var v = BitConverter.ToInt32(initData, i);
+                    values.Add(v.ToString());
+                }
+            }
+
+            var vStr = string.Join(",", values);
+            var arrayTypeName = new ExprJsTypeVarName(call.Ctx, array.Type);
+            return new ExprJsExplicit(call.Ctx, "{0}=[" + vStr + "];{0}._={1};", array.Type, array, arrayTypeName);
         }
 
     }

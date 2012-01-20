@@ -28,6 +28,20 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        static int? GetNull() {
+            return null;
+        }
+
+        [Test]
+        public void TestObjectNull() {
+            Func<bool> f = () => {
+                int? i = GetNull();
+                object o = (object)i;
+                return o == null;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

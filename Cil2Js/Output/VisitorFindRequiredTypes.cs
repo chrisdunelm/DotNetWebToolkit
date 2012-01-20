@@ -39,5 +39,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             this.types.Add(e.CallMethod.DeclaringType);
             return base.VisitJsVirtualCall(e);
         }
+
+        //protected override ICode VisitDefaultValue(ExprDefaultValue e) {
+        //    this.types.Add(e.Type);
+        //    return base.VisitDefaultValue(e);
+        //}
+
     }
 }

@@ -75,6 +75,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TType, "System.Type.GetTypeFromHandle", "System.RuntimeTypeHandle"), ResolverType.GetTypeFromHandle },
 
             { M.Def(TBoolean, "System.RuntimeTypeHandle.IsInterface", "System.RuntimeType"), ResolverSystem.RuntimeTypeHandle_IsInterface },
+
+            { M.Def(TVoid, "System.Runtime.CompilerServices.RuntimeHelpers.InitializeArray", TArray, "System.RuntimeFieldHandle"), ResolverArray.InitializeArray },
+
         };
 
         public static Expr ResolveCall(ICall call) {
