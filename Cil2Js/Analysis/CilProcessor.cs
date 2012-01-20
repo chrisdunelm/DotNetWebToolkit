@@ -224,7 +224,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return new StmtReturn(this.ctx, null);
             case 1:
                 return new StmtReturn(this.ctx, this.stack.Pop());
-                //return new StmtReturn(this.ctx, this.CastIfRequired(this.stack.Pop(), this.ctx.MRef.ReturnType.FullResolve(this.ctx)));
             default:
                 throw new InvalidOperationException("Stack size incorrect for return instruction: " + this.stack.Count);
             }
@@ -326,21 +325,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(expr);
         }
 
-        //private Expr CastIfRequired(Expr expr, TypeReference requireType) {
-        //    if (expr.Type.IsPointer) {
-        //        var ptrType = (PointerType)expr.Type;
-        //        var elType = ptrType.ElementType;
-        //        if (elType.IsAssignableTo(requireType)) {
-        //            return this.locals[((ExprVariableAddress)expr).Index];
-        //        }
-        //    }
-        //    if (expr.Type.IsAssignableTo(requireType)) {
-        //        return expr;
-        //    } else {
-        //        return new ExprCast(this.ctx, expr, requireType);
-        //    }
-        //}
-
         private Stmt Call(Instruction inst, bool isVirtualCallInst) {
             var callingRef = ((MethodReference)inst.Operand).FullResolve(this.ctx);
             bool isVirtualCall = isVirtualCallInst && callingRef.Resolve().IsVirtual;
@@ -356,7 +340,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 }
                 argExprs[i] = this.DerefIfPointer(argExprs[i]);
             }
-            //var obj = callingRef.HasThis ? this.CastIfRequired(this.stack.Pop(), callingRef.DeclaringType) : null;
             var obj = callingRef.HasThis ? this.DerefIfPointer(this.stack.Pop()) : null;
             var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall);
             if (callingRef.ReturnType.IsVoid()) {
