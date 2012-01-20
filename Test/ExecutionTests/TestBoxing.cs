@@ -29,16 +29,42 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Statements can move in/out of try/catch/finally blocks. Which needs fixing")]
+        struct S1 { public int x; }
+        static object ForceObject<T>(T o) { return o; }
+        static bool GetFalse(bool b) { return false; }
+
+        [Test]
+        public void TestUnboxNullStruct() {
+            Func<bool> f = () => {
+                var o = ForceObject((object)null);
+                bool ret;
+                try {
+                    // Throws NullReferenceExeption("Object reference not set to an instance of an object.")
+                    var s = (S1)o;
+                    ret = GetFalse(s.x != 0);
+                } catch (Exception e) {
+                    ret = e.Message == "Object reference not set to an instance of an object.";
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        static int Get3() { return 3; }
+
+        [Test]
         public void TestUnboxToWrongType() {
             Func<bool> f = () => {
-                object o = 3;
+                object o = Get3();
+                bool ret;
                 try {
+                    // Throws InvalidCastException("Specified cast is not valid.")
                     short s = (short)o;
-                } catch {
-                    return true;
+                    ret = GetFalse(s != 0);
+                } catch (Exception e) {
+                    ret = e.Message == "Specified cast is not valid.";
                 }
-                return false;
+                return ret;
             };
             this.Test(f);
         }
