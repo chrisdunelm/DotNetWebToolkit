@@ -35,6 +35,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             RuntimeHandle,
             VariableAddress,
             FieldAddress,
+            ArgAddress,
 
             Max = 1000
         }

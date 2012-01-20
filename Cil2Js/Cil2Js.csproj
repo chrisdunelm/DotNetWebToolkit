@@ -108,6 +108,7 @@
     <Compile Include="Analysis\VisitorTypeCorrector.cs" />
     <Compile Include="Ast\Ctx.cs" />
     <Compile Include="Ast\Expr.cs" />
+    <Compile Include="Ast\ExprArgAddress.cs" />
     <Compile Include="Ast\ExprArrayLength.cs" />
     <Compile Include="Ast\ExprAssignment.cs" />
     <Compile Include="Ast\ExprBinary.cs" />

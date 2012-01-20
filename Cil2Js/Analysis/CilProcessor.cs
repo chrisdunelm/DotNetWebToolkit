@@ -69,6 +69,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Ldarg:
             case Code.Ldarg_S:
                 return this.LdArg(((ParameterDefinition)inst.Operand).Index, false);
+            case Code.Ldarga:
+            case Code.Ldarga_S:
+                return this.LdArga(((ParameterDefinition)inst.Operand).Index);
             case Code.Starg:
             case Code.Starg_S:
                 return this.StArg(((ParameterDefinition)inst.Operand).Index);
@@ -245,6 +248,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(expr);
         }
 
+        private Stmt LdArga(int idx) {
+            var type = this.ctx.MRef.Parameters[idx].ParameterType.FullResolve(this.ctx);
+            var expr = new ExprArgAddress(this.ctx, idx, type);
+            this.stack.Push(expr);
+            return null;
+        }
+
         private Stmt StArg(int idx) {
             var expr = this.stack.Pop();
             var target = new ExprVarLocal(this.ctx, expr.Type);
@@ -259,11 +269,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt LdLoca(int idx) {
             var type = this.ctx.MDef.Body.Variables[idx].VariableType.FullResolve(this.ctx);
-            //var v = new ExprVarLocal(this.ctx, type);
-            //this.locals[idx] = v;
-            //var v = (ExprVar)this.locals[idx];
             var expr = new ExprVariableAddress(this.ctx, idx, type);
-            //return this.SsaLocalAssignment(expr);
             this.stack.Push(expr);
             return null;
         }
@@ -367,11 +373,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             for (int i = numArgs - 1; i >= 0; i--) {
                 argExprs[i] = this.DerefIfPointer(this.stack.Pop());
             }
-            //for (int i = 0; i < numArgs; i++) {
-            //    var argType = ctorRef.Parameters[i].ParameterType.FullResolve(ctorRef);
-            //    //argExprs[i] = this.CastIfRequired(argExprs[i], argType);
-            //    argExprs[i] = this.DerefIfPointer(argExprs[i]);
-            //}
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
             return this.SsaLocalAssignment(expr);
         }
@@ -381,6 +382,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 var eVAddr = (ExprVariableAddress)e;
                 var l = this.locals[eVAddr.Index];
                 return l;
+            }
+            if (e.ExprType == Expr.NodeType.ArgAddress) {
+                var eAAddr = (ExprArgAddress)e;
+                var a = this.args[eAAddr.Index];
+                return a;
             }
             return e;
         }

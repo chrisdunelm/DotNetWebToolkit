@@ -128,18 +128,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     ast = new StmtBlock(ctx, (Stmt)ast, rewrite);
                 }
 
-            restartCalls:
-                // TODO: Improve this...
-                var allCalls = VisitorFindCalls.V(ast).ToArray();
-                var vCalls = allCalls.Where(x => x.IsVirtualCall && x.ExprType != (Expr.NodeType)JsExprType.JsVirtualCall).ToArray();
-                foreach (var vCall in vCalls) {
-                    // (_ = obj)[vIdx](_, ... args ...)
-                    var tempObj = new ExprVarLocal(ctx, vCall.Obj.Type);
-                    var jsVCall = new ExprJsVirtualCall(ctx, vCall.CallMethod, new ExprAssignment(ctx, tempObj, vCall.Obj), tempObj, vCall.Args);
-                    ast = VisitorJsReplace.V(ast, vCall, jsVCall);
-                    goto restartCalls;
-                }
-
                 methodAsts.Add(mRef, ast);
 
                 var fieldRefs = VisitorFindFieldAccesses.V(ast);
@@ -230,10 +218,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            var nullables = typesSeen.Where(x => x.Key.Resolve().FullName == "System.Nullable`1").ToArray();
+            // Make sure fields of nullable types are named
+            var nullables = typesSeen.Keys.Where(x => x.IsNullable()).ToArray();
             foreach (var nullable in nullables) {
-                foreach (var field in nullable.Key.EnumResolvedFields()) {
-                    fieldAccesses.Add(field, 1);
+                foreach (var field in nullable.EnumResolvedFields()) {
+                    if (!fieldAccesses.ContainsKey(field)) {
+                        fieldAccesses.Add(field, 1);
+                    }
                 }
             }
 

@@ -42,6 +42,48 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        static int? Get3() {
+            return 3;
+        }
+
+        [Test]
+        public void TestObjectNotNull() {
+            Func<bool> f = () => {
+                int? i = Get3();
+                object o = (object)i;
+                return o != null;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestBoxUnboxNull() {
+            Func<bool> f = () => {
+                int? i = GetNull();
+                object o = (object)i;
+                if (o != null) {
+                    return false;
+                }
+                int? j = (int?)o;
+                return j.HasValue == false;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestBoxUnboxNotNull() {
+            Func<bool> f = () => {
+                int? i = Get3();
+                object o = (object)i;
+                if (o != null) {
+                    return false;
+                }
+                int? j = (int?)o;
+                return j == 3;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

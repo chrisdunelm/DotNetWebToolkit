@@ -29,6 +29,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test, Ignore("Statements can move in/out of try/catch/finally blocks. Which needs fixing")]
         public void TestUnboxToWrongType() {
             Func<bool> f = () => {
                 object o = 3;

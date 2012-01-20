@@ -40,10 +40,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitJsVirtualCall(e);
         }
 
-        //protected override ICode VisitDefaultValue(ExprDefaultValue e) {
-        //    this.types.Add(e.Type);
-        //    return base.VisitDefaultValue(e);
-        //}
+        protected override ICode VisitDefaultValue(ExprDefaultValue e) {
+            this.types.Add(e.Type);
+            return base.VisitDefaultValue(e);
+        }
 
     }
 }

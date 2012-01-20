@@ -373,8 +373,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitNewObj(ExprNewObj e) {
             var name = this.resolver.MethodNames[e.CallMethod];
             this.js.Append(name);
-            this.js.Append("({_:");
-            this.js.Append(this.resolver.TypeNames[e.Type]);
+            this.js.Append("({");
+            if (!e.Type.IsValueType) {
+                this.js.Append("_:");
+                this.js.Append(this.resolver.TypeNames[e.Type]);
+            }
             this.js.Append("}");
             foreach (var arg in e.Args) {
                 this.js.Append(", ");
@@ -480,23 +483,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitBox(ExprBox e) {
-            if (!e.Type.IsValueType) {
-                return e;
-            }
-            this.js.Append("{v:");
-            if (e.Type.IsPrimitive) {
-                this.Visit(e.Expr);
-            } else {
-
-            }
-            this.js.Append(",_:");
-            this.js.Append(this.resolver.TypeNames[e.Type]);
-            this.js.Append("}");
-            return e;
+            throw new InvalidOperationException("This should never occur");
         }
 
         protected override ICode VisitUnbox(ExprUnboxAny e) {
-            // If it gets here, then the type being unboxed will be a value type.
+            // If it gets here, then the type being unboxed will be a value type, except Nullable<>.
             // VisitorJsResolveAll changed ref-type unbox instructions into Cast expressions
             this.Visit(e.Expr);
             this.js.Append(".v");

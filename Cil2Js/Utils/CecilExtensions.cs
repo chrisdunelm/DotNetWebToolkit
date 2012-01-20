@@ -396,6 +396,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
         }
 
+        public static FieldReference GetField(this TypeReference type, string fieldName) {
+            return type.EnumResolvedFields().First(x => x.Name == fieldName);
+        }
+
         [DebuggerStepThrough]
         public static bool IsExternal(this MethodDefinition method) {
             return method.HasBody && method.RVA == 0;

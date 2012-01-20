@@ -5,6 +5,7 @@ using System.Text;
 using Mono.Cecil.Cil;
 using System.Diagnostics;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.Utils {
     public static class Extensions {
@@ -195,6 +196,11 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         [DebuggerStepThrough]
         public static IEnumerable<T> EmptyOf<T>(this IEnumerable<T> en) {
             return Enumerable.Empty<T>();
+        }
+
+        [DebuggerStepThrough]
+        public static bool IsVar(this Expr e) {
+            return e is ExprVar;
         }
 
     }

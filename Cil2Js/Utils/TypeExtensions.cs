@@ -59,21 +59,6 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static readonly IEqualityComparer<FieldReference> FieldReqEqComparerInstance = new FieldRefEqComparer();
 
         private static bool IsABeforeB(TypeReference a, TypeReference b) {
-            //// Interfaces always come first
-            //var aDef  =a.Resolve();
-            //var bDef=b.Resolve();
-            //if (aDef.IsInterface && !bDef.IsInterface) {
-            //    return true;
-            //}
-            //// Check base-type
-            //var t = b.GetBaseType();
-            //while (t != null) {
-            //    if (t.IsSame(a)) {
-            //        // a is a base-type of b
-            //        return true;
-            //    }
-            //    t = t.GetBaseType();
-            //}
             if (b.IsAssignableTo(a)) {
                 return true;
             }
@@ -88,7 +73,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static IEnumerable<T> OrderByReferencedFirst<T>(this IEnumerable<T> en, Func<T, TypeReference> selector) {
-            // TODO: Make this more efficient.
+            // TODO: Make this more efficient than this insertion sort
             // Cannot use built-in sort/orderby, as set is only partially ordered
             var ret = new List<T>();
             foreach (var item in en) {
@@ -167,6 +152,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.FullName == "System.Exception";
         }
 
+        public static bool IsNullable(this TypeReference type) {
+            return type.FullName.StartsWith("System.Nullable`1");
+        }
+
         public static bool IsInteger(this TypeReference type) {
             return
                 type.IsByte() || type.IsSByte() ||
@@ -174,81 +163,6 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 type.IsInt32() || type.IsUInt32() ||
                 type.IsInt64() || type.IsUInt64();
         }
-
-        //public static bool MethodMatch(this MethodDefinition candidate, MethodDefinition method) {
-        //    if (!candidate.IsVirtual)
-        //        return false;
-
-        //    if (candidate.Name != method.Name)
-        //        return false;
-
-        //    if (!TypeMatch(candidate.ReturnType, method.ReturnType))
-        //        return false;
-
-        //    if (candidate.Parameters.Count != method.Parameters.Count)
-        //        return false;
-
-        //    for (int i = 0; i < candidate.Parameters.Count; i++)
-        //        if (!TypeMatch(candidate.Parameters[i].ParameterType, method.Parameters[i].ParameterType))
-        //            return false;
-
-        //    return true;
-        //}
-
-        //static bool TypeMatch(IModifierType a, IModifierType b) {
-        //    if (!TypeMatch(a.ModifierType, b.ModifierType))
-        //        return false;
-
-        //    return TypeMatch(a.ElementType, b.ElementType);
-        //}
-
-        //static bool TypeMatch(TypeSpecification a, TypeSpecification b) {
-        //    if (a is GenericInstanceType)
-        //        return TypeMatch((GenericInstanceType)a, (GenericInstanceType)b);
-
-        //    if (a is IModifierType)
-        //        return TypeMatch((IModifierType)a, (IModifierType)b);
-
-        //    return TypeMatch(a.ElementType, b.ElementType);
-        //}
-
-        //static bool TypeMatch(GenericInstanceType a, GenericInstanceType b) {
-        //    if (!TypeMatch(a.ElementType, b.ElementType))
-        //        return false;
-
-        //    if (a.GenericArguments.Count != b.GenericArguments.Count)
-        //        return false;
-
-        //    if (a.GenericArguments.Count == 0)
-        //        return true;
-
-        //    for (int i = 0; i < a.GenericArguments.Count; i++)
-        //        if (!TypeMatch(a.GenericArguments[i], b.GenericArguments[i]))
-        //            return false;
-
-        //    return true;
-        //}
-
-        //static bool TypeMatch(TypeReference a, TypeReference b) {
-        //    if (a is GenericParameter)
-        //        return true;
-
-        //    if (a is TypeSpecification || b is TypeSpecification) {
-        //        if (a.GetType() != b.GetType())
-        //            return false;
-
-        //        return TypeMatch((TypeSpecification)a, (TypeSpecification)b);
-        //    }
-
-        //    return a.FullName == b.FullName;
-        //}
-
-        //public static TypeDefinition GetBaseType(this TypeDefinition type) {
-        //    if (type == null || type.BaseType == null)
-        //        return null;
-
-        //    return type.BaseType.Resolve();
-        //}
 
         public static bool IsAssignableTo(this TypeReference from, TypeReference to) {
             // Rules from ECMA-335 partition III page 21

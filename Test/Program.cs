@@ -62,12 +62,11 @@ namespace Test {
         }
 
         static void Main(string[] args) {
-            var s1 = GS1();
             //var mi = typeof(Program).GetMethod("T0");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestNullables() { Verbose = true };
-            t.TestObjectNull();
+            var t = new TestSimpleClasses() { Verbose = true };
+            t.TestVirtual();
             return;
 
         }

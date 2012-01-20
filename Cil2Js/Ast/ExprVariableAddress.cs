@@ -9,14 +9,6 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.Ast {
     public class ExprVariableAddress : Expr {
 
-        //public ExprVariableAddress(Ctx ctx, ExprVar variable)
-        //    : base(ctx) {
-        //    this.Variable = variable;
-        //    this.type = variable.Type;
-        //}
-
-        //public ExprVar Variable { get; private set; }
-
         public ExprVariableAddress(Ctx ctx, int index, TypeReference type)
             : base(ctx) {
             this.Index = index;

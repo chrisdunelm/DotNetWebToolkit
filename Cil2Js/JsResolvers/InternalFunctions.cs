@@ -110,7 +110,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             public Stmt GetImpl(Ctx ctx) {
                 // Recursively deep-copy a value-type
                 var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
-                var fields = type.EnumResolvedFields().ToArray();
+                var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
                 var o = ctx.MethodParameter(0);
                 var eTypeName = new ExprJsTypeVarName(ctx, type);
                 var ofsFieldName = 1;
@@ -142,6 +142,26 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 return null;
             }
         }
+
+        //[Js(typeof(BoxNullableImpl))]
+        //public static object BoxNullable<T>(T? o) where T : struct {
+        //    if (o.HasValue) {
+        //        return DeepCopyValueType(o.Value);
+        //    } else {
+        //        return null;
+        //    }
+        //}
+
+        //class BoxNullableImpl : IJsImpl {
+        //    public Stmt GetImpl(Ctx ctx) {
+        //        var o = ctx.MethodParameter(0);
+        //        var hasValue = new ExprJsFieldVarName(ctx, 
+        //        var js = "return {0}.{1}?{3}:{0}.{2};";
+        //        var stmt = new StmtJsExplicitFunction(ctx, js, o);
+        //        return stmt;
+        //    }
+        //}
+
 
     }
 }
