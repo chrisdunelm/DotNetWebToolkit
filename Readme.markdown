@@ -1,169 +1,193 @@
-Dot Net Web Toolkit
+DotNet Web Toolkit
 ===================
 
-The project aim is to convert libraries/executables written C#, F#, VB, *(...add your own .NET langauge here)* to JavaScript.
+DotNet Web Toolkit will be a toolkit for building web projects entirely in .NET languages , for example C#, F#, Visual Basic, ...
 
-Tooling support for Visual Studio may one day be provided that allows a project to be automatically converted to JavaScript during a build, with the JavaScript output automatically being updated in a web project.
+The compiled code is converted to JavaScript that will run on all modern web browsers.
 
-In my more optimistic moments I imagine that I'll be able to implement source-code level debugging, with Visual Studio controlling the browsers execution of the generated JavaScript...
+The toolkit will provide all the APIs available within the web browser, allowing code like this:
 
-Current Status
+```C#
+public static void Canvas2DDemo() {
+    var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
+    var ctx = (CanvasRenderingContext2D)canvas.GetContext(CanvasContext.TwoD);
+    string fill1 = "#ff0000";
+    string fill2 = "#0000ff";
+    bool f1 = true;
+    Window.SetInterval(() => {
+        ctx.FillStyle = f1 ? fill1 : fill2;
+        f1 = !f1;
+        ctx.FillRect(50, 50, 100, 50);
+    }, 5000);
+}
+```
+
+to be converted to javascript.
+
+The toolkit will provide the facility to integrate with web projects allowing specified source code to target the browser and be automatically converted to JavaScript during the build process.
+
+The tookit will provide source-level debugging of in-broswer javascript; for example allowing the generated JavaScript running in the browser to be debugged from within Visual Studio with breakpoints and execution control occuring in C#/F#/VB/... source code.
+
+Current status
 --------------
 
-Dot Net Web Toolkit is currently mostly non-functional. Lots of things will not be successully converted to JavaScript. However, the following should work:
+Currently Dot Net Web Toolkit provides:
 
-- Classes with static, instance and virtual methods
-- Simple arithmatic
-- Logic expressions
-- 'if' and 'loop' statements
-- Single-dimensional arrays
-- try/catch/finally statements *(although you can't actually contruct exception objects to throw quite yet)*
+* ***Cil2Js***: A [CIL][1] *(.NET bytecode)* to JavaScript converter
+* ***DotNetWebToolkit***: Provides APIs available with the web browser
 
-But there's much more that's missing/broken/bad:
+*Cil2JS*
+--------
 
-- No integration with web browsers (e.g. you cannot yet call document.getElementById)
-- Many useful base class classes and methods wll fail
-- *(...add all the other stuff you find missing here)*
-- No Visual Studio tooling available
-- Some of the JavaScript produced is of terrible quality
-- The JavaScript produced is the worst global namespace polluter you've ever seen
+Cil2Js is functional and can convert many CIL methods to JavaScript. For example, the C# method:
+
+```C#
+public static int Factorial(int i) {
+    return (i == 0) ? 1 : i * Factorial(i - 1);
+}
+```
+
+is compiled, then transcoded to JavaScript:
+
+```JavaScript
+var main = function(a) {
+    var b = 0, c = 0;
+    if ((!a)) {
+        b = 1;
+    } else {
+        c = main((a - 1));
+        b = (a * c);
+    }
+    return b;
+}
+```
+
+*(note that the method passed to be transcoded is currently always renamed 'main')*
+
+Many .NET features and types can be used, but the following are currently not implemented:
+
+* Some nested try/catch/finally structures; specifically if a CIL 'leave' instruction breaks out of more than one try statement.
+* Many low-level .NET base class type methods are partially implemeneted by the .NET runtime itself, rather than being implemented in CIL *(e.g. int, string)*. These all have be re-implemented by the toolkit before they can be transcoded to JavaScript. This has been done of some methods, but many remain to be written.
+* Some .NET base class type methods use unsafe code, which will probably never be supported by Cil2Js *(e.g. Many methods in StringBuilder)*. Again, these require re-implementing within the toolkit before they can be transcoded. 
+
+The following also requires improving:
+
+* The JavaScript produced is not optimal. In fact, some of it is terrible.
+* All JavaScript functions are currently in the global namespace.
+* Some CIL cannot be transcode.
+
+*DotNetWebToolkit*
+------------------
+
+This library is referenced in projects to be transcoded to JavaScript and provides APIs found in web browsers.
+
+For example it provides a ***Document*** class with the *GetElementById()* method, allowing:
+
+```C#
+using DotNetWebToolkit.Web;
+
+...
+
+HtmlElement element = Document.GetElementById("canvasId");
+```
+
+This library is currently extremely incomplete.
+
 
 How to use
 ----------
-Download and build the Visual Studio 2010 solution. The library **DotNetWebToolkit.Cil2Js** allows a method to be converted to JavaScript:
 
-``` C#
-using System;
-using System.Reflection;
+```C#
 using DotNetWebToolkit.Cil2Js;
 
-namespace Test {
-    class Program {
+...
 
-        class A {
-            public A(int number) {
-                this.i = number;
-            }
-            private int i;
-            public int PlusOne {
-                get { return this.i + 1; }
-            }
-        }
+public static int Factorial(int i) {
+    return (i == 0) ? 1 : i * Factorial(i - 1);
+}
 
-        static int AddOne(int number) {
-            var a = new A(number);
-            return a.PlusOne;
-        }
+public static int Fibonacci(int i) {
+    return (i <= 1) ? 1 : Fibonacci(i - 1) + Fibonacci(i - 2);
+}
 
-        static void Main(string[] args) {
-
-            var methodInfo = typeof(Program).GetMethod("AddOne", BindingFlags.NonPublic | BindingFlags.Static);
-            string javaScript = Js.CreateFrom(methodInfo);
-            Console.WriteLine(javaScript);
-	    }
-
+public static int FactorialOrFibonacci(int i, bool factorial) {
+    if (factorial) {
+        return Factorial(i);
+    } else {
+        return Fibonacci(i);
     }
 }
-```
 
-This will convert all required methods and print:
-
-``` JavaScript
-function main(a) {
-    return $b($c({}, a));
-}
-
-function $b($) {
-    return ($.a + 1);
-}
-
-function $c($, a) {
-    $d($);
-    $.a = a;
-    return $;
-}
-
-function $d($) {
-    return $;
+static void Main(string[] args) {
+    var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
+    var js = Transcoder.ToJs(mi, true);
+    Console.WriteLine(js);
 }
 ```
 
-to the console. Not the most pleasant JavaScript ever written, but it works. Note that the method passed in to convert is always renamed 'main'.
+The static method Transcoder.ToJs() converts the passed method to JavaScript, including all called methods:
 
-----
-
-Dot Net Web Toolkit uses Mono.Cecil internally for reading .NET binaries, and the transcoder will accept a Cecil MethodDefinition:
-
-``` C#
-MethodDefinition method = ...;
-string javaScript = Js.CreateFrom(method);
-```
-
-AST representation
-------------------
-
-Internally an AST (abstract syntax tree) is generated that represents the .NET CIL byte-code of each method. The transcoder allows this to be retreived, and the ShowVisitor helper class will print the AST:
-
-``` C#
-using System;
-using System.Reflection;
-using DotNetWebToolkit.Cil2Js;
-
-namespace Test {
-  class Program {
-
-    static int T0(int a, int b) {
-      if (a == b) {
-        b++;
-      }
-      return b;
+```JavaScript
+var main = function(a, c) {
+    var d = 0, b = 0, f = 0;
+    if ((!c)) {
+        d = e(a);
+        b = d;
+    } else {
+        f = g(a);
+        b = f;
     }
-
-    static void Main(string[] args) {
-      MethodInfo methodInfo = typeof(Program).GetMethod("T0", BindingFlags.NonPublic|BindingFlags.Static);
-      MethodDefinition method = Transcoder.GetMethod(methodInfo);
-      ICode ast = Transcoder.ToAst(method, null);
-      var show = ShowVisitor.V(method, ast);
-      Console.WriteLine(show);
-	}
-
-  }
+    return b;
 }
-```
 
-This will print:
-
-```
-System.Int32 T0(System.Int32 a, System.Int32 b)
-
-01d7db5d:
-    if ((a == phi<49385318>(Var_028aeff3:Int32,b))) {
-        Var_028aeff3:Int32 = (phi<49385318>(Var_028aeff3:Int32,b) + 1)
+var g = function(a) {
+    var b = 0, c = 0;
+    if ((!a)) {
+        b = 1;
+    } else {
+        c = g((a - 1));
+        b = (a * c);
     }
-    return phi<49385318>(Var_028aeff3:Int32,b)
+    return b;
+}
+
+var e = function(a) {
+    var b = 0, c = 0, d = 0;
+    if ((a <= 1)) {
+        b = 1;
+    } else {
+        c = e((a - 1));
+        d = e((a - 2));
+        b = (c + d);
+    }
+    return b;
 }
 ```
 
-AST Generation
---------------
+How it works
+============
 
-The AST is generated iteratively.
+The CIL is loaded using [Mono.Cecil][2] and converted to an [AST][3] representation. This AST is then almost directly written out as JavaScript.
 
-The initial AST is a direct representation of the .NET binary; this contains raw CIL byte-code, and the only flow-control structures are goto statements, which are modelled as continuations in the AST.
+Creating the AST is performed in multiple steps. The first step breaks the CIL into its [basic blocks][4]. This AST contains raw CIL and flow control uses unstructured goto statements. This is transformed into as AST that contains only structured flow control using multiple AST visitors, each of which transform the AST in a specific way. This process can be seen in the *Cil2Js* ***Transcoder***.*ToAst()* method.
 
-This is iteratively transformed to the final AST in in two steps:
+Once the AST has been generated, it must be further transformed as required for converting to JavaScript.
 
-1. All continuations (gotos) are transformed into ifs and loops.
-2. The resulting AST is simplified as much as possible.
+* Methods and types are mapped as required to alternative methods/types to allow unconvertable methods in the .NET base clases to use alternative implementations provided by the toolkit.
+* Value-type use is altered to allow JavaScript to conform to the expected .NET value-type semantics.
+* Cast and type checks *(cast and isinst CIL instructions)* are re-written as functions, with the required runtime type information also emitted in the JavaScript.
 
-These steps are carried out using a collection of AST visitors that are each
-capable of altering the AST in a specific manner.
+To see the steps required to convert a .NET method to JavaScript, the ***Transcoder***.*ToJs()* method can be called with the *verbose* argument set to *true*. This will print out all the AST transformations - *this can produce a lot of output*.
 
-If you are curious about how the AST is generated, call Js.CreateFrom(), Transcoder.ToAst() or Transcoder.ToJs() with the 'verbose' argument set to true. This will print to the console every step on the way to the final AST. This can produce a large amount of output for anything but the simplest methods.
-
-Join in
-=======
+Join in the fun
+===============
 
 If this project interests you please fork, improve, and send a pull request.
 
 Or contact me via my profile email address.
+
+
+[1]: http://en.wikipedia.org/wiki/Common_Intermediate_Language
+[2]: https://github.com/jbevain/cecil
+[3]: http://en.wikipedia.org/wiki/Abstract_syntax_tree
+[4]: http://en.wikipedia.org/wiki/Basic_block
