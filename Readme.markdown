@@ -1,20 +1,16 @@
 Dot Net Web Toolkit
 ===================
 
-The project aim is to convert libraries/executables written C#, F#, VB, *(...add your own .NET langauge here)*
-to JavaScript.
+The project aim is to convert libraries/executables written C#, F#, VB, *(...add your own .NET langauge here)* to JavaScript.
 
-Tooling support for Visual Studio may one day be provided that allows a project to be automatically converted to JavaScript
-during a build, with the JavaScript output automatically being updated in a web project.
+Tooling support for Visual Studio may one day be provided that allows a project to be automatically converted to JavaScript during a build, with the JavaScript output automatically being updated in a web project.
 
-In my more optimistic moments I imagine that I'll be able to implement source-code level debugging,
-with Visual Studio controlling the browsers execution of the generated JavaScript...
+In my more optimistic moments I imagine that I'll be able to implement source-code level debugging, with Visual Studio controlling the browsers execution of the generated JavaScript...
 
 Current Status
 --------------
 
-Dot Net Web Toolkit is currently mostly non-functional. Lots of things will not be successully converted to JavaScript.
-However, the following should work:
+Dot Net Web Toolkit is currently mostly non-functional. Lots of things will not be successully converted to JavaScript. However, the following should work:
 
 - Classes with static, instance and virtual methods
 - Simple arithmatic
@@ -34,8 +30,7 @@ But there's much more that's missing/broken/bad:
 
 How to use
 ----------
-Download and build the Visual Studio 2010 solution.
-The library **DotNetWebToolkit.Cil2Js** allows a method to be converted to JavaScript:
+Download and build the Visual Studio 2010 solution. The library **DotNetWebToolkit.Cil2Js** allows a method to be converted to JavaScript:
 
 ``` C#
 using System;
@@ -93,13 +88,11 @@ function $d($) {
 }
 ```
 
-to the console. Not the most pleasant JavaScript ever written, but it works. Note that the method passed
-in to convert is always renamed 'main'.
+to the console. Not the most pleasant JavaScript ever written, but it works. Note that the method passed in to convert is always renamed 'main'.
 
 ----
 
-Dot Net Web Toolkit uses Mono.Cecil internally for reading .NET binaries, and the transcoder will accept a
-Cecil MethodDefinition:
+Dot Net Web Toolkit uses Mono.Cecil internally for reading .NET binaries, and the transcoder will accept a Cecil MethodDefinition:
 
 ``` C#
 MethodDefinition method = ...;
@@ -109,8 +102,7 @@ string javaScript = Js.CreateFrom(method);
 AST representation
 ------------------
 
-Internally an AST (abstract syntax tree) is generated that represents the .NET CIL byte-code of each method.
-The transcoder allows this to be retreived, and the ShowVisitor helper class will print the AST:
+Internally an AST (abstract syntax tree) is generated that represents the .NET CIL byte-code of each method. The transcoder allows this to be retreived, and the ShowVisitor helper class will print the AST:
 
 ``` C#
 using System;
@@ -157,9 +149,7 @@ AST Generation
 
 The AST is generated iteratively.
 
-The initial AST is a direct representation of the .NET binary;
-this contains raw CIL byte-code, and the only flow-control structures are goto statements, which are
-modelled as continuations in the AST.
+The initial AST is a direct representation of the .NET binary; this contains raw CIL byte-code, and the only flow-control structures are goto statements, which are modelled as continuations in the AST.
 
 This is iteratively transformed to the final AST in in two steps:
 
@@ -169,13 +159,11 @@ This is iteratively transformed to the final AST in in two steps:
 These steps are carried out using a collection of AST visitors that are each
 capable of altering the AST in a specific manner.
 
-If you are curious about how the AST is generated, call Js.CreateFrom(), Transcoder.ToAst() or Transcoder.ToJs()
-with the 'verbose' argument set to true. This will print to the console every step on the way to
-the final AST. This can produce a large amount of output for anything but the simplest methods.
+If you are curious about how the AST is generated, call Js.CreateFrom(), Transcoder.ToAst() or Transcoder.ToJs() with the 'verbose' argument set to true. This will print to the console every step on the way to the final AST. This can produce a large amount of output for anything but the simplest methods.
 
 Join in
 =======
 
-If this project interests you please fork, improve, and send me pull requests.
+If this project interests you please fork, improve, and send a pull request.
 
 Or contact me via my profile email address.
