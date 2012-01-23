@@ -10,9 +10,15 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestStringBuilder : ExecutionTestBase {
 
-        [Test, Ignore("StringBuilder not yet supported (uses lots of unsafe code)")]
+        [Test]
         public void TestToStringOnly() {
             Func<string> f = () => (new StringBuilder()).ToString();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAppendString() {
+            Func<string, string> f = a => (new StringBuilder()).Append(a).Append(a).ToString();
             this.Test(f);
         }
 

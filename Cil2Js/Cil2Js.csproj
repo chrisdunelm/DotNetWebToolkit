@@ -207,8 +207,10 @@
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
+    <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorJsResolveAll.cs" />
+    <Compile Include="Output\VisitorJsTypeMapping.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />

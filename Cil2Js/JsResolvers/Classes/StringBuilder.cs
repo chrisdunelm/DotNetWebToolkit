@@ -48,9 +48,88 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return this;
         }
 
+        public StringBuilder Append(char[] value) {
+            this.s += new string(value);
+            return this;
+        }
+
+        public StringBuilder Append(decimal value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(double value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(short value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(int value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(long value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(object value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(sbyte value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(float value) {
+            this.s += value.ToString();
+            return this;
+        }
+
         public StringBuilder Append(string value) {
             this.s += value;
             return this;
+        }
+
+        public StringBuilder Append(ushort value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(uint value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(ulong value) {
+            this.s += value.ToString();
+            return this;
+        }
+
+        public StringBuilder Append(char value, int repeatCount) {
+            this.s += new string(value, repeatCount);
+            return this;
+        }
+
+        public StringBuilder Append(char[] value, int startIndex, int charCount) {
+            this.s += new string(value, startIndex, charCount);
+            return this;
+        }
+
+        public StringBuilder Append(string value, int startIndex, int count) {
+            this.s += value.Substring(startIndex, count);
+            return this;
+        }
+
+        public override string ToString() {
+            return this.s;
         }
 
     }

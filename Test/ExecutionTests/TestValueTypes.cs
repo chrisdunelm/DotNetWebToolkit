@@ -56,12 +56,12 @@ namespace Test.ExecutionTests {
 
         struct S3 {
             public List<int> l;
+            public override string ToString() { return "S3"; }
         }
         static int MutateS3(object s3) {
             var s3Typed = (S3)s3;
             s3Typed.l.Add(0);
             s3Typed.l = new List<int>();
-            s3Typed.l.Add(1);
             return s3Typed.l.Count;
         }
 
@@ -71,6 +71,15 @@ namespace Test.ExecutionTests {
                 var s3 = new S3 { l = new List<int>() };
                 var r = MutateS3(s3);
                 return r + s3.l.Count;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestStructVCall() {
+            Func<string> f = () => {
+                var s = new S3();
+                return s.ToString();
             };
             this.Test(f);
         }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.JsResolvers;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Utils {
@@ -98,20 +99,22 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             if (a.GenericParameters.Count != b.GenericParameters.Count) {
                 return false;
             }
-            var aReturnType = a.ReturnType.FullResolve(a);
-            var bReturnType = b.ReturnType.FullResolve(b);
+            var aReturnType = JsResolver.ReverseTypeMap(a.ReturnType.FullResolve(a));
+            var bReturnType = JsResolver.ReverseTypeMap(b.ReturnType.FullResolve(b));
             if (!TypeExtensions.TypeRefEqComparerInstance.Equals(aReturnType, bReturnType)) {
                 return false;
             }
-            var aParamTypes = a.Parameters.Select(x => x.ParameterType.FullResolve(a)).ToArray();
-            var bParamTypes = b.Parameters.Select(x => x.ParameterType.FullResolve(b)).ToArray();
+            var aParamTypes = a.Parameters.Select(x => JsResolver.ReverseTypeMap(x.ParameterType.FullResolve(a))).ToArray();
+            var bParamTypes = b.Parameters.Select(x => JsResolver.ReverseTypeMap(x.ParameterType.FullResolve(b))).ToArray();
             if (!aParamTypes.SequenceEqual(bParamTypes, TypeExtensions.TypeRefEqComparerInstance)) {
                 return false;
             }
             if (a.IsGenericInstance) {
                 var aGenInst = (GenericInstanceMethod)a;
                 var bGenInst = (GenericInstanceMethod)b;
-                if (!aGenInst.GenericArguments.SequenceEqual(bGenInst.GenericArguments, TypeExtensions.TypeRefEqComparerInstance)) {
+                var aGenArgs = aGenInst.GenericArguments.Select(x => JsResolver.ReverseTypeMap(x));
+                var bGenArgs = bGenInst.GenericArguments.Select(x => JsResolver.ReverseTypeMap(x));
+                if (!aGenArgs.SequenceEqual(bGenArgs, TypeExtensions.TypeRefEqComparerInstance)) {
                     return false;
                 }
             }
@@ -119,6 +122,8 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static bool MatchMethodOnlyLoose(this MethodReference a, MethodReference b) {
+            // HACK: This whole method needs to go. All users of this method are able to use
+            // .MatchMethodOnly() with a bit of work
             if (a.Name != b.Name) {
                 return false;
             }

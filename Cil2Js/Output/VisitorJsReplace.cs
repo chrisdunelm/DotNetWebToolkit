@@ -5,7 +5,7 @@ using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
-    class VisitorJsReplace:JsAstVisitor {
+    class VisitorJsReplace : JsAstVisitor {
 
         public static ICode V(ICode ast, ICode find, ICode replace) {
             var v = new VisitorJsReplace(find, replace);

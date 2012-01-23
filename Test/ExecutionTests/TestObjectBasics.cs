@@ -28,13 +28,10 @@ namespace Test.ExecutionTests {
             this.Test();
         }
 
-        [Test, Ignore("BaseType not supported")]
-        public void TestBaseType() {
-            Func<bool> f = () => {
-                string s = "str";
-                var sType = s.GetType();
-                var baseType = sType.BaseType;
-                return typeof(object) == baseType;
+        [Test]
+        public void TestObjectToString() {
+            Func<string> f = () => {
+                return (new object()).ToString();
             };
             this.Test(f);
         }

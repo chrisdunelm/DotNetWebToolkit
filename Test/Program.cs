@@ -16,6 +16,7 @@ using Test.Utils;
 using DotNetWebToolkit;
 using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Web;
+using DotNetWebToolkit.Cil2Js;
 
 namespace Test {
 
@@ -36,7 +37,7 @@ namespace Test {
             }
         }
 
-        public static void T0() {
+        public static void Canvas2DDemo() {
             var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
             var ctx = (CanvasRenderingContext2D)canvas.GetContext(CanvasContext.TwoD);
             string fill1 = "#ff0000";
@@ -49,24 +50,28 @@ namespace Test {
             }, 5000);
         }
 
-        static object GetNull() {
-            return null;
+        public static int Factorial(int i) {
+            return (i == 0) ? 1 : i * Factorial(i - 1);
         }
 
-        struct S1 {
-            public int x;
+        public static int Fibonacci(int i) {
+            return (i <= 1) ? 1 : Fibonacci(i - 1) + Fibonacci(i - 2);
         }
 
-        static S1 GS1() {
-            return new S1();
+        public static int FactorialOrFibonacci(int i, bool factorial) {
+            if (factorial) {
+                return Factorial(i);
+            } else {
+                return Fibonacci(i);
+            }
         }
 
         static void Main(string[] args) {
-            //var mi = typeof(Program).GetMethod("T0");
+            //var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestList() { Verbose = true };
-            t.TestIndexOf();
+            var t = new TestStringBuilder() { Verbose = true };
+            t.TestAppendString();
             return;
 
         }
