@@ -122,6 +122,7 @@
     <Compile Include="Ast\ExprFieldAddress.cs" />
     <Compile Include="Ast\ExprIsInst.cs" />
     <Compile Include="Ast\ExprLiteral.cs" />
+    <Compile Include="Ast\ExprLoadIndirect.cs" />
     <Compile Include="Ast\ExprMethodReference.cs" />
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
@@ -171,15 +172,16 @@
     <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsResolvers\ResolverArray.cs" />
-    <Compile Include="JsResolvers\ResolverCollections.cs" />
-    <Compile Include="JsResolvers\ResolverEnvironment.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverChar.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverArray.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverCollections.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverEnvironment.cs" />
     <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />
-    <Compile Include="JsResolvers\ResolverString.cs" />
-    <Compile Include="JsResolvers\ResolverSystem.cs" />
-    <Compile Include="JsResolvers\ResolverThrowHelper.cs" />
-    <Compile Include="JsResolvers\ResolverType.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverString.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverSystem.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverThrowHelper.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverType.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
@@ -199,7 +201,7 @@
     </Compile>
     <Compile Include="Output\JsMethod.cs" />
     <Compile Include="Output\NameGenerator.cs" />
-    <Compile Include="Output\StmtJsExplicitFunction.cs" />
+    <Compile Include="Output\StmtJsExplicit.cs" />
     <Compile Include="Output\TypeData.cs" />
     <Compile Include="Output\VisitorFindCalls.cs" />
     <Compile Include="Output\VisitorFindFieldAccesses.cs" />

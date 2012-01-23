@@ -29,7 +29,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var a = new ExprVarLocal(ctx, arrayType);
                 var i = new ExprVarLocal(ctx, ctx.Int32);
                 var js = "{3}=new Array({0}); {3}._={1}; for({4}={0}-1;{4}>=0;{4}--) {3}[{4}]={2}; return {3};";
-                var stmt = new StmtJsExplicitFunction(ctx, js, count, elTypeExpr, defaultValue, a, i);
+                var stmt = new StmtJsExplicit(ctx, js, count, elTypeExpr, defaultValue, a, i);
                 return stmt;
             }
         }
@@ -50,7 +50,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var i = new ExprVarLocal(ctx, ctx.Int32);
                 var t = new ExprVarLocal(ctx, ctx.Type);
                 var js = "if (!{0}) return true; {6}={3}; if ({6}==={1}) return true; {2}={6}.{4}; for ({5}={2}.length-1;{5}>=0;{5}--) if ({2}[{5}]==={1}) return true; return false;";
-                var stmt = new StmtJsExplicitFunction(ctx, js, obj, toType, canCastTo, getTypeCall, assignableTo, i, t);
+                var stmt = new StmtJsExplicit(ctx, js, obj, toType, canCastTo, getTypeCall, assignableTo, i, t);
                 return stmt;
             }
         }
@@ -67,7 +67,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var toType = ctx.MethodParameter(1);
                 var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj, toType);
                 var js = "return {0}?{1}:null;";
-                var stmt = new StmtJsExplicitFunction(ctx, js, callCanAssignTo, obj);
+                var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj);
                 return stmt;
             }
         }
@@ -96,7 +96,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var msg = msgParts.Aggregate((a, b) => new ExprBinary(ctx, BinaryOp.Add, ctx.String, a, b));
                 var ctorEx = new ExprNewObj(ctx, mCtorEx, msg);
                 var js = "if ({0}) return {1}; throw {2}";
-                var stmt = new StmtJsExplicitFunction(ctx, js, callCanAssignTo, obj, ctorEx);
+                var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj, ctorEx);
                 return stmt;
             }
         }
@@ -123,7 +123,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 }).ToArray();
                 var fieldNames = fields.Select(x => new ExprJsFieldVarName(ctx, x)).ToArray();
                 var js = "return {{" + copy + "}}";
-                return new StmtJsExplicitFunction(ctx, js, new Expr[] { eTypeName }.Concat(fieldNames).Concat(fieldValues));
+                return new StmtJsExplicit(ctx, js, new Expr[] { eTypeName }.Concat(fieldNames).Concat(fieldValues));
             }
         }
 
@@ -162,7 +162,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
                 var js = "if (!{0}) return {{{1}:false,{2}:{3}}}; if (!{4}) throw {5}; return {{{1}:true,{2}:{0}.v}};";
-                var stmt = new StmtJsExplicitFunction(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
+                var stmt = new StmtJsExplicit(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
                 return stmt;
             }
         }
@@ -185,7 +185,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
                 var js = "if (!{0}) throw {1}; if (!{2}) throw {3}; return {0}.v;";
-                var stmt = new StmtJsExplicitFunction(ctx, js, obj, nullRefEx, canAssign, invCastEx);
+                var stmt = new StmtJsExplicit(ctx, js, obj, nullRefEx, canAssign, invCastEx);
                 return stmt;
             }
         }

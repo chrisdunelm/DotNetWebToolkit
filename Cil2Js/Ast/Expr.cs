@@ -37,6 +37,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             FieldAddress,
             ArgAddress,
             ElementAddress,
+            LoadIndirect,
 
             Max = 1000
         }

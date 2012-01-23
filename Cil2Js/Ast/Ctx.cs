@@ -32,10 +32,19 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public Expr.Gen ExprGen { get; private set; }
 
         public TypeReference Void { get { return this.TypeSystem.Void; } }
-        public TypeReference Object { get { return this.TypeSystem.Object; } }
-        public TypeReference Int32 { get { return this.TypeSystem.Int32; } }
         public TypeReference Boolean { get { return this.TypeSystem.Boolean; } }
         public TypeReference Char { get { return this.TypeSystem.Char; } }
+        public TypeReference SByte { get { return this.TypeSystem.SByte; } }
+        public TypeReference Byte { get { return this.TypeSystem.Byte; } }
+        public TypeReference Int16 { get { return this.TypeSystem.Int16; } }
+        public TypeReference Int32 { get { return this.TypeSystem.Int32; } }
+        public TypeReference Int64 { get { return this.TypeSystem.Int64; } }
+        public TypeReference UInt16 { get { return this.TypeSystem.UInt16; } }
+        public TypeReference UInt32 { get { return this.TypeSystem.UInt32; } }
+        public TypeReference UInt64 { get { return this.TypeSystem.UInt64; } }
+        public TypeReference Single { get { return this.TypeSystem.Single; } }
+        public TypeReference Double { get { return this.TypeSystem.Double; } }
+        public TypeReference Object { get { return this.TypeSystem.Object; } }
         public TypeReference String { get { return this.TypeSystem.String; } }
         public TypeReference IntPtr { get { return this.TypeSystem.IntPtr; } }
 

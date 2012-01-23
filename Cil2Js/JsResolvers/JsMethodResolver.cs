@@ -6,6 +6,7 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 using System.Reflection;
+using DotNetWebToolkit.Cil2Js.JsResolvers.Methods;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
@@ -32,6 +33,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
             
             { M.Def(TBoolean, "System.String.Equals", TObject), ResolverSystem.Object_Equals },
+            { M.Def(TInt32, "System.String.GetHashCode"), ResolverString.GetHashCode },
+
+            { M.Def(TString, "System.Char.ToString"), ResolverChar.ToString },
 
             // TODO: This is rubbish - must make it possible to match all generic arguments
             { M.Def(null, "System.Collections.Generic.EqualityComparer`1<System.Int32>.CreateComparer"), ResolverCollections.EqualityComparer_CreateComparer },

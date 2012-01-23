@@ -309,6 +309,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitVariableAddress((ExprVariableAddress)e);
             case Expr.NodeType.FieldAddress:
                 return this.VisitFieldAddress((ExprFieldAddress)e);
+            case Expr.NodeType.LoadIndirect:
+                return this.VisitLoadIndirect((ExprLoadIndirect)e);
             default:
                 if ((int)e.ExprType >= (int)Expr.NodeType.Max) {
                     return e;
@@ -560,6 +562,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var obj = (Expr)this.Visit(e.Obj);
             if (obj != e.Obj) {
                 return new ExprFieldAddress(e.Ctx, obj, e.Field);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitLoadIndirect(ExprLoadIndirect e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprLoadIndirect(e.Ctx, expr, e.Type);
             } else {
                 return e;
             }

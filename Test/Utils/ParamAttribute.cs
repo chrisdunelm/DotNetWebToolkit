@@ -24,6 +24,10 @@ namespace Test.Utils {
             throw new NotSupportedException();
         }
 
+        public virtual char GenChar(Random rnd) {
+            throw new NotSupportedException();
+        }
+
     }
 
     class ParamPositiveAttribute : ParamAttribute {

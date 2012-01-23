@@ -7,6 +7,7 @@ using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Utils;
 using DotNetWebToolkit.Attributes;
+using DotNetWebToolkit.Cil2Js.JsResolvers.Methods;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
@@ -56,10 +57,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TString, "System.String.Concat", TString, TString, TString), ResolverString.ConcatStrings },
             { M.Def(TString, "System.String.Concat", TString, TString, TString, TString), ResolverString.ConcatStrings },
             { M.Def(TString, "System.String.Concat", ArrayOf(TString)), ResolverString.ConcatStringsMany },
-            { M.Def(TInt32, "System.String.IndexOf", TChar), ResolverString.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TString), ResolverString.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TChar, TInt32), ResolverString.IndexOf },
-            { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), ResolverString.IndexOf },
+            { M.Def(TInt32, "System.String.IndexOf", TChar), ResolverString.IndexOfChar },
+            { M.Def(TInt32, "System.String.IndexOf", TString), ResolverString.IndexOfString },
+            { M.Def(TInt32, "System.String.IndexOf", TChar, TInt32), ResolverString.IndexOfChar },
+            { M.Def(TInt32, "System.String.IndexOf", TString, TInt32), ResolverString.IndexOfString },
             { M.Def(TString, "System.String.Substring", TInt32), ResolverString.Substring },
             { M.Def(TString, "System.String.Substring", TInt32, TInt32), ResolverString.Substring },
 

@@ -12,6 +12,8 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         Mul,
         Div,
 
+        Shl,
+
         BitwiseAnd,
         BitwiseOr,
         BitwiseXor,

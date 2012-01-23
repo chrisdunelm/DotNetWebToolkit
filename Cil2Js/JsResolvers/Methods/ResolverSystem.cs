@@ -9,7 +9,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using DotNetWebToolkit.Cil2Js.Utils;
 using Mono.Cecil;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverSystem {
 
         private static int hashCode = 0;
@@ -18,37 +18,37 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var field = (FieldInfo)((MemberExpression)eHashCode.Body).Member;
             var f = ctx.Module.Import(field);
             var fExpr = new ExprFieldAccess(ctx, null, f);
-            var stmt = new StmtJsExplicitFunction(ctx, "{0}.$=++{1};", ctx.This, fExpr);
+            var stmt = new StmtJsExplicit(ctx, "{0}.$=++{1};", ctx.This, fExpr);
             return stmt;
         }
 
         public static Stmt Object_GetType(Ctx ctx) {
             var js = "return typeof({0})==\"string\"?{1}:{0}._";
             var stringType = new ExprJsTypeVarName(ctx, ctx.String);
-            var stmt = new StmtJsExplicitFunction(ctx, js, ctx.This, stringType);
+            var stmt = new StmtJsExplicit(ctx, js, ctx.This, stringType);
             return stmt;
         }
 
         public static Stmt Object_GetHashCode(Ctx ctx) {
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.$;", ctx.This);
+            var stmt = new StmtJsExplicit(ctx, "return {0}.$;", ctx.This);
             return stmt;
         }
 
         public static Stmt Object_Equals(Ctx ctx) {
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}==={1};", ctx.This, p0);
+            var stmt = new StmtJsExplicit(ctx, "return {0}==={1};", ctx.This, p0);
             return stmt;
         }
 
         public static Stmt TrivialBoxedValueType_Equals(Ctx ctx) {
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}._==={1}._&&{0}.v==={1}.v;", ctx.This, p0);
+            var stmt = new StmtJsExplicit(ctx, "return {0}._==={1}._&&{0}.v==={1}.v;", ctx.This, p0);
             return stmt;
         }
 
         public static Stmt TrivialValueType_Equals(Ctx ctx) {
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}==={1};", ctx.This, p0);
+            var stmt = new StmtJsExplicit(ctx, "return {0}==={1};", ctx.This, p0);
             return stmt;
         }
 

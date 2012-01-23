@@ -8,7 +8,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverType {
 
         public static Stmt cctor(Ctx ctx) {
@@ -38,14 +38,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         public static Stmt get_FullName(Ctx ctx) {
             var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
             var eName = new ExprJsTypeData(ctx, TypeData.Name);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
+            var stmt = new StmtJsExplicit(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
             return stmt;
         }
 
         public static Stmt ToString(Ctx ctx) {
             var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
             var eName = new ExprJsTypeData(ctx, TypeData.Name);
-            var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
+            var stmt = new StmtJsExplicit(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
             return stmt;
         }
 

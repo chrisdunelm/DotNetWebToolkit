@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverEnvironment {
 
         public static Expr GetResourceFromDefault(ICall call) {

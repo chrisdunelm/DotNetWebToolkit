@@ -8,7 +8,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverArray {
 
         public static Expr Copy(ICall call) {
@@ -35,7 +35,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var i = new ExprVarLocal(ctx, ctx.Int32);
             var value = new ExprDefaultValue(ctx, arrayElementType);
             var js = "for ({0}=0; {0}<{1}; {0}++) {{ {2}[{3}+{0}]={4}; }}";
-            var stmt = new StmtJsExplicitFunction(ctx, js, i, length, array, index, value);
+            var stmt = new StmtJsExplicit(ctx, js, i, length, array, index, value);
             return stmt;
         }
 

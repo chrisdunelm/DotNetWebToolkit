@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
-    public class StmtJsExplicitFunction : Stmt {
+    public class StmtJsExplicit : Stmt {
 
-        public StmtJsExplicitFunction(Ctx ctx, string javaScript, params Expr[] exprs)
+        public StmtJsExplicit(Ctx ctx, string javaScript, params Expr[] exprs)
             : this(ctx, javaScript, (IEnumerable<Expr>)exprs) {
         }
 
-        public StmtJsExplicitFunction(Ctx ctx, string javaScript, IEnumerable<Expr> exprs)
+        public StmtJsExplicit(Ctx ctx, string javaScript, IEnumerable<Expr> exprs)
             : base(ctx) {
             this.JavaScript = javaScript;
             this.Exprs = exprs;

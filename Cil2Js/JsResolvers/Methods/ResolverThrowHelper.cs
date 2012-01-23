@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverThrowHelper {
 
         // TODO: These may not be required finally.

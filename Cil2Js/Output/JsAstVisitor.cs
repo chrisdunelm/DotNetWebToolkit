@@ -42,7 +42,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var jsStmtType = (JsStmtType)s.StmtType;
             switch (jsStmtType) {
             case JsStmtType.JsExplicitFunction:
-                return this.VisitJsExplicitFunction((StmtJsExplicitFunction)s);
+                return this.VisitJsExplicitFunction((StmtJsExplicit)s);
             default:
                 if ((int)jsStmtType >= (int)JsStmtType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsStmtType);
@@ -52,11 +52,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
         }
 
-        protected virtual ICode VisitJsExplicitFunction(StmtJsExplicitFunction s) {
+        protected virtual ICode VisitJsExplicitFunction(StmtJsExplicit s) {
             this.ThrowOnNoOverride();
             var exprs = this.HandleList(s.Exprs, x => (Expr)this.Visit(x));
             if (exprs != null) {
-                return new StmtJsExplicitFunction(s.Ctx, s.JavaScript, exprs);
+                return new StmtJsExplicit(s.Ctx, s.JavaScript, exprs);
             } else {
                 return s;
             }

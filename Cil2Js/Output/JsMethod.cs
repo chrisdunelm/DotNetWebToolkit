@@ -154,6 +154,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.Shl, "<<" },
             { BinaryOp.BitwiseAnd, "&" },
             { BinaryOp.BitwiseOr, "|" },
             { BinaryOp.BitwiseXor, "^" },
@@ -267,7 +268,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     value = "\"" + e.Value + "\"";
                     break;
                 case MetadataType.Char:
-                    value = "\'" + e.Value + "\'";
+                    value = (int)(char)e.Value;
                     break;
                 case MetadataType.Boolean:
                     value = (bool)e.Value ? "true" : "false";
@@ -518,6 +519,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             throw new InvalidOperationException("Should never get here");
         }
 
+        protected override ICode VisitLoadIndirect(ExprLoadIndirect e) {
+            this.Visit(e.Expr);
+            return e;
+        }
+
         private void HandleExplicitJs(string js, IEnumerable<Expr> exprs) {
             var es = exprs.ToArray();
             int ofs = 0;
@@ -565,7 +571,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
         }
 
-        protected override ICode VisitJsExplicitFunction(StmtJsExplicitFunction s) {
+        protected override ICode VisitJsExplicitFunction(StmtJsExplicit s) {
             this.NewLine();
             this.HandleExplicitJs(s.JavaScript, s.Exprs);
             return s;

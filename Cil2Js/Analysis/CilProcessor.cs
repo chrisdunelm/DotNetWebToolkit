@@ -69,6 +69,24 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Const(null, this.ctx.TypeSystem.Object);
             case Code.Ldstr:
                 return this.Const((string)inst.Operand, this.ctx.TypeSystem.String);
+            case Code.Ldind_I1:
+                return this.LoadIndirect(ctx.SByte);
+            case Code.Ldind_I2:
+                return this.LoadIndirect(ctx.Int16);
+            case Code.Ldind_I4:
+                return this.LoadIndirect(ctx.Int32);
+            case Code.Ldind_I8:
+                return this.LoadIndirect(ctx.Int64);
+            case Code.Ldind_U1:
+                return this.LoadIndirect(ctx.Byte);
+            case Code.Ldind_U2:
+                return this.LoadIndirect(ctx.UInt16);
+            case Code.Ldind_U4:
+                return this.LoadIndirect(ctx.UInt32);
+            case Code.Ldind_R4:
+                return this.LoadIndirect(ctx.Single);
+            case Code.Ldind_R8:
+                return this.LoadIndirect(ctx.Double);
             case Code.Ldarg_0:
                 return this.LdArg(0, true);
             case Code.Ldarg_1:
@@ -119,6 +137,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Mul));
             case Code.Div:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Div));
+            case Code.Shl:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.Shl));
             case Code.And:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.BitwiseAnd));
             case Code.Or:
@@ -251,6 +271,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(new ExprLiteral(this.ctx, value, type));
         }
 
+        private Stmt LoadIndirect(TypeReference loadType) {
+            var expr = this.stack.Pop();
+            var load = new ExprLoadIndirect(this.ctx, expr, loadType);
+            return this.SsaLocalAssignment(load);
+        }
+
         private Stmt LdArg(int idx, bool adjust) {
             Expr expr;
             if ((this.ctx.MRef.HasThis || this.ctx.MDef.IsConstructor) && adjust) {
@@ -301,13 +327,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private ExprUnary Unary(UnaryOp op, TypeReference type = null) {
             var e = this.stack.Pop();
-            return new ExprUnary(this.ctx, op, (type ?? e.Type).Resolve(), e);
+            return new ExprUnary(this.ctx, op, (type ?? e.Type).FullResolve(this.ctx), e);
         }
 
         private ExprBinary Binary(BinaryOp op, TypeReference type = null) {
             var right = this.stack.Pop();
             var left = this.stack.Pop();
-            return new ExprBinary(this.ctx, op, (type ?? left.Type).Resolve(), left, right);
+            return new ExprBinary(this.ctx, op, (type ?? left.Type).FullResolve(this.ctx), left, right);
         }
 
         private Stmt SsaLocalAssignment(Expr expr) {

@@ -25,8 +25,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case MetadataType.UInt32:
                 case MetadataType.UInt64:
                 case MetadataType.Byte:
-                case MetadataType.SByte: return "0";
-                case MetadataType.Char: return @"'\x00'";
+                case MetadataType.SByte:
+                case MetadataType.Char: return "0";
                 default: throw new NotImplementedException("Cannot handle: " + mdt);
                 }
             } else {

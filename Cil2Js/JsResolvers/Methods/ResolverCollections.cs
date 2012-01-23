@@ -7,7 +7,7 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
     static class ResolverCollections {
 
         public static Stmt EqualityComparer_CreateComparer(Ctx ctx) {

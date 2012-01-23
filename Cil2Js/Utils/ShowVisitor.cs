@@ -134,6 +134,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.Shl, "<<" },
             { BinaryOp.BitwiseAnd, "&" },
             { BinaryOp.BitwiseOr, "|" },
             { BinaryOp.BitwiseXor, "^" },
@@ -458,6 +459,13 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             this.code.Append("[");
             this.Visit(e.Index);
             this.code.Append("]");
+            return e;
+        }
+
+        protected override ICode VisitLoadIndirect(ExprLoadIndirect e) {
+            this.code.AppendFormat("load-indirect<{0}>(", e.Type.Name);
+            this.Visit(e.Expr);
+            this.code.Append(")");
             return e;
         }
 

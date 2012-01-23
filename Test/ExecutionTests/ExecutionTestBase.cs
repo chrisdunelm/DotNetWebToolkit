@@ -45,6 +45,11 @@ namespace Test.ExecutionTests {
                 return s;
             }
 
+            public override char GenChar(Random rnd) {
+                var v = rnd.Next(32, 0x7fff);
+                return (char)v;
+            }
+
         }
 
         private readonly DefaultParamGen defaultParamGen = new DefaultParamGen();
@@ -69,6 +74,9 @@ namespace Test.ExecutionTests {
                 case TypeCode.String:
                     v = paramGen.GenString(this.rnd);
                     break;
+                case TypeCode.Char:
+                    v = paramGen.GenChar(this.rnd);
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + typeCode);
                 }
@@ -90,6 +98,8 @@ namespace Test.ExecutionTests {
                 return arg.ToString();
             case TypeCode.String:
                 return "\"" + arg.ToString() + "\"";
+            case TypeCode.Char:
+                return ((int)(char)arg).ToString();
             default:
                 throw new NotImplementedException("Cannot convert: " + tc);
             }
