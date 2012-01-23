@@ -154,6 +154,7 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="JsResolvers\Classes\StringBuilder.cs" />
     <Compile Include="JsResolvers\IJsImpl.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -166,6 +167,7 @@
     <Compile Include="JsResolvers\JsCallResolver.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="JsResolvers\JsTypeResolver.cs" />
     <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
