@@ -1,7 +1,7 @@
 DotNet Web Toolkit
 ===================
 
-DotNet Web Toolkit will be a toolkit for building web projects entirely in .NET languages , for example C#, F#, Visual Basic, ...
+DotNet Web Toolkit will be a toolkit for building web projects entirely in .NET languages *(C#/F#/VB,/...)* within Visual Studio 2011+
 
 The compiled code is converted to JavaScript that will run on all modern web browsers.
 
