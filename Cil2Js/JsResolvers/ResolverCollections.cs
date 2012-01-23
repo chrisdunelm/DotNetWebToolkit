@@ -10,7 +10,7 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     static class ResolverCollections {
 
-        public static Stmt EqualityComparer_CreateComparer(Ctx ctx, List<TypeReference> _) {
+        public static Stmt EqualityComparer_CreateComparer(Ctx ctx) {
             var type = ((GenericInstanceType)ctx.MRef.DeclaringType).GenericArguments[0];
             if (type.IsByte()) {
                 throw new Exception();
@@ -23,7 +23,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var ctorExpr = new ExprNewObj(ctx, ctor);
                 return new StmtReturn(ctx, ctorExpr);
             }
-            throw new Exception();
+            throw new NotImplementedException();
         }
 
     }

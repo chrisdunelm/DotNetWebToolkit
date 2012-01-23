@@ -11,7 +11,7 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     static class ResolverType {
 
-        public static Stmt cctor(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt cctor(Ctx ctx) {
             return new StmtEmpty(ctx);
         }
 
@@ -35,14 +35,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return call.Args.First();
         }
 
-        public static Stmt get_FullName(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt get_FullName(Ctx ctx) {
             var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
             var eName = new ExprJsTypeData(ctx, TypeData.Name);
             var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
             return stmt;
         }
 
-        public static Stmt ToString(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt ToString(Ctx ctx) {
             var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
             var eName = new ExprJsTypeData(ctx, TypeData.Name);
             var stmt = new StmtJsExplicitFunction(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);

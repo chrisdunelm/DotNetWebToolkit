@@ -91,15 +91,6 @@ namespace DotNetWebToolkit.Cil2Js {
 
         }
 
-        //public static string ToJsSingleMethod(MethodReference mRef, TypeReference tRef, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {
-        //    var ast = ToAst(mRef, tRef, verbose);
-        //    return JsMethod.Create(mRef, resolver, ast);
-        //}
-
-        //public static string ToJsSingleMethod(MethodInfo methodInfo, string jsMethodName, JsMethod.Resolver resolver, bool verbose = false) {
-        //    return ToJsSingleMethod(GetMethod(methodInfo), jsMethodName, resolver, verbose);
-        //}
-
         public static string ToJs(MethodReference method, bool verbose = false) {
             return Js.CreateFrom(method, verbose);
         }
@@ -109,7 +100,6 @@ namespace DotNetWebToolkit.Cil2Js {
         }
 
         public static MethodReference GetMethod(MethodInfo mi) {
-            // TODO: This won't handle overloaded methods (arguments and generics)
             var filename = mi.DeclaringType.Assembly.Location;
             var module = ModuleDefinition.ReadModule(filename);
             var method = module.Import(mi);

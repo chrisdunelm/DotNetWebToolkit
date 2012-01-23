@@ -25,6 +25,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
             if (e.ConstrainedType != null) {
                 if (e.ConstrainedType.IsValueType) {
+                    // Map constrained virtual call to a method on a value-type, to a non-virtual call.
+                    // This is important as it prevents having to box the value-type, which is very expensive
                     var impl = e.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(e.CallMethod));
                     if (impl != null) {
                         var constrainedCall = new ExprCall(e.Ctx, impl, e.Obj, e.Args, false, null);

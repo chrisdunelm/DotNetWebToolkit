@@ -10,7 +10,7 @@ using System.Reflection;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
-        private static Dictionary<M, Func<Ctx, List<TypeReference>, Stmt>> methodMap = new Dictionary<M,Func<Ctx,List<TypeReference>,Stmt>>(M.ValueEqComparer) {
+        private static Dictionary<M, Func<Ctx, Stmt>> methodMap = new Dictionary<M, Func<Ctx, Stmt>>(M.ValueEqComparer) {
             { M.Def(TVoid, "System.Object..ctor"), ResolverSystem.Object_Ctor },
             { M.Def(TBoolean, "System.Object.Equals", TObject), ResolverSystem.Object_Equals },
             { M.Def(TType, "System.Object.GetType"), ResolverSystem.Object_GetType },
@@ -38,12 +38,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         };
 
-        public static Stmt ResolveMethod(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt ResolveMethod(Ctx ctx) {
             // Explicit mapping
             var m = new M(ctx.MRef);
             var fn = methodMap.ValueOrDefault(m);
             if (fn != null) {
-                var resolved = fn(ctx, newTypesSeen);
+                var resolved = fn(ctx);
                 return resolved;
             }
             // Attribute for internal function

@@ -66,13 +66,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var tRef = mRef.DeclaringType;
                 var tDef = tRef.Resolve();
                 var ctx = new Ctx(tRef, mRef);
-                var newTypesSeen = new List<TypeReference>();
-                var ast = (ICode)JsResolver.ResolveMethod(ctx, newTypesSeen);
-                foreach (var type in newTypesSeen) {
-                    if (!typesSeen.ContainsKey(type)) {
-                        typesSeen.Add(type, 1);
-                    }
-                }
+                var ast = (ICode)JsResolver.ResolveMethod(ctx);
                 if (ast == null) {
                     if (tRef.HasGenericParameters) {
                         throw new InvalidOperationException("Type must not have generic parameters");
@@ -101,6 +95,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
+                    ast = VisitorJsTypeMapping.V(ast);
+                    ast = VisitorJsRewriteSealedVCalls.V(ast);
                     ast = VisitorJsResolveAll.V(ast);
                     if (ast == astOrg) {
                         break;
@@ -429,17 +425,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 .OrderByReferencedFirst(x => x)
                 .ToArray();
             foreach (var type in typesSeenOrdered) {
-                var tDef = type.Resolve();
+                var unmappedType = JsResolver.ReverseTypeMap(type);
+                var tDef = unmappedType.Resolve();
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 // Type information
-                var baseType = type.GetBaseType();
-                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], type.Name());
-                js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], type.Namespace);
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], type.IsValueType ? "true" : "false");
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], type.IsArray ? "true" : "false");
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], type.IsArray ? typeNames.ValueOrDefault(type.GetElementType(), "null") : "null");
+                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], unmappedType.Name());
+                js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], unmappedType.Namespace);
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], unmappedType.IsValueType ? "true" : "false");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], unmappedType.IsArray ? "true" : "false");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], unmappedType.IsArray ? typeNames.ValueOrDefault(unmappedType.GetElementType(), "null") : "null");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
-                var assignableTo = typesSeenOrdered.Where(x => type.IsAssignableTo(x)).Where(x => !x.IsSame(type)).ToArray();
+                var assignableTo = typesSeenOrdered.Where(x => unmappedType.IsAssignableTo(x)).Where(x => !x.IsSame(unmappedType)).ToArray();
                 js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
                 if (!tDef.IsInterface) {
                     if (!tDef.IsAbstract) {

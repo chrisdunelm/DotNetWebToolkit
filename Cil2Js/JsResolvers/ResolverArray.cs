@@ -27,7 +27,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return copy;
         }
 
-        public static Stmt Clear(Ctx ctx, List<TypeReference> newTypesSeen) {
+        public static Stmt Clear(Ctx ctx) {
             var array = ctx.MethodParameter(0);
             var index = ctx.MethodParameter(1);
             var length = ctx.MethodParameter(2);
