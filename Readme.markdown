@@ -119,13 +119,13 @@ public static int FactorialOrFibonacci(int i, bool factorial) {
 }
 
 static void Main(string[] args) {
-    var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
-    var js = Transcoder.ToJs(mi, true);
+    MethodInfo mi = typeof(Program).GetMethod("FactorialOrFibonacci");
+    string js = Transcoder.ToJs(mi, true);
     Console.WriteLine(js);
 }
 ```
 
-The static method Transcoder.ToJs() converts the passed method to JavaScript, including all called methods:
+The static method ***Transcoder***.*ToJs()* converts the passed method to JavaScript, including all called methods:
 
 ```JavaScript
 var main = function(a, c) {
