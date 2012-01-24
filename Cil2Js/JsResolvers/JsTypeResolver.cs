@@ -13,6 +13,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
     public static partial class JsResolver {
 
+        private static readonly ModuleDefinition thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
+
         private static string T<U>() {
             return typeof(U).FullName;
         }
@@ -23,7 +25,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         };
         private static Dictionary<TypeReference, TypeReference> reverseTypeMap = new Dictionary<TypeReference, TypeReference>(TypeExtensions.TypeRefEqComparerInstance);
 
-        private static ModuleDefinition thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
+        //private static Dictionary<MethodReference, MethodReference> methodMap = new Dictionary<MethodReference, MethodReference>(TypeExtensions.MethodRefEqComparerInstance) {
+        //};
+
 
         public static TypeReference ResolveType(TypeReference type) {
             var mapped = typeMap.ValueOrDefault(type.FullName);

@@ -176,6 +176,7 @@
     <Compile Include="JsResolvers\Methods\ResolverChar.cs" />
     <Compile Include="JsResolvers\Methods\ResolverArray.cs" />
     <Compile Include="JsResolvers\Methods\ResolverCollections.cs" />
+    <Compile Include="JsResolvers\Methods\ResolverDouble.cs" />
     <Compile Include="JsResolvers\Methods\ResolverEnvironment.cs" />
     <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />

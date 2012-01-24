@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Test.Utils;
 
 namespace Test.ExecutionTests {
 
@@ -60,7 +61,28 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestInt32ToString() {
             Func<int, string> f = a => a.ToString();
-            this.Test(f);
+            this.Test((Func<int, string>)TestInt32ToStringFunc);
+        }
+        private static string TestInt32ToStringFunc([ParamFullRange]int a) {
+            return a.ToString();
+        }
+
+        [Test]
+        public void TestDoubleGetHashCode() {
+            this.Test((Func<double, double, bool>)TestDoubleGetHashCode);
+        }
+        private static bool TestDoubleGetHashCode([ParamFullRange]double a, [ParamFullRange]double b) {
+            var ah = a.GetHashCode();
+            var bh = b.GetHashCode();
+            return a == b ? ah == bh : ah != bh;
+        }
+
+        [Test, Ignore("Double.ToString() not yet working")]
+        public void TestDoubleToString() {
+            this.Test((Func<double, string>)TestDoubleToString);
+        }
+        private static string TestDoubleToString([ParamFullRange]double a) {
+            return a.ToString();
         }
 
     }

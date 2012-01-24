@@ -31,6 +31,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { M.Def(TBoolean, "System.Int32.Equals", TObject), ResolverSystem.TrivialBoxedValueType_Equals },
             { M.Def(TBoolean, "System.Int32.Equals", TInt32), ResolverSystem.TrivialValueType_Equals },
             { M.Def(TInt32, "System.Int32.GetHashCode"), ResolverSystem.Int32_GetHashCode },
+
+            { M.Def(TInt32, "System.Double.GetHashCode"), ResolverDouble.GetHashCode },
             
             { M.Def(TBoolean, "System.String.Equals", TObject), ResolverSystem.Object_Equals },
             { M.Def(TInt32, "System.String.GetHashCode"), ResolverString.GetHashCode },
