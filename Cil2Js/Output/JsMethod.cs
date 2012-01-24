@@ -640,22 +640,26 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
             this.js.Append(e.MethodName);
             this.js.Append("(");
-            foreach (var arg in e.Args) {
-                this.Visit(arg);
-                this.js.Append(", ");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.js.Append(", ");
+                }
+                this.js.Length -= 2;
             }
-            this.js.Length -= 2;
             this.js.Append(")");
             return e;
         }
 
         protected override ICode VisitJsArrayLiteral(ExprJsArrayLiteral e) {
             this.js.Append("[");
-            foreach (var element in e.Elements) {
-                this.Visit(element);
-                this.js.Append(", ");
+            if (e.Elements.Any()) {
+                foreach (var element in e.Elements) {
+                    this.Visit(element);
+                    this.js.Append(", ");
+                }
+                this.js.Length -= 2;
             }
-            this.js.Length -= 2;
             this.js.Append("]");
             return e;
         }
