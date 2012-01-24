@@ -24,19 +24,19 @@ namespace Test.ExecutionTests {
 
         class DefaultParamGen : ParamAttribute {
 
-            public override bool GenBool(Random rnd) {
+            public override bool GenBool(Random rnd, int iteration) {
                 return rnd.Next(2) == 1;
             }
 
-            public override int GenInt32(Random rnd) {
+            public override int GenInt32(Random rnd, int iteration) {
                 return rnd.Next(0, 100);
             }
 
-            public override double GenDouble(Random rnd) {
+            public override double GenDouble(Random rnd, int iteration) {
                 return rnd.NextDouble() * 100.0;
             }
 
-            public override string GenString(Random rnd) {
+            public override string GenString(Random rnd, int iteration) {
                 int length = rnd.Next(10);
                 string s = "";
                 for (int i = 0; i < length; i++) {
@@ -45,7 +45,7 @@ namespace Test.ExecutionTests {
                 return s;
             }
 
-            public override char GenChar(Random rnd) {
+            public override char GenChar(Random rnd, int iteration) {
                 var v = rnd.Next(32, 0x7fff);
                 return (char)v;
             }
@@ -54,7 +54,7 @@ namespace Test.ExecutionTests {
 
         private readonly DefaultParamGen defaultParamGen = new DefaultParamGen();
 
-        private object[] CreateArgs(MethodInfo methodInfo) {
+        private object[] CreateArgs(MethodInfo methodInfo, int iteration) {
             List<object> args = new List<object>();
             var parameters = methodInfo.GetParameters();
             foreach (var arg in parameters) {
@@ -63,19 +63,19 @@ namespace Test.ExecutionTests {
                 var typeCode = Type.GetTypeCode(arg.ParameterType);
                 switch (typeCode) {
                 case TypeCode.Boolean:
-                    v = paramGen.GenBool(this.rnd);
+                    v = paramGen.GenBool(this.rnd, iteration);
                     break;
                 case TypeCode.Int32:
-                    v = paramGen.GenInt32(this.rnd);
+                    v = paramGen.GenInt32(this.rnd, iteration);
                     break;
                 case TypeCode.Double:
-                    v = paramGen.GenDouble(this.rnd);
+                    v = paramGen.GenDouble(this.rnd, iteration);
                     break;
                 case TypeCode.String:
-                    v = paramGen.GenString(this.rnd);
+                    v = paramGen.GenString(this.rnd, iteration);
                     break;
                 case TypeCode.Char:
-                    v = paramGen.GenChar(this.rnd);
+                    v = paramGen.GenChar(this.rnd, iteration);
                     break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + typeCode);
@@ -118,16 +118,20 @@ namespace Test.ExecutionTests {
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
-            var withinAttr = (WithinAttribute)mi.GetCustomAttributes(typeof(WithinAttribute), false).FirstOrDefault();
-            var icAttr = (IterationCountAttribute)mi.GetCustomAttributes(typeof(IterationCountAttribute), false).FirstOrDefault();
+            var withinAttr = mi.GetCustomAttribute<WithinAttribute>();
+            var icAttr = mi.GetCustomAttribute<IterationCountAttribute>();
+            var minIterations = mi.GetParameters().Max(x => x.GetCustomAttribute<ParamAttribute>().NullThru(y => y.MinIterations));
             int iterationCount;
             if (icAttr != null) {
                 iterationCount = icAttr.IterationCount;
             } else {
                 iterationCount = method.Parameters.Any() ? defaultTestIterations : 1;
             }
+            if (iterationCount < minIterations) {
+                iterationCount = minIterations.Value;
+            }
             var range = Enumerable.Range(0, iterationCount);
-            var args = range.Select(i => this.CreateArgs(mi)).ToArray();
+            var args = range.Select(i => this.CreateArgs(mi, i)).ToArray();
 
             var runResults = range.Select(i => {
                 object r = null;
