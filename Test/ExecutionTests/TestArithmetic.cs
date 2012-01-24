@@ -51,6 +51,24 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestIntRem() {
+            this.Test((Func<int, int, int>)TestIntRemFunc);
+        }
+        [IterationCount(50)]
+        private int TestIntRemFunc([ParamAny]int a, [ParamNonZero]int b) {
+            return a % b;
+        }
+
+        [Test]
+        public void TestDoubleRem() {
+            this.Test((Func<double, double, double>)TestDoubleRemFunc);
+        }
+        [IterationCount(50), Within(0.0001)]
+        private double TestDoubleRemFunc([ParamAny]double a, [ParamNonZero]double b) {
+            return a % b;
+        }
+
+        [Test]
         public void TestBitwiseAnd() {
             Func<int, int, int> f = (a, b) => a & b;
             this.Test(f);
