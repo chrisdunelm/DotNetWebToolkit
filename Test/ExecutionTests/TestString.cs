@@ -64,6 +64,11 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestConcatObject2() {
+
+        }
+
+        [Test]
         public void TestIndexOfChar() {
             Func<int, int> f = a => "aceg".IndexOf("abcdefgh"[a & 7]);
             this.Test(f);
