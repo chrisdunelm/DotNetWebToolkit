@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 
 namespace Test.Utils {
-    [AttributeUsage(AttributeTargets.Method)]
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     class WithinAttribute : Attribute {
 
         public WithinAttribute(double delta) {
@@ -14,4 +15,5 @@ namespace Test.Utils {
         public double Delta { get; private set; }
 
     }
+
 }

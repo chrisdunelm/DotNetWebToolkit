@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 
 namespace Test.Utils {
-    [AttributeUsage(AttributeTargets.Method)]
-    class IterationCountAttribute:Attribute {
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    class IterationCountAttribute : Attribute {
 
         public IterationCountAttribute(int iterationCount) {
             this.IterationCount = iterationCount;
@@ -14,4 +15,5 @@ namespace Test.Utils {
         public int IterationCount { get; private set; }
 
     }
+
 }
