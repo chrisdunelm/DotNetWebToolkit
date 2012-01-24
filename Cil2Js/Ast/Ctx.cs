@@ -47,6 +47,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public TypeReference Object { get { return this.TypeSystem.Object; } }
         public TypeReference String { get { return this.TypeSystem.String; } }
         public TypeReference IntPtr { get { return this.TypeSystem.IntPtr; } }
+        public TypeReference UIntPtr { get { return this.TypeSystem.UIntPtr; } }
 
         private Lazy<TypeReference> type;
         public TypeReference Type { get { return this.type.Value; } }

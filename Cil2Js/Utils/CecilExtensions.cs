@@ -90,6 +90,11 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static bool MatchMethodOnly(this MethodReference a, MethodReference b) {
+            var aDef = a.Resolve();
+            var bDef = b.Resolve();
+            if (aDef.IsStatic != bDef.IsStatic) {
+                return false;
+            }
             if (a.Name != b.Name) {
                 return false;
             }

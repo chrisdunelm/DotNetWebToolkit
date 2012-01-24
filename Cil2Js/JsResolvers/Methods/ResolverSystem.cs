@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -90,6 +91,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
             var eTypeData = new ExprJsTypeData(ctx, TypeData.IsInterface);
             var expr = new ExprJsExplicit(ctx, "{0}.{1}", ctx.Boolean, runtimeType, eTypeData);
             return expr;
+        }
+
+        public static Stmt NumberFormatInfo_get_CurrentInfo(Ctx ctx) {
+            var v = new ExprLiteral(ctx, null, ctx.Module.Import(typeof(NumberFormatInfo)));
+            return new StmtReturn(ctx, v);
         }
 
     }

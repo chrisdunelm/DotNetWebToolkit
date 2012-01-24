@@ -137,6 +137,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Mul));
             case Code.Div:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Div));
+            case Code.Rem:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.Rem));
             case Code.Shl:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Shl));
             case Code.And:
@@ -222,10 +224,26 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Stelem_Ref:
             case Code.Stelem_Any:
                 return this.StoreElem(inst);
+            case Code.Conv_I1:
+                return this.Conv(this.ctx.SByte);
+            case Code.Conv_I2:
+                return this.Conv(this.ctx.Int16);
             case Code.Conv_I4:
                 return this.Conv(this.ctx.Int32);
+            case Code.Conv_I8:
+                return this.Conv(this.ctx.Int64);
             case Code.Conv_I:
                 return this.Conv(this.ctx.IntPtr);
+            case Code.Conv_U1:
+                return this.Conv(this.ctx.Byte);
+            case Code.Conv_U2:
+                return this.Conv(this.ctx.UInt16);
+            case Code.Conv_U4:
+                return this.Conv(this.ctx.UInt32);
+            case Code.Conv_U8:
+                return this.Conv(this.ctx.UInt64);
+            case Code.Conv_U:
+                return this.Conv(this.ctx.UIntPtr);
             case Code.Castclass:
                 return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Isinst:

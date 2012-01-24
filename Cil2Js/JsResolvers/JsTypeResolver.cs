@@ -19,6 +19,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         private static Dictionary<string, string> typeMap = new Dictionary<string, string>() {
             { T<StringBuilder>(), T<Cls.StringBuilder>() },
+            { "System.Number", T<Cls.Number>() },
         };
         private static Dictionary<TypeReference, TypeReference> reverseTypeMap = new Dictionary<TypeReference, TypeReference>(TypeExtensions.TypeRefEqComparerInstance);
 

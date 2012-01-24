@@ -134,6 +134,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.Rem, "%" },
             { BinaryOp.Shl, "<<" },
             { BinaryOp.BitwiseAnd, "&" },
             { BinaryOp.BitwiseOr, "|" },

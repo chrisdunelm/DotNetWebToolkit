@@ -57,7 +57,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("int32.ToString() not yet supported")]
+        [Test]
         public void TestInt32ToString() {
             Func<int, string> f = a => a.ToString();
             this.Test(f);

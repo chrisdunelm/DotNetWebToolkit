@@ -155,6 +155,7 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="JsResolvers\Classes\Number.cs" />
     <Compile Include="JsResolvers\Classes\StringBuilder.cs" />
     <Compile Include="JsResolvers\IJsImpl.cs">
       <SubType>Code</SubType>

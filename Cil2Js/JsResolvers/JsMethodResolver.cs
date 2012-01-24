@@ -40,6 +40,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             // TODO: This is rubbish - must make it possible to match all generic arguments
             { M.Def(null, "System.Collections.Generic.EqualityComparer`1<System.Int32>.CreateComparer"), ResolverCollections.EqualityComparer_CreateComparer },
 
+            // {System.String System.Number::FormatInt32(System.Int32,System.String,System.Globalization.NumberFormatInfo)}
+            //{ M.Def(TString, "System.Number.FormatInt32", TInt32, TString, "System.Globalization.NumberFormatInfo"), ResolverNumber.FormatInt32
+
+            // System.Globalization.NumberFormatInfo System.Globalization.NumberFormatInfo::get_CurrentInfo()
+            { M.Def("System.Globalization.NumberFormatInfo", "System.Globalization.NumberFormatInfo.get_CurrentInfo"), ResolverSystem.NumberFormatInfo_get_CurrentInfo },
+
         };
 
         public static Stmt ResolveMethod(Ctx ctx) {
