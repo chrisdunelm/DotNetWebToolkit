@@ -37,7 +37,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<int, int, int>)TestIntegerDivFunc);
         }
         [IterationCount(50)]
-        private int TestIntegerDivFunc([ParamAny]int a, [ParamNonZero]int b) {
+        private static int TestIntegerDivFunc([ParamAny]int a, [ParamNonZero]int b) {
             return a / b;
         }
 
@@ -46,7 +46,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<double, double, double>)TestDoubleDivFunc);
         }
         [IterationCount(50), Within(0.0001)]
-        private double TestDoubleDivFunc([ParamAny]double a, [ParamNonZero]double b) {
+        private static double TestDoubleDivFunc([ParamAny]double a, [ParamNonZero]double b) {
             return a / b;
         }
 
@@ -55,7 +55,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<int, int, int>)TestIntRemFunc);
         }
         [IterationCount(50)]
-        private int TestIntRemFunc([ParamAny]int a, [ParamNonZero]int b) {
+        private static int TestIntRemFunc([ParamAny]int a, [ParamNonZero]int b) {
             return a % b;
         }
 
@@ -64,7 +64,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<double, double, double>)TestDoubleRemFunc);
         }
         [IterationCount(50), Within(0.0001)]
-        private double TestDoubleRemFunc([ParamAny]double a, [ParamNonZero]double b) {
+        private static double TestDoubleRemFunc([ParamAny]double a, [ParamNonZero]double b) {
             return a % b;
         }
 
