@@ -81,7 +81,7 @@ namespace Test.Utils {
     class ParamFullRangeAttribute : ParamAttribute {
 
         public override int? MinIterations {
-            get { return 10; }
+            get { return 15; }
         }
 
         public override int GenInt32(Random rnd, int iteration) {
@@ -94,6 +94,22 @@ namespace Test.Utils {
             case 5: return int.MinValue + 1;
             case 6: return int.MaxValue - 1;
             default: return rnd.Next(int.MinValue + 2, int.MaxValue - 1);
+            }
+        }
+
+        public override double GenDouble(Random rnd, int iteration) {
+            switch (iteration) {
+            case 0: return double.NaN;
+            case 1: return double.NegativeInfinity;
+            case 2: return double.PositiveInfinity;
+            case 3: return double.MaxValue;
+            case 4: return -double.MaxValue;
+            case 5: return double.MinValue;
+            case 6: return -double.MinValue;
+            case 7: return 0.0;
+            case 8: return 1.0;
+            case 9: return -1.0;
+            default: return (rnd.NextDouble() - 0.5) * double.MaxValue;
             }
         }
 
