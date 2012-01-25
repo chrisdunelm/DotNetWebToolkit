@@ -71,20 +71,6 @@ namespace Test {
             Assert.That(a.FullName, Is.EqualTo("Test.TestCecilExtensions/A"));
         }
 
-        //[Test]
-        //public void TestMethodBasesV0() {
-        //    var m = this.GetMethod("G", "V0");
-        //    var m0 = m.GetBaseMethodByType();
-        //    Assert.That(m0, Is.Null);
-        //}
-
-        //[Test]
-        //public void TestMethodBasesV1() {
-        //    var gm = this.GetMethod("G", "V1");
-        //    var hm = gm.GetBaseMethodByType();
-        //    Assert.That(hm.FullName, Is.Null);
-        //}
-
         [Test]
         public void TestMethodBasesV2() {
             var gm = this.GetMethod("G", "V2");
@@ -92,9 +78,6 @@ namespace Test {
             var gmT = new GenericInstanceMethod(gmR);
             gmT.GenericArguments.Add(this.Ts.Int32);
             gmT.Parameters.Add(gm.Parameters[0]);
-            //gmT.Parameters.Add(new ParameterDefinition(gm.Parameters[1].GetResolvedType(gmT)));
-            //var hm = gmT.GetBaseMethodByType();
-            //Assert.That(hm.FullName, Is.Null);
         }
 
     }
