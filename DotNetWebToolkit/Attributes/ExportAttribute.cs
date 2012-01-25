@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DotNetWebToolkit.Attributes {
 
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Class)]
     public class ExportAttribute : Attribute {
 
         public ExportAttribute() {

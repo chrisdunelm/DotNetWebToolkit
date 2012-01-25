@@ -32,11 +32,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         }
 
-        public static string CreateFrom(MethodReference method, bool verbose = false) {
-            return CreateFrom(new[] { method }, verbose);
+        public static string CreateFrom(MethodReference method, bool verbose = false, bool testing = false) {
+            return CreateFrom(new[] { method }, verbose, testing);
         }
 
-        public static string CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false) {
+        public static string CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false, bool testing = false) {
             var todo = new Stack<MethodReference>();
             foreach (var method in rootMethods) {
                 todo.Push(method);
@@ -342,7 +342,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Create map of all method names
             var methodNames = methodsSeen.Keys.ToDictionary(x => x, x => globalNames[x], TypeExtensions.MethodRefEqComparerInstance);
-            methodNames[rootMethods.First()] = "main"; // HACK
+            //methodNames[rootMethods.First()] = "main"; // HACK
 
             // Create list of all static field names
             var staticFieldNames = staticFields.Select(x => new { f = x.Key, name = globalNames[x.Key] });
@@ -411,26 +411,37 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             };
 
             var js = new StringBuilder();
+            js.Append("(function(){");
+            int jsIndent = 1;
+            Action jsNewLine = () => {
+                js.AppendLine();
+                js.Append(' ', jsIndent * JsMethod.tabSize);
+            };
 
+            jsNewLine();
             // Construct methods
             foreach (var methodInfo in methodAsts) {
                 var mRef = methodInfo.Key;
                 var ast = methodInfo.Value;
                 var mJs = JsMethod.Create(mRef, resolver, ast);
-                js.AppendLine(mJs);
+                var mJsLines = mJs.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                foreach (var line in mJsLines) {
+                    jsNewLine();
+                    js.Append(line);
+                }
             }
 
             // Construct static fields
             foreach (var field in staticFields.Select(x => x.Key)) {
+                jsNewLine();
                 js.AppendFormat("// {0}", field.FullName);
-                js.AppendLine();
+                jsNewLine();
                 if (field.Name == "Empty" && field.DeclaringType.FullName == "System.String") {
                     // Special case, as string does not have a static constructor to set String.Empty
                     js.AppendFormat("var {0} = \"\";", fieldNames[field]);
                 } else {
                     js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType, fieldNames));
                 }
-                js.AppendLine();
             }
 
             // Construct type data
@@ -442,8 +453,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             foreach (var type in typesSeenOrdered) {
                 var unmappedType = JsResolver.ReverseTypeMap(type);
                 var tDef = unmappedType.Resolve();
+                jsNewLine();
                 js.AppendFormat("// {0}", unmappedType.FullName);
-                js.AppendLine();
+                jsNewLine();
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 // Type information
                 js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], unmappedType.Name());
@@ -491,11 +503,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
                 // end
                 js.Append("};");
-                js.AppendLine();
             }
             // Add type of each type, if System.RuntimeType has been seen
             var typeRuntimeType = typesSeen.Keys.FirstOrDefault(x => x.FullName == "System.RuntimeType");
             if (typeRuntimeType != null) {
+                jsNewLine();
                 foreach (var type in typesSeenOrdered) {
                     js.Append(typeNames[type]);
                     js.Append("._ = ");
@@ -503,6 +515,53 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.Append(typeNames[typeRuntimeType]);
                 js.Append(";");
             }
+
+            jsNewLine();
+            jsNewLine();
+            js.Append("// Exports");
+            if (!testing) {
+                var rootMethodsByType = rootMethods.ToLookup(x => x.DeclaringType, TypeExtensions.TypeRefEqComparerInstance);
+                Action<NamespaceTree> treeToJs = null;
+                treeToJs = tree => {
+                    js.Append("{");
+                    jsIndent++;
+                    foreach (var subNs in tree.Namespaces) {
+                        jsNewLine();
+                        js.AppendFormat("'{0}': ", subNs.NamespacePart);
+                        treeToJs(subNs);
+                    }
+                    foreach (var type in tree.Types) {
+                        jsNewLine();
+                        js.AppendFormat("'{0}': {{", type.Name);
+                        jsIndent++;
+                        foreach (var method in rootMethodsByType[type]) {
+                            jsNewLine();
+                            js.AppendFormat("'{0}': {1}", method.Name, methodNames[method]);
+                        }
+                        jsIndent--;
+                        jsNewLine();
+                        js.Append("}");
+                    }
+                    jsIndent--;
+                    jsNewLine();
+                    js.Append("}");
+                };
+                var trees = NamespaceTree.Make(rootMethodsByType.Select(x => x.Key));
+                foreach (var tree in trees) {
+                    jsNewLine();
+                    js.AppendFormat("window['{0}'] = ", tree.NamespacePart);
+                    treeToJs(tree);
+                    js.Append(";");
+                }
+            } else {
+                jsNewLine();
+                js.AppendFormat("window['main'] = {0};", methodNames[rootMethods.First()]);
+            }
+
+            jsIndent--;
+            jsNewLine();
+            jsNewLine();
+            js.Append("})();");
 
             var jsStr = js.ToString();
             //Console.WriteLine(jsStr);

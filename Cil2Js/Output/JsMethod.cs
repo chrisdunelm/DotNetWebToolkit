@@ -21,7 +21,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             public Dictionary<TypeData, string> TypeDataNames { get; set; }
         }
 
-        private const int tabSize = 4;
+        public const int tabSize = 4;
 
         public static string Create(MethodReference mRef, Resolver resolver, ICode ast) {
             var mDef = mRef.Resolve();

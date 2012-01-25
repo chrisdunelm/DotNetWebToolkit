@@ -8,6 +8,7 @@ using DotNetWebToolkit.Cil2Js.Analysis;
 using DotNetWebToolkit.Cil2Js.Output;
 using System.Reflection;
 using DotNetWebToolkit.Cil2Js.Utils;
+using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Cil2Js {
     public static class Transcoder {
@@ -91,6 +92,13 @@ namespace DotNetWebToolkit.Cil2Js {
 
         }
 
+        public static MethodReference GetMethod(MethodInfo mi) {
+            var filename = mi.DeclaringType.Assembly.Location;
+            var module = ModuleDefinition.ReadModule(filename);
+            var method = module.Import(mi);
+            return method;
+        }
+
         public static string ToJs(MethodReference method, bool verbose = false) {
             return Js.CreateFrom(method, verbose);
         }
@@ -99,11 +107,33 @@ namespace DotNetWebToolkit.Cil2Js {
             return Js.CreateFrom(GetMethod(methodInfo), verbose);
         }
 
-        public static MethodReference GetMethod(MethodInfo mi) {
-            var filename = mi.DeclaringType.Assembly.Location;
+        public static string ToJs(string filename, bool verbose = false) {
             var module = ModuleDefinition.ReadModule(filename);
-            var method = module.Import(mi);
-            return method;
+            return ToJs(module, verbose);
+        }
+
+        public static string ToJs(ModuleDefinition module, bool verbose = false) {
+            Func<TypeDefinition, IEnumerable<TypeDefinition>> getSelfAndNestedTypes = null;
+            getSelfAndNestedTypes = type => type.NestedTypes.SelectMany(x => getSelfAndNestedTypes(x)).Concat(type);
+            var exportedTypes = module.Types
+                .SelectMany(x => getSelfAndNestedTypes(x))
+                .Where(x => x.GetCustomAttribute<ExportAttribute>() != null)
+                .ToArray();
+            if (!exportedTypes.Any()) {
+                throw new InvalidOperationException("No types exported");
+            }
+            var exportedMethods = exportedTypes.SelectMany(x => x.Methods.Where(m => m.IsPublic)).ToArray();
+            var nestedTypes = exportedTypes.Where(x => x.IsNested).Select(x => "Nested type: " + x.FullName).ToArray();
+            var privateTypes = exportedTypes.Where(x => !(x.IsPublic || x.IsNestedPublic)).Select(x => "Private type: " + x.FullName).ToArray();
+            var genTypes = exportedTypes.Where(x => x.HasGenericParameters).Select(x => "Generic type: " + x.FullName).ToArray();
+            var genMethods = exportedMethods.Where(x => x.HasGenericParameters).Select(x => "Generic method: " + x.FullName).ToArray();
+            var errors = nestedTypes.Concat(privateTypes).Concat(genTypes).Concat(genMethods).ToArray();
+            if (errors.Any()) {
+                var msg = string.Format("Export errors:{0}{1}", Environment.NewLine, string.Join(Environment.NewLine, errors));
+                throw new InvalidOperationException(msg);
+            }
+            var js = Js.CreateFrom(exportedMethods, verbose);
+            return js;
         }
 
     }

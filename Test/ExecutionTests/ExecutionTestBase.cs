@@ -114,7 +114,7 @@ namespace Test.ExecutionTests {
         protected void Test(Delegate d) {
             var mi = d.Method;
             var method = CecilHelper.GetMethod(d);
-            var js = Js.CreateFrom(method, this.Verbose);
+            var js = Js.CreateFrom(method, this.Verbose, true);
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
