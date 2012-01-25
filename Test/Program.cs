@@ -70,8 +70,8 @@ namespace Test {
             //var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
-            var t = new TestToStringGetHashCode() { Verbose = true };
-            t.TestDoubleToString();
+            var t = new TestArrays() { Verbose = true };
+            t.TestIList();
             return;
 
         }
