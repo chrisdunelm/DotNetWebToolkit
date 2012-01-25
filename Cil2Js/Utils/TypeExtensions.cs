@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Mono.Cecil;
 
@@ -206,6 +207,17 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             // TODO: Other rules
 
             return false;
+        }
+
+        public static Type ReturnType(this MemberInfo mi) {
+            switch (mi.MemberType) {
+            case MemberTypes.Constructor:
+                return typeof(void);
+            case MemberTypes.Method:
+                return ((MethodInfo)mi).ReturnType;
+            default:
+                throw new NotImplementedException("Cannot handle: " + mi.MemberType);
+            }
         }
 
     }

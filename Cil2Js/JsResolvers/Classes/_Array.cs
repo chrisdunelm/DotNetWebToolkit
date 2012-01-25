@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
-using Mono.Cecil;
-using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
-    static class ResolverArray {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
+    [JsIncomplete]
+    class _Array {
+
+        [Js("Copy", typeof(void), typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))]
         public static Expr Copy(ICall call) {
             // d = arg[0].slice(arg[1],arg[4]+arg[1])
             // Array.prototype.splice.apply(arg[2], [arg[3], arg[4]].concat(d))
@@ -27,6 +28,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
             return copy;
         }
 
+        [Js]
         public static Stmt Clear(Ctx ctx) {
             var array = ctx.MethodParameter(0);
             var index = ctx.MethodParameter(1);
@@ -37,25 +39,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
             var js = "for ({0}=0; {0}<{1}; {0}++) {{ {2}[{3}+{0}]={4}; }}";
             var stmt = new StmtJsExplicit(ctx, js, i, length, array, index, value);
             return stmt;
-        }
-
-        public static Expr InitializeArray(ICall call) {
-            var array = (ExprVar)call.Args.ElementAt(0);
-            var initExpr = (ExprRuntimeHandle)call.Args.ElementAt(1);
-            var initData = ((FieldDefinition)initExpr.Member).InitialValue;
-            var arrayElType = array.Type.GetElementType();
-
-            var values = new List<string>();
-            if (arrayElType.IsInt32()) {
-                for (int i = 0; i < initData.Length; i += 4) {
-                    var v = BitConverter.ToInt32(initData, i);
-                    values.Add(v.ToString());
-                }
-            }
-
-            var vStr = string.Join(",", values);
-            var arrayTypeName = new ExprJsTypeVarName(call.Ctx, array.Type);
-            return new ExprJsExplicit(call.Ctx, "{0}=[" + vStr + "];{0}._={1};", array.Type, array, arrayTypeName);
         }
 
     }

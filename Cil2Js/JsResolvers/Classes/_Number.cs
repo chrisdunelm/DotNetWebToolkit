@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
-    sealed class Number {
+    sealed class _Number {
 
-        public static string FormatInt32(int value, string format, NumberFormatInfo info) {
+        public static string FormatInt32(int value, string format, _NumberFormatInfo info) {
             // TODO: Very basic, mostly broken
             if (value == int.MinValue) {
                 return "-2147483648";
@@ -33,7 +33,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return s;
         }
 
-        public static string FormatDouble(double value, string format, NumberFormatInfo info) {
+        public static string FormatDouble(double value, string format, _NumberFormatInfo info) {
             return "double!";
         }
 

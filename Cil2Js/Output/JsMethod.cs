@@ -43,6 +43,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x], "_");
                 parameterNames = parameterNames.Prepend(thisName).ToArray();
             }
+            sb.AppendFormat("// {0}", mRef.FullName);
+            sb.AppendLine();
             sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", parameterNames));
             // Variable declarations
             var declVars = v.vars
@@ -336,14 +338,18 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (isIFaceCall) {
                 var iTableIndex = this.resolver.InterfaceCallIndices[e.CallMethod];
                 var iFaceName = this.resolver.InterfaceNames[e.CallMethod.DeclaringType];
-                this.Visit(e.ObjInit);
-                this.js.AppendFormat("._.{0}[{1}]", iFaceName, iTableIndex);
+                //this.Visit(e.ObjInit);
+                //this.js.AppendFormat("._.{0}[{1}]", iFaceName, iTableIndex);
+                this.Visit(e.RuntimeType);
+                this.js.AppendFormat(".{0}[{1}]", iFaceName, iTableIndex);
                 this.CallAppendArgs(e);
             } else {
                 var mBasemost = e.CallMethod.GetBasemostMethod(null);
                 int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
-                this.Visit(e.ObjInit);
-                this.js.AppendFormat("._.{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
+                //this.Visit(e.ObjInit);
+                //this.js.AppendFormat("._.{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
+                this.Visit(e.RuntimeType);
+                this.js.AppendFormat(".{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
                 this.CallAppendArgs(e);
             }
             return e;

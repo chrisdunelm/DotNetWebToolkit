@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DotNetWebToolkit.Cil2Js.Utils {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     class GenericArrayMethods<T> : IList<T>, ICollection<T>, IEnumerable<T> {
 
         class GenericEnumerator : IEnumerator<T> {
@@ -34,7 +34,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 this.index = -1;
             }
         }
-        
+
+        // TODO: Get rid of all the casts
+
         public virtual IEnumerator<T> GetEnumerator() {
             return new GenericEnumerator((T[])(object)this);
         }
@@ -61,10 +63,18 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
 
         public virtual int IndexOf(T item) {
-            var array=(T[])(object)this;
-            for (int i = 0, n = array.Length; i < n; i++) {
-                if (object.Equals(array[i], item)) {
-                    return i;
+            var array = (T[])(object)this;
+            if (item == null) {
+                for (int i = 0, n = array.Length; i < n; i++) {
+                    if (array[i] == null) {
+                        return i;
+                    }
+                }
+            } else {
+                for (int i = 0, n = array.Length; i < n; i++) {
+                    if (item.Equals(array[i])) {
+                        return i;
+                    }
                 }
             }
             return -1;

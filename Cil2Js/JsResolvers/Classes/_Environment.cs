@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
-    static class ResolverEnvironment {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
+    class _Environment {
 
+        [Js]
         public static Expr GetResourceFromDefault(ICall call) {
             var ctx = call.Ctx;
             var pre = new ExprLiteral(ctx, "GetResourceFromDefault_", ctx.String);
@@ -14,7 +16,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
             return expr;
         }
 
+        [Js]
         public static Expr GetRuntimeResourceString(ICall call) {
+            var ctx = call.Ctx;
+            var expr = new ExprLiteral(ctx, "<GetRuntimeResourceString>", ctx.String);
+            return expr;
+        }
+
+        [Js]
+        public static Expr GetResourceString(ICall call) {
             var ctx = call.Ctx;
             var expr = new ExprLiteral(ctx, "<GetRuntimeResourceString>", ctx.String);
             return expr;

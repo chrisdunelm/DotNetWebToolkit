@@ -236,11 +236,6 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     var elType = reqMod.ElementType.FullResolve(scopeType, scopeMethod);
                     return elType;
                 }
-            //case MetadataType.Pinned: {
-            //        var pinned = (PinnedType)self;
-            //        var elType = pinned.ElementType.FullResolve(scopeType, scopeMethod);
-            //        return elType;
-            //    }
             default:
                 throw new NotImplementedException("Cannot handle: " + self.MetadataType);
             }
@@ -491,6 +486,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static CustomAttribute GetCustomAttribute<TAttr>(this MethodDefinition m) {
             return m.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        }
+
+        public static IEnumerable<CustomAttribute> GetCustomAttributes<TAttr>(this MethodDefinition m) {
+            return m.CustomAttributes.Where(x => x.AttributeType.Name == typeof(TAttr).Name).ToArray();
         }
 
         public static string Name(this TypeReference t) {

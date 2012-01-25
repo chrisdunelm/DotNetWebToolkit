@@ -18,30 +18,31 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            var expr = this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall));
+            var expr = this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType));
             var res = JsResolver.ResolveCall(expr);
             if (res != null) {
                 return this.Visit(res);
             }
-            if (e.ConstrainedType != null) {
-                if (e.ConstrainedType.IsValueType) {
+            if (expr.ConstrainedType != null) {
+                if (expr.ConstrainedType.IsValueType) {
                     // Map constrained virtual call to a method on a value-type, to a non-virtual call.
                     // This is important as it prevents having to box the value-type, which is very expensive
-                    var impl = e.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(e.CallMethod));
+                    var impl = expr.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(expr.CallMethod));
                     if (impl != null) {
-                        var constrainedCall = new ExprCall(e.Ctx, impl, e.Obj, e.Args, false, null);
+                        var constrainedCall = new ExprCall(expr.Ctx, impl, expr.Obj, expr.Args, false, null);
                         return constrainedCall;
                     } else {
                         throw new Exception();
                     }
                 }
             }
-            if (e.IsVirtualCall) {
-                var ctx = e.Ctx;
-                var objIsVar = e.Obj.IsVar();
-                var temp = objIsVar ? null : new ExprVarLocal(ctx, e.Obj.Type);
-                var initExpr = objIsVar ? e.Obj : new ExprAssignment(ctx, temp, e.Obj);
-                var eJsVCall = new ExprJsVirtualCall(ctx, e.CallMethod, initExpr, temp ?? e.Obj, e.Args);
+            if (expr.IsVirtualCall) {
+                var ctx = expr.Ctx;
+                var objIsVar = expr.Obj.IsVar();
+                var temp = objIsVar ? null : new ExprVarLocal(ctx, expr.Obj.Type);
+                var getTypeObj = objIsVar ? expr.Obj : new ExprAssignment(ctx, temp, expr.Obj);
+                var getType = new ExprCall(ctx, typeof(object).GetMethod("GetType"), getTypeObj);
+                var eJsVCall = new ExprJsVirtualCall(ctx, expr.CallMethod, getType, temp ?? expr.Obj, expr.Args);
                 return eJsVCall;
             }
             return expr;
@@ -59,9 +60,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitNewArray(ExprNewArray e) {
             var ctx = e.Ctx;
-            var miCreateMethod = typeof(InternalFunctions).GetMethod("CreateArray");
-            var mCreateMethod = ctx.Module.Import(miCreateMethod).MakeGeneric(e.ElementType);
-            var expr = new ExprCall(ctx, mCreateMethod, null, e.ExprNumElements);
+            var caGenDef = ((Func<int, int[]>)InternalFunctions.CreateArray<int>).Method.GetGenericMethodDefinition();
+            var mCreateArray = ctx.Module.Import(caGenDef).MakeGeneric(e.ElementType);
+            var expr = new ExprCall(ctx, mCreateArray, null, e.ExprNumElements);
             return expr;
         }
 

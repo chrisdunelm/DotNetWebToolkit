@@ -7,10 +7,13 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
-    static class ResolverCollections {
+namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-        public static Stmt EqualityComparer_CreateComparer(Ctx ctx) {
+    [JsIncomplete]
+    class _EqualityComparer {
+
+        [Js]
+        public static Stmt CreateComparer(Ctx ctx) {
             var type = ((GenericInstanceType)ctx.MRef.DeclaringType).GenericArguments[0];
             if (type.IsByte()) {
                 throw new Exception();
@@ -19,7 +22,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
             if (type.DoesImplement(iEquatable)) {
                 var t = Type.GetType("System.Collections.Generic.GenericEqualityComparer`1");
                 var compType = ctx.Module.Import(t).MakeGeneric(type);
-                var ctor = compType.EnumResolvedMethods().First(x=>x.Resolve().IsConstructor);
+                var ctor = compType.EnumResolvedMethods().First(x => x.Resolve().IsConstructor);
                 var ctorExpr = new ExprNewObj(ctx, ctor);
                 return new StmtReturn(ctx, ctorExpr);
             }
@@ -27,4 +30,5 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Methods {
         }
 
     }
+
 }

@@ -155,8 +155,22 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
-    <Compile Include="JsResolvers\Classes\Number.cs" />
-    <Compile Include="JsResolvers\Classes\StringBuilder.cs" />
+    <Compile Include="JsResolvers\Classes\_Action.cs" />
+    <Compile Include="JsResolvers\Classes\_Array.cs" />
+    <Compile Include="JsResolvers\Classes\_Boolean.cs" />
+    <Compile Include="JsResolvers\Classes\_Char.cs" />
+    <Compile Include="JsResolvers\Classes\_Double.cs" />
+    <Compile Include="JsResolvers\Classes\_Environment.cs" />
+    <Compile Include="JsResolvers\Classes\_EqualityComparer.cs" />
+    <Compile Include="JsResolvers\Classes\_Number.cs" />
+    <Compile Include="JsResolvers\Classes\_NumberFormatInfo.cs" />
+    <Compile Include="JsResolvers\Classes\_Object.cs" />
+    <Compile Include="JsResolvers\Classes\_RuntimeHelpers.cs" />
+    <Compile Include="JsResolvers\Classes\_RuntimeType.cs" />
+    <Compile Include="JsResolvers\Classes\_String.cs" />
+    <Compile Include="JsResolvers\Classes\_StringBuilder.cs" />
+    <Compile Include="JsResolvers\Classes\_ThrowHelper.cs" />
+    <Compile Include="JsResolvers\Classes\_Type.cs" />
     <Compile Include="JsResolvers\IJsImpl.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -169,21 +183,14 @@
     <Compile Include="JsResolvers\JsCallResolver.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="JsResolvers\JsIncompleteAttribute.cs" />
+    <Compile Include="JsResolvers\JsResolverMap.cs" />
     <Compile Include="JsResolvers\JsTypeResolver.cs" />
     <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsResolvers\Methods\ResolverChar.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverArray.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverCollections.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverDouble.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverEnvironment.cs" />
     <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverString.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverSystem.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverThrowHelper.cs" />
-    <Compile Include="JsResolvers\Methods\ResolverType.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
@@ -214,12 +221,11 @@
     <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorJsResolveAll.cs" />
-    <Compile Include="Output\VisitorJsTypeMapping.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />
     <Compile Include="Utils\Extensions.cs" />
-    <Compile Include="Utils\GenericArrayMethods.cs" />
+    <Compile Include="JsResolvers\GenericArrayMethods.cs" />
     <Compile Include="Utils\ShowVisitor.cs" />
     <Compile Include="Utils\TypeExtensions.cs" />
   </ItemGroup>

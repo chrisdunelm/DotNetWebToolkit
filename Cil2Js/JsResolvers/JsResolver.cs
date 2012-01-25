@@ -2,87 +2,166 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
+using DotNetWebToolkit.Attributes;
+using DotNetWebToolkit.Cil2Js.Output;
+using System.Reflection;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+
     public static partial class JsResolver {
 
-        private const string TVoid = "System.Void";
-        private const string TObject = "System.Object";
-        private const string TIntPtr = "System.IntPtr";
-        private const string TBoolean = "System.Boolean";
-        private const string TString = "System.String";
-        private const string TChar = "System.Char";
-        private const string TInt32 = "System.Int32";
-        private const string TArray = "System.Array";
-        private const string TType = "System.Type";
-
-        private static string ArrayOf(string type) {
-            return type + "[]";
+        private static Type T(string typeName) {
+            return Type.GetType(typeName);
         }
 
-        class M {
+        private static Dictionary<Type, Type> reverseTypeMap = map.ToLookup(x => x.Value, x => x.Key).Where(x => x.Count() == 1).ToDictionary(x => x.Key, x => x.First());
 
-            class NullIsWildcardEqualityComparer : IEqualityComparer<string> {
-
-                public static readonly IEqualityComparer<string> Instance = new NullIsWildcardEqualityComparer();
-
-                public bool Equals(string x, string y) {
-                    return x == null || y == null || x == y;
-                }
-
-                public int GetHashCode(string obj) {
-                    return 0;
-                }
-            }
-
-            class ValueEqualityComparer : IEqualityComparer<M> {
-                public bool Equals(M x, M y) {
-                    return
-                        (x.ReturnType == null || y.ReturnType == null || x.ReturnType == y.ReturnType) &&
-                        x.FullName == y.FullName &&
-                        Enumerable.SequenceEqual(x.GenericArgTypes, y.GenericArgTypes, NullIsWildcardEqualityComparer.Instance) &&
-                        Enumerable.SequenceEqual(x.ArgTypes, y.ArgTypes, NullIsWildcardEqualityComparer.Instance);
-                }
-
-                public int GetHashCode(M o) {
-                    return o.FullName.GetHashCode();
-                }
-            }
-
-            public static readonly IEqualityComparer<M> ValueEqComparer = new ValueEqualityComparer();
-
-            public static M Def(string returnType, string fullName, params string[] argTypes) {
-                return new M(returnType, fullName, Enumerable.Empty<string>(), argTypes);
-            }
-
-            public static M Def(string returnType, string fullName, string[] genericArgTypes, params string[] argTypes) {
-                return new M(returnType, fullName, genericArgTypes, argTypes);
-            }
-
-            private M(string returnType, string fullName, IEnumerable<string> genericArgTypes, IEnumerable<string> argTypes) {
-                this.ReturnType = returnType;
-                this.FullName = fullName;
-                this.GenericArgTypes = genericArgTypes;
-                this.ArgTypes = argTypes;
-            }
-
-            public M(MethodReference method) {
-                this.ReturnType = method.ReturnType.FullName;
-                this.FullName = method.DeclaringType.FullName + "." + method.Name;
-                this.GenericArgTypes = method.GenericParameters.Select(x => x.FullName).ToArray();
-                this.ArgTypes = method.Parameters.Select(x => x.ParameterType.FullName).ToArray();
-            }
-
-            public string ReturnType { get; private set; }
-            public string FullName { get; private set; }
-            public IEnumerable<string> GenericArgTypes { get; private set; }
-            public IEnumerable<string> ArgTypes { get; private set; }
-
-        }
+        private static readonly ModuleDefinition thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
 
         private static string JsCase(string s) {
             return char.ToLowerInvariant(s[0]) + s.Substring(1);
+        }
+
+        private static MemberInfo FindJsMember(MethodReference mRef, Type type) {
+            Func<IEnumerable<JsAttribute>, string, bool> isMatch = (attrs, mName) => {
+                return attrs.Any(a => {
+                    if (a.MethodName == null && a.Parameters == null && mName == mRef.Name) {
+                        return true;
+                    }
+                    if (a.MethodName != null) {
+                        if (a.MethodName != mRef.Name) {
+                            return false;
+                        }
+                    } else {
+                        if (mName != mRef.Name) {
+                            return false;
+                        }
+                    }
+                    if (a.Parameters.Count() != mRef.Parameters.Count) {
+                        return false;
+                    }
+                    for (int i = 0; i < mRef.Parameters.Count; i++) {
+                        if (a.Parameters.ElementAt(i).FullName != mRef.Parameters[i].ParameterType.FullName) {
+                            return false;
+                        }
+                    }
+                    if (a.ReturnType.FullName != mRef.ReturnType.FullName) {
+                        return false;
+                    }
+                    return true;
+                });
+            };
+            var members = type.GetMembers();
+            var member = members.FirstOrDefault(m => {
+                var attrs = m.GetCustomAttributes<JsAttribute>();
+                return isMatch(attrs, m.Name);
+            });
+            if (member == null && !type.IsDefined(typeof(JsIncompleteAttribute))) {
+                var jss = type.GetCustomAttributes<JsAttribute>();
+                if (!isMatch(jss, null)) {
+                    throw new InvalidOperationException("Cannot find method: " + mRef.FullName);
+                }
+            }
+            return member;
+        }
+
+        public static Expr ResolveCall(ICall call) {
+            var ctx = call.Ctx;
+            var mRef = call.CallMethod;
+            var mDef = mRef.Resolve();
+            // A call defined on a class requiring external methods/properties translating to native JS
+            var type = mDef.DeclaringType;
+            var jsClass = type.GetCustomAttribute<JsClassAttribute>();
+            if (jsClass != null && mDef.IsExternal()) {
+                if (mDef.IsSetter || mDef.IsGetter) {
+                    var propertyName = JsCase(mDef.Name.Substring(4));
+                    if (mDef.IsStatic) {
+                        propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
+                    }
+                    return new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
+                } else {
+                    var methodName = JsCase(mDef.Name);
+                    if (mDef.IsStatic) {
+                        methodName = JsCase(mDef.DeclaringType.Name) + "." + methodName;
+                    }
+                    return new ExprJsResolvedMethod(ctx, call.Type, call.Obj, methodName, call.Args);
+                }
+            }
+            var callType = Type.GetType(mRef.DeclaringType.Resolve().FullName);
+            if (callType == null) {
+                // Method is outside this module or its references
+                return null;
+            }
+            var altType = map.ValueOrDefault(callType);
+            if (altType != null) {
+                // Look for methods in C# that the call can be redirected to
+                var tRef = thisModule.Import(altType);
+                var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => x.Resolve().IsPublic && x.MatchMethodOnly(mRef));
+                if (mappedMethod != null) {
+                    Expr expr;
+                    if (mDef.IsConstructor) {
+                        expr = new ExprNewObj(ctx, mappedMethod, call.Args);
+                    } else {
+                        expr = new ExprCall(ctx, mappedMethod, call.Obj, call.Args, call.IsVirtualCall);
+                    }
+                    return expr;
+                }
+                // Look for methods that generate AST
+                var method = FindJsMember(call.CallMethod, altType);
+                if (method != null && method.ReturnType() == typeof(Expr)) {
+                    var expr = (Expr)((MethodInfo)method).Invoke(null, new object[] { call });
+                    return expr;
+                }
+            }
+            return null;
+        }
+
+        public static Stmt ResolveMethod(Ctx ctx) {
+            // Attribute for internal function
+            var jsAttr = ctx.MDef.GetCustomAttribute<JsAttribute>();
+            if (jsAttr != null) {
+                var implType = (TypeDefinition)jsAttr.ConstructorArguments[0].Value;
+                var t = typeof(JsResolver).Module.ResolveType(implType.MetadataToken.ToInt32());
+                var impl = (IJsImpl)Activator.CreateInstance(t);
+                var stmt = impl.GetImpl(ctx);
+                return stmt;
+            }
+            // Type map
+            var methodType = Type.GetType(ctx.TRef.Resolve().FullName);
+            if (methodType == null) {
+                // Method is outside this module or its references
+                return null;
+            }
+            var altType = map.ValueOrDefault(methodType);
+            if (altType != null) {
+                // Look for methods that generate AST
+                var method = FindJsMember(ctx.MRef, altType);
+                if (method != null && method.ReturnType() == typeof(Stmt)) {
+                    var stmt = (Stmt)((MethodInfo)method).Invoke(null, new object[] { ctx });
+                    return stmt;
+                }
+            }
+            return null;
+        }
+
+        public static TypeReference ReverseTypeMap(TypeReference tRef) {
+            if (tRef.IsNested || tRef.IsGenericInstance) {
+                return tRef;
+            }
+            var type = Type.GetType(tRef.FullName);
+            if (type == null) {
+                // Generic types cannot be got this way, but that's fine because they never need to be (so far...)
+                return tRef;
+            }
+            var revType = reverseTypeMap.ValueOrDefault(type);
+            if (revType == null) {
+                return tRef;
+            }
+            var tRefRev = thisModule.Import(revType);
+            return tRefRev;
         }
 
     }

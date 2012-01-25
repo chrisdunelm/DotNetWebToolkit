@@ -95,7 +95,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
-                    ast = VisitorJsTypeMapping.V(ast);
                     ast = VisitorJsRewriteSealedVCalls.V(ast);
                     ast = VisitorJsResolveAll.V(ast);
                     if (ast == astOrg) {
@@ -105,6 +104,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         // After 10 iterations even the most complex method should be sorted out
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
+                }
+
+                if (mDef.IsVirtual && mRef.DeclaringType.IsValueType) {
+                    // 'this' may be boxed or unboxed. Must be unboxed if boxed
+                    // This is required because in real .NET the boxed and unboxed versions are both directly
+                    // available at the this reference; this is not the case in the JS emulation of boxing
+                    var unboxJs = "if({0}._){0}={0}.v;";
+                    var unbox = new StmtJsExplicit(ctx, unboxJs, ctx.This);
+                    ast = new StmtBlock(ctx, unbox, (Stmt)ast);
                 }
 
                 if (mDef.IsConstructor && !mDef.IsStatic) {
@@ -193,9 +201,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
                         let methods = type.EnumResolvedMethods(mVRoots).ToArray()
                         from method in methods
-                        where !methodsSeen.ContainsKey(method)
                         let methodDef = method.Resolve()
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
+                        where !methodsSeen.ContainsKey(method)
                         let mBasemost = method.GetBasemostMethod(method)
                         where virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull().Any(x => x.IsBaseOfOrEqual(type) || type.IsBaseOfOrEqual(x))
                         where virtualRoots.Contains(mBasemost)
@@ -414,7 +422,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Construct static fields
             foreach (var field in staticFields.Select(x => x.Key)) {
-                js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType, fieldNames));
+                js.AppendFormat("// {0}", field.FullName);
+                js.AppendLine();
+                if (field.Name == "Empty" && field.DeclaringType.FullName == "System.String") {
+                    // Special case, as string does not have a static constructor to set String.Empty
+                    js.AppendFormat("var {0} = \"\";", fieldNames[field]);
+                } else {
+                    js.AppendFormat("var {0} = {1};", fieldNames[field], DefaultValuer.Get(field.FieldType, fieldNames));
+                }
                 js.AppendLine();
             }
 
@@ -427,6 +442,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             foreach (var type in typesSeenOrdered) {
                 var unmappedType = JsResolver.ReverseTypeMap(type);
                 var tDef = unmappedType.Resolve();
+                js.AppendFormat("// {0}", unmappedType.FullName);
+                js.AppendLine();
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 // Type information
                 js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], unmappedType.Name());

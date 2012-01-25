@@ -16,7 +16,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitCall(ExprCall e) {
             if (e.IsVirtualCall) {
-                var objType = e.Obj.Type.FullResolve(e.CallMethod);
+                var objType = e.Obj.Type.FullResolve(e.Ctx);
                 if (objType.Resolve().IsSealed) {
                     // Virtual calls to sealed classes can be rewritten as instance calls
                     var instMethod = objType.EnumResolvedMethods().First(x => x.MatchMethodOnly(e.CallMethod));

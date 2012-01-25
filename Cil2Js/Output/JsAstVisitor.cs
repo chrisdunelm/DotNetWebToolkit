@@ -132,11 +132,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected virtual ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
             this.ThrowOnNoOverride();
-            var objInit = (Expr)this.Visit(e.ObjInit);
+            //var objInit = (Expr)this.Visit(e.ObjInit);
+            var runtimeType = (Expr)this.Visit(e.RuntimeType);
             var objRef = (Expr)this.Visit(e.ObjRef);
             var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
-            if (objInit != e.ObjInit || objRef != e.ObjRef || args != null) {
-                return new ExprJsVirtualCall(e.Ctx, e.CallMethod, objInit, objRef, args ?? e.Args);
+            //if (objInit != e.ObjInit || objRef != e.ObjRef || args != null) {
+            if (runtimeType != e.RuntimeType || objRef != e.ObjRef || args != null) {
+                return new ExprJsVirtualCall(e.Ctx, e.CallMethod, runtimeType, objRef, args ?? e.Args);
             } else {
                 return e;
             }

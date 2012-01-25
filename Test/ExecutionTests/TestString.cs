@@ -11,6 +11,13 @@ namespace Test.ExecutionTests {
     public class TestString : ExecutionTestBase {
 
         [Test]
+        public void TestStringEmptySet() {
+            // String has no static constructor to set String.Empty, so test the special-case code to set
+            Func<string> f = () => string.Empty;
+            this.Test(f);
+        }
+
+        [Test]
         public void TestEquality() {
             Func<string, string, bool> f = (a, b) => a == b;
             Func<int, int, bool> g = (a, b) => {
@@ -65,7 +72,32 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestConcatObject2() {
+            Func<string, char, string> f = (a, b) => a + b;
+            this.Test(f);
+        }
 
+        [Test]
+        public void TestConcatObject3() {
+            Func<string, char, char, string> f = (a, b, c) => a + b + c;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestConcatObject4() {
+            Func<string, char, char, char, string> f = (a, b, c, d) => a + b + c + d;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestConcatObject5() {
+            Func<string, char, char, char, char, string> f = (a, b, c, d, e) => a + b + c + d + e;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestConcatObject6() {
+            Func<string, char, char, char, char, char, string> f = (a, b, c, d, e, z) => a + b + c + d + e + z;
+            this.Test(f);
         }
 
         [Test]

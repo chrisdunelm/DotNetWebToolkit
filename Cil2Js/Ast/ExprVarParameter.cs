@@ -26,7 +26,11 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public override string ToString() {
             if (this.Parameter != null) {
-                return this.Parameter.ToString();
+                var s = this.Parameter.ToString();
+                if (string.IsNullOrWhiteSpace(s)) {
+                    s = "param_" + this.Parameter.Index;
+                }
+                return s;
             } else {
                 return "Param?";
             }
