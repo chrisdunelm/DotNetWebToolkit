@@ -214,7 +214,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.LoadStaticField(inst);
             case Code.Stsfld:
                 return this.StoreStaticField(inst);
+            case Code.Ldelem_I1:
+            case Code.Ldelem_I2:
             case Code.Ldelem_I4:
+            case Code.Ldelem_I8:
+            case Code.Ldelem_U1:
+            case Code.Ldelem_U2:
+            case Code.Ldelem_U4:
+            case Code.Ldelem_R4:
+            case Code.Ldelem_R8:
             case Code.Ldelem_Any:
             case Code.Ldelem_Ref:
                 return this.LoadElem(inst);

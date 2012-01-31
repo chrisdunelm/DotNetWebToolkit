@@ -19,16 +19,59 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var arrayElType = array.Type.GetElementType();
 
             var values = new List<string>();
-            if (arrayElType.IsInt32()) {
-                for (int i = 0; i < initData.Length; i += 4) {
-                    var v = BitConverter.ToInt32(initData, i);
-                    values.Add(v.ToString());
-                }
+            int inc;
+            Func<int, string> getValue;
+            switch (arrayElType.MetadataType) {
+            case MetadataType.Byte:
+                inc = 1;
+                getValue = i => initData[i].ToString();
+                break;
+            case MetadataType.SByte:
+                inc = 1;
+                getValue = i => ((sbyte)initData[i]).ToString();
+                break;
+            case MetadataType.Int16:
+                inc = 2;
+                getValue = i => BitConverter.ToInt16(initData, i).ToString();
+                break;
+            case MetadataType.Int32:
+                inc = 4;
+                getValue = i => BitConverter.ToInt32(initData, i).ToString();
+                break;
+            case MetadataType.Int64:
+                inc = 8;
+                getValue = i => BitConverter.ToInt64(initData, i).ToString();
+                break;
+            case MetadataType.UInt16:
+                inc = 2;
+                getValue = i => BitConverter.ToUInt16(initData, i).ToString();
+                break;
+            case MetadataType.UInt32:
+                inc = 4;
+                getValue = i => BitConverter.ToUInt32(initData, i).ToString();
+                break;
+            case MetadataType.UInt64:
+                inc = 8;
+                getValue = i => BitConverter.ToUInt64(initData, i).ToString();
+                break;
+            case MetadataType.Single:
+                inc = 4;
+                getValue = i => BitConverter.ToSingle(initData, i).ToString();
+                break;
+            case MetadataType.Double:
+                inc = 8;
+                getValue = i => BitConverter.ToDouble(initData, i).ToString();
+                break;
+            default:
+                throw new NotImplementedException("Cannot handle: " + arrayElType.MetadataType);
             }
 
+            for (int i = 0; i < initData.Length; i += inc) {
+                values.Add(getValue(i));
+            }
             var vStr = string.Join(",", values);
             var arrayTypeName = new ExprJsTypeVarName(call.Ctx, array.Type);
-            return new ExprJsExplicit(call.Ctx, "{0}=[" + vStr + "];{0}._={1};", array.Type, array, arrayTypeName);
+            return new ExprJsExplicit(call.Ctx, "{0}=[" + vStr + "];{0}._={1}", array.Type, array, arrayTypeName);
         }
 
     }

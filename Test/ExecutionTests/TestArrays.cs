@@ -130,9 +130,99 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestArrayInitialisationString() {
+            Func<string> f = () => {
+                var a = new string[] { "a", "b", "c", "d", "e", "f" };
+                return a[0] + a[1] + a[2] + a[3] + a[4] + a[5];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationByte() {
+            Func<int> f = () => {
+                var a = new byte[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationSByte() {
+            Func<int> f = () => {
+                var a = new sbyte[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationInt16() {
+            Func<int> f = () => {
+                var a = new short[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestArrayInitialisationInt32() {
             Func<int> f = () => {
-                var a = new[] { 1, 2, 3, 4, 5 };
+                var a = new int[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationInt64() {
+            Func<long> f = () => {
+                var a = new long[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationUInt16() {
+            Func<int> f = () => {
+                var a = new ushort[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationUInt32() {
+            Func<uint> f = () => {
+                var a = new uint[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationUInt64() {
+            Func<ulong> f = () => {
+                var a = new ulong[] { 1, 2, 3, 4, 5 };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationSingle() {
+            Func<float> f = () => {
+                var a = new float[] { 1.0f, 2.0f, 3.0f, 4.0f, 5.0f };
+                return a[0] + a[1] + a[2] + a[3] + a[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestArrayInitialisationDouble() {
+            Func<double> f = () => {
+                var a = new double[] { 1.0, 2.0, 3.0, 4.0, 5.0 };
                 return a[0] + a[1] + a[2] + a[3] + a[4];
             };
             this.Test(f);

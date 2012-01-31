@@ -67,15 +67,15 @@ namespace Test {
         }
 
         static void Main(string[] args) {
-            var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
-            Console.WriteLine(js);
+            //var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
+            //Console.WriteLine(js);
 
             //var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            //var t = new TestArrays() { Verbose = true };
-            //t.TestIList();
+            var t = new TestArrays() { Verbose = true };
+            t.TestArrayInitialisationSByte();
             return;
 
         }
