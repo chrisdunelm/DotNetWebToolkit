@@ -141,6 +141,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.MetadataType == MetadataType.UInt64;
         }
 
+        public static bool IsSingle(this TypeReference type) {
+            return type.MetadataType == MetadataType.Single;
+        }
+
+        public static bool IsDouble(this TypeReference type) {
+            return type.MetadataType == MetadataType.Double;
+        }
+
         public static bool IsString(this TypeReference type) {
             return type.MetadataType == MetadataType.String;
         }
@@ -163,6 +171,18 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 type.IsInt16() || type.IsUInt16() ||
                 type.IsInt32() || type.IsUInt32() ||
                 type.IsInt64() || type.IsUInt64();
+        }
+
+        public static bool IsNumeric(this TypeReference type) {
+            return type.IsInteger() || type.IsSingle() || type.IsDouble();
+        }
+
+        public static bool IsSignedInteger(this TypeReference type) {
+            return type.IsSByte() || type.IsInt16() || type.IsInt32() || type.IsInt64();
+        }
+
+        public static bool IsUnsignedInteger(this TypeReference type) {
+            return type.IsByte() || type.IsUInt16() || type.IsUInt32() || type.IsUInt64();
         }
 
         public static bool IsBaseOfOrEqual(this TypeReference less, TypeReference more) {

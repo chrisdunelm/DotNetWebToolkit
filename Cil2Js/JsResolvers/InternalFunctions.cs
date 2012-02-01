@@ -190,6 +190,102 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
         }
 
+        [Js(typeof(ConvImpl))]
+        public static TOut Conv<TIn, TOut>(TIn v) {
+            throw new Exception();
+        }
+
+        class ConvImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                // Generic parameters can only be:
+                // TIn = Int32: TOut = UInt64
+                // TIn = Int64: TOut = UInt64
+                var mGenInst = (GenericInstanceMethod)ctx.MRef;
+                var tFrom = mGenInst.GenericArguments[0];
+                var tTo = mGenInst.GenericArguments[1];
+                var v = ctx.MethodParameter(0);
+                string js;
+                bool useTemp = false;
+                switch (tFrom.MetadataType) {
+                case MetadataType.SByte:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.Byte:
+                        js = "return {0}>=0?{0}:" + (Byte.MaxValue + 1) + "+{0};";
+                        break;
+                    case MetadataType.UInt16:
+                        js = "return {0}>=0?{0}:" + (UInt16.MaxValue + 1) + "+{0};";
+                        break;
+                    case MetadataType.UInt32:
+                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        break;
+                    case MetadataType.UInt64:
+                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                case MetadataType.Byte:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.SByte:
+                        js = "return {0}<=" + SByte.MaxValue + "?{0}:{0}-" + (Byte.MaxValue + 1) + ";";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                case MetadataType.Int16:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.UInt32:
+                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        break;
+                    case MetadataType.UInt64:
+                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                case MetadataType.Int32:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.UInt32:
+                    case MetadataType.UInt64:
+                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                case MetadataType.Int64:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.UInt64:
+                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                case MetadataType.UInt64:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.Int64:
+                        js = "return {0}<=" + Int64.MaxValue + "?{0}:{0}-" + ((UInt64)Int64.MaxValue + 1L) + ";";
+                        break;
+                    case MetadataType.UInt32:
+                        useTemp = true;
+                        js = "{1}={0}&-1;return {1}>=0?{1}:" + (UInt32.MaxValue + 1L) + "+{1};";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException("Cannot handle TIn: " + tFrom.MetadataType);
+                }
+                var stmt = new StmtJsExplicit(ctx, js, v, useTemp ? new ExprVarLocal(ctx, ctx.Object) : null);
+                return stmt;
+            }
+        }
+
 
     }
 }

@@ -61,6 +61,8 @@
     <Compile Include="ExecutionTests\TestArrays.cs" />
     <Compile Include="ExecutionTests\TestBoxing.cs" />
     <Compile Include="ExecutionTests\TestCasting.cs" />
+    <Compile Include="ExecutionTests\TestConv.cs" />
+    <Compile Include="ExecutionTests\TestDictionary.cs" />
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
     <Compile Include="ExecutionTests\TestGenericInterfaces.cs" />

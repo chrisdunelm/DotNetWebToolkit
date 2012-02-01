@@ -471,19 +471,37 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitConv(ExprConv e) {
-            var fromType = e.Expr.Type;
-            var toType = e.Type;
-            var convToInteger = !fromType.IsInteger() && toType.IsInteger();
-            // TODO: Mask if required
-            // TODO: Sign/unsign if required
-            if (convToInteger) {
-                this.js.Append("(~~");
-            }
-            this.Visit(e.Expr);
-            if (convToInteger) {
-                this.js.Append(")");
-            }
-            return e;
+            throw new InvalidOperationException("This should never occur");
+            //var fromType = e.Expr.Type;
+            //var toType = e.Type;
+            //string js;
+            //switch (fromType.MetadataType) {
+            //case MetadataType.Int64:
+            //    switch (toType.MetadataType) {
+            //    case MetadataType.UInt64:
+            //        js = "
+            //        break;
+            //    default:
+            //        throw new NotImplementedException("Cannot handle to: " + toType.MetadataType);
+            //    }
+            //default:
+            //    throw new NotImplementedException("Cannot handle conv from: " + fromType.MetadataType);
+            //}
+            ////var convToInteger = !fromType.IsInteger() && toType.IsInteger();
+            ////var convToUnsigned = fromType.IsSignedInteger() && toType.IsUnsignedInteger();
+            ////var convToSigned = fromType.IsUnsignedInteger() && fromType.IsSignedInteger();
+            ////// TODO: Mask if required
+            ////// TODO: Sign/unsign if required
+            ////if (convToUnsigned) {
+            ////}
+            ////if (convToInteger) {
+            ////    this.js.Append("(~~");
+            ////}
+            ////this.Visit(e.Expr);
+            ////if (convToInteger) {
+            ////    this.js.Append(")");
+            ////}
+            //return e;
         }
 
         protected override ICode VisitCast(ExprCast e) {

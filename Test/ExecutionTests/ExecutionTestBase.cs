@@ -28,8 +28,44 @@ namespace Test.ExecutionTests {
                 return rnd.Next(2) == 1;
             }
 
+            public override sbyte GenSByte(Random rnd, int iteration) {
+                return (sbyte)rnd.Next(0, 256);
+            }
+
+            public override byte GenByte(Random rnd, int iteration) {
+                return (byte)rnd.Next(0, 256);
+            }
+
+            public override short GenInt16(Random rnd, int iteration) {
+                return (short)rnd.Next(0, 100);
+            }
+
             public override int GenInt32(Random rnd, int iteration) {
                 return rnd.Next(0, 100);
+            }
+
+            public override long GenInt64(Random rnd, int iteration) {
+                var b = new byte[8];
+                rnd.NextBytes(b);
+                return BitConverter.ToInt64(b, 0);
+            }
+
+            public override ushort GenUInt16(Random rnd, int iteration) {
+                return (ushort)rnd.Next(0, 100);
+            }
+
+            public override uint GenUInt32(Random rnd, int iteration) {
+                return (uint)rnd.Next(0, 100);
+            }
+
+            public override ulong GenUInt64(Random rnd, int iteration) {
+                var b = new byte[8];
+                rnd.NextBytes(b);
+                return BitConverter.ToUInt64(b, 0);
+            }
+
+            public override float GenSingle(Random rnd, int iteration) {
+                return (float)(rnd.NextDouble() * 100.0);
             }
 
             public override double GenDouble(Random rnd, int iteration) {
@@ -65,8 +101,32 @@ namespace Test.ExecutionTests {
                 case TypeCode.Boolean:
                     v = paramGen.GenBool(this.rnd, iteration);
                     break;
+                case TypeCode.SByte:
+                    v = paramGen.GenSByte(this.rnd, iteration);
+                    break;
+                case TypeCode.Byte:
+                    v = paramGen.GenByte(this.rnd, iteration);
+                    break;
+                case TypeCode.Int16:
+                    v = paramGen.GenInt16(this.rnd, iteration);
+                    break;
                 case TypeCode.Int32:
                     v = paramGen.GenInt32(this.rnd, iteration);
+                    break;
+                case TypeCode.Int64:
+                    v = paramGen.GenInt64(this.rnd, iteration);
+                    break;
+                case TypeCode.UInt16:
+                    v = paramGen.GenUInt16(this.rnd, iteration);
+                    break;
+                case TypeCode.UInt32:
+                    v = paramGen.GenUInt32(this.rnd, iteration);
+                    break;
+                case TypeCode.UInt64:
+                    v = paramGen.GenUInt64(this.rnd, iteration);
+                    break;
+                case TypeCode.Single:
+                    v = paramGen.GenSingle(this.rnd, iteration);
                     break;
                 case TypeCode.Double:
                     v = paramGen.GenDouble(this.rnd, iteration);
@@ -93,7 +153,15 @@ namespace Test.ExecutionTests {
             switch (tc) {
             case TypeCode.Boolean:
                 return (bool)arg ? "true" : "false";
+            case TypeCode.Byte:
+            case TypeCode.SByte:
+            case TypeCode.Int16:
             case TypeCode.Int32:
+            case TypeCode.Int64:
+            case TypeCode.UInt16:
+            case TypeCode.UInt32:
+            case TypeCode.UInt64:
+            case TypeCode.Single:
             case TypeCode.Double:
                 return arg.ToString();
             case TypeCode.String:

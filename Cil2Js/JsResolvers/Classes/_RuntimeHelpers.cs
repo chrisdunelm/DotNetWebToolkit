@@ -22,6 +22,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             int inc;
             Func<int, string> getValue;
             switch (arrayElType.MetadataType) {
+            case MetadataType.Boolean:
+                inc = 1;
+                getValue = i => (initData[i] != 0) ? "true" : "false";
+                break;
             case MetadataType.Byte:
                 inc = 1;
                 getValue = i => initData[i].ToString();

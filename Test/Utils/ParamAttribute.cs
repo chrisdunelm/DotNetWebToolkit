@@ -16,11 +16,43 @@ namespace Test.Utils {
             throw new NotSupportedException();
         }
 
-        public virtual int GenInt32(Random rnd, int iteration) {
+        public virtual SByte GenSByte(Random rnd, int iteration) {
             throw new NotSupportedException();
         }
 
-        public virtual double GenDouble(Random rnd, int iteration) {
+        public virtual Byte GenByte(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual Int16 GenInt16(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual Int32 GenInt32(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual Int64 GenInt64(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual UInt16 GenUInt16(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual UInt32 GenUInt32(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual UInt64 GenUInt64(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual Single GenSingle(Random rnd, int iteration) {
+            throw new NotSupportedException();
+        }
+
+        public virtual Double GenDouble(Random rnd, int iteration) {
             throw new NotSupportedException();
         }
 
@@ -84,33 +116,84 @@ namespace Test.Utils {
             get { return 15; }
         }
 
-        public override int GenInt32(Random rnd, int iteration) {
-            switch (iteration) {
-            case 0: return int.MinValue;
-            case 1: return int.MaxValue;
-            case 2: return 0;
-            case 3: return 1;
-            case 4: return -1;
-            case 5: return int.MinValue + 1;
-            case 6: return int.MaxValue - 1;
-            default: return rnd.Next(int.MinValue + 2, int.MaxValue - 1);
+        private static T Gen<T>(T[] template, int iteration, Func<T> fnRnd) {
+            if (iteration < template.Length) {
+                return template[iteration];
+            } else {
+                return fnRnd();
             }
         }
 
+        private static SByte[] SByteValues = { SByte.MinValue, SByte.MaxValue, 0, 1, -1, SByte.MinValue + 1, SByte.MaxValue - 1 };
+        private static Byte[] ByteValues = { 0, 255, 1, 254 };
+        private static Int16[] Int16Values = { Int16.MinValue, Int16.MaxValue, 0, 1, -1, Int16.MinValue + 1, Int16.MaxValue - 1 };
+        private static Int32[] Int32Values = { int.MinValue, int.MaxValue, 0, 1, -1, int.MinValue + 1, int.MaxValue - 1 };
+        private static Int64[] Int64Values = {
+                                                 Int64.MinValue, Int64.MaxValue, Int64.MinValue + 1, Int64.MaxValue - 1,
+                                                 Int32.MinValue, Int32.MinValue - 1L, Int32.MaxValue, Int32.MaxValue + 1L,
+                                                 0, -1, 1, 
+                                             };
+        private static UInt16[] UInt16Values = { 0, UInt16.MaxValue, 1, UInt16.MaxValue - 1 };
+        private static UInt32[] UInt32Values = { 0, UInt32.MaxValue, 1, UInt32.MaxValue - 1 };
+        private static UInt64[] UInt64Values = { 
+                                                   0, UInt64.MaxValue, 1, UInt64.MaxValue - 1,
+                                                   int.MaxValue, int.MaxValue + 1L, uint.MaxValue, uint.MaxValue + 1L
+                                               };
+        private static Single[] SingleValues = {
+                                                   Single.NaN, Single.NegativeInfinity, Single.PositiveInfinity,
+                                                   Single.MaxValue, -Single.MaxValue, Single.MinValue, -Single.MinValue,
+                                                   0.0f, -1.0f, 1.0f
+                                               };
+        private static Double[] DoubleValues = {
+                                                   Double.NaN, Double.NegativeInfinity, Double.PositiveInfinity,
+                                                   Double.MaxValue, -Double.MaxValue, Double.MinValue, -Double.MinValue,
+                                                   0.0, -1.0, 1.0
+                                               };
+
+        private static byte[] Bc(Random rnd, int size) {
+            var b = new byte[size];
+            rnd.NextBytes(b);
+            return b;
+        }
+
+        public override sbyte GenSByte(Random rnd, int iteration) {
+            return Gen(SByteValues, iteration, () => (sbyte)rnd.Next(0, 256));
+        }
+
+        public override byte GenByte(Random rnd, int iteration) {
+            return Gen(ByteValues, iteration, () => (byte)rnd.Next(0, 256));
+        }
+
+        public override short GenInt16(Random rnd, int iteration) {
+            return Gen(Int16Values, iteration, () => (short)rnd.Next(short.MinValue + 2, short.MaxValue - 1));
+        }
+
+        public override int GenInt32(Random rnd, int iteration) {
+            return Gen(Int32Values, iteration, () => rnd.Next(int.MinValue + 2, int.MaxValue - 1));
+        }
+
+        public override long GenInt64(Random rnd, int iteration) {
+            return Gen(Int64Values, iteration, () => BitConverter.ToInt64(Bc(rnd, 8), 0));
+        }
+
+        public override ushort GenUInt16(Random rnd, int iteration) {
+            return Gen(UInt16Values, iteration, () => BitConverter.ToUInt16(Bc(rnd, 2), 0));
+        }
+
+        public override uint GenUInt32(Random rnd, int iteration) {
+            return Gen(UInt32Values, iteration, () => BitConverter.ToUInt32(Bc(rnd, 4), 0));
+        }
+
+        public override ulong GenUInt64(Random rnd, int iteration) {
+            return Gen(UInt64Values, iteration, () => BitConverter.ToUInt64(Bc(rnd, 8), 0));
+        }
+
+        public override float GenSingle(Random rnd, int iteration) {
+            return Gen(SingleValues, iteration, () => (float)(rnd.NextDouble() - 0.5) * float.MaxValue);
+        }
+
         public override double GenDouble(Random rnd, int iteration) {
-            switch (iteration) {
-            case 0: return double.NaN;
-            case 1: return double.NegativeInfinity;
-            case 2: return double.PositiveInfinity;
-            case 3: return double.MaxValue;
-            case 4: return -double.MaxValue;
-            case 5: return double.MinValue;
-            case 6: return -double.MinValue;
-            case 7: return 0.0;
-            case 8: return 1.0;
-            case 9: return -1.0;
-            default: return (rnd.NextDouble() - 0.5) * double.MaxValue;
-            }
+            return Gen(DoubleValues, iteration, () => (rnd.NextDouble() - 0.5) * double.MaxValue);
         }
 
     }

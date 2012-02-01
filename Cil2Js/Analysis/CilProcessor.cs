@@ -17,6 +17,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.locals = locals;
             this.args = args;
             this.instResults = instResults;
+            this.localTypes = ctx.MDef.Body.Variables.Select(x => x.VariableType.FullResolve(ctx)).ToArray();
         }
 
         private Ctx ctx;
@@ -25,6 +26,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private Dictionary<Instruction, ExprVarInstResult> instResults;
         private int constrainted = 0;
         private TypeReference constrainedType = null;
+        private TypeReference[] localTypes;
 
         private TypeReference ConstrainedType {
             get {
@@ -60,9 +62,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Ldc_I4_8:
                 return this.Const(8, this.ctx.TypeSystem.Int32);
             case Code.Ldc_I4_S:
-                return this.Const((int)(sbyte)inst.Operand, this.ctx.TypeSystem.Int32);
+                return this.Const((int)(sbyte)inst.Operand, this.ctx.Int32);
             case Code.Ldc_I4:
-                return this.Const((int)inst.Operand, this.ctx.TypeSystem.Int32);
+                return this.Const((int)inst.Operand, this.ctx.Int32);
+            case Code.Ldc_I8:
+                return this.Const((long)inst.Operand, this.ctx.Int64);
             case Code.Ldc_R8:
                 return this.Const((double)inst.Operand, this.ctx.TypeSystem.Double);
             case Code.Ldnull:
@@ -252,6 +256,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Conv(this.ctx.UInt64);
             case Code.Conv_U:
                 return this.Conv(this.ctx.UIntPtr);
+            case Code.Conv_R4:
+                return this.Conv(this.ctx.Single);
+            case Code.Conv_R8:
+                return this.Conv(this.ctx.Double);
             case Code.Castclass:
                 return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Isinst:
@@ -337,14 +345,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt LdLoca(int idx) {
-            var type = this.ctx.MDef.Body.Variables[idx].VariableType.FullResolve(this.ctx);
+            var type = this.localTypes[idx];
             var expr = new ExprVariableAddress(this.ctx, idx, type);
             this.stack.Push(expr);
             return null;
         }
 
         private Stmt StLoc(int idx) {
-            var expr = this.stack.Pop();
+            var expr = this.InsertConvIfRequired(this.stack.Pop(), this.localTypes[idx]);
             var target = new ExprVarLocal(this.ctx, expr.Type);
             var assignment = new StmtAssignment(this.ctx, target, expr);
             this.locals[idx] = target;
@@ -395,6 +403,17 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return this.SsaLocalAssignment(expr);
         }
 
+        private Expr InsertConvIfRequired(Expr expr, TypeReference requiredType) {
+            if (requiredType.IsSame(expr.Type)) {
+                return expr;
+            }
+            if (!requiredType.IsNumeric() || !expr.Type.IsNumeric()) {
+                throw new InvalidOperationException("Only numeric types can be converted");
+            }
+            var conv = new ExprConv(this.ctx, expr, requiredType);
+            return conv;
+        }
+
         private Stmt Call(Instruction inst, bool isVirtualCallInst) {
             var callingRef = ((MethodReference)inst.Operand).FullResolve(this.ctx);
             bool isVirtualCall = isVirtualCallInst && callingRef.Resolve().IsVirtual;
@@ -408,7 +427,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 if (argType.IsGenericParameter) {
                     throw new InvalidOperationException();
                 }
-                argExprs[i] = this.DerefIfPointer(argExprs[i]);
+                argExprs[i] = this.InsertConvIfRequired(this.DerefIfPointer(argExprs[i]), argType);
             }
             var obj = callingRef.HasThis ? this.DerefIfPointer(this.stack.Pop()) : null;
             var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall, this.ConstrainedType);

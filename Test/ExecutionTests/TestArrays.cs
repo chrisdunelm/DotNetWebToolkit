@@ -228,5 +228,14 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestArrayInitialisationBool() {
+            Func<string> f = () => {
+                var a = new bool[] { true, true, false, true, false, false, false, true };
+                return a[0].ToString() + a[1] + a[2] + a[3] + a[4] + a[5] + a[6] + a[7];
+            };
+            this.Test(f);
+        }
+
     }
 }

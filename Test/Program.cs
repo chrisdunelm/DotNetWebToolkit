@@ -74,8 +74,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestArrays() { Verbose = true };
-            t.TestArrayInitialisationSByte();
+            var t = new TestConv() { Verbose = true };
+            t.TestInt32ToSingle();
             return;
 
         }

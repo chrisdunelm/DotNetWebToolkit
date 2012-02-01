@@ -97,6 +97,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var astOrg = ast;
                     ast = VisitorJsRewriteSealedVCalls.V(ast);
                     ast = VisitorJsResolveAll.V(ast);
+                    ast = VisitorJsResolveConv.V(ast);
                     if (ast == astOrg) {
                         break;
                     }
