@@ -107,7 +107,7 @@ namespace Test.ExecutionTests {
             return (Int32)v;
         }
 
-        [Test]
+        [Test, Ignore("64-bit values not yet properly supported")]
         public void TestByteToInt64() {
             this.Test((Func<Byte, Int64>)TestByteToInt64Func);
         }
@@ -297,6 +297,438 @@ namespace Test.ExecutionTests {
         }
         private static Double TestInt32ToDoubleFunc([ParamFullRange]Int32 v) {
             return (Double)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToSByte() {
+            this.Test((Func<Int64, SByte>)TestInt64ToSByteFunc);
+        }
+        private static SByte TestInt64ToSByteFunc([ParamFullRange]Int64 v) {
+            return (SByte)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToByte() {
+            this.Test((Func<Int64, Byte>)TestInt64ToByteFunc);
+        }
+        private static Byte TestInt64ToByteFunc([ParamFullRange]Int64 v) {
+            return (Byte)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToInt16() {
+            this.Test((Func<Int64, Int16>)TestInt64ToInt16Func);
+        }
+        private static Int16 TestInt64ToInt16Func([ParamFullRange]Int64 v) {
+            return (Int16)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToInt32() {
+            this.Test((Func<Int64, Int32>)TestInt64ToInt32Func);
+        }
+        private static Int32 TestInt64ToInt32Func([ParamFullRange]Int64 v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToUInt16() {
+            this.Test((Func<Int64, UInt16>)TestInt64ToUInt16Func);
+        }
+        private static UInt16 TestInt64ToUInt16Func([ParamFullRange]Int64 v) {
+            return (UInt16)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToUInt32() {
+            this.Test((Func<Int64, UInt32>)TestInt64ToUInt32Func);
+        }
+        private static UInt32 TestInt64ToUInt32Func([ParamFullRange]Int64 v) {
+            return (UInt32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToUInt64() {
+            this.Test((Func<Int64, UInt64>)TestInt64ToUInt64Func);
+        }
+        private static UInt64 TestInt64ToUInt64Func([ParamFullRange]Int64 v) {
+            return (UInt64)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToSingle() {
+            this.Test((Func<Int64, Single>)TestInt64ToSingleFunc);
+        }
+        private static Single TestInt64ToSingleFunc([ParamFullRange]Int64 v) {
+            return (Single)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestInt64ToDouble() {
+            this.Test((Func<Int64, Double>)TestInt64ToDoubleFunc);
+        }
+        private static Double TestInt64ToDoubleFunc([ParamFullRange]Int64 v) {
+            return (Double)v;
+        }
+
+        [Test]
+        public void TestUInt16ToSByte() {
+            this.Test((Func<UInt16, SByte>)TestUInt16ToSByteFunc);
+        }
+        private static SByte TestUInt16ToSByteFunc([ParamFullRange]UInt16 v) {
+            return (SByte)v;
+        }
+
+        [Test]
+        public void TestUInt16ToByte() {
+            this.Test((Func<UInt16, Byte>)TestUInt16ToByteFunc);
+        }
+        private static Byte TestUInt16ToByteFunc([ParamFullRange]UInt16 v) {
+            return (Byte)v;
+        }
+
+        [Test]
+        public void TestUInt16ToInt16() {
+            this.Test((Func<UInt16, Int16>)TestUInt16ToInt16Func);
+        }
+        private static Int16 TestUInt16ToInt16Func([ParamFullRange]UInt16 v) {
+            return (Int16)v;
+        }
+
+        [Test]
+        public void TestUInt16ToInt32() {
+            this.Test((Func<UInt16, Int32>)TestUInt16ToInt32Func);
+        }
+        private static Int32 TestUInt16ToInt32Func([ParamFullRange]UInt16 v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt16ToInt64() {
+            this.Test((Func<UInt16, Int64>)TestUInt16ToInt64Func);
+        }
+        private static Int64 TestUInt16ToInt64Func([ParamFullRange]UInt16 v) {
+            return (Int64)v;
+        }
+
+        [Test]
+        public void TestUInt16ToUInt32() {
+            this.Test((Func<UInt16, UInt32>)TestUInt16ToUInt32Func);
+        }
+        private static UInt32 TestUInt16ToUInt32Func([ParamFullRange]UInt16 v) {
+            return (UInt32)v;
+        }
+
+        [Test]
+        public void TestUInt16ToUInt64() {
+            this.Test((Func<UInt16, UInt64>)TestUInt16ToUInt64Func);
+        }
+        private static UInt64 TestUInt16ToUInt64Func([ParamFullRange]UInt16 v) {
+            return (UInt64)v;
+        }
+
+        [Test]
+        public void TestUInt16ToSingle() {
+            this.Test((Func<UInt16, Single>)TestUInt16ToSingleFunc);
+        }
+        private static Single TestUInt16ToSingleFunc([ParamFullRange]UInt16 v) {
+            return (Single)v;
+        }
+
+        [Test]
+        public void TestUInt16ToDouble() {
+            this.Test((Func<UInt16, Double>)TestUInt16ToDoubleFunc);
+        }
+        private static Double TestUInt16ToDoubleFunc([ParamFullRange]UInt16 v) {
+            return (Double)v;
+        }
+
+        [Test]
+        public void TestUInt32ToSByte() {
+            this.Test((Func<UInt32, SByte>)TestUInt32ToSByteFunc);
+        }
+        private static SByte TestUInt32ToSByteFunc([ParamFullRange]UInt32 v) {
+            return (SByte)v;
+        }
+
+        [Test]
+        public void TestUInt32ToByte() {
+            this.Test((Func<UInt32, Byte>)TestUInt32ToByteFunc);
+        }
+        private static Byte TestUInt32ToByteFunc([ParamFullRange]UInt32 v) {
+            return (Byte)v;
+        }
+
+        [Test]
+        public void TestUInt32ToInt16() {
+            this.Test((Func<UInt32, Int16>)TestUInt32ToInt16Func);
+        }
+        private static Int16 TestUInt32ToInt16Func([ParamFullRange]UInt32 v) {
+            return (Int16)v;
+        }
+
+        [Test]
+        public void TestUInt32ToInt32() {
+            this.Test((Func<UInt32, Int32>)TestUInt32ToInt32Func);
+        }
+        private static Int32 TestUInt32ToInt32Func([ParamFullRange]UInt32 v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt32ToInt64() {
+            this.Test((Func<UInt32, Int64>)TestUInt32ToInt64Func);
+        }
+        private static Int64 TestUInt32ToInt64Func([ParamFullRange]UInt32 v) {
+            return (Int64)v;
+        }
+
+        [Test]
+        public void TestUInt32ToUInt16() {
+            this.Test((Func<UInt32, UInt16>)TestUInt32ToUInt16Func);
+        }
+        private static UInt16 TestUInt32ToUInt16Func([ParamFullRange]UInt32 v) {
+            return (UInt16)v;
+        }
+
+        [Test]
+        public void TestUInt32ToUInt64() {
+            this.Test((Func<UInt32, UInt64>)TestUInt32ToUInt64Func);
+        }
+        private static UInt64 TestUInt32ToUInt64Func([ParamFullRange]UInt32 v) {
+            return (UInt64)v;
+        }
+
+        [Test]
+        public void TestUInt32ToSingle() {
+            this.Test((Func<UInt32, Single>)TestUInt32ToSingleFunc);
+        }
+        private static Single TestUInt32ToSingleFunc([ParamFullRange]UInt32 v) {
+            return (Single)v;
+        }
+
+        [Test]
+        public void TestUInt32ToDouble() {
+            this.Test((Func<UInt32, Double>)TestUInt32ToDoubleFunc);
+        }
+        private static Double TestUInt32ToDoubleFunc([ParamFullRange]UInt32 v) {
+            return (Double)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToSByte() {
+            this.Test((Func<UInt64, SByte>)TestUInt64ToSByteFunc);
+        }
+        private static SByte TestUInt64ToSByteFunc([ParamFullRange]UInt64 v) {
+            return (SByte)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToByte() {
+            this.Test((Func<UInt64, Byte>)TestUInt64ToByteFunc);
+        }
+        private static Byte TestUInt64ToByteFunc([ParamFullRange]UInt64 v) {
+            return (Byte)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToInt16() {
+            this.Test((Func<UInt64, Int16>)TestUInt64ToInt16Func);
+        }
+        private static Int16 TestUInt64ToInt16Func([ParamFullRange]UInt64 v) {
+            return (Int16)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToInt32() {
+            this.Test((Func<UInt64, Int32>)TestUInt64ToInt32Func);
+        }
+        private static Int32 TestUInt64ToInt32Func([ParamFullRange]UInt64 v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToInt64() {
+            this.Test((Func<UInt64, Int64>)TestUInt64ToInt64Func);
+        }
+        private static Int64 TestUInt64ToInt64Func([ParamFullRange]UInt64 v) {
+            return (Int64)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToUInt16() {
+            this.Test((Func<UInt64, UInt16>)TestUInt64ToUInt16Func);
+        }
+        private static UInt16 TestUInt64ToUInt16Func([ParamFullRange]UInt64 v) {
+            return (UInt16)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToUInt32() {
+            this.Test((Func<UInt64, UInt32>)TestUInt64ToUInt32Func);
+        }
+        private static UInt32 TestUInt64ToUInt32Func([ParamFullRange]UInt64 v) {
+            return (UInt32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToSingle() {
+            this.Test((Func<UInt64, Single>)TestUInt64ToSingleFunc);
+        }
+        private static Single TestUInt64ToSingleFunc([ParamFullRange]UInt64 v) {
+            return (Single)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestUInt64ToDouble() {
+            this.Test((Func<UInt64, Double>)TestUInt64ToDoubleFunc);
+        }
+        private static Double TestUInt64ToDoubleFunc([ParamFullRange]UInt64 v) {
+            return (Double)v;
+        }
+
+        [Test]
+        public void TestSingleToSByte() {
+            this.Test((Func<Single, SByte>)TestSingleToSByteFunc);
+        }
+        private static SByte TestSingleToSByteFunc([ParamFullRange]Single v) {
+            return (SByte)v;
+        }
+
+        [Test]
+        public void TestSingleToByte() {
+            this.Test((Func<Single, Byte>)TestSingleToByteFunc);
+        }
+        private static Byte TestSingleToByteFunc([ParamFullRange]Single v) {
+            return (Byte)v;
+        }
+
+        [Test]
+        public void TestSingleToInt16() {
+            this.Test((Func<Single, Int16>)TestSingleToInt16Func);
+        }
+        private static Int16 TestSingleToInt16Func([ParamFullRange]Single v) {
+            return (Int16)v;
+        }
+
+        [Test, Ignore("Undefined values differ")]
+        public void TestSingleToInt32() {
+            this.Test((Func<Single, Int32>)TestSingleToInt32Func);
+        }
+        private static Int32 TestSingleToInt32Func([ParamFullRange]Single v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestSingleToInt64() {
+            this.Test((Func<Single, Int64>)TestSingleToInt64Func);
+        }
+        private static Int64 TestSingleToInt64Func([ParamFullRange]Single v) {
+            return (Int64)v;
+        }
+
+        [Test]
+        public void TestSingleToUInt16() {
+            this.Test((Func<Single, UInt16>)TestSingleToUInt16Func);
+        }
+        private static UInt16 TestSingleToUInt16Func([ParamFullRange]Single v) {
+            return (UInt16)v;
+        }
+
+        [Test]
+        public void TestSingleToUInt32() {
+            this.Test((Func<Single, UInt32>)TestSingleToUInt32Func);
+        }
+        private static UInt32 TestSingleToUInt32Func([ParamFullRange]Single v) {
+            return (UInt32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestSingleToUInt64() {
+            this.Test((Func<Single, UInt64>)TestSingleToUInt64Func);
+        }
+        private static UInt64 TestSingleToUInt64Func([ParamFullRange]Single v) {
+            return (UInt64)v;
+        }
+
+        [Test, Ignore("NaN fails")]
+        public void TestSingleToDouble() {
+            this.Test((Func<Single, Double>)TestSingleToDoubleFunc);
+        }
+        private static Double TestSingleToDoubleFunc([ParamFullRange]Single v) {
+            return (Double)v;
+        }
+
+        [Test]
+        public void TestDoubleToSByte() {
+            this.Test((Func<Double, SByte>)TestDoubleToSByteFunc);
+        }
+        private static SByte TestDoubleToSByteFunc([ParamFullRange]Double v) {
+            return (SByte)v;
+        }
+
+        [Test]
+        public void TestDoubleToByte() {
+            this.Test((Func<Double, Byte>)TestDoubleToByteFunc);
+        }
+        private static Byte TestDoubleToByteFunc([ParamFullRange]Double v) {
+            return (Byte)v;
+        }
+
+        [Test]
+        public void TestDoubleToInt16() {
+            this.Test((Func<Double, Int16>)TestDoubleToInt16Func);
+        }
+        private static Int16 TestDoubleToInt16Func([ParamFullRange]Double v) {
+            return (Int16)v;
+        }
+
+        [Test, Ignore("Undefined values differ")]
+        public void TestDoubleToInt32() {
+            this.Test((Func<Double, Int32>)TestDoubleToInt32Func);
+        }
+        private static Int32 TestDoubleToInt32Func([ParamFullRange]Double v) {
+            return (Int32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestDoubleToInt64() {
+            this.Test((Func<Double, Int64>)TestDoubleToInt64Func);
+        }
+        private static Int64 TestDoubleToInt64Func([ParamFullRange]Double v) {
+            return (Int64)v;
+        }
+
+        [Test]
+        public void TestDoubleToUInt16() {
+            this.Test((Func<Double, UInt16>)TestDoubleToUInt16Func);
+        }
+        private static UInt16 TestDoubleToUInt16Func([ParamFullRange]Double v) {
+            return (UInt16)v;
+        }
+
+        [Test]
+        public void TestDoubleToUInt32() {
+            this.Test((Func<Double, UInt32>)TestDoubleToUInt32Func);
+        }
+        private static UInt32 TestDoubleToUInt32Func([ParamFullRange]Double v) {
+            return (UInt32)v;
+        }
+
+        [Test, Ignore("64-bit values not yet properly supported")]
+        public void TestDoubleToUInt64() {
+            this.Test((Func<Double, UInt64>)TestDoubleToUInt64Func);
+        }
+        private static UInt64 TestDoubleToUInt64Func([ParamFullRange]Double v) {
+            return (UInt64)v;
+        }
+
+        [Test, Ignore("NaN fails")]
+        public void TestDoubleToSingle() {
+            this.Test((Func<Double, Single>)TestDoubleToSingleFunc);
+        }
+        private static Single TestDoubleToSingleFunc([ParamFullRange]Double v) {
+            return (Single)v;
         }
 
     }

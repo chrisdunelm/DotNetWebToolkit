@@ -329,7 +329,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var expr = (Expr)this.Visit(e.Expr);
             if (expr != e.Expr) {
-                return new ExprConv(e.Ctx, expr, e.Type);
+                return new ExprConv(e.Ctx, expr, e.Type, e.ForceFromUnsigned);
             } else {
                 return e;
             }

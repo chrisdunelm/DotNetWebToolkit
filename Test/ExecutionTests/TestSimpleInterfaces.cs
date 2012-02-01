@@ -8,7 +8,7 @@ using Test.Utils;
 namespace Test.ExecutionTests {
 
     [TestFixture]
-    class TestSimpleInterfaces : ExecutionTestBase {
+    public class TestSimpleInterfaces : ExecutionTestBase {
 
         class CTestInterface {
             public interface I {

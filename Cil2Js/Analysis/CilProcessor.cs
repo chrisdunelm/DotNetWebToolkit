@@ -260,6 +260,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Conv(this.ctx.Single);
             case Code.Conv_R8:
                 return this.Conv(this.ctx.Double);
+            case Code.Conv_R_Un:
+                return this.Conv(this.ctx.Double, true);
             case Code.Castclass:
                 return this.Cast(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Isinst:
@@ -386,9 +388,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return assignment;
         }
 
-        private Stmt Conv(TypeReference convTo) {
+        private Stmt Conv(TypeReference convTo, bool forceFromUnsigned = false) {
             var expr = this.stack.Pop();
-            var conv = new ExprConv(this.ctx, expr, convTo);
+            var conv = new ExprConv(this.ctx, expr, convTo, forceFromUnsigned);
             return this.SsaLocalAssignment(conv);
         }
 
@@ -408,9 +410,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return expr;
             }
             if (!requiredType.IsNumeric() || !expr.Type.IsNumeric()) {
-                throw new InvalidOperationException("Only numeric types can be converted");
+                return expr;
+                //throw new InvalidOperationException("Only numeric types can be converted");
             }
-            var conv = new ExprConv(this.ctx, expr, requiredType);
+            var conv = new ExprConv(this.ctx, expr, requiredType, false);
             return conv;
         }
 

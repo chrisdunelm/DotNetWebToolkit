@@ -278,6 +278,17 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
                     }
                     break;
+                case MetadataType.Single:
+                case MetadataType.Double:
+                    switch (tTo.MetadataType) {
+                    case MetadataType.UInt32:
+                        useTemp = true;
+                        js = "{1}=~~{0};return {1}>=0?{1}:" + (UInt32.MaxValue + 1L) + "+{1};";
+                        break;
+                    default:
+                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
+                    }
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle TIn: " + tFrom.MetadataType);
                 }
