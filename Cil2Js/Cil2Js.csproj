@@ -162,6 +162,7 @@
     <Compile Include="JsResolvers\Classes\_Double.cs" />
     <Compile Include="JsResolvers\Classes\_Environment.cs" />
     <Compile Include="JsResolvers\Classes\_EqualityComparer.cs" />
+    <Compile Include="JsResolvers\Classes\_Int64.cs" />
     <Compile Include="JsResolvers\Classes\_Number.cs" />
     <Compile Include="JsResolvers\Classes\_NumberFormatInfo.cs" />
     <Compile Include="JsResolvers\Classes\_Object.cs" />
