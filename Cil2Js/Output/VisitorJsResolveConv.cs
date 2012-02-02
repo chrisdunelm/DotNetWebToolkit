@@ -25,10 +25,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e.Expr;
         }
 
-        private static Expr DblNot(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(~~{0})", e.Type, e.Expr);
-        }
-
         private static Expr CConv(ExprConv e) {
             var ctx = e.Ctx;
             var convMi = ((Func<int, int>)InternalFunctions.Conv<int, int>).Method.GetGenericMethodDefinition();
@@ -97,6 +93,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return new ExprJsExplicit(e.Ctx, "({0}&0xffff)", e.Type, e.Expr);
         }
 
+        private static Expr U32_I32(ExprConv e) {
+            return new ExprJsExplicit(e.Ctx, "(~~{0})", e.Type, e.Expr);
+        }
+
         private static Expr R_I8(ExprConv e) {
             return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
         }
@@ -126,7 +126,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             { I32_I8 , I32_U8 , I32_I16, Iden   , Iden   , I32_U16, CConv  , CConv  , Iden   , Iden    }, // Int32  From
             { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden    }, // Int64
             { U16_I8 , U16_U8 , U16_I16, Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden    }, // UInt16
-            { U32_I8 , U32_U8 , U32_I16, DblNot , Iden   , U32_U16, Iden   , Iden   , Iden   , Iden    }, // UInt32
+            { U32_I8 , U32_U8 , U32_I16, U32_I32, Iden   , U32_U16, Iden   , Iden   , Iden   , Iden    }, // UInt32
             { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // UInt64
             { R_I8   , R_U8   , R_I16  , R_I32  , NotImpl, R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Single
             { R_I8   , R_U8   , R_I16  , R_I32  , NotImpl, R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Double
