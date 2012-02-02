@@ -117,13 +117,21 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return new ExprJsExplicit(e.Ctx, "({0}&0xffff)", e.Type, e.Expr);
         }
 
+        private static Expr I32_I64(ExprConv e) {
+            var ctx = e.Ctx;
+            var hi = new ExprJsFieldVarName(ctx, ctx._Int64.GetField("hi"));
+            var lo = new ExprJsFieldVarName(ctx, ctx._Int64.GetField("lo"));
+            var js = "{{{1}:{0}>=0?0:-1,{2}:{0}}}";
+            return new ExprJsExplicit(ctx, js, ctx.Int64, e.Expr, hi, lo);
+        }
+
         private static Func<ExprConv, Expr>[,] convs =
         {  // --> To
            // SByte    Byte     Int16    Int32    Int64    UInt16   UInt32   UInt64   Single   Double
             { Iden   , CConv  , Iden   , Iden   , Iden   , CConv  , CConv  , CConv  , Iden   , Iden    }, // SByte  |
             { CConv  , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden    }, // Byte   |
             { I16_I8 , I16_U8 , Iden   , Iden   , Iden   , I16_U16, CConv  , CConv  , Iden   , Iden    }, // Int16  V
-            { I32_I8 , I32_U8 , I32_I16, Iden   , Iden   , I32_U16, CConv  , CConv  , Iden   , Iden    }, // Int32  From
+            { I32_I8 , I32_U8 , I32_I16, Iden   , I32_I64, I32_U16, CConv  , CConv  , Iden   , Iden    }, // Int32  From
             { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden    }, // Int64
             { U16_I8 , U16_U8 , U16_I16, Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden    }, // UInt16
             { U32_I8 , U32_U8 , U32_I16, U32_I32, Iden   , U32_U16, Iden   , Iden   , Iden   , Iden    }, // UInt32

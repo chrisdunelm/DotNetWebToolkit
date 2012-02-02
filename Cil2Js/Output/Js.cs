@@ -253,6 +253,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
+            // Make sure fields of _Int64 and _UInt64 are names
+            var special64Bits = typesSeen.Keys.Where(x => {
+                var revMapped = JsResolver.ReverseTypeMap(x);
+                return revMapped.IsInt64() || revMapped.IsUInt64();
+            }).ToArray();
+            foreach (var bit64 in special64Bits) {
+                var hi = bit64.GetField("hi");
+                var lo = bit64.GetField("lo");
+                // TODO: Counts are not correct (and this whole thing can probably be done better)
+                if (!fieldAccesses.ContainsKey(hi)) {
+                    fieldAccesses.Add(hi, 1);
+                }
+                if (!fieldAccesses.ContainsKey(lo)) {
+                    fieldAccesses.Add(lo, 1);
+                }
+            }
+
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
                 .ToLookup(x => x.Key.DeclaringType.FullResolve(x.Key), TypeExtensions.TypeRefEqComparerInstance);

@@ -181,16 +181,11 @@
     <Compile Include="JsResolvers\JsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsResolvers\JsCallResolver.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="JsResolvers\JsIncompleteAttribute.cs" />
     <Compile Include="JsResolvers\JsResolverMap.cs" />
-    <Compile Include="JsResolvers\JsTypeResolver.cs" />
     <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsResolvers\JsMethodResolver.cs" />
     <Compile Include="JsResolvers\JsResolver.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />

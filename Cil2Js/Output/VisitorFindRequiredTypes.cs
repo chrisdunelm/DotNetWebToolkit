@@ -52,5 +52,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitRuntimeHandle(e);
         }
 
+        protected override ICode VisitLiteral(ExprLiteral e) {
+            switch (e.Type.MetadataType) {
+            case MetadataType.Int64:
+                this.types.Add(e.Ctx._Int64);
+                break;
+            case MetadataType.UInt64:
+                this.types.Add(e.Ctx._UInt64);
+                break;
+            }
+            return e;
+        }
+
     }
 }

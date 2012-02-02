@@ -276,6 +276,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case MetadataType.Boolean:
                     value = (bool)e.Value ? "true" : "false";
                     break;
+                case MetadataType.Int64:
+                    var hi = e.Ctx._Int64.GetField("hi");
+                    var lo = e.Ctx._Int64.GetField("lo");
+                    var i64 = (Int64)e.Value;
+                    value = string.Format("{{{0}:{2},{1}:{3}}}",
+                        this.resolver.FieldNames[hi], this.resolver.FieldNames[lo],
+                        (i64 >> 32) & 0xffffffffL, i64 & 0xffffffffL);
+                    break;
                 default:
                     value = e.Value;
                     break;

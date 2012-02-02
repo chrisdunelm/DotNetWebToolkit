@@ -224,7 +224,14 @@ namespace Test.ExecutionTests {
                         var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
                         var jsResult = chrome.ExecuteScript(js + jsCall);
                         if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                            jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                            if (d.Method.ReturnType == typeof(Int64)) {
+                                var dict = (Dictionary<string,object>)jsResult;
+                                var hi = (ulong)Convert.ChangeType(dict["a"], typeof(ulong));
+                                var lo = (ulong)Convert.ChangeType(dict["b"], typeof(ulong));
+                                jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
+                            } else {
+                                jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                            }
                         }
                         EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
                         IResolveConstraint expected = equalTo;

@@ -74,8 +74,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestCasting() { Verbose = true };
-            t.TestNullCast();
+            var t = new TestInt64() { Verbose = true };
+            t.TestSimpleReturnLargeNeg();
             return;
 
         }

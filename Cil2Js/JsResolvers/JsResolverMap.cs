@@ -15,6 +15,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(bool), typeof(Cls._Boolean) },
             { typeof(char), typeof(Cls._Char) },
             { typeof(string), typeof(Cls._String) },
+            { typeof(long), typeof(Cls._Int64) },
             { typeof(double), typeof(Cls._Double) },
             { typeof(StringBuilder), typeof(Cls._StringBuilder) },
             { typeof(object), typeof(Cls._Object) },

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
@@ -17,6 +18,8 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.ExprGen = Expr.CreateExprGen(this);
             this.This = this.MDef.IsStatic ? null : new ExprVarThis(this, tRef);
             this.type = new Lazy<TypeReference>(() => this.Module.Import(typeof(Type)));
+            this._int64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_Int64)));
+            this._uint64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_UInt64)));
         }
 
         public TypeReference TRef { get; private set; }
@@ -51,6 +54,10 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         private Lazy<TypeReference> type;
         public TypeReference Type { get { return this.type.Value; } }
+        private Lazy<TypeReference> _int64;
+        public TypeReference _Int64 { get { return this._int64.Value; } }
+        private Lazy<TypeReference> _uint64;
+        public TypeReference _UInt64 { get { return this._uint64.Value; } }
 
         public ExprVarParameter MethodParameter(int index) {
             return new ExprVarParameter(this, this.MRef.Parameters[index]);
