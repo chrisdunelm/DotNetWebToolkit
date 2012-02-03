@@ -39,17 +39,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return new ExprJsExplicit(e.Ctx, "(e<0?limit+e:e)", e.Type, e.Expr.Named("e"), limit);
         }
 
-        private static Expr I8_X64(ExprConv e) {
-            var ctx = e.Ctx;
-            var max = ctx.Literal(0xffffffffU, ctx.UInt32, "max");
-            var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
-            return new ExprJsExplicit(ctx, "(e<0?[max,limit+e]:[0,e])", e.Type, e.Expr.Named("e"), max, limit);
-        }
-
-        private static Expr U8_X64(ExprConv e) {
-            var ctx = e.Ctx;
-            return new ExprJsExplicit(e.Ctx, "[0,e]", e.Type, e.Expr.Named("e"));
-        }
+        //private static Expr U8_X64(ExprConv e) {
+        //    var ctx = e.Ctx;
+        //    return new ExprJsExplicit(e.Ctx, "[0,e]", e.Type, e.Expr.Named("e"));
+        //}
 
         private static Expr I16_I8(ExprConv e) {
             return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
@@ -115,6 +108,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return new ExprJsExplicit(e.Ctx, "(~~a)", e.Type, e.Expr.Named("a"));
         }
 
+        private static Expr Ix_X64(ExprConv e) {
+            var ctx = e.Ctx;
+            var max = ctx.Literal(0xffffffffU, ctx.UInt32, "max");
+            var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
+            return new ExprJsExplicit(ctx, "(e<0?[max,limit+e]:[0,e])", e.Type, e.Expr.Named("e"), max, limit);
+        }
+
+        private static Expr Ux_X64(ExprConv e) {
+            return new ExprJsExplicit(e.Ctx, "[0,e]", e.Type, e.Expr.Named("e"));
+        }
+
         private static Expr R_I8(ExprConv e) {
             return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
@@ -144,25 +148,25 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         private static Func<ExprConv, Expr>[,] convs =
         {  // --> To
-           // SByte    Byte     Int16    Int32    Int64    UInt16   UInt32   UInt64   Single   Double
-            { Iden   , CConv  , Iden   , Iden   , I8_X64 , CConv  , I8_U32 , I8_X64 , Iden   , Iden    }, // SByte  |
-            { CConv  , Iden   , Iden   , Iden   , U8_X64 , Iden   , Iden   , U8_X64 , Iden   , Iden    }, // Byte   |
-            { I16_I8 , I16_U8 , Iden   , Iden   , Iden   , I16_U16, CConv  , CConv  , Iden   , Iden    }, // Int16  V
-            { I32_I8 , I32_U8 , I32_I16, Iden   , I32_I64, I32_U16, CConv  , CConv  , Iden   , Iden    }, // Int32  From
-            { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden    }, // Int64
-            { U16_I8 , U16_U8 , U16_I16, Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden    }, // UInt16
-            { U32_I8 , U32_U8 , U32_I16, U32_I32, Iden   , U32_U16, Iden   , Iden   , Iden   , Iden    }, // UInt32
-            { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // UInt64
-            { R_I8   , R_U8   , R_I16  , R_I32  , NotImpl, R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Single
-            { R_I8   , R_U8   , R_I16  , R_I32  , NotImpl, R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Double
+           // Int8     Int16    Int32    Int64    UInt8    UInt16   UInt32   UInt64   Single   Double
+            { Iden   , Iden   , Iden   , Ix_X64 , CConv  , CConv  , I8_U32 , Ix_X64 , Iden   , Iden    }, // Int8   |
+            { I16_I8 , Iden   , Iden   , Ix_X64 , I16_U8 , I16_U16, CConv  , Ix_X64 , Iden   , Iden    }, // Int16  |
+            { I32_I8 , I32_I16, Iden   , Ix_X64 , I32_U8 , I32_U16, CConv  , Ix_X64 , Iden   , Iden    }, // Int32  V
+            { NotImpl, NotImpl, NotImpl, Iden   , NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // Int64  From
+            { CConv  , Iden   , Iden   , Ux_X64 , Iden   , Iden   , Iden   , Ux_X64 , Iden   , Iden    }, // UInt8
+            { U16_I8 , U16_I16, Iden   , Ux_X64 , U16_U8 , Iden   , Iden   , Ux_X64 , Iden   , Iden    }, // UInt16
+            { U32_I8 , U32_I16, U32_I32, Ux_X64 , U32_U8 , U32_U16, Iden   , Ux_X64 , Iden   , Iden    }, // UInt32
+            { NotImpl, NotImpl, NotImpl, Iden   , NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // UInt64
+            { R_I8   , R_I16  , R_I32  , NotImpl, R_U8   , R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Single
+            { R_I8   , R_I16  , R_I32  , NotImpl, R_U8   , R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Double
         };
 
         private static Dictionary<MetadataType, int> indexMap = new Dictionary<MetadataType, int> {
             { MetadataType.SByte, 0 },
-            { MetadataType.Byte, 1 },
-            { MetadataType.Int16, 2 },
-            { MetadataType.Int32, 3 },
-            { MetadataType.Int64, 4 },
+            { MetadataType.Int16, 1 },
+            { MetadataType.Int32, 2 },
+            { MetadataType.Int64, 3 },
+            { MetadataType.Byte, 4 },
             { MetadataType.UInt16, 5 },
             { MetadataType.UInt32, 6 },
             { MetadataType.UInt64, 7 },
