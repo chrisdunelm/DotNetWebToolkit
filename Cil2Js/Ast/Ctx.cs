@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
+using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
@@ -28,6 +29,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public MethodDefinition MDef { get; private set; }
 
         public ExprVarThis This { get; private set; }
+        public NamedExpr ThisNamed { get { return this.This.Named("this"); } }
 
         public ModuleDefinition Module { get; private set; }
         public TypeSystem TypeSystem { get; private set; }
@@ -61,6 +63,26 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public ExprVarParameter MethodParameter(int index) {
             return new ExprVarParameter(this, this.MRef.Parameters[index]);
+        }
+
+        public NamedExpr MethodParameter(int index, string name) {
+            return this.MethodParameter(index).Named(name);
+        }
+
+        public ExprVarLocal Local(TypeReference type) {
+            return new ExprVarLocal(this, type);
+        }
+
+        public NamedExpr Local(TypeReference type, string name) {
+            return this.Local(type).Named(name);
+        }
+
+        public ExprLiteral Literal(object value, TypeReference type) {
+            return new ExprLiteral(this, value, type);
+        }
+
+        public NamedExpr Literal(object value, TypeReference type, string name) {
+            return this.Literal(value, type).Named(name);
         }
 
     }

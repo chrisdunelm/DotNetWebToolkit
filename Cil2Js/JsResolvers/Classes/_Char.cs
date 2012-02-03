@@ -13,8 +13,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js]
         public static Stmt ToString(Ctx ctx) {
-            var js = "return String.fromCharCode({0});";
-            var stmt = new StmtJsExplicit(ctx, js, ctx.This);
+            var js = "return String.fromCharCode(this);";
+            var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed);
             return stmt;
         }
 

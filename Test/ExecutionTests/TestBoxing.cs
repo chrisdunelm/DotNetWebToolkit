@@ -29,7 +29,9 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+#pragma warning disable 0649
         struct S1 { public int x; }
+#pragma warning restore 0649
         static object ForceObject<T>(T o) { return o; }
         static bool GetFalse(bool b) { return false; }
 

@@ -33,103 +33,120 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return convCall;
         }
 
+        private static Expr I8_U32(ExprConv e) {
+            var ctx = e.Ctx;
+            var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
+            return new ExprJsExplicit(e.Ctx, "(e<0?limit+e:e)", e.Type, e.Expr.Named("e"), limit);
+        }
+
+        private static Expr I8_X64(ExprConv e) {
+            var ctx = e.Ctx;
+            var max = ctx.Literal(0xffffffffU, ctx.UInt32, "max");
+            var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
+            return new ExprJsExplicit(ctx, "(e<0?[max,limit+e]:[0,e])", e.Type, e.Expr.Named("e"), max, limit);
+        }
+
+        private static Expr U8_X64(ExprConv e) {
+            var ctx = e.Ctx;
+            return new ExprJsExplicit(e.Ctx, "[0,e]", e.Type, e.Expr.Named("e"));
+        }
+
         private static Expr I16_I8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I16_U8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I16_U16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I16_U32(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I32_I8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I32_U8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I32_I16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I32_U16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U16_I8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U16_U8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "({0}&0xff)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(a&0xff)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U16_I16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U32_I8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U32_U8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "({0}&0xff)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(a&0xff)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U32_I16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U32_U16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "({0}&0xffff)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(a&0xffff)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr U32_I32(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(~~{0})", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(~~a)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr R_I8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<24)>>24)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr R_U8(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "({0}&0xff)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(a&0xff)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr R_I16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(({0}<<16)>>16)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "((a<<16)>>16)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr R_I32(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "(~~{0})", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(~~a)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr R_U16(ExprConv e) {
-            return new ExprJsExplicit(e.Ctx, "({0}&0xffff)", e.Type, e.Expr);
+            return new ExprJsExplicit(e.Ctx, "(a&0xffff)", e.Type, e.Expr.Named("a"));
         }
 
         private static Expr I32_I64(ExprConv e) {
             var ctx = e.Ctx;
-            var hi = new ExprJsFieldVarName(ctx, ctx._Int64.GetField("hi"));
-            var lo = new ExprJsFieldVarName(ctx, ctx._Int64.GetField("lo"));
-            var js = "{{{1}:{0}>=0?0:-1,{2}:{0}}}";
-            return new ExprJsExplicit(ctx, js, ctx.Int64, e.Expr, hi, lo);
+            var max = new ExprLiteral(ctx, 0xffffffffU, ctx.UInt32).Named("max");
+            var js = "[a<0?max:0,a]";
+            return new ExprJsExplicit(ctx, js, ctx.Int64, e.Expr.Named("a"), max);
         }
 
         private static Func<ExprConv, Expr>[,] convs =
         {  // --> To
            // SByte    Byte     Int16    Int32    Int64    UInt16   UInt32   UInt64   Single   Double
-            { Iden   , CConv  , Iden   , Iden   , Iden   , CConv  , CConv  , CConv  , Iden   , Iden    }, // SByte  |
-            { CConv  , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden   , Iden    }, // Byte   |
+            { Iden   , CConv  , Iden   , Iden   , I8_X64 , CConv  , I8_U32 , I8_X64 , Iden   , Iden    }, // SByte  |
+            { CConv  , Iden   , Iden   , Iden   , U8_X64 , Iden   , Iden   , U8_X64 , Iden   , Iden    }, // Byte   |
             { I16_I8 , I16_U8 , Iden   , Iden   , Iden   , I16_U16, CConv  , CConv  , Iden   , Iden    }, // Int16  V
             { I32_I8 , I32_U8 , I32_I16, Iden   , I32_I64, I32_U16, CConv  , CConv  , Iden   , Iden    }, // Int32  From
             { NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, NotImpl, Iden   , Iden    }, // Int64

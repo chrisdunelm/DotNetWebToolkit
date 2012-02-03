@@ -31,13 +31,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js]
         public static Stmt Clear(Ctx ctx) {
             var array = ctx.MethodParameter(0);
-            var index = ctx.MethodParameter(1);
-            var length = ctx.MethodParameter(2);
+            var index = ctx.MethodParameter(1).Named("index");
+            var length = ctx.MethodParameter(2).Named("length");
             var arrayElementType = array.Type.GetElementType();
-            var i = new ExprVarLocal(ctx, ctx.Int32);
-            var value = new ExprDefaultValue(ctx, arrayElementType);
-            var js = "for ({0}=0; {0}<{1}; {0}++) {{ {2}[{3}+{0}]={4}; }}";
-            var stmt = new StmtJsExplicit(ctx, js, i, length, array, index, value);
+            var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
+            var value = new ExprDefaultValue(ctx, arrayElementType).Named("value");
+            var js = "for (i=0; i<length; i++) a[index+i]=value;";
+            var stmt = new StmtJsExplicit(ctx, js, i, length, array.Named("a"), index, value);
             return stmt;
         }
 

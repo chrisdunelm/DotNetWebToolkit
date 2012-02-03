@@ -27,7 +27,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
     public enum JsStmtType {
         First = Stmt.NodeType.Max,
 
-        JsExplicitFunction,
+        JsExplicit,
     }
 
     public class JsAstVisitor : AstVisitor {
@@ -41,8 +41,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitStmt(Stmt s) {
             var jsStmtType = (JsStmtType)s.StmtType;
             switch (jsStmtType) {
-            case JsStmtType.JsExplicitFunction:
-                return this.VisitJsExplicitFunction((StmtJsExplicit)s);
+            case JsStmtType.JsExplicit:
+                return this.VisitJsExplicit((StmtJsExplicit)s);
             default:
                 if ((int)jsStmtType >= (int)JsStmtType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsStmtType);
@@ -52,11 +52,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
         }
 
-        protected virtual ICode VisitJsExplicitFunction(StmtJsExplicit s) {
+        protected virtual ICode VisitJsExplicit(StmtJsExplicit s) {
             this.ThrowOnNoOverride();
-            var exprs = this.HandleList(s.Exprs, x => (Expr)this.Visit(x));
-            if (exprs != null) {
-                return new StmtJsExplicit(s.Ctx, s.JavaScript, exprs);
+            var namedExprs = this.HandleList(s.NamedExprs, x => {
+                if (x == null) {
+                    return null;
+                }
+                var expr = (Expr)this.Visit(x.Expr);
+                return expr == x.Expr ? x : expr.Named(x.Name);
+            });
+            if (namedExprs != null) {
+                return new StmtJsExplicit(s.Ctx, s.JavaScript, namedExprs);
             } else {
                 return s;
             }
@@ -188,9 +194,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected virtual ICode VisitJsExplicit(ExprJsExplicit e) {
             this.ThrowOnNoOverride();
-            var exprs = this.HandleList(e.Exprs, x => (Expr)this.Visit(x));
-            if (exprs != null) {
-                return new ExprJsExplicit(e.Ctx, e.JavaScript, e.Type, exprs);
+            var namedExprs = this.HandleList(e.NamedExprs, x => {
+                if (x == null) {
+                    return null;
+                }
+                var expr = (Expr)this.Visit(x.Expr);
+                return expr == x.Expr ? x : expr.Named(x.Name);
+            });
+            if (namedExprs != null) {
+                return new ExprJsExplicit(e.Ctx, e.JavaScript, e.Type, namedExprs);
             } else {
                 return e;
             }

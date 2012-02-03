@@ -277,12 +277,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     value = (bool)e.Value ? "true" : "false";
                     break;
                 case MetadataType.Int64:
-                    var hi = e.Ctx._Int64.GetField("hi");
-                    var lo = e.Ctx._Int64.GetField("lo");
-                    var i64 = (Int64)e.Value;
-                    value = string.Format("{{{0}:{2},{1}:{3}}}",
-                        this.resolver.FieldNames[hi], this.resolver.FieldNames[lo],
-                        (i64 >> 32) & 0xffffffffL, i64 & 0xffffffffL);
+                    var i64 = (UInt64)(Int64)e.Value;
+                    value = string.Format("[{0},{1}]", (i64 >> 32) & 0xffffffffUL, i64 & 0xffffffffUL);
+                    break;
+                case MetadataType.UInt64:
+                    var u64 = (UInt64)e.Value;
+                    value = string.Format("[{0},{1}]", (u64 >> 32) & 0xffffffffUL, u64 & 0xffffffffUL);
                     break;
                 default:
                     value = e.Value;
@@ -557,56 +557,40 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
-        private void HandleExplicitJs(string js, IEnumerable<Expr> exprs) {
-            var es = exprs.ToArray();
+        private void HandleExplicitJs(string js, IEnumerable<NamedExpr> exprs) {
+            var es = exprs.Where(x => x != null).ToDictionary(x => x.Name, x => x.Expr);
             int ofs = 0;
             Func<char> getC = () => ofs < js.Length ? js[ofs++] : '\0';
+            var cur = new StringBuilder();
             for (; ; ) {
                 var c = getC();
-                switch (c) {
-                case '\0':
+                var isName = char.IsLetter(c) || (char.IsDigit(c) && cur.Length > 0);
+                if (isName) {
+                    cur.Append(c);
+                } else {
+                    if (cur.Length > 0) {
+                        var curS = cur.ToString();
+                        var mapped = es.ValueOrDefault(curS);
+                        if (mapped != null) {
+                            this.Visit(mapped);
+                        } else {
+                            this.js.Append(curS);
+                        }
+                        cur.Length = 0;
+                    }
+                    if (c != '\0') {
+                        this.js.Append(c);
+                    }
+                }
+                if (c == '\0') {
                     return;
-                case '{':
-                    c = getC();
-                    if (c == '{') {
-                        this.js.Append('{');
-                    } else {
-                        if (!char.IsDigit(c)) {
-                            throw new InvalidOperationException("Invalid explicit javascript function");
-                        }
-                        var numStr = c.ToString();
-                        for (; ; ) {
-                            c = getC();
-                            if (c == '}') {
-                                break;
-                            }
-                            if (!char.IsDigit(c)) {
-                                throw new InvalidOperationException("Invalid explicit javascript function");
-                            }
-                            numStr += c;
-                        }
-                        var num = int.Parse(numStr);
-                        var expr = es[num];
-                        this.Visit(expr);
-                    }
-                    break;
-                case '}':
-                    c = getC();
-                    if (c != '}') {
-                        throw new InvalidOperationException("Invalid explicit javascript function");
-                    }
-                    this.js.Append('}');
-                    break;
-                default:
-                    this.js.Append(c);
-                    break;
                 }
             }
         }
 
-        protected override ICode VisitJsExplicitFunction(StmtJsExplicit s) {
+        protected override ICode VisitJsExplicit(StmtJsExplicit s) {
             this.NewLine();
-            this.HandleExplicitJs(s.JavaScript, s.Exprs);
+            this.HandleExplicitJs(s.JavaScript, s.NamedExprs);
             return s;
         }
 
@@ -709,7 +693,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitJsExplicit(ExprJsExplicit e) {
-            this.HandleExplicitJs(e.JavaScript, e.Exprs);
+            this.HandleExplicitJs(e.JavaScript, e.NamedExprs);
             return e;
         }
 

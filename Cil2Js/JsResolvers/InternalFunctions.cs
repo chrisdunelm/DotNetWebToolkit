@@ -21,14 +21,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         class CreateArrayImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
-                var count = ctx.MethodParameter(0);
+                var count = ctx.MethodParameter(0, "count");
                 var elType = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var arrayType = elType.MakeArray();
-                var elTypeExpr = new ExprJsTypeVarName(ctx, arrayType);
-                var defaultValue = new ExprDefaultValue(ctx, elType);
-                var a = new ExprVarLocal(ctx, arrayType);
-                var i = new ExprVarLocal(ctx, ctx.Int32);
-                var js = "{3}=new Array({0}); {3}._={1}; for({4}={0}-1;{4}>=0;{4}--) {3}[{4}]={2}; return {3};";
+                var elTypeExpr = new ExprJsTypeVarName(ctx, arrayType).Named("type");
+                var defaultValue = new ExprDefaultValue(ctx, elType).Named("defaultValue");
+                var a = new ExprVarLocal(ctx, arrayType).Named("a");
+                var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
+                var js = "a=new Array(count); a._=type; for(i=count-1;i>=0;i--) a[i]=defaultValue; return a;";
                 var stmt = new StmtJsExplicit(ctx, js, count, elTypeExpr, defaultValue, a, i);
                 return stmt;
             }
@@ -41,15 +41,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         class CanAssignToImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
-                var obj = ctx.MethodParameter(0);
-                var toType = ctx.MethodParameter(1);
-                var canCastTo = new ExprVarLocal(ctx, ctx.Type.MakeArray());
+                var obj = ctx.MethodParameter(0, "obj");
+                var toType = ctx.MethodParameter(1, "toType");
+                var canCastTo = new ExprVarLocal(ctx, ctx.Type.MakeArray()).Named("canCastTo");
                 var mGetType = ctx.Module.Import(typeof(object).GetMethod("GetType"));
-                var getTypeCall = new ExprCall(ctx, mGetType, obj);
-                var assignableTo = new ExprJsTypeData(ctx, TypeData.AssignableTo);
-                var i = new ExprVarLocal(ctx, ctx.Int32);
-                var t = new ExprVarLocal(ctx, ctx.Type);
-                var js = "if (!{0}) return true; {6}={3}; if ({6}==={1}) return true; {2}={6}.{4}; for ({5}={2}.length-1;{5}>=0;{5}--) if ({2}[{5}]==={1}) return true; return false;";
+                var getTypeCall = new ExprCall(ctx, mGetType, obj.Expr).Named("getTypeCall");
+                var assignableTo = new ExprJsTypeData(ctx, TypeData.AssignableTo).Named("assignableTo");
+                var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
+                var t = new ExprVarLocal(ctx, ctx.Type).Named("temp");
+                var js = "if (!obj) return true; temp=getTypeCall; if (temp===toType) return true; canCastTo=temp.assignableTo; for (i=canCastTo.length-1;i>=0;i--) if (canCastTo[i]===toType) return true; return false;";
                 var stmt = new StmtJsExplicit(ctx, js, obj, toType, canCastTo, getTypeCall, assignableTo, i, t);
                 return stmt;
             }
@@ -63,10 +63,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         class IsInstImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
-                var obj = ctx.MethodParameter(0);
+                var obj = ctx.MethodParameter(0, "obj");
                 var toType = ctx.MethodParameter(1);
-                var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj, toType);
-                var js = "return {0}?{1}:null;";
+                var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj.Expr, toType).Named("callCanAssignTo");
+                var js = "return callCanAssignTo?obj:null;";
                 var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj);
                 return stmt;
             }
@@ -80,12 +80,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         class CastImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
-                var obj = ctx.MethodParameter(0);
+                var obj = ctx.MethodParameter(0, "obj");
                 var toType = ctx.MethodParameter(1);
-                var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj, toType);
+                var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj.Expr, toType).Named("callCanAssignTo");
                 var mCtorEx = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var mGetType = ctx.Module.Import(typeof(object).GetMethod("GetType"));
-                var getTypeCall = new ExprCall(ctx, mGetType, obj);
+                var getTypeCall = new ExprCall(ctx, mGetType, obj.Expr);
                 var msgParts = new Expr[] {
                     new ExprLiteral(ctx, "Unable to cast object of type '", ctx.String),
                     new ExprCall(ctx, typeof(Type).GetProperty("FullName").GetMethod, getTypeCall),
@@ -94,8 +94,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     new ExprLiteral(ctx, "'.", ctx.String)
                 };
                 var msg = msgParts.Aggregate((a, b) => new ExprBinary(ctx, BinaryOp.Add, ctx.String, a, b));
-                var ctorEx = new ExprNewObj(ctx, mCtorEx, msg);
-                var js = "if ({0}) return {1}; throw {2}";
+                var ctorEx = new ExprNewObj(ctx, mCtorEx, msg).Named("callCtorEx");
+                var js = "if (callCanAssignTo) return obj; throw callCtorEx";
                 var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj, ctorEx);
                 return stmt;
             }
@@ -111,19 +111,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 // Recursively deep-copy a value-type
                 var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
-                var o = ctx.MethodParameter(0);
-                var eTypeName = new ExprJsTypeVarName(ctx, type);
-                var ofsFieldName = 1;
-                var ofsFieldValue = ofsFieldName + fields.Length;
-                var copy = string.Join(",", fields.Select((x, i) => "{" + (i + ofsFieldName) + "}:{" + (i + ofsFieldValue) + "}"));
-                var fieldValues = fields.Select(x => {
-                    var fieldAccess = new ExprJsExplicit(ctx, "{0}.{1}", x.FieldType, o, new ExprJsFieldVarName(ctx, x));
+                var o = ctx.MethodParameter(0, "o");
+                var copy = string.Join(",", fields.Select((x, i) => string.Format("f{0}:v{0}", i)));
+                var fieldNames = fields.Select((x, i) => new ExprJsFieldVarName(ctx, x).Named("f" + i)).ToArray();
+                var fieldValues = fields.Select((x, i) => {
+                    var fieldAccess = new ExprJsExplicit(ctx, "o.field", x.FieldType, o, new ExprJsFieldVarName(ctx, x).Named("field"));
                     var dc = ValueTypeDeepCopyIfRequired(x.FieldType, () => fieldAccess);
-                    return dc ?? fieldAccess;
+                    return (dc ?? fieldAccess).Named("v" + i);
                 }).ToArray();
-                var fieldNames = fields.Select(x => new ExprJsFieldVarName(ctx, x)).ToArray();
-                var js = "return {{" + copy + "}}";
-                return new StmtJsExplicit(ctx, js, new Expr[] { eTypeName }.Concat(fieldNames).Concat(fieldValues));
+                var js = "return {" + copy + "}";
+                return new StmtJsExplicit(ctx, js, fieldNames.Concat(fieldValues));
             }
         }
 
@@ -152,16 +149,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             public Stmt GetImpl(Ctx ctx) {
                 // If obj==null create Nullable with hasValue=false
                 // If obj.Type not assignable to e.InnerType throw InvalidCastEx
-                var obj = ctx.MethodParameter(0);
+                var obj = ctx.MethodParameter(0, "obj");
                 var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var nType = type.MakeNullable();
-                var nameHasValue = new ExprJsFieldVarName(ctx, nType.GetField("hasValue"));
-                var nameValue = new ExprJsFieldVarName(ctx, nType.GetField("value"));
-                var defaultValue = new ExprDefaultValue(ctx, type);
-                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj, new ExprJsTypeVarName(ctx, type));
+                var nameHasValue = new ExprJsFieldVarName(ctx, nType.GetField("hasValue")).Named("hasValue");
+                var nameValue = new ExprJsFieldVarName(ctx, nType.GetField("value")).Named("value");
+                var defaultValue = new ExprDefaultValue(ctx, type).Named("defaultValue");
+                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
-                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
-                var js = "if (!{0}) return {{{1}:false,{2}:{3}}}; if (!{4}) throw {5}; return {{{1}:true,{2}:{0}.v}};";
+                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String)).Named("invCastEx");
+                var js = "if (!obj) return {hasValue:false,value:defaultValue}; if (!canAssignCall) throw invCastEx; return {hasValue:true,value:obj.v};";
                 var stmt = new StmtJsExplicit(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
                 return stmt;
             }
@@ -177,14 +174,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 // If obj==null throw NullRefEx
                 // If obj.Type not assignable to e.Type throw InvalidCastEx
                 // otherwise unbox
-                var obj = ctx.MethodParameter(0);
+                var obj = ctx.MethodParameter(0, "obj");
                 var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var nullRefExCtor = ctx.Module.Import(typeof(NullReferenceException).GetConstructor(new[] { typeof(string) }));
-                var nullRefEx = new ExprNewObj(ctx, nullRefExCtor, new ExprLiteral(ctx, "Object reference not set to an instance of an object.", ctx.String));
-                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj, new ExprJsTypeVarName(ctx, type));
+                var nullRefEx = new ExprNewObj(ctx, nullRefExCtor, new ExprLiteral(ctx, "Object reference not set to an instance of an object.", ctx.String)).Named("nullRefEx");
+                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
-                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String));
-                var js = "if (!{0}) throw {1}; if (!{2}) throw {3}; return {0}.v;";
+                var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String)).Named("invCastEx");
+                var js = "if (!obj) throw nullRefEx; if (!canAssignCall) throw invCastEx; return obj.v;";
                 var stmt = new StmtJsExplicit(ctx, js, obj, nullRefEx, canAssign, invCastEx);
                 return stmt;
             }
@@ -203,23 +200,23 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var mGenInst = (GenericInstanceMethod)ctx.MRef;
                 var tFrom = mGenInst.GenericArguments[0];
                 var tTo = mGenInst.GenericArguments[1];
-                var v = ctx.MethodParameter(0);
+                var v = ctx.MethodParameter(0, "v");
                 string js;
                 bool useTemp = false;
                 switch (tFrom.MetadataType) {
                 case MetadataType.SByte:
                     switch (tTo.MetadataType) {
                     case MetadataType.Byte:
-                        js = "return {0}>=0?{0}:" + (Byte.MaxValue + 1) + "+{0};";
+                        js = "return v>=0?v:" + (Byte.MaxValue + 1) + "+v;";
                         break;
                     case MetadataType.UInt16:
-                        js = "return {0}>=0?{0}:" + (UInt16.MaxValue + 1) + "+{0};";
+                        js = "return v>=0?v:" + (UInt16.MaxValue + 1) + "+v;";
                         break;
                     case MetadataType.UInt32:
-                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
                         break;
                     case MetadataType.UInt64:
-                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -228,7 +225,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 case MetadataType.Byte:
                     switch (tTo.MetadataType) {
                     case MetadataType.SByte:
-                        js = "return {0}<=" + SByte.MaxValue + "?{0}:{0}-" + (Byte.MaxValue + 1) + ";";
+                        js = "return v<=" + SByte.MaxValue + "?v:v-" + (Byte.MaxValue + 1) + ";";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -237,10 +234,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 case MetadataType.Int16:
                     switch (tTo.MetadataType) {
                     case MetadataType.UInt32:
-                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
                         break;
                     case MetadataType.UInt64:
-                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -250,7 +247,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     switch (tTo.MetadataType) {
                     case MetadataType.UInt32:
                     case MetadataType.UInt64:
-                        js = "return {0}>=0?{0}:" + (UInt32.MaxValue + 1L) + "+{0};";
+                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -259,7 +256,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 case MetadataType.Int64:
                     switch (tTo.MetadataType) {
                     case MetadataType.UInt64:
-                        js = "return {0}>=0?{0}:" + UInt64.MaxValue + "+{0}+1;";
+                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -268,11 +265,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 case MetadataType.UInt64:
                     switch (tTo.MetadataType) {
                     case MetadataType.Int64:
-                        js = "return {0}<=" + Int64.MaxValue + "?{0}:{0}-" + ((UInt64)Int64.MaxValue + 1L) + ";";
+                        js = "return v<=" + Int64.MaxValue + "?v:v-" + ((UInt64)Int64.MaxValue + 1L) + ";";
                         break;
                     case MetadataType.UInt32:
                         useTemp = true;
-                        js = "{1}={0}&-1;return {1}>=0?{1}:" + (UInt32.MaxValue + 1L) + "+{1};";
+                        js = "temp=v&-1;return temp>=0?temp:" + (UInt32.MaxValue + 1L) + "+temp;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -283,7 +280,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     switch (tTo.MetadataType) {
                     case MetadataType.UInt32:
                         useTemp = true;
-                        js = "{1}=~~{0};return {1}>=0?{1}:" + (UInt32.MaxValue + 1L) + "+{1};";
+                        js = "temp=~~v;return temp>=0?temp:" + (UInt32.MaxValue + 1L) + "+temp;";
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
@@ -292,7 +289,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 default:
                     throw new NotImplementedException("Cannot handle TIn: " + tFrom.MetadataType);
                 }
-                var stmt = new StmtJsExplicit(ctx, js, v, useTemp ? new ExprVarLocal(ctx, ctx.Object) : null);
+                var stmt = new StmtJsExplicit(ctx, js, v, useTemp ? new ExprVarLocal(ctx, ctx.Object).Named("temp") : null);
                 return stmt;
             }
         }

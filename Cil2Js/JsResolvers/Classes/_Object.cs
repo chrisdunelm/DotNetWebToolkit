@@ -21,34 +21,25 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             Expression<Func<int>> eHashCode = () => hashCode;
             var field = (FieldInfo)((MemberExpression)eHashCode.Body).Member;
             var f = ctx.Module.Import(field);
-            var fExpr = new ExprFieldAccess(ctx, null, f);
-            var stmt = new StmtJsExplicit(ctx, "{0}.$=++{1};", ctx.This, fExpr);
+            var fExpr = new ExprFieldAccess(ctx, null, f).Named("hashCode");
+            var stmt = new StmtJsExplicit(ctx, "this.$=++hashCode;", ctx.ThisNamed, fExpr);
             return stmt;
         }
 
         [Js]
         public static Stmt GetType(Ctx ctx) {
-            var js = "return typeof({0})==\"string\"?{1}:{0}._";
-            var stringType = new ExprJsTypeVarName(ctx, ctx.String);
-            var stmt = new StmtJsExplicit(ctx, js, ctx.This, stringType);
+            var js = "return typeof(this)==\"string\"?stringType:this._;";
+            var stringType = new ExprJsTypeVarName(ctx, ctx.String).Named("stringType");
+            var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, stringType);
             return stmt;
         }
 
         [Js(typeof(bool), typeof(object))]
         public static Stmt Equals(Ctx ctx) {
-            var p0 = ctx.MethodParameter(0);
-            var stmt = new StmtJsExplicit(ctx, "return {0}==={1};", ctx.This, p0);
+            var other = ctx.MethodParameter(0).Named("other");
+            var stmt = new StmtJsExplicit(ctx, "return this===other;", ctx.ThisNamed, other);
             return stmt;
         }
-
-        //[Js(typeof(bool), typeof(object), typeof(object))]
-        //public static Expr Equals(ICall call) {
-        //    var ctx =call.Ctx;
-        //    var a = call.Args.ElementAt(0);
-        //    var b = call.Args.ElementAt(1);
-        //    var expr = new ExprJsExplicit(ctx, "{0}==={1}", ctx.Boolean, a, b);
-        //    return expr;
-        //}
 
         [Js(typeof(bool), typeof(object), typeof(object))]
         public static Expr Equals(ICall call) {

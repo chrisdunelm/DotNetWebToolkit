@@ -157,13 +157,17 @@ namespace Test.ExecutionTests {
             case TypeCode.SByte:
             case TypeCode.Int16:
             case TypeCode.Int32:
-            case TypeCode.Int64:
             case TypeCode.UInt16:
             case TypeCode.UInt32:
-            case TypeCode.UInt64:
             case TypeCode.Single:
             case TypeCode.Double:
                 return arg.ToString();
+            case TypeCode.Int64:
+                var int64 = (UInt64)(Int64)arg;
+                return string.Format("[{0},{1}]", int64 >> 32, int64 & 0xffffffff);
+            case TypeCode.UInt64:
+                var uint64 = (UInt64)arg;
+                return string.Format("[{0},{1}]", uint64 >> 32, uint64 & 0xffffffff);
             case TypeCode.String:
                 return "\"" + arg.ToString() + "\"";
             case TypeCode.Char:
@@ -224,13 +228,25 @@ namespace Test.ExecutionTests {
                         var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
                         var jsResult = chrome.ExecuteScript(js + jsCall);
                         if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                            if (d.Method.ReturnType == typeof(Int64)) {
-                                var dict = (Dictionary<string,object>)jsResult;
-                                var hi = (ulong)Convert.ChangeType(dict["a"], typeof(ulong));
-                                var lo = (ulong)Convert.ChangeType(dict["b"], typeof(ulong));
-                                jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
-                            } else {
+                            var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
+                            switch (returnTypeCode) {
+                            case TypeCode.Int64: {
+                                    var array = (IList<object>)jsResult;
+                                    var hi = Convert.ToUInt64(array[0]);
+                                    var lo = Convert.ToUInt64(array[1]);
+                                    jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
+                                }
+                                break;
+                            case TypeCode.UInt64: {
+                                    var array = (IList<object>)jsResult;
+                                    var hi = Convert.ToUInt64(array[0]);
+                                    var lo = Convert.ToUInt64(array[1]);
+                                    jsResult = ((ulong)hi) << 32 | (ulong)lo;
+                                }
+                                break;
+                            default:
                                 jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                                break;
                             }
                         }
                         EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);

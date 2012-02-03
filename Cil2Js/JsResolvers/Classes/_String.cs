@@ -15,17 +15,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js(typeof(bool), typeof(object))]
         public static Stmt Equals(Ctx ctx) {
-            var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicit(ctx, "return {0}==={1};", ctx.This, p0);
+            var other = ctx.MethodParameter(0, "other");
+            var stmt = new StmtJsExplicit(ctx, "return this===other;", ctx.ThisNamed, other);
             return stmt;
         }
 
         [Js(typeof(int))]
         public static Stmt GetHashCode(Ctx ctx) {
-            var acc = new ExprVarLocal(ctx, ctx.Int32);
-            var i = new ExprVarLocal(ctx, ctx.Int32);
-            var js = "{1}=5381;for({2}=Math.min({0}.length-1,100);{2}>=0;{2}--) {1}=(({1}<<5)+{1}+{0}.charCodeAt({2}))&0x7fffffff; return {1};";
-            var stmt = new StmtJsExplicit(ctx, js, ctx.This, acc, i);
+            var acc = new ExprVarLocal(ctx, ctx.Int32).Named("acc");
+            var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
+            var mask = new ExprLiteral(ctx, 0x7fffffff, ctx.Int32).Named("mask");
+            var js = "acc=5381;for(i=Math.min(this.length-1,100);i>=0;i--) acc=((acc<<5)+acc+this.charCodeAt(i))&mask; return acc;";
+            var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, acc, i, mask);
             return stmt;
         }
 

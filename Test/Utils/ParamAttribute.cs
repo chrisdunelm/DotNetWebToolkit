@@ -198,4 +198,24 @@ namespace Test.Utils {
 
     }
 
+    class ParamFullRangeNonZeroAttribute : ParamFullRangeAttribute {
+
+        public override long GenInt64(Random rnd, int iteration) {
+            var v = base.GenInt64(rnd, iteration);
+            if (v == 0) {
+                v = 1;
+            }
+            return v;
+        }
+
+        public override ulong GenUInt64(Random rnd, int iteration) {
+            var v = base.GenUInt64(rnd, iteration);
+            if (v == 0) {
+                v = 1;
+            }
+            return v;
+        }
+
+    }
+
 }

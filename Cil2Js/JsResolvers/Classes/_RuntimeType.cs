@@ -12,17 +12,17 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js("ToString", typeof(string))]
         public static Stmt ToString(Ctx ctx) {
-            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
-            var eName = new ExprJsTypeData(ctx, TypeData.Name);
-            var stmt = new StmtJsExplicit(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
+            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace).Named("namespace");
+            var eName = new ExprJsTypeData(ctx, TypeData.Name).Named("name");
+            var stmt = new StmtJsExplicit(ctx, "return this.namespace+\".\"+this.name;", ctx.ThisNamed, eNamespace, eName);
             return stmt;
         }
 
         [Js]
         public static Stmt get_FullName(Ctx ctx) {
-            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace);
-            var eName = new ExprJsTypeData(ctx, TypeData.Name);
-            var stmt = new StmtJsExplicit(ctx, "return {0}.{1}+\".\"+{0}.{2};", ctx.This, eNamespace, eName);
+            var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace).Named("namespace");
+            var eName = new ExprJsTypeData(ctx, TypeData.Name).Named("name");
+            var stmt = new StmtJsExplicit(ctx, "return this.namespace+\".\"+this.name;", ctx.ThisNamed, eNamespace, eName);
             return stmt;
         }
 

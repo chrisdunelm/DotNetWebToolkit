@@ -95,6 +95,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
+                    ast = VisitorJsResolve64Bit.V(ast);
                     ast = VisitorJsRewriteSealedVCalls.V(ast);
                     ast = VisitorJsResolveAll.V(ast);
                     ast = VisitorJsResolveConv.V(ast);
@@ -111,8 +112,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     // 'this' may be boxed or unboxed. Must be unboxed if boxed
                     // This is required because in real .NET the boxed and unboxed versions are both directly
                     // available at the this reference; this is not the case in the JS emulation of boxing
-                    var unboxJs = "if({0}._){0}={0}.v;";
-                    var unbox = new StmtJsExplicit(ctx, unboxJs, ctx.This);
+                    var unboxJs = "if(this._)this=this.v;";
+                    var unbox = new StmtJsExplicit(ctx, unboxJs, ctx.This.Named("this"));
                     ast = new StmtBlock(ctx, unbox, (Stmt)ast);
                 }
 
@@ -253,22 +254,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
             }
 
-            // Make sure fields of _Int64 and _UInt64 are names
-            var special64Bits = typesSeen.Keys.Where(x => {
-                var revMapped = JsResolver.ReverseTypeMap(x);
-                return revMapped.IsInt64() || revMapped.IsUInt64();
-            }).ToArray();
-            foreach (var bit64 in special64Bits) {
-                var hi = bit64.GetField("hi");
-                var lo = bit64.GetField("lo");
-                // TODO: Counts are not correct (and this whole thing can probably be done better)
-                if (!fieldAccesses.ContainsKey(hi)) {
-                    fieldAccesses.Add(hi, 1);
-                }
-                if (!fieldAccesses.ContainsKey(lo)) {
-                    fieldAccesses.Add(lo, 1);
-                }
-            }
+            //// Make sure fields of _Int64 and _UInt64 are names
+            //var special64Bits = typesSeen.Keys.Where(x => {
+            //    var revMapped = JsResolver.ReverseTypeMap(x);
+            //    return revMapped.IsInt64() || revMapped.IsUInt64();
+            //}).ToArray();
+            //foreach (var bit64 in special64Bits) {
+            //    var hi = bit64.GetField("hi");
+            //    var lo = bit64.GetField("lo");
+            //    // TODO: Counts are not correct (and this whole thing can probably be done better)
+            //    if (!fieldAccesses.ContainsKey(hi)) {
+            //        fieldAccesses.Add(hi, 1);
+            //    }
+            //    if (!fieldAccesses.ContainsKey(lo)) {
+            //        fieldAccesses.Add(lo, 1);
+            //    }
+            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)

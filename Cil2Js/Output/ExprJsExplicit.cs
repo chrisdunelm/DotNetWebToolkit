@@ -9,19 +9,19 @@ using Mono.Cecil;
 namespace DotNetWebToolkit.Cil2Js.Output {
     public class ExprJsExplicit : Expr {
 
-        public ExprJsExplicit(Ctx ctx, string js, TypeReference type, params Expr[] exprs)
-            : this(ctx, js, type, (IEnumerable<Expr>)exprs) {
+        public ExprJsExplicit(Ctx ctx, string js, TypeReference type, params NamedExpr[] namedExprs)
+            : this(ctx, js, type, (IEnumerable<NamedExpr>)namedExprs) {
         }
 
-        public ExprJsExplicit(Ctx ctx, string js, TypeReference type, IEnumerable<Expr> exprs)
+        public ExprJsExplicit(Ctx ctx, string js, TypeReference type, IEnumerable<NamedExpr> namedExprs)
             : base(ctx) {
             this.JavaScript = js;
             this.type = type;
-            this.Exprs = exprs;
+            this.NamedExprs = namedExprs;
         }
 
         public string JavaScript { get; private set; }
-        public IEnumerable<Expr> Exprs { get; private set; }
+        public IEnumerable<NamedExpr> NamedExprs { get; private set; }
         private TypeReference type;
 
         public override Expr.NodeType ExprType {

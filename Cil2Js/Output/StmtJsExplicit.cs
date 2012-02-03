@@ -8,21 +8,21 @@ using DotNetWebToolkit.Cil2Js.Ast;
 namespace DotNetWebToolkit.Cil2Js.Output {
     public class StmtJsExplicit : Stmt {
 
-        public StmtJsExplicit(Ctx ctx, string javaScript, params Expr[] exprs)
-            : this(ctx, javaScript, (IEnumerable<Expr>)exprs) {
+        public StmtJsExplicit(Ctx ctx, string javaScript, params NamedExpr[] namedExprs)
+            : this(ctx, javaScript, (IEnumerable<NamedExpr>)namedExprs) {
         }
 
-        public StmtJsExplicit(Ctx ctx, string javaScript, IEnumerable<Expr> exprs)
+        public StmtJsExplicit(Ctx ctx, string javaScript, IEnumerable<NamedExpr> namedExprs)
             : base(ctx) {
             this.JavaScript = javaScript;
-            this.Exprs = exprs;
+            this.NamedExprs = namedExprs;
         }
 
         public string JavaScript { get; private set; }
-        public IEnumerable<Expr> Exprs { get; private set; }
+        public IEnumerable<NamedExpr> NamedExprs { get; private set; }
 
         public override Stmt.NodeType StmtType {
-            get { return (Stmt.NodeType)JsStmtType.JsExplicitFunction; }
+            get { return (Stmt.NodeType)JsStmtType.JsExplicit; }
         }
 
     }

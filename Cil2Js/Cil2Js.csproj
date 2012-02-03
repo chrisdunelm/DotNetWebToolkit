@@ -162,7 +162,7 @@
     <Compile Include="JsResolvers\Classes\_Double.cs" />
     <Compile Include="JsResolvers\Classes\_Environment.cs" />
     <Compile Include="JsResolvers\Classes\_EqualityComparer.cs" />
-    <Compile Include="JsResolvers\Classes\_Int64.cs" />
+    <Compile Include="JsResolvers\Classes\_Int64UInt64.cs" />
     <Compile Include="JsResolvers\Classes\_Number.cs" />
     <Compile Include="JsResolvers\Classes\_NumberFormatInfo.cs" />
     <Compile Include="JsResolvers\Classes\_Object.cs" />
@@ -200,11 +200,11 @@
     <Compile Include="Output\JsAstVisitor.cs" />
     <Compile Include="Output\ExprJsInvoke.cs" />
     <Compile Include="Output\JsResolved.cs" />
-    <Compile Include="Output\IMethodResolver.cs" />
     <Compile Include="Output\Js.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Output\JsMethod.cs" />
+    <Compile Include="Output\NamedExpr.cs" />
     <Compile Include="Output\NameGenerator.cs" />
     <Compile Include="Output\NamespaceTree.cs" />
     <Compile Include="Output\StmtJsExplicit.cs" />
@@ -215,6 +215,7 @@
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
+    <Compile Include="Output\VisitorJsResolve64Bit.cs" />
     <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorJsResolveAll.cs" />

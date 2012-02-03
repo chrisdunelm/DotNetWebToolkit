@@ -84,17 +84,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (e.Type.IsNullable()) {
                 var exprIsVar = e.Expr.IsVar();
                 var innerType = e.Type.GetNullableInnerType();
-                var innerTypeName = new ExprJsTypeVarName(ctx, innerType);
                 var temp = exprIsVar ? null : new ExprVarLocal(ctx, e.Type);
-                var fHasValue = new ExprJsFieldVarName(ctx, e.Type.GetField("hasValue"));
-                var box = new ExprBox(ctx, new ExprFieldAccess(ctx, temp ?? e.Expr, e.Type.GetField("value")), innerType);
-                var nullableJs = exprIsVar ? "({1}.{2}?{3}:null)" : "(({0}={1}).{2}?{3}:null)";
-                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp, e.Expr, fHasValue, box);
+                var fHasValue = new ExprJsFieldVarName(ctx, e.Type.GetField("hasValue")).Named("hasValue");
+                var box = new ExprBox(ctx, new ExprFieldAccess(ctx, temp ?? e.Expr, e.Type.GetField("value")), innerType).Named("box");
+                var nullableJs = exprIsVar ? "(expr.hasValue?box:null)" : "((temp=expr).hasValue?box:null)";
+                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp.Named("temp"), e.Expr.Named("expr"), fHasValue, box);
                 return nullableExpr;
             } else {
                 var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
-                var js = "{{v:{0},_:{1}}}";
-                var expr = new ExprJsExplicit(ctx, js, e.Type, deepCopyExpr ?? e.Expr, eType);
+                var js = "{v:expr,_:type}";
+                var expr = new ExprJsExplicit(ctx, js, e.Type, (deepCopyExpr ?? e.Expr).Named("expr"), eType.Named("type"));
                 return expr;
             }
         }
