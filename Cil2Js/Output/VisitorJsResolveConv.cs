@@ -33,16 +33,20 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return convCall;
         }
 
+        private static Expr I8_U8(ExprConv e) {
+            return new ExprJsExplicit(e.Ctx, "((e<<24)>>>24)", e.Type, e.Expr.Named("e"));
+        }
+
+        private static Expr I8_U16(ExprConv e) {
+            return new ExprJsExplicit(e.Ctx, "(((e<<24)>>8)>>>16)", e.Type, e.Expr.Named("e"));
+        }
+
         private static Expr I8_U32(ExprConv e) {
+            return new ExprJsExplicit(e.Ctx, "((e<<24)>>24", e.Type, e.Expr.Named("e"));
             var ctx = e.Ctx;
             var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
             return new ExprJsExplicit(e.Ctx, "(e<0?limit+e:e)", e.Type, e.Expr.Named("e"), limit);
         }
-
-        //private static Expr U8_X64(ExprConv e) {
-        //    var ctx = e.Ctx;
-        //    return new ExprJsExplicit(e.Ctx, "[0,e]", e.Type, e.Expr.Named("e"));
-        //}
 
         private static Expr I16_I8(ExprConv e) {
             return new ExprJsExplicit(e.Ctx, "((a<<24)>>24)", e.Type, e.Expr.Named("a"));
@@ -149,7 +153,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         private static Func<ExprConv, Expr>[,] convs =
         {  // --> To
            // Int8     Int16    Int32    Int64    UInt8    UInt16   UInt32   UInt64   Single   Double
-            { Iden   , Iden   , Iden   , Ix_X64 , CConv  , CConv  , I8_U32 , Ix_X64 , Iden   , Iden    }, // Int8   |
+            { Iden   , Iden   , Iden   , Ix_X64 , I8_U8  , I8_U16 , I8_U32 , Ix_X64 , Iden   , Iden    }, // Int8   |
             { I16_I8 , Iden   , Iden   , Ix_X64 , I16_U8 , I16_U16, CConv  , Ix_X64 , Iden   , Iden    }, // Int16  |
             { I32_I8 , I32_I16, Iden   , Ix_X64 , I32_U8 , I32_U16, CConv  , Ix_X64 , Iden   , Iden    }, // Int32  V
             { NotImpl, NotImpl, NotImpl, Iden   , NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // Int64  From
@@ -159,6 +163,78 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             { NotImpl, NotImpl, NotImpl, Iden   , NotImpl, NotImpl, NotImpl, Iden   , Iden   , Iden    }, // UInt64
             { R_I8   , R_I16  , R_I32  , NotImpl, R_U8   , R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Single
             { R_I8   , R_I16  , R_I32  , NotImpl, R_U8   , R_U16  , CConv  , NotImpl, Iden   , Iden    }, // Double
+        };
+
+        private Dictionary<string, Func<Ctx, Expr>> consts = new Dictionary<string, Func<Ctx, Expr>> {
+            { "u32max", ctx => ctx.Literal(0xffffffff, ctx.UInt32) },
+            { "u32limit", ctx => ctx.Literal(0x100000000, ctx._UInt64) },
+        };
+
+        private const string Identity = "e";
+        private const string Ix_X64_ = "(e < 0 ? [u32max, u32limit + e] : [0, e])";
+
+        private static string[,] jss =
+        {
+            { // Int8 ->
+                Identity, // -> Int8
+                Identity, // -> Int16
+                Identity, // -> Int32
+                Ix_X64_, // -> Int64
+                "((e << 24) >>> 24)", // -> UInt8
+                "(((e << 24) >> 8) >>> 16)" , // -> UInt16
+                "(((e << 24) >> 24) >>> 0)", // -> UInt32
+                Ix_X64_, // -> UInt64
+                Identity, // -> Single
+                Identity, // -> Double
+            },
+            { // Int16 ->
+                "((e << 24) >> 24)", // -> Int8
+                Identity, // -> Int16
+                Identity, // -> Int32
+                Ix_X64_, // -> Int64
+                "((e << 24) >>> 24)", // -> UInt8
+                "((e << 16) >>> 16)", // -> UInt16
+                "(((e << 16) >> 16) >>> 0)", // -> UInt32
+                Ix_X64_, // -> UInt64
+                Identity, // -> Single
+                Identity, // -> Double
+            },
+            { // Int32 ->
+                "((e << 24) >> 24)", // -> Int8
+                "((e << 16) >> 16)", // -> Int16
+                Identity, // -> Int32
+                Ix_X64_, // -> Int64
+                "((e << 24) >>> 24)", // -> UInt8
+                "((e << 16) >>> 16)", // -> UInt16
+                "(e >>> 0)", // -> UInt32
+                Ix_X64_, // -> UInt64
+                Identity, // -> Single
+                Identity, // -> Double
+            },
+            { // Int64 ->
+                null, // -> Int8
+                null, // -> Int16
+                null, // -> Int32
+                null, // -> Int64
+                null, // -> UInt8
+                null, // -> UInt16
+                null, // -> UInt32
+                null, // -> UInt64
+                null, // -> Single
+                null, // -> Double
+            },
+            { // UInt8 ->
+                null, // -> Int8
+                null, // -> Int16
+                null, // -> Int32
+                null, // -> Int64
+                null, // -> UInt8
+                null, // -> UInt16
+                null, // -> UInt32
+                null, // -> UInt64
+                null, // -> Single
+                null, // -> Double
+            },
         };
 
         private static Dictionary<MetadataType, int> indexMap = new Dictionary<MetadataType, int> {
@@ -197,10 +273,20 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return e.Expr;
             }
 
-            var fn = convs[fromIdx, toIdx];
-            var ret = fn(e);
+            //var fn = convs[fromIdx, toIdx];
+            //var ret = fn(e);
+            //return ret;
 
-            return ret;
+            var ctx = e.Ctx;
+            var js = jss[fromIdx, toIdx];
+            var parameters = new List<NamedExpr> { e.Expr.Named("e")};
+            foreach (var constant in consts) {
+                if (js.Contains(constant.Key)) {
+                    parameters.Add(constant.Value(ctx).Named(constant.Key));
+                }
+            }
+            var expr = new ExprJsExplicit(ctx, js, e.Type, parameters);
+            return expr;
         }
 
     }

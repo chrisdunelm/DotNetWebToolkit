@@ -75,7 +75,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestConv() { Verbose = true };
-            t.TestSByteToByte();
+            t.TestInt32ToUInt32();
             return;
 
         }
