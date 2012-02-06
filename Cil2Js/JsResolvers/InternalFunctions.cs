@@ -9,6 +9,9 @@ using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
+
+    using MDT = MetadataType;
+
     class InternalFunctions {
 
         // TODO: This way of creating/initialising arrays is not great.
@@ -28,7 +31,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var defaultValue = new ExprDefaultValue(ctx, elType).Named("defaultValue");
                 var a = new ExprVarLocal(ctx, arrayType).Named("a");
                 var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
-                var js = "a=new Array(count); a._=type; for(i=count-1;i>=0;i--) a[i]=defaultValue; return a;";
+                var js = @"
+a = new Array(count);
+a._ = type;
+for (i = count - 1; i >= 0; i--)
+    a[i] = defaultValue;
+return a;
+";
                 var stmt = new StmtJsExplicit(ctx, js, count, elTypeExpr, defaultValue, a, i);
                 return stmt;
             }
@@ -49,7 +58,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var assignableTo = new ExprJsTypeData(ctx, TypeData.AssignableTo).Named("assignableTo");
                 var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
                 var t = new ExprVarLocal(ctx, ctx.Type).Named("temp");
-                var js = "if (!obj) return true; temp=getTypeCall; if (temp===toType) return true; canCastTo=temp.assignableTo; for (i=canCastTo.length-1;i>=0;i--) if (canCastTo[i]===toType) return true; return false;";
+                var js = @"
+if (!obj) return true;
+temp = getTypeCall;
+if (temp === toType) return true;
+canCastTo = temp.assignableTo;
+for (i = canCastTo.length - 1; i >= 0; i--)
+    if (canCastTo[i]===toType)
+        return true;
+return false;
+";
                 var stmt = new StmtJsExplicit(ctx, js, obj, toType, canCastTo, getTypeCall, assignableTo, i, t);
                 return stmt;
             }
@@ -66,7 +84,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var obj = ctx.MethodParameter(0, "obj");
                 var toType = ctx.MethodParameter(1);
                 var callCanAssignTo = new ExprCall(ctx, (Func<object, Type, bool>)CanAssignTo, null, obj.Expr, toType).Named("callCanAssignTo");
-                var js = "return callCanAssignTo?obj:null;";
+                var js = "return callCanAssignTo ? obj : null;";
                 var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj);
                 return stmt;
             }
@@ -95,7 +113,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 };
                 var msg = msgParts.Aggregate((a, b) => new ExprBinary(ctx, BinaryOp.Add, ctx.String, a, b));
                 var ctorEx = new ExprNewObj(ctx, mCtorEx, msg).Named("callCtorEx");
-                var js = "if (callCanAssignTo) return obj; throw callCtorEx";
+                var js = @"
+if (callCanAssignTo) return obj;
+throw callCtorEx
+";
                 var stmt = new StmtJsExplicit(ctx, js, callCanAssignTo, obj, ctorEx);
                 return stmt;
             }
@@ -158,7 +179,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String)).Named("invCastEx");
-                var js = "if (!obj) return {hasValue:false,value:defaultValue}; if (!canAssignCall) throw invCastEx; return {hasValue:true,value:obj.v};";
+                var js = @"
+if (!obj) return { hasValue:false, value:defaultValue };
+if (!canAssignCall) throw invCastEx;
+return { hasValue:true, value:obj.v };
+";
                 var stmt = new StmtJsExplicit(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
                 return stmt;
             }
@@ -181,115 +206,72 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String)).Named("invCastEx");
-                var js = "if (!obj) throw nullRefEx; if (!canAssignCall) throw invCastEx; return obj.v;";
+                var js = @"
+if (!obj) throw nullRefEx;
+if (!canAssignCall) throw invCastEx;
+return obj.v;
+";
                 var stmt = new StmtJsExplicit(ctx, js, obj, nullRefEx, canAssign, invCastEx);
                 return stmt;
             }
         }
 
         [Js(typeof(ConvImpl))]
-        public static TOut Conv<TIn, TOut>(TIn v) {
+        public static TTo Conv<TFrom, TTo>(TFrom v) {
             throw new Exception();
         }
 
         class ConvImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
-                // Generic parameters can only be:
-                // TIn = Int32: TOut = UInt64
-                // TIn = Int64: TOut = UInt64
                 var mGenInst = (GenericInstanceMethod)ctx.MRef;
                 var tFrom = mGenInst.GenericArguments[0];
+                var mtFrom = tFrom.MetadataType;
                 var tTo = mGenInst.GenericArguments[1];
-                var v = ctx.MethodParameter(0, "v");
-                string js;
-                bool useTemp = false;
-                switch (tFrom.MetadataType) {
-                case MetadataType.SByte:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.Byte:
-                        js = "return v>=0?v:" + (Byte.MaxValue + 1) + "+v;";
-                        break;
-                    case MetadataType.UInt16:
-                        js = "return v>=0?v:" + (UInt16.MaxValue + 1) + "+v;";
-                        break;
-                    case MetadataType.UInt32:
-                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
-                        break;
-                    case MetadataType.UInt64:
-                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.Byte:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.SByte:
-                        js = "return v<=" + SByte.MaxValue + "?v:v-" + (Byte.MaxValue + 1) + ";";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.Int16:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.UInt32:
-                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
-                        break;
-                    case MetadataType.UInt64:
-                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.Int32:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.UInt32:
-                    case MetadataType.UInt64:
-                        js = "return v>=0?v:" + (UInt32.MaxValue + 1L) + "+v;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.Int64:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.UInt64:
-                        js = "return v>=0?v:" + UInt64.MaxValue + "+v+1;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.UInt64:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.Int64:
-                        js = "return v<=" + Int64.MaxValue + "?v:v-" + ((UInt64)Int64.MaxValue + 1L) + ";";
-                        break;
-                    case MetadataType.UInt32:
-                        useTemp = true;
-                        js = "temp=v&-1;return temp>=0?temp:" + (UInt32.MaxValue + 1L) + "+temp;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                case MetadataType.Single:
-                case MetadataType.Double:
-                    switch (tTo.MetadataType) {
-                    case MetadataType.UInt32:
-                        useTemp = true;
-                        js = "temp=~~v;return temp>=0?temp:" + (UInt32.MaxValue + 1L) + "+temp;";
-                        break;
-                    default:
-                        throw new NotImplementedException("Cannot handle TOut: " + tTo.MetadataType);
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException("Cannot handle TIn: " + tFrom.MetadataType);
+                var mtTo = tTo.MetadataType;
+                var e = ctx.MethodParameter(0, "e");
+                Stmt stmt;
+                if ((mtFrom == MDT.SByte || mtFrom == MDT.Int16 || mtFrom == MDT.Int32) && (mtTo == MDT.Int64 || mtTo == MDT.UInt64)) {
+                    var u32max = ctx.Literal(0xffffffff, ctx.UInt32, "u32max");
+                    var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
+                    var js = "return e < 0 ? [u32max, u32limit + e] : [0, e]";
+                    stmt = new StmtJsExplicit(ctx, js, e, u32max, u32limit);
+                } else if (mtFrom == MDT.Int64 && (mtTo == MDT.Single || mtTo == MDT.Double)) {
+                    var v = ctx.Local(ctx.Double, "v");
+                    var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
+                    var negCall = new ExprBinary(ctx, BinaryOp.Sub, ctx.Int64, ctx.Literal((Int64)0, ctx.Int64), e.Expr).Named("negCall");
+                    var i32Minu32 = ctx.Literal(unchecked((UInt32)Int32.MinValue), ctx.UInt32, "i32Minu32");
+                    var doubleMinInt64 = ctx.Literal((double)Int64.MinValue, ctx.Double, "doubleMinInt64");
+                    var isNeg = ctx.Local(ctx.Boolean, "isNeg");
+                    var js = @"
+if (e[0] === i32Minu32 && !e[1]) return doubleMinInt64;
+isNeg = e[0] >>> 31;
+if (isNeg) e = negCall;
+v = e[0] * u32limit + e[1];
+return isNeg ? -v : v;
+";
+                    stmt = new StmtJsExplicit(ctx, js, e, v, u32limit, i32Minu32, negCall, doubleMinInt64);
+                } else if (mtFrom == MDT.UInt64 && (mtTo == MDT.Single || mtTo == MDT.Double)) {
+                    var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
+                    var js = "return e[0] * u32limit + e[1];";
+                    stmt = new StmtJsExplicit(ctx, js, e, u32limit);
+                } else if ((mtFrom == MDT.Single || mtFrom == MDT.Double) && (mtTo == MDT.Int64)) {
+                    var isNeg = ctx.Local(ctx.Boolean, "isNeg");
+                    var r = ctx.Local(ctx.Int64, "r");
+                    var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
+                    var negCall = new ExprBinary(ctx, BinaryOp.Sub, ctx.Int64, ctx.Literal((Int64)0, ctx.Int64), r.Expr).Named("negCall"); var js = @"
+isNeg = e < 0;
+if (isNeg) e = -e;
+r = [(e / u32limit) >>> 0, e >>> 0];
+return isNeg ? negCall : r;
+";
+                    stmt = new StmtJsExplicit(ctx, js, e, isNeg, u32limit, negCall, r);
+                } else if ((mtFrom == MDT.Single || mtFrom == MDT.Double) && (mtTo == MDT.UInt64)) {
+                    var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
+                    var js = "return [(e / u32limit) >>> 0, e >>> 0];";
+                    stmt = new StmtJsExplicit(ctx, js, e, u32limit);
+                } else {
+                    throw new NotImplementedException("Conversion not implemented (should never occur)");
                 }
-                var stmt = new StmtJsExplicit(ctx, js, v, useTemp ? new ExprVarLocal(ctx, ctx.Object).Named("temp") : null);
                 return stmt;
             }
         }

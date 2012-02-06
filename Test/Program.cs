@@ -74,8 +74,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestConv() { Verbose = true };
-            t.TestInt32ToUInt32();
+            var t = new TestInt64UInt64() { Verbose = true };
+            t.TestMultiply();
             return;
 
         }

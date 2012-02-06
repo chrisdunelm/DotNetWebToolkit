@@ -9,7 +9,7 @@ using Test.Utils;
 namespace Test.ExecutionTests {
 
     [TestFixture]
-    public class TestInt64 : ExecutionTestBase {
+    public class TestInt64UInt64 : ExecutionTestBase {
 
         [Test]
         public void TestSimpleReturnLargePos() {
