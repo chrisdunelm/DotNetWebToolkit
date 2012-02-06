@@ -18,7 +18,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 var hi = ctx.Local(ctx.UInt64, "hi");
                 var lo = ctx.Local(ctx.UInt64, "lo");
                 var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
-                var js = "hi=a[0]+b[0];lo=a[1]+b[1];if(lo>=limit){lo-=limit;hi++;}if(hi>=limit)hi-=limit;return[hi,lo];";
+                var js = @"
+hi = a[0] + b[0];
+lo = a[1] + b[1];
+if (lo >= limit) {
+    lo -= limit;
+    hi++;
+}
+if (hi >= limit) hi -= limit;
+return [hi, lo];
+";
                 var stmt = new StmtJsExplicit(ctx, js, a, b, hi, lo, limit);
                 return stmt;
             }
@@ -31,7 +40,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 var hi = ctx.Local(ctx.UInt64, "hi");
                 var lo = ctx.Local(ctx.UInt64, "lo");
                 var limit = ctx.Literal(0x100000000UL, ctx._UInt64, "limit");
-                var js = "hi=a[0]-b[0];lo=a[1]-b[1];if(lo<0){lo+=limit;hi--;}if(hi<0)hi+=limit;return[hi,lo];";
+                var js = @"
+hi = a[0] - b[0];
+lo = a[1] - b[1];
+if (lo < 0) {
+    lo += limit;
+    hi--;
+}
+if (hi < 0) hi += limit;
+return [hi, lo];
+";
                 var stmt = new StmtJsExplicit(ctx, js, a, b, hi, lo, limit);
                 return stmt;
             }
@@ -97,8 +115,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 var addCarry = ctx.Local(ctx.Int32, "addCarry");
                 var rrOfs = ctx.Local(ctx.Int32, "rrOfs");
                 var rr = ctx.Local(ctx.Int32.MakeArray(), "rr");
-                var hi = ctx.Local(ctx._UInt64, "hi");
-                var lo = ctx.Local(ctx._UInt64, "lo");
                 var mask = ctx.Literal(0xffff, ctx.Int32, "mask");
                 var limit = ctx.Literal(0x10000, ctx.Int32, "limit");
                 var js = @"
@@ -122,11 +138,9 @@ for (ib = 3; ib >= 0; ib--) {
         }
     }
 }
-lo = rr[3] + rr[2] * limit;
-hi = rr[1] + rr[0] * limit;
-return [hi, lo];
+return [rr[1] + rr[0] * limit, rr[3] + rr[2] * limit];
 ";
-                var stmt = new StmtJsExplicit(ctx, js, a, b, aa, bb, rr, hi, lo, mask, limit, ia, ib, mul, add, mulCarry, addCarry, rrOfs);
+                var stmt = new StmtJsExplicit(ctx, js, a, b, aa, bb, rr, mask, limit, ia, ib, mul, add, mulCarry, addCarry, rrOfs);
                 return stmt;
             }
         }
