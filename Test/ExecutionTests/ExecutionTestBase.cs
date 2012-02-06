@@ -191,6 +191,7 @@ namespace Test.ExecutionTests {
                 Console.WriteLine(js);
             }
             var withinAttr = mi.GetCustomAttribute<WithinAttribute>();
+            var withinUlpsAttr = mi.GetCustomAttribute<WithinUlpsAttribute>();
             var icAttr = mi.GetCustomAttribute<IterationCountAttribute>();
             var minIterations = mi.GetParameters().Max(x => x.GetCustomAttribute<ParamAttribute>().NullThru(y => y.MinIterations));
             int iterationCount;
@@ -253,6 +254,9 @@ namespace Test.ExecutionTests {
                         IResolveConstraint expected = equalTo;
                         if (withinAttr != null) {
                             expected = equalTo.Within(withinAttr.Delta);
+                        }
+                        if (withinUlpsAttr != null) {
+                            expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
                         }
                         Assert.That(jsResult, expected);
                     }

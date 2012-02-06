@@ -16,4 +16,15 @@ namespace Test.Utils {
 
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    class WithinUlpsAttribute : Attribute {
+
+        public WithinUlpsAttribute(int ulps) {
+            this.Ulps = ulps;
+        }
+
+        public int Ulps { get; private set; }
+
+    }
+
 }
