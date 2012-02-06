@@ -159,9 +159,10 @@ namespace Test.ExecutionTests {
             case TypeCode.Int32:
             case TypeCode.UInt16:
             case TypeCode.UInt32:
+                return arg.ToString();
             case TypeCode.Single:
             case TypeCode.Double:
-                return arg.ToString();
+                return ((IFormattable)arg).ToString("r", null);
             case TypeCode.Int64:
                 var int64 = (UInt64)(Int64)arg;
                 return string.Format("[{0},{1}]", int64 >> 32, int64 & 0xffffffff);
@@ -192,6 +193,7 @@ namespace Test.ExecutionTests {
             }
             var withinAttr = mi.GetCustomAttribute<WithinAttribute>();
             var withinUlpsAttr = mi.GetCustomAttribute<WithinUlpsAttribute>();
+            var withinPercentAttr = mi.GetCustomAttribute<WithinPercentAttribute>();
             var icAttr = mi.GetCustomAttribute<IterationCountAttribute>();
             var minIterations = mi.GetParameters().Max(x => x.GetCustomAttribute<ParamAttribute>().NullThru(y => y.MinIterations));
             int iterationCount;
@@ -257,6 +259,9 @@ namespace Test.ExecutionTests {
                         }
                         if (withinUlpsAttr != null) {
                             expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
+                        }
+                        if (withinPercentAttr != null) {
+                            expected = equalTo.Within(withinPercentAttr.Percent).Percent;
                         }
                         Assert.That(jsResult, expected);
                     }

@@ -27,4 +27,15 @@ namespace Test.Utils {
 
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    class WithinPercentAttribute : Attribute {
+
+        public WithinPercentAttribute(double percent) {
+            this.Percent = percent;
+        }
+
+        public double Percent { get; private set; }
+
+    }
+
 }

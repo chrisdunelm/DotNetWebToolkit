@@ -112,16 +112,35 @@ namespace Test.Utils {
 
     class ParamFullRangeAttribute : ParamAttribute {
 
+        public ParamFullRangeAttribute() {
+            this.min = this.max = null;
+        }
+
+        public ParamFullRangeAttribute(object min, object max) {
+            this.min = min;
+            this.max = max;
+        }
+
+        private object min, max;
+
         public override int? MinIterations {
             get { return 15; }
         }
 
-        private static T Gen<T>(T[] template, int iteration, Func<T> fnRnd) {
+        private T Gen<T>(T[] template, int iteration, Func<T> fnRnd) where T : IComparable<T> {
+            T v;
             if (iteration < template.Length) {
-                return template[iteration];
+                v = template[iteration];
             } else {
-                return fnRnd();
+                v = fnRnd();
             }
+            if (this.min != null && v.CompareTo((T)Convert.ChangeType(this.min, typeof(T))) < 0) { // v < this.min
+                v = (T)Convert.ChangeType(this.min, typeof(T));
+            }
+            if (this.max != null && v.CompareTo((T)Convert.ChangeType(this.max, typeof(T))) > 0) { // v > this.max
+                v = (T)Convert.ChangeType(this.max, typeof(T));
+            }
+            return v;
         }
 
         private static SByte[] SByteValues = { SByte.MinValue, SByte.MaxValue, 0, 1, -1, SByte.MinValue + 1, SByte.MaxValue - 1 };
@@ -157,43 +176,43 @@ namespace Test.Utils {
         }
 
         public override sbyte GenSByte(Random rnd, int iteration) {
-            return Gen(SByteValues, iteration, () => (sbyte)rnd.Next(0, 256));
+            return this.Gen(SByteValues, iteration, () => (sbyte)rnd.Next(0, 256));
         }
 
         public override byte GenByte(Random rnd, int iteration) {
-            return Gen(ByteValues, iteration, () => (byte)rnd.Next(0, 256));
+            return this.Gen(ByteValues, iteration, () => (byte)rnd.Next(0, 256));
         }
 
         public override short GenInt16(Random rnd, int iteration) {
-            return Gen(Int16Values, iteration, () => (short)rnd.Next(short.MinValue + 2, short.MaxValue - 1));
+            return this.Gen(Int16Values, iteration, () => (short)rnd.Next(short.MinValue + 2, short.MaxValue - 1));
         }
 
         public override int GenInt32(Random rnd, int iteration) {
-            return Gen(Int32Values, iteration, () => rnd.Next(int.MinValue + 2, int.MaxValue - 1));
+            return this.Gen(Int32Values, iteration, () => rnd.Next(int.MinValue + 2, int.MaxValue - 1));
         }
 
         public override long GenInt64(Random rnd, int iteration) {
-            return Gen(Int64Values, iteration, () => BitConverter.ToInt64(Bc(rnd, 8), 0));
+            return this.Gen(Int64Values, iteration, () => BitConverter.ToInt64(Bc(rnd, 8), 0));
         }
 
         public override ushort GenUInt16(Random rnd, int iteration) {
-            return Gen(UInt16Values, iteration, () => BitConverter.ToUInt16(Bc(rnd, 2), 0));
+            return this.Gen(UInt16Values, iteration, () => BitConverter.ToUInt16(Bc(rnd, 2), 0));
         }
 
         public override uint GenUInt32(Random rnd, int iteration) {
-            return Gen(UInt32Values, iteration, () => BitConverter.ToUInt32(Bc(rnd, 4), 0));
+            return this.Gen(UInt32Values, iteration, () => BitConverter.ToUInt32(Bc(rnd, 4), 0));
         }
 
         public override ulong GenUInt64(Random rnd, int iteration) {
-            return Gen(UInt64Values, iteration, () => BitConverter.ToUInt64(Bc(rnd, 8), 0));
+            return this.Gen(UInt64Values, iteration, () => BitConverter.ToUInt64(Bc(rnd, 8), 0));
         }
 
         public override float GenSingle(Random rnd, int iteration) {
-            return Gen(SingleValues, iteration, () => (float)(rnd.NextDouble() - 0.5) * float.MaxValue);
+            return this.Gen(SingleValues, iteration, () => (float)(rnd.NextDouble() - 0.5) * float.MaxValue);
         }
 
         public override double GenDouble(Random rnd, int iteration) {
-            return Gen(DoubleValues, iteration, () => (rnd.NextDouble() - 0.5) * double.MaxValue);
+            return this.Gen(DoubleValues, iteration, () => (rnd.NextDouble() - 0.5) * double.MaxValue);
         }
 
     }
