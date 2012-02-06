@@ -558,6 +558,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         private void HandleExplicitJs(string js, IEnumerable<NamedExpr> exprs) {
+            js = js.Trim();
             var es = exprs.Where(x => x != null).ToDictionary(x => x.Name, x => x.Expr);
             int ofs = 0;
             Func<char> getC = () => ofs < js.Length ? js[ofs++] : '\0';
@@ -578,8 +579,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         }
                         cur.Length = 0;
                     }
-                    if (c != '\0') {
-                        this.js.Append(c);
+                    if (c != '\0' && c != '\r') {
+                        if (c == '\n') {
+                            this.NewLine();
+                        } else {
+                            this.js.Append(c);
+                        }
                     }
                 }
                 if (c == '\0') {
