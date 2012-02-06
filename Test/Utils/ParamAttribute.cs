@@ -124,7 +124,7 @@ namespace Test.Utils {
         private object min, max;
 
         public override int? MinIterations {
-            get { return 15; }
+            get { return 25; }
         }
 
         private T Gen<T>(T[] template, int iteration, Func<T> fnRnd) where T : IComparable<T> {
@@ -219,6 +219,12 @@ namespace Test.Utils {
 
     class ParamFullRangeNonZeroAttribute : ParamFullRangeAttribute {
 
+        public ParamFullRangeNonZeroAttribute() {
+        }
+
+        public ParamFullRangeNonZeroAttribute(object min, object max)
+            : base(min, max) {
+        }
         public override long GenInt64(Random rnd, int iteration) {
             var v = base.GenInt64(rnd, iteration);
             if (v == 0) {
