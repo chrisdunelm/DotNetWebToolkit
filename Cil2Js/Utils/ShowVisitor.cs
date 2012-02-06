@@ -110,6 +110,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         private static Dictionary<UnaryOp, string> unaryOps = new Dictionary<UnaryOp, string> {
             { UnaryOp.Not, "!" },
             { UnaryOp.Negate, "-" },
+            { UnaryOp.BitwiseNot, "~" },
         };
         protected override ICode VisitUnary(ExprUnary e) {
             this.code.Append("(");

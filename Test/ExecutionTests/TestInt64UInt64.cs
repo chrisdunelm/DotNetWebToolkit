@@ -135,6 +135,22 @@ namespace Test.ExecutionTests {
             return a % b;
         }
 
+        [Test]
+        public void TestInt64BitwiseNot() {
+            this.Test((Func<Int64, Int64>)TestInt64BitwiseNot);
+        }
+        private static Int64 TestInt64BitwiseNot([ParamFullRange]Int64 a) {
+            return ~a;
+        }
+
+        [Test]
+        public void TestUInt64BitwiseNot() {
+            this.Test((Func<UInt64, UInt64>)TestUInt64BitwiseNot);
+        }
+        private static UInt64 TestUInt64BitwiseNot([ParamFullRange]UInt64 a) {
+            return ~a;
+        }
+
     }
 
 }

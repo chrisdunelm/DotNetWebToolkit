@@ -205,6 +205,15 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
             }
         }
 
+        public class BitwiseNotImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var stmt = new StmtJsExplicit(ctx, "return [(~a[0]) >>> 0, (~a[1]) >>> 0];", a);
+                return stmt;
+            }
+        }
+
+
     }
 
     class _Int64 {
@@ -289,6 +298,11 @@ return neg ? rNegate : r;
             }
         }
 
+        [Js(typeof(_Int64UInt64.BitwiseNotImpl))]
+        public static Int64 BitwiseNot(Int64 a) {
+            throw new Exception();
+        }
+
     }
 
     class _UInt64 {
@@ -338,6 +352,11 @@ return neg ? rNegate : r;
                 var stmt = new StmtJsExplicit(ctx, js, divMod);
                 return stmt;
             }
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseNotImpl))]
+        public static UInt64 BitwiseNot(UInt64 a) {
+            throw new Exception();
         }
 
     }

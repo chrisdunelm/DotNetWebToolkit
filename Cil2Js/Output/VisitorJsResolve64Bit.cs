@@ -19,14 +19,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitUnary(ExprUnary e) {
             if (e.Expr.Type.IsInt64() || e.Expr.Type.IsUInt64()) {
                 var ctx = e.Ctx;
+                var signed = e.Expr.Type.IsInt64();
+                Delegate d;
                 switch (e.Op) {
                 case UnaryOp.Negate:
                     var zero = ctx.Literal(0L, ctx.Int64);
                     var subCall = new ExprBinary(ctx, BinaryOp.Sub, ctx.Int64, zero, e.Expr);
                     return subCall;
+                case UnaryOp.BitwiseNot:
+                    d = signed ? (Delegate)(Func<Int64, Int64>)_Int64.BitwiseNot : (Func<UInt64, UInt64>)_UInt64.BitwiseNot;
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + e.Op);
                 }
+                var m = ctx.Module.Import(d.Method);
+                var expr = (Expr)this.Visit(e.Expr);
+                var call = new ExprCall(ctx, m, null, expr);
+                return call;
             }
             return base.VisitUnary(e);
         }

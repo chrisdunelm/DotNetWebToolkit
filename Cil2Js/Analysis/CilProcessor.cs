@@ -133,6 +133,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.StLoc(((VariableDefinition)inst.Operand).Index);
             case Code.Neg:
                 return this.SsaLocalAssignment(this.Unary(UnaryOp.Negate));
+            case Code.Not:
+                return this.SsaLocalAssignment(this.Unary(UnaryOp.BitwiseNot));
             case Code.Add:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Add));
             case Code.Sub:
