@@ -137,18 +137,66 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestInt64BitwiseNot() {
-            this.Test((Func<Int64, Int64>)TestInt64BitwiseNot);
+            this.Test((Func<Int64, Int64>)TestInt64BitwiseNotFunc);
         }
-        private static Int64 TestInt64BitwiseNot([ParamFullRange]Int64 a) {
+        private static Int64 TestInt64BitwiseNotFunc([ParamFullRange]Int64 a) {
             return ~a;
         }
 
         [Test]
         public void TestUInt64BitwiseNot() {
-            this.Test((Func<UInt64, UInt64>)TestUInt64BitwiseNot);
+            this.Test((Func<UInt64, UInt64>)TestUInt64BitwiseNotFunc);
         }
-        private static UInt64 TestUInt64BitwiseNot([ParamFullRange]UInt64 a) {
+        private static UInt64 TestUInt64BitwiseNotFunc([ParamFullRange]UInt64 a) {
             return ~a;
+        }
+
+        [Test]
+        public void TestInt64BitwiseAnd() {
+            this.Test((Func<Int64, Int64, Int64>)TestInt64BitwiseAndFunc);
+        }
+        private static Int64 TestInt64BitwiseAndFunc([ParamFullRange]Int64 a, [ParamFullRange]Int64 b) {
+            return a & b;
+        }
+
+        [Test]
+        public void TestUInt64BitwiseAnd() {
+            this.Test((Func<UInt64, UInt64, UInt64>)TestUInt64BitwiseAndFunc);
+        }
+        private static UInt64 TestUInt64BitwiseAndFunc([ParamFullRange]UInt64 a, [ParamFullRange]UInt64 b) {
+            return a & b;
+        }
+
+        [Test]
+        public void TestInt64BitwiseOr() {
+            this.Test((Func<Int64, Int64, Int64>)TestInt64BitwiseOrFunc);
+        }
+        private static Int64 TestInt64BitwiseOrFunc([ParamFullRange]Int64 a, [ParamFullRange]Int64 b) {
+            return a | b;
+        }
+
+        [Test]
+        public void TestUInt64BitwiseOr() {
+            this.Test((Func<UInt64, UInt64, UInt64>)TestUInt64BitwiseOrFunc);
+        }
+        private static UInt64 TestUInt64BitwiseOrFunc([ParamFullRange]UInt64 a, [ParamFullRange]UInt64 b) {
+            return a | b;
+        }
+
+        [Test]
+        public void TestInt64BitwiseXor() {
+            this.Test((Func<Int64, Int64, Int64>)TestInt64BitwiseXorFunc);
+        }
+        private static Int64 TestInt64BitwiseXorFunc([ParamFullRange]Int64 a, [ParamFullRange]Int64 b) {
+            return a ^ b;
+        }
+
+        [Test]
+        public void TestUInt64BitwiseXor() {
+            this.Test((Func<UInt64, UInt64, UInt64>)TestUInt64BitwiseXorFunc);
+        }
+        private static UInt64 TestUInt64BitwiseXorFunc([ParamFullRange]UInt64 a, [ParamFullRange]UInt64 b) {
+            return a ^ b;
         }
 
     }

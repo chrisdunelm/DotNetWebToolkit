@@ -67,6 +67,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case BinaryOp.Rem_Un:
                     d = (Func<UInt64, UInt64, UInt64>)_UInt64.Remainder;
                     break;
+                case BinaryOp.BitwiseAnd:
+                    d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.BitwiseAnd : (Func<UInt64, UInt64, UInt64>)_UInt64.BitwiseAnd;
+                    break;
+                case BinaryOp.BitwiseOr:
+                    d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.BitwiseOr : (Func<UInt64, UInt64, UInt64>)_UInt64.BitwiseOr;
+                    break;
+                case BinaryOp.BitwiseXor:
+                    d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.BitwiseXor : (Func<UInt64, UInt64, UInt64>)_UInt64.BitwiseXor;
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + e.Op);
                 }

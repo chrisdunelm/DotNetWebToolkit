@@ -213,6 +213,32 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
             }
         }
 
+        public class BitwiseAndImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var b = ctx.MethodParameter(1, "b");
+                var stmt = new StmtJsExplicit(ctx, "return [(a[0] & b[0]) >>> 0, (a[1] & b[1]) >>> 0];", a, b);
+                return stmt;
+            }
+        }
+
+        public class BitwiseOrImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var b = ctx.MethodParameter(1, "b");
+                var stmt = new StmtJsExplicit(ctx, "return [(a[0] | b[0]) >>> 0, (a[1] | b[1]) >>> 0];", a, b);
+                return stmt;
+            }
+        }
+
+        public class BitwiseXorImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var b = ctx.MethodParameter(1, "b");
+                var stmt = new StmtJsExplicit(ctx, "return [(a[0] ^ b[0]) >>> 0, (a[1] ^ b[1]) >>> 0];", a, b);
+                return stmt;
+            }
+        }
 
     }
 
@@ -303,6 +329,21 @@ return neg ? rNegate : r;
             throw new Exception();
         }
 
+        [Js(typeof(_Int64UInt64.BitwiseAndImpl))]
+        public static Int64 BitwiseAnd(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseOrImpl))]
+        public static Int64 BitwiseOr(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseXorImpl))]
+        public static Int64 BitwiseXor(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
     }
 
     class _UInt64 {
@@ -356,6 +397,21 @@ return neg ? rNegate : r;
 
         [Js(typeof(_Int64UInt64.BitwiseNotImpl))]
         public static UInt64 BitwiseNot(UInt64 a) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseAndImpl))]
+        public static UInt64 BitwiseAnd(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseOrImpl))]
+        public static UInt64 BitwiseOr(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.BitwiseXorImpl))]
+        public static UInt64 BitwiseXor(UInt64 a, UInt64 b) {
             throw new Exception();
         }
 
