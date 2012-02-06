@@ -75,7 +75,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestInt64UInt64() { Verbose = true };
-            t.TestMultiply();
+            t.TestInt64Remainder();
             return;
 
         }

@@ -141,8 +141,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Mul));
             case Code.Div:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Div));
+            case Code.Div_Un:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.Div_Un));
             case Code.Rem:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Rem));
+            case Code.Rem_Un:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.Rem_Un));
             case Code.Shl:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Shl));
             case Code.And:

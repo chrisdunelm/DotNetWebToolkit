@@ -11,7 +11,9 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         Sub,
         Mul,
         Div,
+        Div_Un,
         Rem,
+        Rem_Un,
 
         Shl,
 

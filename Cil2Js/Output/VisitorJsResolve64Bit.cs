@@ -16,6 +16,21 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return v.Visit(ast);
         }
 
+        protected override ICode VisitUnary(ExprUnary e) {
+            if (e.Expr.Type.IsInt64() || e.Expr.Type.IsUInt64()) {
+                var ctx = e.Ctx;
+                switch (e.Op) {
+                case UnaryOp.Negate:
+                    var zero = ctx.Literal(0L, ctx.Int64);
+                    var subCall = new ExprBinary(ctx, BinaryOp.Sub, ctx.Int64, zero, e.Expr);
+                    return subCall;
+                default:
+                    throw new NotImplementedException("Cannot handle: " + e.Op);
+                }
+            }
+            return base.VisitUnary(e);
+        }
+
         protected override ICode VisitBinary(ExprBinary e) {
             if (e.Left.Type.IsInt64() || e.Left.Type.IsUInt64()) {
                 var ctx = e.Ctx;
@@ -30,6 +45,18 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     break;
                 case BinaryOp.Mul:
                     d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.Multiply : (Func<UInt64, UInt64, UInt64>)_UInt64.Multiply;
+                    break;
+                case BinaryOp.Div:
+                    d = (Func<Int64, Int64, Int64>)_Int64.Divide;
+                    break;
+                case BinaryOp.Div_Un:
+                    d = (Func<UInt64, UInt64, UInt64>)_UInt64.Divide;
+                    break;
+                case BinaryOp.Rem:
+                    d = (Func<Int64, Int64, Int64>)_Int64.Remainder;
+                    break;
+                case BinaryOp.Rem_Un:
+                    d = (Func<UInt64, UInt64, UInt64>)_UInt64.Remainder;
                     break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + e.Op);
