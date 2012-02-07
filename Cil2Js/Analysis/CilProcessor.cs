@@ -175,10 +175,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return null;
             case Code.Brtrue_S:
             case Code.Brtrue:
-                return this.SsaInstResultAssignment(inst, this.stack.Pop());
+                return this.BrTrue(inst);
+                //return this.SsaInstResultAssignment(inst, this.stack.Pop());
             case Code.Brfalse_S:
             case Code.Brfalse:
-                return this.SsaInstResultAssignment(inst, this.Unary(UnaryOp.Not));
+                return this.BrFalse(inst);
+                //return this.SsaInstResultAssignment(inst, this.Unary(UnaryOp.Not));
             case Code.Beq_S:
             case Code.Beq:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.Equal));
@@ -403,6 +405,30 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var target = this.instResults[inst];
             var assignment = new StmtAssignment(this.ctx, target, expr);
             return assignment;
+        }
+
+        private Stmt BrTrue(Instruction inst) {
+            var expr = this.stack.Pop();
+            if (expr.Type.IsString()) {
+                // TODO: Move this JS-specific processing into a later, JS-specific stage
+                // Special processing of string null-check required, as empty string == false in Javascript
+                var check = new ExprBinary(this.ctx, BinaryOp.NotEqual, this.ctx.Boolean, expr, new ExprLiteral(this.ctx, null, this.ctx.String));
+                return this.SsaInstResultAssignment(inst, check);
+            } else {
+                return this.SsaInstResultAssignment(inst, expr);
+            }
+        }
+
+        private Stmt BrFalse(Instruction inst) {
+            var expr = this.stack.Pop();
+            if (expr.Type.IsString()) {
+                // TODO: Move this JS-specific processing into a later, JS-specific stage
+                // Special processing of string null-check required, as empty string == false in Javascript
+                var check = new ExprBinary(this.ctx, BinaryOp.Equal, this.ctx.Boolean, expr, new ExprLiteral(this.ctx, null, this.ctx.String));
+                return this.SsaInstResultAssignment(inst, check);
+            } else {
+                return this.SsaInstResultAssignment(inst, new ExprUnary(this.ctx, UnaryOp.Not, this.ctx.Boolean, expr));
+            }
         }
 
         private Stmt Conv(TypeReference convTo, bool forceFromUnsigned = false) {
