@@ -74,8 +74,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestInt64UInt64() { Verbose = true };
-            t.TestUInt64LessThanOrEqual();
+            var t = new TestCasting() { Verbose = true };
+            t.TestIsType();
             return;
 
         }

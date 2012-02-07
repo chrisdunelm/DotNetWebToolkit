@@ -67,7 +67,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitBinary(ExprBinary e) {
-            if (e.Op == BinaryOp.GreaterThan && !e.Left.Type.IsValueType && !e.Right.Type.IsValueType) {
+            if (e.Op == BinaryOp.GreaterThan_Un && !e.Left.Type.IsValueType && !e.Right.Type.IsValueType) {
                 // C# compiles <obj> != null to <obj> > null. Change to inequality
                 return new ExprBinary(e.Ctx, BinaryOp.NotEqual, e.Ctx.Boolean, e.Left, e.Right);
             }
