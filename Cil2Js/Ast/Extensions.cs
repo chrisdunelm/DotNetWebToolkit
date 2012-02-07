@@ -57,6 +57,13 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return false;
         }
 
+        public static bool IsLiteralNull(this Expr e) {
+            if (e.ExprType == Expr.NodeType.Literal) {
+                return ((ExprLiteral)e).Value == null;
+            }
+            return false;
+        }
+
         public static bool DoesEqual(this Stmt a, Stmt b) {
             return VisitorSameStmt.AreSame(a, b);
         }

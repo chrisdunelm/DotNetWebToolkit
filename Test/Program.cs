@@ -75,7 +75,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestCasting() { Verbose = true };
-            t.TestIsType();
+            t.TestIsTypeValueType();
             return;
 
         }

@@ -17,20 +17,20 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         // TODO: This way of creating/initialising arrays is not great.
         // A new method will be created for each type of array
         // Although the other option requires getting default value at runtime, also not great
-        [Js(typeof(CreateArrayImpl))]
-        public static T[] CreateArray<T>(int size) {
+        [Js(typeof(CreateArrayValueTypeImpl))]
+        public static T[] CreateArrayValueType<T>(int size) where T : struct {
             throw new Exception();
         }
 
-        class CreateArrayImpl : IJsImpl {
+        class CreateArrayValueTypeImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var count = ctx.MethodParameter(0, "count");
                 var elType = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var arrayType = elType.MakeArray();
                 var elTypeExpr = new ExprJsTypeVarName(ctx, arrayType).Named("type");
                 var defaultValue = new ExprDefaultValue(ctx, elType).Named("defaultValue");
-                var a = new ExprVarLocal(ctx, arrayType).Named("a");
-                var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
+                var a = ctx.Local(arrayType, "a");
+                var i = ctx.Local(ctx.Int32, "i");
                 var js = @"
 a = new Array(count);
 a._ = type;
@@ -42,6 +42,24 @@ return a;
                 return stmt;
             }
         }
+
+        [Js(typeof(CreateArrayRefTypeImpl))]
+        public static T[] CreateArrayRefType<T>(int size) where T : class {
+            throw new Exception();
+        }
+
+        class CreateArrayRefTypeImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var count = ctx.MethodParameter(0, "count");
+                var elType = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var arrayType = elType.MakeArray();
+                var elTypeExpr = new ExprJsTypeVarName(ctx, arrayType).Named("type");
+                var a = ctx.Local(arrayType, "a");
+                var stmt = new StmtJsExplicit(ctx, "a = new Array(count); a._ = type; return a;", count, elTypeExpr, a);
+                return stmt;
+            }
+        }
+
 
         [Js(typeof(CanAssignToImpl))]
         private static bool CanAssignTo(object o, Type toType) {

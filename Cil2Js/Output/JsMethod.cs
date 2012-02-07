@@ -284,11 +284,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     break;
                 case MetadataType.Int64:
                     var i64 = (UInt64)(Int64)e.Value;
-                    value = string.Format("[{0},{1}]", (i64 >> 32) & 0xffffffffUL, i64 & 0xffffffffUL);
+                    value = string.Format("[{0}, {1}]", (i64 >> 32) & 0xffffffffUL, i64 & 0xffffffffUL);
                     break;
                 case MetadataType.UInt64:
                     var u64 = (UInt64)e.Value;
-                    value = string.Format("[{0},{1}]", (u64 >> 32) & 0xffffffffUL, u64 & 0xffffffffUL);
+                    value = string.Format("[{0}, {1}]", (u64 >> 32) & 0xffffffffUL, u64 & 0xffffffffUL);
                     break;
                 default:
                     value = e.Value;
@@ -352,16 +352,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (isIFaceCall) {
                 var iTableIndex = this.resolver.InterfaceCallIndices[e.CallMethod];
                 var iFaceName = this.resolver.InterfaceNames[e.CallMethod.DeclaringType];
-                //this.Visit(e.ObjInit);
-                //this.js.AppendFormat("._.{0}[{1}]", iFaceName, iTableIndex);
                 this.Visit(e.RuntimeType);
                 this.js.AppendFormat(".{0}[{1}]", iFaceName, iTableIndex);
                 this.CallAppendArgs(e);
             } else {
                 var mBasemost = e.CallMethod.GetBasemostMethod(null);
                 int vTableIndex = this.resolver.VirtualCallIndices[mBasemost];
-                //this.Visit(e.ObjInit);
-                //this.js.AppendFormat("._.{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
                 this.Visit(e.RuntimeType);
                 this.js.AppendFormat(".{0}[{1}]", this.resolver.TypeDataNames[TypeData.VTable], vTableIndex);
                 this.CallAppendArgs(e);
@@ -486,36 +482,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitConv(ExprConv e) {
             throw new InvalidOperationException("This should never occur");
-            //var fromType = e.Expr.Type;
-            //var toType = e.Type;
-            //string js;
-            //switch (fromType.MetadataType) {
-            //case MetadataType.Int64:
-            //    switch (toType.MetadataType) {
-            //    case MetadataType.UInt64:
-            //        js = "
-            //        break;
-            //    default:
-            //        throw new NotImplementedException("Cannot handle to: " + toType.MetadataType);
-            //    }
-            //default:
-            //    throw new NotImplementedException("Cannot handle conv from: " + fromType.MetadataType);
-            //}
-            ////var convToInteger = !fromType.IsInteger() && toType.IsInteger();
-            ////var convToUnsigned = fromType.IsSignedInteger() && toType.IsUnsignedInteger();
-            ////var convToSigned = fromType.IsUnsignedInteger() && fromType.IsSignedInteger();
-            ////// TODO: Mask if required
-            ////// TODO: Sign/unsign if required
-            ////if (convToUnsigned) {
-            ////}
-            ////if (convToInteger) {
-            ////    this.js.Append("(~~");
-            ////}
-            ////this.Visit(e.Expr);
-            ////if (convToInteger) {
-            ////    this.js.Append(")");
-            ////}
-            //return e;
         }
 
         protected override ICode VisitCast(ExprCast e) {

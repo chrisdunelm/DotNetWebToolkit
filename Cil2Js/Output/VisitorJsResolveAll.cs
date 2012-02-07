@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Analysis;
 using DotNetWebToolkit.Cil2Js.Ast;
@@ -60,13 +61,35 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitNewArray(ExprNewArray e) {
             var ctx = e.Ctx;
-            var caGenDef = ((Func<int, int[]>)InternalFunctions.CreateArray<int>).Method.GetGenericMethodDefinition();
+            MethodInfo caGenDef;
+            if (e.ElementType.IsValueType) {
+                caGenDef = ((Func<int, int[]>)InternalFunctions.CreateArrayValueType<int>).Method.GetGenericMethodDefinition();
+            } else {
+                caGenDef = ((Func<int, object[]>)InternalFunctions.CreateArrayRefType<object>).Method.GetGenericMethodDefinition();
+            }
             var mCreateArray = ctx.Module.Import(caGenDef).MakeGeneric(e.ElementType);
             var expr = new ExprCall(ctx, mCreateArray, null, e.ExprNumElements);
             return expr;
         }
 
         protected override ICode VisitBinary(ExprBinary e) {
+            var ctx = e.Ctx;
+            if (e.Op == BinaryOp.Equal) {
+                if (e.Left.IsLiteralNull()) {
+                    return new ExprJsExplicit(ctx, "(!e)", ctx.Boolean, e.Right.Named("e"));
+                }
+                if (e.Right.IsLiteralNull()) {
+                    return new ExprJsExplicit(ctx, "(!e)", ctx.Boolean, e.Left.Named("e"));
+                }
+            }
+            if (e.Op == BinaryOp.NotEqual) {
+                if (e.Left.IsLiteralNull()) {
+                    return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Right.Named("e"));
+                }
+                if (e.Right.IsLiteralNull()) {
+                    return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Left.Named("e"));
+                }
+            }
             if (e.Op == BinaryOp.GreaterThan_Un && !e.Left.Type.IsValueType && !e.Right.Type.IsValueType) {
                 // C# compiles <obj> != null to <obj> > null. Change to inequality
                 return new ExprBinary(e.Ctx, BinaryOp.NotEqual, e.Ctx.Boolean, e.Left, e.Right);
