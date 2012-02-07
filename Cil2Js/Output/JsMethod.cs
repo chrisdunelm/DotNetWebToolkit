@@ -38,11 +38,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var sb = new StringBuilder();
             // Method declaration
             var methodName = resolver.MethodNames[mRef];
-            var parameterNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y], "_")).ToArray();
+            var parameterNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y])).ToArray();
             if (!mDef.IsStatic) {
-                var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x], "_");
+                var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x]);
                 parameterNames = parameterNames.Prepend(thisName).ToArray();
             }
+            var unusedParameterNameGen = new NameGenerator();
+            parameterNames = parameterNames.Select(x => x ?? ("_" + unusedParameterNameGen.GetNewName())).ToArray();
             sb.AppendFormat("// {0}", mRef.FullName);
             sb.AppendLine();
             sb.AppendFormat("var {0} = function({1}) {{", methodName, string.Join(", ", parameterNames));

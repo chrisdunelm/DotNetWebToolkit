@@ -74,8 +74,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestDictionary() { Verbose = true };
-            t.Test1();
+            var t = new TestGenericVirtualCalls() { Verbose = true };
+            t.TestGenericMethodInGenericTypeVCall();
             return;
 
         }

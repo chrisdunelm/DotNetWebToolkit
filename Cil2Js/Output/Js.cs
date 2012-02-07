@@ -438,6 +438,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             };
 
             jsNewLine();
+            js.Append("\"use strict\";");
+            jsNewLine();
             // Construct methods
             foreach (var methodInfo in methodAsts) {
                 var mRef = methodInfo.Key;

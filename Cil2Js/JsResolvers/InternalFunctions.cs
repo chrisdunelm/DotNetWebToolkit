@@ -267,7 +267,7 @@ if (isNeg) e = negCall;
 v = e[0] * u32limit + e[1];
 return isNeg ? -v : v;
 ";
-                    stmt = new StmtJsExplicit(ctx, js, e, v, u32limit, i32Minu32, negCall, doubleMinInt64);
+                    stmt = new StmtJsExplicit(ctx, js, e, v, u32limit, i32Minu32, negCall, doubleMinInt64, isNeg);
                 } else if (mtFrom == MDT.UInt64 && (mtTo == MDT.Single || mtTo == MDT.Double)) {
                     var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
                     var js = "return e[0] * u32limit + e[1];";

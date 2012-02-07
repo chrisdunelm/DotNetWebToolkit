@@ -286,6 +286,7 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0, "a");
                 var b = ctx.MethodParameter(1, "b");
+                var neg = ctx.Local(ctx.Boolean, "neg");
                 var aNegate = new ExprUnary(ctx, UnaryOp.Negate, ctx.Int64, a.Expr).Named("aNegate");
                 var bNegate = new ExprUnary(ctx, UnaryOp.Negate, ctx.Int64, b.Expr).Named("bNegate");
                 var divMod = new ExprCall(ctx, (Func<UInt64, UInt64, object>)_Int64UInt64.UInt64DivRem, null, a.Expr, b.Expr).Named("divMod");
@@ -306,7 +307,7 @@ if (b[0] >>> 31) {
 r = divMod[0];
 return neg ? rNegate : r;
 ";
-                var stmt = new StmtJsExplicit(ctx, js, a, b, r, aNegate, bNegate, divMod, rNegate);
+                var stmt = new StmtJsExplicit(ctx, js, a, b, neg, r, aNegate, bNegate, divMod, rNegate);
                 return stmt;
             }
         }
@@ -320,6 +321,7 @@ return neg ? rNegate : r;
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0, "a");
                 var b = ctx.MethodParameter(1, "b");
+                var neg = ctx.Local(ctx.Boolean, "neg");
                 var aNegate = new ExprUnary(ctx, UnaryOp.Negate, ctx.Int64, a.Expr).Named("aNegate");
                 var bNegate = new ExprUnary(ctx, UnaryOp.Negate, ctx.Int64, b.Expr).Named("bNegate");
                 var divMod = new ExprCall(ctx, (Func<UInt64, UInt64, object>)_Int64UInt64.UInt64DivRem, null, a.Expr, b.Expr).Named("divMod");
@@ -337,7 +339,7 @@ if (b[0] >>> 31) b = bNegate;
 r = divMod[1];
 return neg ? rNegate : r;
 ";
-                var stmt = new StmtJsExplicit(ctx, js, a, b, r, aNegate, bNegate, divMod, rNegate);
+                var stmt = new StmtJsExplicit(ctx, js, a, b, neg, r, aNegate, bNegate, divMod, rNegate);
                 return stmt;
             }
         }
