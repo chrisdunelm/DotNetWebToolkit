@@ -240,6 +240,24 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
             }
         }
 
+        public new class Equals : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var b = ctx.MethodParameter(1, "b");
+                var stmt = new StmtJsExplicit(ctx, "return a[0] === b[0] && a[1] === b[1];", a, b);
+                return stmt;
+            }
+        }
+
+        public class NotEquals : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var a = ctx.MethodParameter(0, "a");
+                var b = ctx.MethodParameter(1, "b");
+                var stmt = new StmtJsExplicit(ctx, "return a[0] !== b[0] || a[1] !== b[1];", a, b);
+                return stmt;
+            }
+        }
+
     }
 
     class _Int64 {
@@ -344,6 +362,36 @@ return neg ? rNegate : r;
             throw new Exception();
         }
 
+        [Js(typeof(_Int64UInt64.Equals))]
+        public static bool Equals(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.NotEquals))]
+        public static bool NotEquals(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] < ~~b[1]);")]
+        public static bool LessThan(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] <= ~~b[1]);")]
+        public static bool LessThanOrEqual(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] > ~~b[1]);")]
+        public static bool GreaterThan(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
+        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] >= ~~b[1]);")]
+        public static bool GreaterThanOrEqual(Int64 a, Int64 b) {
+            throw new Exception();
+        }
+
     }
 
     class _UInt64 {
@@ -412,6 +460,36 @@ return neg ? rNegate : r;
 
         [Js(typeof(_Int64UInt64.BitwiseXorImpl))]
         public static UInt64 BitwiseXor(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.Equals))]
+        public static bool Equals(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js(typeof(_Int64UInt64.NotEquals))]
+        public static bool NotEquals(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js("return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]);")]
+        public static bool LessThan(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js("return a[0] < b[0] || (a[0] == b[0] && a[1] <= b[1]);")]
+        public static bool LessThanOrEqual(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] > b[1]);")]
+        public static bool GreaterThan(UInt64 a, UInt64 b) {
+            throw new Exception();
+        }
+
+        [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
+        public static bool GreaterThanOrEqual(UInt64 a, UInt64 b) {
             throw new Exception();
         }
 

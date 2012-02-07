@@ -76,6 +76,36 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case BinaryOp.BitwiseXor:
                     d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.BitwiseXor : (Func<UInt64, UInt64, UInt64>)_UInt64.BitwiseXor;
                     break;
+                case BinaryOp.Equal:
+                    d = signed ? (Delegate)(Func<Int64, Int64, bool>)_Int64.Equals : (Func<UInt64, UInt64, bool>)_UInt64.Equals;
+                    break;
+                case BinaryOp.NotEqual:
+                    d = signed ? (Delegate)(Func<Int64, Int64, bool>)_Int64.NotEquals : (Func<UInt64, UInt64, bool>)_UInt64.NotEquals;
+                    break;
+                case BinaryOp.LessThan:
+                    d = (Func<Int64, Int64, bool>)_Int64.LessThan;
+                    break;
+                case BinaryOp.LessThan_Un:
+                    d = (Func<UInt64, UInt64, bool>)_UInt64.LessThan;
+                    break;
+                case BinaryOp.LessThanOrEqual:
+                    d = (Func<Int64, Int64, bool>)_Int64.LessThanOrEqual;
+                    break;
+                case BinaryOp.LessThanOrEqual_Un:
+                    d = (Func<UInt64, UInt64, bool>)_UInt64.LessThanOrEqual;
+                    break;
+                case BinaryOp.GreaterThan:
+                    d = (Func<Int64, Int64, bool>)_Int64.GreaterThan;
+                    break;
+                case BinaryOp.GreaterThan_Un:
+                    d = (Func<UInt64, UInt64, bool>)_UInt64.GreaterThan;
+                    break;
+                case BinaryOp.GreaterThanOrEqual:
+                    d = (Func<Int64, Int64, bool>)_Int64.GreaterThanOrEqual;
+                    break;
+                case BinaryOp.GreaterThanOrEqual_Un:
+                    d = (Func<UInt64, UInt64, bool>)_UInt64.GreaterThanOrEqual;
+                    break;
                 default:
                     throw new NotImplementedException("Cannot handle: " + e.Op);
                 }

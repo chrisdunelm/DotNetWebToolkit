@@ -156,7 +156,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             { BinaryOp.Sub, "-" },
             { BinaryOp.Mul, "*" },
             { BinaryOp.Div, "/" },
+            { BinaryOp.Div_Un, "/" },
             { BinaryOp.Rem, "%" },
+            { BinaryOp.Rem_Un, "%" },
             { BinaryOp.Shl, "<<" },
             { BinaryOp.BitwiseAnd, "&" },
             { BinaryOp.BitwiseOr, "|" },
@@ -165,9 +167,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             { BinaryOp.Equal, "===" },
             { BinaryOp.NotEqual, "!==" },
             { BinaryOp.LessThan, "<" },
+            { BinaryOp.LessThan_Un, "<" },
             { BinaryOp.LessThanOrEqual, "<=" },
+            { BinaryOp.LessThanOrEqual_Un, "<=" },
             { BinaryOp.GreaterThan, ">" },
+            { BinaryOp.GreaterThan_Un, ">" },
             { BinaryOp.GreaterThanOrEqual, ">=" },
+            { BinaryOp.GreaterThanOrEqual_Un, ">=" },
             { BinaryOp.Or, "||" },
         };
         protected override ICode VisitBinary(ExprBinary e) {

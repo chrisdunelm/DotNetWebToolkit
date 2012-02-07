@@ -84,6 +84,17 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test, Ignore("Fails - value-type semantics not properly handled yet")]
+        public void TestStructCopy() {
+            Func<int, int, int> f = (a, b) => {
+                var s1 = new S1 { x = a };
+                var s2 = s1;
+                s2.x = b;
+                return s1.x + s2.x;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

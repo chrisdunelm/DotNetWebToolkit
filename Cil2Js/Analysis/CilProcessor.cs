@@ -161,9 +161,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Equal, this.ctx.TypeSystem.Boolean));
             case Code.Clt:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan, this.ctx.TypeSystem.Boolean));
+            case Code.Clt_Un:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan_Un, this.ctx.TypeSystem.Boolean));
             case Code.Cgt:
-            case Code.Cgt_Un: // HACK
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan, this.ctx.TypeSystem.Boolean));
+            case Code.Cgt_Un:
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan_Un, this.ctx.TypeSystem.Boolean));
             case Code.Br_S:
             case Code.Br:
             case Code.Leave_S:
@@ -184,20 +187,28 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.NotEqual));
             case Code.Blt_S:
             case Code.Blt:
-            case Code.Blt_Un_S: // Hack
-            case Code.Blt_Un: // Hack
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThan));
+            case Code.Blt_Un_S:
+            case Code.Blt_Un:
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThan_Un));
             case Code.Ble_S:
             case Code.Ble:
-            case Code.Ble_Un_S: // Hack
-            case Code.Ble_Un: // Hack
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThanOrEqual));
+            case Code.Ble_Un_S:
+            case Code.Ble_Un:
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.LessThanOrEqual_Un));
             case Code.Bgt_S:
             case Code.Bgt:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThan));
+            case Code.Bgt_Un_S:
+            case Code.Bgt_Un:
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThan_Un));
             case Code.Bge_S:
             case Code.Bge:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThanOrEqual));
+            case Code.Bge_Un_S:
+            case Code.Bge_Un:
+                return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.GreaterThanOrEqual_Un));
             case Code.Switch:
                 return this.SsaInstResultAssignment(inst, this.stack.Pop());
             case Code.Pop:

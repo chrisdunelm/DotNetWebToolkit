@@ -75,7 +75,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestInt64UInt64() { Verbose = true };
-            t.TestUInt64BitwiseAnd();
+            t.TestUInt64LessThanOrEqual();
             return;
 
         }

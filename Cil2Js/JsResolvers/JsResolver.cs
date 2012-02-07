@@ -123,11 +123,22 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             // Attribute for internal function
             var jsAttr = ctx.MDef.GetCustomAttribute<JsAttribute>();
             if (jsAttr != null) {
-                var implType = (TypeDefinition)jsAttr.ConstructorArguments[0].Value;
-                var t = typeof(JsResolver).Module.ResolveType(implType.MetadataToken.ToInt32());
-                var impl = (IJsImpl)Activator.CreateInstance(t);
-                var stmt = impl.GetImpl(ctx);
-                return stmt;
+                var arg0 = jsAttr.ConstructorArguments[0];
+                switch (arg0.Type.MetadataType) {
+                case MetadataType.String: {
+                        var js = (string)arg0.Value;
+                        var args = Enumerable.Range(0, ctx.MRef.Parameters.Count).Select(i => ctx[i]).Concat(ctx.MRef.HasThis ? ctx.ThisNamed : null).ToArray();
+                        var stmt = new StmtJsExplicit(ctx, js, args);
+                        return stmt;
+                    }
+                default: {
+                        var implType = (TypeDefinition)arg0.Value;
+                        var t = typeof(JsResolver).Module.ResolveType(implType.MetadataToken.ToInt32());
+                        var impl = (IJsImpl)Activator.CreateInstance(t);
+                        var stmt = impl.GetImpl(ctx);
+                        return stmt;
+                    }
+                }
             }
             // Type map
             var methodType = Type.GetType(ctx.TRef.Resolve().FullName);

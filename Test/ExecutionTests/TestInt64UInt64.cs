@@ -199,6 +199,78 @@ namespace Test.ExecutionTests {
             return a ^ b;
         }
 
+        [Test]
+        public void TestInt64Equals() {
+            Func<Int64, Int64, bool> f = (a, b) => a == b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64Equals() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a == b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64NotEquals() {
+            Func<Int64, Int64, bool> f = (a, b) => a != b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64NotEquals() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a != b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64LessThan() {
+            Func<Int64, Int64, bool> f = (a, b) => a < b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64LessThan() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a < b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64LessThanOrEqual() {
+            Func<Int64, Int64, bool> f = (a, b) => a <= b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64LessThanOrEqual() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a <= b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64GreaterThan() {
+            Func<Int64, Int64, bool> f = (a, b) => a > b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64GreaterThan() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a > b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64GreaterThanOrEqual() {
+            Func<Int64, Int64, bool> f = (a, b) => a >= b;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64GreaterThanOrEqual() {
+            Func<UInt64, UInt64, bool> f = (a, b) => a >= b;
+            this.Test(f);
+        }
+
     }
 
 }

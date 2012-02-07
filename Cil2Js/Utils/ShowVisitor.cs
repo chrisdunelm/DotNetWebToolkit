@@ -146,9 +146,13 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             { BinaryOp.Equal, "==" },
             { BinaryOp.NotEqual, "!=" },
             { BinaryOp.LessThan, "<" },
+            { BinaryOp.LessThan_Un, "<" },
             { BinaryOp.LessThanOrEqual, "<=" },
+            { BinaryOp.LessThanOrEqual_Un, "<=" },
             { BinaryOp.GreaterThan, ">" },
+            { BinaryOp.GreaterThan_Un, ">" },
             { BinaryOp.GreaterThanOrEqual, ">=" },
+            { BinaryOp.GreaterThanOrEqual_Un, ">=" },
             { BinaryOp.Or, "||" },
         };
         protected override ICode VisitBinary(ExprBinary e) {

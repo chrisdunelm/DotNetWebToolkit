@@ -69,6 +69,12 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return this.MethodParameter(index).Named(name);
         }
 
+        public NamedExpr this[int index] {
+            get {
+                return this.MethodParameter(index, new string((char)('a' + index), 1));
+            }
+        }
+
         public ExprVarLocal Local(TypeReference type) {
             return new ExprVarLocal(this, type);
         }

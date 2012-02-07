@@ -24,9 +24,13 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         NotEqual,
         Equal,
         LessThan,
+        LessThan_Un,
         LessThanOrEqual,
+        LessThanOrEqual_Un,
         GreaterThan,
+        GreaterThan_Un,
         GreaterThanOrEqual,
+        GreaterThanOrEqual_Un,
 
         And,
         Or,
