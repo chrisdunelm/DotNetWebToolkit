@@ -68,6 +68,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return member;
         }
 
+        private static TypeReference ImportType(Type type, TypeReference declaringType) {
+            var tRef = thisModule.Import(type);
+            if (tRef.HasGenericParameters) {
+                var args = ((GenericInstanceType)declaringType).GenericArguments.ToArray();
+                tRef = tRef.MakeGeneric(args);
+            }
+            return tRef;
+        }
+
         public static Expr ResolveCall(ICall call) {
             var ctx = call.Ctx;
             var mRef = call.CallMethod;
@@ -97,8 +106,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
             var altType = map.ValueOrDefault(callType);
             if (altType != null) {
-                // Look for methods in C# that the call can be redirected to
                 var tRef = thisModule.Import(altType);
+                if (tRef.HasGenericParameters) {
+                    var args = ((GenericInstanceType)mRef.DeclaringType).GenericArguments.ToArray();
+                    tRef = tRef.MakeGeneric(args);
+                }
                 var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => x.Resolve().IsPublic && x.MatchMethodOnly(mRef));
                 if (mappedMethod != null) {
                     Expr expr;
@@ -148,6 +160,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
             var altType = map.ValueOrDefault(methodType);
             if (altType != null) {
+                if (altType.IsGenericTypeDefinition) {
+                    var args = ((GenericInstanceType)ctx.TRef).GenericArguments.Select(x => Type.GetType(x.FullName)).ToArray();
+                    altType = altType.MakeGenericType(args);
+                }
                 // Look for methods that generate AST
                 var method = FindJsMember(ctx.MRef, altType);
                 if (method != null && method.ReturnType() == typeof(Stmt)) {
@@ -159,19 +175,37 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         public static TypeReference ReverseTypeMap(TypeReference tRef) {
-            if (tRef.IsNested || tRef.IsGenericInstance) {
+            if (tRef.IsNested) {
                 return tRef;
+            }
+            GenericInstanceType tRefGen = null;
+            if (tRef.IsGenericInstance) {
+                tRefGen = (GenericInstanceType)tRef;
+                tRef = tRef.Resolve();
+                //var tRefDef = tRef.Resolve();
+                //var tttt = Type.GetType(tRefDef.FullName);
+                //if (tttt != null) {
+                //    var rvrv = reverseTypeMap.ValueOrDefault(tttt);
+                //    if (rvrv != null) {
+                //        var xxxx = thisModule.Import(rvrv);
+                //        var gggg = xxxx.MakeGeneric(((GenericInstanceType)tRef).GenericArguments.ToArray());
+                //        return gggg;
+                //    }
+                //}
             }
             var type = Type.GetType(tRef.FullName);
             if (type == null) {
                 // Generic types cannot be got this way, but that's fine because they never need to be (so far...)
-                return tRef;
+                return tRefGen ?? tRef;
             }
             var revType = reverseTypeMap.ValueOrDefault(type);
             if (revType == null) {
-                return tRef;
+                return tRefGen ?? tRef;
             }
             var tRefRev = thisModule.Import(revType);
+            if (tRefGen != null) {
+                tRefRev = tRefRev.MakeGeneric(tRefGen.GenericArguments.ToArray());
+            }
             return tRefRev;
         }
 
