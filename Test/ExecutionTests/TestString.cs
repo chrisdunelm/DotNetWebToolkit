@@ -136,6 +136,15 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class CNullCheck<T> {
+            public static bool IsNull(T v) { return v == null; }
+        }
+        [Test]
+        public void TestNullCheck() {
+            Func<bool> f = () => CNullCheck<string>.IsNull("");
+            this.Test(f);
+        }
+
     }
 
 }

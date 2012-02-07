@@ -14,6 +14,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _String {
 
         [Js(typeof(bool), typeof(object))]
+        [Js(typeof(bool), typeof(string))]
         public static Stmt Equals(Ctx ctx) {
             var other = ctx.MethodParameter(0, "other");
             var stmt = new StmtJsExplicit(ctx, "return this===other;", ctx.ThisNamed, other);

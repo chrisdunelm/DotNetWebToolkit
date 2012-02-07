@@ -76,18 +76,18 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var ctx = e.Ctx;
             if (e.Op == BinaryOp.Equal) {
                 if (e.Left.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(!e)", ctx.Boolean, e.Right.Named("e"));
+                    return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Right.Named("e"));
                 }
                 if (e.Right.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(!e)", ctx.Boolean, e.Left.Named("e"));
+                    return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Left.Named("e"));
                 }
             }
             if (e.Op == BinaryOp.NotEqual || e.Op == BinaryOp.GreaterThan_Un) {
                 if (e.Left.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Right.Named("e"));
+                    return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Right.Named("e"));
                 }
                 if (e.Right.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Left.Named("e"));
+                    return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Left.Named("e"));
                 }
             }
             return base.VisitBinary(e);

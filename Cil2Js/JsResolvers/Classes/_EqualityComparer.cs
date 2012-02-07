@@ -10,7 +10,7 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     [JsIncomplete]
-    class _EqualityComparer {
+    class _EqualityComparer<T> {
 
         [Js]
         public static Stmt CreateComparer(Ctx ctx) {
