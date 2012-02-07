@@ -19,7 +19,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            var expr = this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType));
+            var expr = this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
             var res = JsResolver.ResolveCall(expr);
             if (res != null) {
                 return this.Visit(res);
@@ -30,7 +30,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     // This is important as it prevents having to box the value-type, which is very expensive
                     var impl = expr.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(expr.CallMethod));
                     if (impl != null) {
-                        var constrainedCall = new ExprCall(expr.Ctx, impl, expr.Obj, expr.Args, false, null);
+                        var constrainedCall = new ExprCall(expr.Ctx, impl, expr.Obj, expr.Args, false, null, expr.Type);
                         return constrainedCall;
                     } else {
                         throw new Exception();
@@ -82,17 +82,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     return new ExprJsExplicit(ctx, "(!e)", ctx.Boolean, e.Left.Named("e"));
                 }
             }
-            if (e.Op == BinaryOp.NotEqual) {
+            if (e.Op == BinaryOp.NotEqual || e.Op == BinaryOp.GreaterThan_Un) {
                 if (e.Left.IsLiteralNull()) {
                     return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Right.Named("e"));
                 }
                 if (e.Right.IsLiteralNull()) {
                     return new ExprJsExplicit(ctx, "(!!e)", ctx.Boolean, e.Left.Named("e"));
                 }
-            }
-            if (e.Op == BinaryOp.GreaterThan_Un && !e.Left.Type.IsValueType && !e.Right.Type.IsValueType) {
-                // C# compiles <obj> != null to <obj> > null. Change to inequality
-                return new ExprBinary(e.Ctx, BinaryOp.NotEqual, e.Ctx.Boolean, e.Left, e.Right);
             }
             return base.VisitBinary(e);
         }
@@ -152,7 +148,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var ctx = e.Ctx;
             var mCast = ctx.Module.Import(((Func<object, Type, object>)InternalFunctions.Cast).Method);
             var eType = new ExprJsTypeVarName(ctx, e.Type);
-            var expr = new ExprCall(ctx, mCast, null, e.Expr, eType);
+            var expr = new ExprCall(ctx, e.Type, mCast, null, e.Expr, eType);
             return expr;
         }
 
@@ -160,7 +156,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var ctx = e.Ctx;
             var mIsInst = ctx.Module.Import(((Func<object, Type, object>)InternalFunctions.IsInst).Method);
             var eType = new ExprJsTypeVarName(ctx, e.Type);
-            var expr = new ExprCall(ctx, mIsInst, null, e.Expr, eType);
+            var expr = new ExprCall(ctx, e.Type, mIsInst, null, e.Expr, eType);
             return expr;
         }
 

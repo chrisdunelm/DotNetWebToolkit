@@ -86,10 +86,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     if (!mDef.HasBody) {
                         throw new InvalidOperationException("Cannot transcode method without body");
                     }
+
                     if (!typesSeen.ContainsKey(tRef)) {
                         typesSeen.Add(tRef, 0);
                     }
-
                     ast = Transcoder.ToAst(ctx, verbose);
                 }
 

@@ -10,15 +10,27 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
     public class ExprCall : Expr, ICall {
 
-        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall, TypeReference constrainedType)
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall, TypeReference constrainedType, TypeReference forceReturnType)
             : base(ctx) {
             this.CallMethod = callMethod;
             this.Obj = obj;
             this.Args = args;
             this.IsVirtualCall = isVirtualCall;
             this.ConstrainedType = constrainedType;
-            this.returnType = callMethod.ReturnType.FullResolve(callMethod);
+            this.returnType = forceReturnType ?? callMethod.ReturnType.FullResolve(callMethod);
         }
+
+        public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall, TypeReference constrainedType)
+            :this(ctx, callMethod, obj, args, isVirtualCall, constrainedType, null){
+        }
+        //    : base(ctx) {
+        //    this.CallMethod = callMethod;
+        //    this.Obj = obj;
+        //    this.Args = args;
+        //    this.IsVirtualCall = isVirtualCall;
+        //    this.ConstrainedType = constrainedType;
+        //    this.returnType = callMethod.ReturnType.FullResolve(callMethod);
+        //}
 
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
             : this(ctx, callMethod, obj, args, isVirtualCall, null) {
@@ -26,6 +38,10 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
 
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, params Expr[] args)
             : this(ctx, callMethod, obj, (IEnumerable<Expr>)args, false) {
+        }
+
+        public ExprCall(Ctx ctx, TypeReference forceReturnType, MethodReference callMethod, Expr obj, params Expr[] args)
+            : this(ctx, callMethod, obj, (IEnumerable<Expr>)args, false, null, forceReturnType) {
         }
 
         public ExprCall(Ctx ctx, MethodInfo callMethod, Expr obj, params Expr[] args)

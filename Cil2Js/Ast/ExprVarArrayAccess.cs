@@ -11,17 +11,19 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             : base(ctx) {
             this.Array = array;
             this.Index = index;
+            this.elementType = ((ArrayType)array.Type).ElementType;
         }
 
         public Expr Array { get; private set; }
         public Expr Index { get; private set; }
+        public TypeReference elementType;
 
         public override Expr.NodeType ExprType {
             get { return NodeType.ArrayAccess; }
         }
 
         public override TypeReference Type {
-            get { return this.Array.Type.GetElementType(); }
+            get { return this.elementType; }
         }
 
     }

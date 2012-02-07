@@ -194,6 +194,21 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        class CArrayOfGenericType<T> {
+            public T t;
+        }
+
+        [Test]
+        public void TestArrayOfGenericType() {
+            Func<int, int> f = a => {
+                var s = new CArrayOfGenericType<int>[1];
+                s[0] = new CArrayOfGenericType<int>();
+                s[0].t = a;
+                return s[0].t;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

@@ -237,5 +237,21 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        private static object ForceObject(object o) {
+            return o;
+        }
+
+        [Test]
+        public void TestCastArrayAccess() {
+            Func<int, int> f = a => {
+                var array = new int[1];
+                array[0] = a;
+                object o = ForceObject(array);
+                var array2 = (int[])o;
+                return array2[0];
+            };
+            this.Test(f);
+        }
+
     }
 }

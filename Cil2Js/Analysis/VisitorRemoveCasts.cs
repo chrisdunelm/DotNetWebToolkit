@@ -43,7 +43,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         protected override ICode VisitCall(ExprCall e) {
             var obj = this.Convert(e.Obj, e.CallMethod.DeclaringType);
             var args = e.Args.Select((x, i) => this.Convert(x, e.CallMethod.Parameters[i].ParameterType.FullResolve(e.CallMethod))).ToArray();
-            return new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType);
+            return new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type);
         }
 
         protected override ICode VisitNewObj(ExprNewObj e) {

@@ -375,7 +375,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType));
+            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {
@@ -473,7 +473,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.ThrowOnNoOverride();
             var numElements = (Expr)this.Visit(e.ExprNumElements);
             if (numElements != e.ExprNumElements) {
-                return new ExprNewArray(e.Ctx, e.Type.GetElementType(), numElements);
+                return new ExprNewArray(e.Ctx, e.ElementType, numElements);
             } else {
                 return e;
             }
