@@ -553,6 +553,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 jsNewLine();
                 js.Append("// DOM type mapping");
                 jsNewLine();
+                // TODO: Auto-name this
                 js.Append("var __ = {");
                 jsIndent++;
                 foreach (var domType in domTypes) {
