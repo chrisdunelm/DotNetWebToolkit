@@ -13,7 +13,7 @@ namespace DotNetWebToolkit.Web {
         webGl,
     }
 
-    [JsClass]
+    [JsClass("CANVAS")]
     public class HtmlCanvasElement : HtmlElement {
 
         public extern int Width { get; set; }

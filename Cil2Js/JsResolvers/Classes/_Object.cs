@@ -28,7 +28,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js]
         public static Stmt GetType(Ctx ctx) {
-            var js = "return typeof(this)==\"string\"?stringType:this._;";
+            var js = "return typeof(this)==\"string\"?stringType:this._||__[this.tagName]||__[this.constructor.name];";
             var stringType = new ExprJsTypeVarName(ctx, ctx.String).Named("stringType");
             var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, stringType);
             return stmt;

@@ -18,6 +18,7 @@ using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Web;
 using DotNetWebToolkit.Cil2Js;
 using Test.BrowserTests;
+using Test.BrowserTests.Canvas;
 
 namespace Test {
 
@@ -75,8 +76,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestAsync() { Verbose = true };
-            t.Test1();
+            var t = new TestCanvasElement() { Verbose = true };
+            t.TestGetCanvas();
             return;
 
         }

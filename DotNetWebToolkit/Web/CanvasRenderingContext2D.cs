@@ -8,7 +8,7 @@ using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Web {
 
-    [JsClass]
+    [JsClass("CanvasRenderingContext2D")]
     public class CanvasRenderingContext2D : CanvasRenderingContext {
 
         public extern object FillStyle { get; set; }

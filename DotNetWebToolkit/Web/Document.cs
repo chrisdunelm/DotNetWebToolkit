@@ -8,7 +8,7 @@ using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Web {
 
-    [JsClass]
+    [JsClass("HTMLDocument")]
     public static class Document {
 
         public static extern HtmlElement GetElementById(string id);

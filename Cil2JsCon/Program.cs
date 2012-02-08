@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js;
@@ -19,6 +20,8 @@ namespace Cil2JsCon {
         }
 
         static int Main(string[] args) {
+
+            Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             string inFilename = null;
             string outFilename = null;

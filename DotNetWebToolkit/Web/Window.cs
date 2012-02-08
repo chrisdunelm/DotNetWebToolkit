@@ -14,7 +14,7 @@ namespace DotNetWebToolkit.Web {
     [JsUseType(typeof(int))]
     public struct TimeoutId { }
 
-    [JsClass]
+    [JsClass("DOMWindow")]
     public static class Window {
 
         public static extern IntervalId SetInterval(Action func, int intervalMs);

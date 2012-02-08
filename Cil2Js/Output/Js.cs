@@ -9,6 +9,7 @@ using DotNetWebToolkit.Cil2Js.JsResolvers;
 using DotNetWebToolkit.Cil2Js.Utils;
 using System.Reflection;
 using System.Diagnostics;
+using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
     public class Js {
@@ -471,9 +472,20 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 .Select(x => x.Key)
                 .OrderByReferencedFirst(x => x)
                 .ToArray();
+            var domTypes = new Dictionary<string, TypeReference>();
             foreach (var type in typesSeenOrdered) {
                 var unmappedType = JsResolver.ReverseTypeMap(type);
                 var tDef = unmappedType.Resolve();
+                // Check for DOM types
+                var jsClassAttr = tDef.GetCustomAttribute<JsClassAttribute>();
+                if (jsClassAttr != null) {
+                    if (jsClassAttr.ConstructorArguments.Count == 1) {
+                        // Non-abstract types only
+                        var tagOrConstructorName = (string)jsClassAttr.ConstructorArguments[0].Value;
+                        domTypes.Add(tagOrConstructorName, unmappedType);
+                    }
+                }
+                // Type JS
                 jsNewLine();
                 js.AppendFormat("// {0}", unmappedType.FullName);
                 jsNewLine();
@@ -535,6 +547,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
                 js.Append(typeNames[typeRuntimeType]);
                 js.Append(";");
+            }
+            // Add map of DOM types
+            if (domTypes.Any()) {
+                jsNewLine();
+                js.Append("// DOM type mapping");
+                jsNewLine();
+                js.Append("var __ = {");
+                jsIndent++;
+                foreach (var domType in domTypes) {
+                    jsNewLine();
+                    js.AppendFormat("'{0}': {1},", domType.Key, typeNames[domType.Value]);
+                }
+                js.Length--;
+                jsIndent--;
+                jsNewLine();
+                js.Append("};");
             }
 
             jsNewLine();
