@@ -17,6 +17,7 @@ using DotNetWebToolkit;
 using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Web;
 using DotNetWebToolkit.Cil2Js;
+using Test.BrowserTests;
 
 namespace Test {
 
@@ -74,8 +75,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestGenericVirtualCalls() { Verbose = true };
-            t.TestGenericMethodInGenericTypeVCall();
+            var t = new TestTimers() { Verbose = true };
+            t.TestClearTimeout();
             return;
 
         }

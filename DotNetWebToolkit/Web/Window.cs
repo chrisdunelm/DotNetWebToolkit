@@ -8,10 +8,30 @@ using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Web {
 
+    [JsUseType(typeof(int))]
+    public struct IntervalId { }
+
+    [JsUseType(typeof(int))]
+    public struct TimeoutId { }
+
     [JsClass]
     public static class Window {
 
-        public static extern int SetInterval(Action func, int intervalMs);
+        public static extern IntervalId SetInterval(Action func, int intervalMs);
+
+        public static IntervalId SetInterval(Action func, TimeSpan interval) {
+            return SetInterval(func, (int)interval.TotalMilliseconds);
+        }
+
+        public static extern void ClearInterval(IntervalId intervalId);
+
+        public static extern TimeoutId SetTimeout(Action func, int intervalMs);
+
+        public static TimeoutId SetTimeout(Action func, TimeSpan interval) {
+            return SetTimeout(func, (int)interval.TotalMilliseconds);
+        }
+
+        public static extern void ClearTimeout(TimeoutId timeoutId);
 
     }
 
