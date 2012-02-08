@@ -10,8 +10,8 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestDictionary : ExecutionTestBase {
 
-        [Test, Ignore("Dictionary not yet working")]
-        public void Test1() {
+        [Test]
+        public void TestAddRead() {
             Func<int, string, int> f = (i, s) => {
                 var d = new Dictionary<string, int>();
                 d.Add(s, i);
