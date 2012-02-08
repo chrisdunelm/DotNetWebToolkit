@@ -15,9 +15,6 @@ using Test.Utils;
 
 namespace Test.BrowserTests {
 
-    public class CDriver : ChromeDriver {
-    }
-
     public abstract class BrowserTestBase {
 
         public bool Verbose = false;

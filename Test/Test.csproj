@@ -61,6 +61,7 @@
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
+    <Compile Include="ExecutionTests\TestAsync.cs" />
     <Compile Include="ExecutionTests\TestBoxing.cs" />
     <Compile Include="ExecutionTests\TestCasting.cs" />
     <Compile Include="ExecutionTests\TestConv.cs" />

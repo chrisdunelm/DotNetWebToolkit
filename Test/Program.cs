@@ -75,8 +75,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestTimers() { Verbose = true };
-            t.TestClearTimeout();
+            var t = new TestAsync() { Verbose = true };
+            t.Test1();
             return;
 
         }
