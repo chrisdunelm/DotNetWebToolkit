@@ -15,7 +15,7 @@ using System.Threading;
 using NUnit.Framework.Constraints;
 
 namespace Test.ExecutionTests {
-    public class ExecutionTestBase {
+    public abstract class ExecutionTestBase {
 
         private const int defaultTestIterations = 20;
         private Random rnd = new Random(0);
