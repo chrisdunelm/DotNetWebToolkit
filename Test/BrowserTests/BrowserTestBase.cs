@@ -37,7 +37,7 @@ window.onload = function() {
 };
         </script>
     </head>
-    <body id=""body"">" + (this.HtmlBody ?? "") + @"</body>
+    <body>" + (this.HtmlBody ?? "") + @"</body>
 </html>";
             return html;
         }
