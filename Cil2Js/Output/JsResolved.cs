@@ -57,4 +57,27 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
     }
 
+    public class ExprJsResolvedCtor : Expr {
+
+        public ExprJsResolvedCtor(Ctx ctx, string typeName, TypeReference type, IEnumerable<Expr> args)
+            : base(ctx) {
+            this.TypeName = typeName;
+            this.type = type;
+            this.Args = args;
+        }
+
+        public string TypeName { get; private set; }
+        public IEnumerable<Expr> Args { get; private set; }
+        private TypeReference type;
+
+        public override Expr.NodeType ExprType {
+            get { return (Expr.NodeType)JsExprType.JsResolvedCtor; }
+        }
+
+        public override TypeReference Type {
+            get { return this.type; }
+        }
+
+    }
+
 }

@@ -83,7 +83,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var mDef = mRef.Resolve();
             // A call defined on a class requiring external methods/properties translating to native JS
             var type = mDef.DeclaringType;
-            var jsClass = type.GetCustomAttribute<JsClassAttribute>();
+            var jsClass = type.GetCustomAttribute<JsClassAttribute>() ?? type.GetCustomAttribute<JsAbstractClassAttribute>();
             if (jsClass != null && mDef.IsExternal()) {
                 if (mDef.IsSetter || mDef.IsGetter) {
                     var propertyName = JsCase(mDef.Name.Substring(4));
@@ -93,12 +93,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     var jsProperty = new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
                     if (mDef.IsGetter) {
                         return jsProperty;
-                    }else{
+                    } else {
                         var arg = call.Args.First();
                         var js = "jsProperty = value";
                         var expr = new ExprJsExplicit(ctx, js, arg.Type, jsProperty.Named("jsProperty"), arg.Named("value"));
                         return expr;
                     }
+                } else if (mDef.IsConstructor) {
+                    var typeName = (string)jsClass.ConstructorArguments[0].Value;
+                    var expr = new ExprJsResolvedCtor(ctx, typeName, mRef.DeclaringType, call.Args);
+                    return expr;
                 } else {
                     var methodName = JsCase(mDef.Name);
                     if (mDef.IsStatic) {

@@ -646,6 +646,21 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
+        protected override ICode VisitJsResolvedCtor(ExprJsResolvedCtor e) {
+            this.js.Append("new ");
+            this.js.Append(e.TypeName);
+            this.js.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.js.Append(", ");
+                }
+                this.js.Length -= 2;
+            }
+            this.js.Append(")");
+            return e;
+        }
+
         protected override ICode VisitJsArrayLiteral(ExprJsArrayLiteral e) {
             this.js.Append("[");
             if (e.Elements.Any()) {

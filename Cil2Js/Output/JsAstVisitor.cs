@@ -18,6 +18,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         JsArrayLiteral,
         JsResolvedMethod,
         JsResolvedProperty,
+        JsResolvedCtor,
         JsTypeData,
         JsTypeVarName,
         JsExplicit,
@@ -87,6 +88,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return this.VisitJsResolvedMethod((ExprJsResolvedMethod)e);
             case JsExprType.JsResolvedProperty:
                 return this.VisitJsResolvedProperty((ExprJsResolvedProperty)e);
+            case JsExprType.JsResolvedCtor:
+                return this.VisitJsResolvedCtor((ExprJsResolvedCtor)e);
             case JsExprType.JsTypeData:
                 return this.VisitJsTypeData((ExprJsTypeData)e);
             case JsExprType.JsTypeVarName:
@@ -177,6 +180,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var obj = (Expr)this.Visit(e.Obj);
             if (obj != e.Obj) {
                 return new ExprJsResolvedProperty(e.Ctx, e.Type, obj, e.PropertyName);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsResolvedCtor(ExprJsResolvedCtor e) {
+            this.ThrowOnNoOverride();
+            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
+            if (args != null) {
+                return new ExprJsResolvedCtor(e.Ctx, e.TypeName, e.Type, args);
             } else {
                 return e;
             }
