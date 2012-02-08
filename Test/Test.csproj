@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BrowserTests\BrowserTestBase.cs" />
+    <Compile Include="BrowserTests\Canvas\Test2dContext.cs" />
     <Compile Include="BrowserTests\Canvas\TestCanvasElement.cs" />
     <Compile Include="BrowserTests\Window\TestTimers.cs" />
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />

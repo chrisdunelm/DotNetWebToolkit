@@ -76,8 +76,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestCanvasElement() { Verbose = true };
-            t.TestGetCanvas();
+            var t = new Test2dContext() { Verbose = true };
+            t.TestFillStyle();
             return;
 
         }
