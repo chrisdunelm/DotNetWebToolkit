@@ -557,12 +557,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         jsIndent++;
                         foreach (var method in rootMethodsByType[type]) {
                             jsNewLine();
-                            js.AppendFormat("'{0}': {1}", method.Name, methodNames[method]);
+                            js.AppendFormat("'{0}': {1},", method.Name, methodNames[method]);
                         }
+                        js.Length--;
                         jsIndent--;
                         jsNewLine();
-                        js.Append("}");
+                        js.Append("},");
                     }
+                    js.Length--;
                     jsIndent--;
                     jsNewLine();
                     js.Append("}");
