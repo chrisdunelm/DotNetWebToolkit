@@ -42,37 +42,39 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Nop:
                 return null;
             case Code.Ldc_I4_M1:
-                return this.Const(-1, this.ctx.TypeSystem.Int32);
+                return this.Const(-1, this.ctx.Int32);
             case Code.Ldc_I4_0:
-                return this.Const(0, this.ctx.TypeSystem.Int32);
+                return this.Const(0, this.ctx.Int32);
             case Code.Ldc_I4_1:
-                return this.Const(1, this.ctx.TypeSystem.Int32);
+                return this.Const(1, this.ctx.Int32);
             case Code.Ldc_I4_2:
-                return this.Const(2, this.ctx.TypeSystem.Int32);
+                return this.Const(2, this.ctx.Int32);
             case Code.Ldc_I4_3:
-                return this.Const(3, this.ctx.TypeSystem.Int32);
+                return this.Const(3, this.ctx.Int32);
             case Code.Ldc_I4_4:
-                return this.Const(4, this.ctx.TypeSystem.Int32);
+                return this.Const(4, this.ctx.Int32);
             case Code.Ldc_I4_5:
-                return this.Const(5, this.ctx.TypeSystem.Int32);
+                return this.Const(5, this.ctx.Int32);
             case Code.Ldc_I4_6:
-                return this.Const(6, this.ctx.TypeSystem.Int32);
+                return this.Const(6, this.ctx.Int32);
             case Code.Ldc_I4_7:
-                return this.Const(7, this.ctx.TypeSystem.Int32);
+                return this.Const(7, this.ctx.Int32);
             case Code.Ldc_I4_8:
-                return this.Const(8, this.ctx.TypeSystem.Int32);
+                return this.Const(8, this.ctx.Int32);
             case Code.Ldc_I4_S:
                 return this.Const((int)(sbyte)inst.Operand, this.ctx.Int32);
             case Code.Ldc_I4:
                 return this.Const((int)inst.Operand, this.ctx.Int32);
             case Code.Ldc_I8:
                 return this.Const((long)inst.Operand, this.ctx.Int64);
+            case Code.Ldc_R4:
+                return this.Const((float)inst.Operand, this.ctx.Single);
             case Code.Ldc_R8:
-                return this.Const((double)inst.Operand, this.ctx.TypeSystem.Double);
+                return this.Const((double)inst.Operand, this.ctx.Double);
             case Code.Ldnull:
                 return this.Const(null, this.ctx.TypeSystem.Object);
             case Code.Ldstr:
-                return this.Const((string)inst.Operand, this.ctx.TypeSystem.String);
+                return this.Const((string)inst.Operand, this.ctx.String);
             case Code.Ldind_I1:
                 return this.LoadIndirect(ctx.SByte);
             case Code.Ldind_I2:
