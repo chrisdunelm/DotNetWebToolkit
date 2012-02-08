@@ -83,7 +83,7 @@ namespace Test {
 
     }
 
-    [Export]
+    [JsExport]
     public class Exported {
         private Exported() { }
         public static int Get1() {

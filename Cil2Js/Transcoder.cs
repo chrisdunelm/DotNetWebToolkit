@@ -117,7 +117,7 @@ namespace DotNetWebToolkit.Cil2Js {
             getSelfAndNestedTypes = type => type.NestedTypes.SelectMany(x => getSelfAndNestedTypes(x)).Concat(type);
             var exportedTypes = module.Types
                 .SelectMany(x => getSelfAndNestedTypes(x))
-                .Where(x => x.GetCustomAttribute<ExportAttribute>() != null)
+                .Where(x => x.GetCustomAttribute<JsExportAttribute>() != null)
                 .ToArray();
             if (!exportedTypes.Any()) {
                 throw new InvalidOperationException("No types exported");

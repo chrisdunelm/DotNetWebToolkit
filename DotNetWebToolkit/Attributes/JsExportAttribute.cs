@@ -6,13 +6,13 @@ using System.Text;
 namespace DotNetWebToolkit.Attributes {
 
     [AttributeUsage(AttributeTargets.Class)]
-    public class ExportAttribute : Attribute {
+    public class JsExportAttribute : Attribute {
 
-        public ExportAttribute() {
+        public JsExportAttribute() {
             this.ExportName = null;
         }
 
-        public ExportAttribute(string exportName) {
+        public JsExportAttribute(string exportName) {
             this.ExportName = exportName;
         }
 
