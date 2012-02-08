@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.JsResolvers;
 using Mono.Cecil;
@@ -156,6 +157,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static TypeReference FullResolve(this TypeReference self, TypeReference scopeType, MethodReference scopeMethod) {
+            var selfDef = self.Resolve();
+            if (selfDef != null) {
+                var jsUseTypeAttr = selfDef.GetCustomAttribute<JsUseTypeAttribute>();
+                if (jsUseTypeAttr != null) {
+                    var useType = (TypeReference)jsUseTypeAttr.ConstructorArguments[0].Value;
+                    self = self.Module.Import(useType);
+                }
+            }
             switch (self.MetadataType) {
             case MetadataType.Void:
             case MetadataType.Boolean:
