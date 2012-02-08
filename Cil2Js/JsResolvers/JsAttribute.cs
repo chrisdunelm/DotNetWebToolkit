@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-    class JsAttribute : Attribute {
+    public class JsAttribute : Attribute {
 
         public JsAttribute() {
             this.MethodName = null;
