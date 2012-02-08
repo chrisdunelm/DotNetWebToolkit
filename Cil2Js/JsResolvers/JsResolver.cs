@@ -90,7 +90,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     if (mDef.IsStatic) {
                         propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
                     }
-                    return new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
+                    var jsProperty = new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
+                    if (mDef.IsGetter) {
+                        return jsProperty;
+                    }else{
+                        var arg = call.Args.First();
+                        var js = "jsProperty = value";
+                        var expr = new ExprJsExplicit(ctx, js, arg.Type, jsProperty.Named("jsProperty"), arg.Named("value"));
+                        return expr;
+                    }
                 } else {
                     var methodName = JsCase(mDef.Name);
                     if (mDef.IsStatic) {
