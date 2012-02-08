@@ -16,6 +16,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var stmt = new StmtReturn(ctx, getHashCode);
             return stmt;
         }
+
+        [Js("return isNaN(a);")]
+        public static bool IsNaN(double d) {
+            throw new Exception();
+        }
     
     }
 }
