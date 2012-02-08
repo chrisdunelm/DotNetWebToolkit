@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    interface IJsImpl {
+    public interface IJsImpl {
 
         Stmt GetImpl(Ctx ctx);
 
