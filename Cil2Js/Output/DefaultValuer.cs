@@ -32,7 +32,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 default: throw new NotImplementedException("Cannot handle: " + mdt);
                 }
             } else {
-                var fields = type.EnumResolvedFields().ToArray();
+                var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
                 var defaultValue = "{" + string.Join(",",
                     fields.Where(x => fieldNames.ContainsKey(x))
                     .Select(x => fieldNames[x] + ":" + Get(x.FieldType, fieldNames))) + "}";
