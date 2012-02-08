@@ -8,28 +8,18 @@ using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Web {
 
-    public enum CanvasContext {
-        TwoD,
-        webGl,
-    }
-
     [JsClass("CANVAS")]
     public class HtmlCanvasElement : HtmlElement {
 
-        public extern int Width { get; set; }
-        public extern int Height { get; set; }
-
         public extern CanvasRenderingContext GetContext(string contextId);
+        public extern CanvasRenderingContext GetContext(string contextId, object attrs);
 
-        public CanvasRenderingContext GetContext(CanvasContext context) {
-            switch (context) {
-            case CanvasContext.TwoD:
-                return this.GetContext("2d");
-            case CanvasContext.webGl:
-                return this.GetContext("webgl") ?? this.GetContext("experimental-webgl");
-            default:
-                throw new ArgumentException("Invalid context");
-            }
+        public CanvasRenderingContext2D GetContext2D() {
+            return (CanvasRenderingContext2D)this.GetContext("2d");
+        }
+
+        public WebGLRenderingContext GetContextWebGL(WebGLContextAttributes attrs = null) {
+            return (WebGLRenderingContext)(this.GetContext("webgl", attrs) ?? this.GetContext("experimental-webgl", attrs));
         }
 
     }

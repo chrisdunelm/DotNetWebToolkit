@@ -45,7 +45,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />
     <Compile Include="Web\CanvasRenderingContext2D.cs" />
-    <Compile Include="Web\CanvasRenderingContext3D.cs" />
+    <Compile Include="Web\TypedArray.cs" />
+    <Compile Include="Web\WebGLRenderingContext.cs" />
     <Compile Include="Web\Document.cs" />
     <Compile Include="Web\HtmlCanvasElement.cs" />
     <Compile Include="Web\HtmlElement.cs" />

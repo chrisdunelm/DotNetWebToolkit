@@ -41,9 +41,9 @@ namespace Cil2JsCon {
                 return 1;
             }
 
-            try {
                 var js = Transcoder.ToJs(inFilename);
-                File.WriteAllText(outFilename, js, Encoding.UTF8);
+                try {
+                    File.WriteAllText(outFilename, js, Encoding.UTF8);
             } catch (Exception e) {
                 Console.WriteLine("Error:");
                 Console.WriteLine(e);

@@ -16,9 +16,9 @@ namespace Test.BrowserTests.Canvas {
             this.HtmlBody = "<canvas id='x'></canvas>";
             Action f = () => {
                 var canvas = (HtmlCanvasElement)Document.GetElementById("x");
-                var ctx2 = (CanvasRenderingContext2D)canvas.GetContext(CanvasContext.TwoD);
+                var ctx2 = canvas.GetContext2D();
                 ctx2.FillStyle = "#ffeedd";
-                Done(ctx2.FillStyle == "#ffeedd");
+                Done((string)ctx2.FillStyle == "#ffeedd");
             };
             this.Start(f);
         }

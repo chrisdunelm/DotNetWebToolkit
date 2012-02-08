@@ -41,7 +41,7 @@ namespace Test {
 
         public static void Canvas2DDemo() {
             var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
-            var ctx = (CanvasRenderingContext2D)canvas.GetContext(CanvasContext.TwoD);
+            var ctx = canvas.GetContext2D();
             string fill1 = "#ff0000";
             string fill2 = "#0000ff";
             bool f1 = true;

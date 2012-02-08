@@ -17,6 +17,9 @@ namespace DotNetWebToolkit.Web {
     [JsClass("DOMWindow")]
     public static class Window {
 
+        public static extern int InnerWidth { get; }
+        public static extern int InnerHeight { get; }
+
         public static extern IntervalId SetInterval(Action func, int intervalMs);
 
         public static IntervalId SetInterval(Action func, TimeSpan interval) {
