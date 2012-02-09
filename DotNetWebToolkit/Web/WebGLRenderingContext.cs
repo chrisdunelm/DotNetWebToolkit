@@ -11,9 +11,25 @@ namespace DotNetWebToolkit.Web {
 
     using GLenum = UInt32;
 
+    [Flags]
+    public enum WebGLClearBufferMask {
+        DEPTH_BUFFER_BIT = 0x00000100,
+        STENCIL_BUFFER_BIT = 0x00000400,
+        COLOR_BUFFER_BIT = 0x00004000,
+    }
+
     [JsClass("WebGLRenderingContext")]
     public class WebGLRenderingContext : CanvasRenderingContext {
 
+        // BeginMode
+        public const GLenum POINTS = 0x0000;
+        public const GLenum LINES = 0x0001;
+        public const GLenum LINE_LOOP = 0x0002;
+        public const GLenum LINE_STRIP = 0x0003;
+        public const GLenum TRIANGLES = 0x0004;
+        public const GLenum TRIANGLE_STRIP = 0x0005;
+        public const GLenum TRIANGLE_FAN = 0x0006;
+        
         // Buffer Objects
         public const GLenum ARRAY_BUFFER = 0x8892;
         public const GLenum ELEMENT_ARRAY_BUFFER = 0x8893;
@@ -56,16 +72,38 @@ namespace DotNetWebToolkit.Web {
         public const GLenum SHADING_LANGUAGE_VERSION = 0x8B8C;
         public const GLenum CURRENT_PROGRAM = 0x8B8D;
 
+        // DataType
+        public const GLenum BYTE = 0x1400;
+        public const GLenum UNSIGNED_BYTE = 0x1401;
+        public const GLenum SHORT = 0x1402;
+        public const GLenum UNSIGNED_SHORT = 0x1403;
+        public const GLenum INT = 0x1404;
+        public const GLenum UNSIGNED_INT = 0x1405;
+        public const GLenum FLOAT = 0x1406;
+
         public extern HtmlCanvasElement Canvas { get; }
+
+        public extern void AttachShader(WebGLProgram program, WebGLShader shader);
         public extern void BindBuffer(GLenum target, WebGLBuffer buffer);
         public extern void BufferData(GLenum target, ArrayBufferView data, GLenum usage);
+        public extern void Clear(WebGLClearBufferMask mask);
         public extern void ClearColor(float red, float green, float blue, float alpha);
         public extern void CompileShader(WebGLShader shader);
-        public extern WebGLShader CreateShader(GLenum type);
         public extern WebGLBuffer CreateBuffer();
+        public extern WebGLProgram CreateProgram();
+        public extern WebGLShader CreateShader(GLenum type);
+        public extern void DrawArrays(GLenum mode, int first, int count);
         public extern void Enable(GLenum cap);
+        public extern void EnableVertexAttribArray(uint index);
+        public extern uint GetAttribLocation(WebGLProgram program, string name);
+        public extern WebGLUniformLocation GetUniformLocation(WebGLProgram program, string name);
+        public extern void LinkProgram(WebGLProgram program);
         public extern void ShaderSource(WebGLShader shader, string source);
+        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, Float32Array value);
+        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, float[] value);
+        public extern void UseProgram(WebGLProgram program);
         public extern void Viewport(int x, int y, int width, int height);
+        public extern void VertexAttribPointer(uint index, int size, GLenum type, bool normalized, int stride, int offset);
 
     }
 

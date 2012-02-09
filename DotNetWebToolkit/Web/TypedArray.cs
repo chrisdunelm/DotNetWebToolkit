@@ -10,7 +10,7 @@ using DotNetWebToolkit.Attributes;
 namespace DotNetWebToolkit.Web {
 
     [JsClass("ArrayBuffer")]
-    public class ArrayBuffer {
+    public sealed class ArrayBuffer {
     }
 
     [JsAbstractClass]
@@ -21,9 +21,13 @@ namespace DotNetWebToolkit.Web {
     }
 
     [JsClass("Float32Array")]
-    public class Float32Array : ArrayBufferView {
+    public sealed class Float32Array : ArrayBufferView {
 
+        public extern Float32Array(uint size);
         public extern Float32Array(float[] array);
+        public extern Float32Array(Float32Array array);
+
+        public extern float this[int index] { get; set; }
 
     }
 
