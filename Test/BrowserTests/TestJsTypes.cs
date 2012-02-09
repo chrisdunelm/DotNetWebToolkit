@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DotNetWebToolkit.Web.WebGLHelpers;
+using DotNetWebToolkit.Web;
 using NUnit.Framework;
 
 namespace Test.BrowserTests {
@@ -14,12 +14,11 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsItemProperty() {
             Action f = () => {
-                var mat4 = new Mat4();
-                mat4.Identity();
-                mat4[1] = 7;
-                mat4[2] = 14;
-                var sum = mat4[0] + mat4[1] + mat4[2];
-                Done(sum == 22);
+                var floatArray = new Float32Array(2);
+                floatArray[0] = 7;
+                floatArray[1] = 14;
+                var sum = floatArray[0] + floatArray[1];
+                Done(sum == 21);
             };
             this.Start(f);
         }
