@@ -79,6 +79,7 @@
     <Compile Include="ExecutionTests\TestList.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />
+    <Compile Include="ExecutionTests\TestMath.cs" />
     <Compile Include="ExecutionTests\TestMethodCalls.cs" />
     <Compile Include="ExecutionTests\TestNullables.cs" />
     <Compile Include="ExecutionTests\TestObjectBasics.cs" />
