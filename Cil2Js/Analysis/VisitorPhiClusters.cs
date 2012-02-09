@@ -15,7 +15,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return ret;
         }
 
-        private static IEnumerable<ExprVar[]> UniqueClusters(IEnumerable<ExprVar[]> clusters) {
+        public static IEnumerable<ExprVar[]> UniqueClusters(IEnumerable<ExprVar[]> clusters) {
         start:
             foreach (var a in clusters) {
                 foreach (var b in clusters.Where(x => a != x)) {
@@ -36,7 +36,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.clusters.Add(e.Exprs.OfType<ExprVar>().Concat(e).ToArray());
             return e;
         }
-
 
     }
 }

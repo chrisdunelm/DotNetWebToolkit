@@ -36,18 +36,35 @@ namespace DotNetWebToolkit.Web {
         public const GLenum SAMPLE_COVERAGE = 0x80A0;
         public const GLenum DEPTH_BUFFER_BIT = 0x00000100;
 
+        // Shaders
+        public const GLenum FRAGMENT_SHADER = 0x8B30;
+        public const GLenum VERTEX_SHADER = 0x8B31;
+        public const GLenum MAX_VERTEX_ATTRIBS = 0x8869;
+        public const GLenum MAX_VERTEX_UNIFORM_VECTORS = 0x8DFB;
+        public const GLenum MAX_VARYING_VECTORS = 0x8DFC;
+        public const GLenum MAX_COMBINED_TEXTURE_IMAGE_UNITS = 0x8B4D;
+        public const GLenum MAX_VERTEX_TEXTURE_IMAGE_UNITS = 0x8B4C;
+        public const GLenum MAX_TEXTURE_IMAGE_UNITS = 0x8872;
+        public const GLenum MAX_FRAGMENT_UNIFORM_VECTORS = 0x8DFD;
+        public const GLenum SHADER_TYPE = 0x8B4F;
+        public const GLenum DELETE_STATUS = 0x8B80;
+        public const GLenum LINK_STATUS = 0x8B82;
+        public const GLenum VALIDATE_STATUS = 0x8B83;
+        public const GLenum ATTACHED_SHADERS = 0x8B85;
+        public const GLenum ACTIVE_UNIFORMS = 0x8B86;
+        public const GLenum ACTIVE_ATTRIBUTES = 0x8B89;
+        public const GLenum SHADING_LANGUAGE_VERSION = 0x8B8C;
+        public const GLenum CURRENT_PROGRAM = 0x8B8D;
+
         public extern HtmlCanvasElement Canvas { get; }
-
         public extern void BindBuffer(GLenum target, WebGLBuffer buffer);
-
         public extern void BufferData(GLenum target, ArrayBufferView data, GLenum usage);
-
         public extern void ClearColor(float red, float green, float blue, float alpha);
-
+        public extern void CompileShader(WebGLShader shader);
+        public extern WebGLShader CreateShader(GLenum type);
         public extern WebGLBuffer CreateBuffer();
-
         public extern void Enable(GLenum cap);
-
+        public extern void ShaderSource(WebGLShader shader, string source);
         public extern void Viewport(int x, int y, int width, int height);
 
     }
@@ -66,8 +83,43 @@ namespace DotNetWebToolkit.Web {
 
     }
 
+    [JsAbstractClass]
+    public abstract class WebGLObject {
+    }
+
     [JsClass("WebGLBuffer")]
-    public class WebGLBuffer {
+    public class WebGLBuffer : WebGLObject {
+    }
+
+    [JsClass("WebGLFrameBuffer")]
+    public class WebGLFrameBuffer : WebGLObject {
+    }
+
+    [JsClass("WebGLProgram")]
+    public class WebGLProgram : WebGLObject {
+    }
+
+    [JsClass("WebGLRenderBuffer")]
+    public class WebGLRenderBuffer : WebGLObject {
+    }
+
+    [JsClass("WebGLShader")]
+    public class WebGLShader : WebGLObject {
+    }
+
+    [JsClass("WebGLTexture")]
+    public class WebGLTexture : WebGLObject {
+    }
+
+    [JsClass("WebGLUniformLocation")]
+    public class WebGLUniformLocation {
+    }
+
+    [JsClass("WebGLActiveInfo")]
+    public class WebGLActiveInfo {
+        public extern int Size { get; }
+        public extern GLenum Type { get; }
+        public extern string Name { get; }
     }
 
 }

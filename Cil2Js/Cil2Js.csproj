@@ -216,6 +216,7 @@
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
     <Compile Include="Output\VisitorGetVars.cs" />
+    <Compile Include="Output\VisitorJsPhiClusters.cs" />
     <Compile Include="Output\VisitorJsResolve64Bit.cs" />
     <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />

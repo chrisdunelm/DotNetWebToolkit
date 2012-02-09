@@ -23,6 +23,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
                 private ExprVar target;
                 private Expr replaceWith = null;
+                private List<Tuple<Expr, Expr>> replaced = new List<Tuple<Expr, Expr>>();
+
+                public IEnumerable<Tuple<Expr, Expr>> Replaced { get { return this.replaced; } }
 
                 protected override ICode VisitAssignment(StmtAssignment s) {
                     if (s.Target == this.target) {
@@ -38,6 +41,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         if (this.replaceWith == null) {
                             throw new InvalidOperationException("This should never occur");
                         }
+                        this.replaced.Add(Tuple.Create(e, this.replaceWith));
                         return this.replaceWith;
                     } else {
                         return base.VisitExpr(e);
@@ -47,12 +51,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
 
             private static bool IsSimple(Expr e) {
-                return false;
+                return
+                    e.ExprType == Expr.NodeType.VarLocal ||
+                    e.ExprType == Expr.NodeType.VarParameter ||
+                    e.ExprType == Expr.NodeType.VarThis;
             }
 
             public static ICode V(ICode c) {
                 var v = new CopyPropagation();
                 var c2 = v.Visit(c);
+                var alreadyReplaced = new Dictionary<Expr, Expr>();
                 foreach (var a in v.assignments.Values) {
                     if (a.mustKeep) {
                         continue;
@@ -64,8 +72,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
                             c2 = VisitorReplace.V(c2, a.assignment, null);
                         }
-                    } else if (a.count == 2 || IsSimple(a.assignment.Expr)) {
-                        c2 = (new Updater(a.assignment.Target)).Visit(c2);
+                    } else if (a.count == 2 || IsSimple(alreadyReplaced.ValueOrDefault(a.assignment.Expr, a.assignment.Expr))) {
+                        var updater = new Updater(a.assignment.Target);
+                        c2 = updater.Visit(c2);
+                        foreach (var replaced in updater.Replaced) {
+                            alreadyReplaced[replaced.Item1] = replaced.Item2;
+                        }
                     }
                 }
                 return c2;
@@ -87,7 +99,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             protected override ICode VisitAssignment(StmtAssignment s) {
                 var aInfo = this.GetAInfo(s.Target);
                 aInfo.assignment = s;
-                if (VisitorFindSpecials.Any(s.Expr, Expr.Special.PossibleSideEffects)) {
+                if (s.Target.ExprType != Expr.NodeType.VarLocal ||
+                    VisitorFindSpecials.Any(s.Expr, Expr.Special.PossibleSideEffects)) {
                     aInfo.mustKeep = true;
                 }
                 this.Visit(s.Target);

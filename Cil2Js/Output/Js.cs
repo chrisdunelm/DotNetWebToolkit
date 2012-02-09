@@ -315,7 +315,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Prepare local variables for global naming.
             // All locals in all methods are sorted by usage count, then all methods usage counts are combined
-            var clusters = methodAsts.Values.SelectMany(x => VisitorPhiClusters.V(x).Select(y => new ExprVarCluster(y))).ToArray();
+            var clusters = methodAsts.Values.SelectMany(x => VisitorJsPhiClusters.V(x).Select(y => new ExprVarCluster(y))).ToArray();
             var varToCluster = clusters.SelectMany(x => x.Vars.Select(y => new { cluster = x, var = y })).ToDictionary(x => x.var, x => x.cluster);
             var varsWithCount = methodAsts.Values.Select(x => {
                 var methodVars = VisitorGetVars.V(x);

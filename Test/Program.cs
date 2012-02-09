@@ -77,7 +77,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestString() { Verbose = true };
-            t.TestEmptyStringAsObjectNullCheck();
+            t.TestConcatObject2();
             return;
 
         }
