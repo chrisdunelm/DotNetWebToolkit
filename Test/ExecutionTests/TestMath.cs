@@ -17,6 +17,18 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestSin() {
+            Func<double> f = () => Math.Sin(1.0);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestCos() {
+            Func<double> f = () => Math.Cos(1.0);
+            this.Test(f);
+        }
+
+        [Test]
         public void TestTan() {
             Func<double> f = () => Math.Tan(1.0);
             this.Test(f);
