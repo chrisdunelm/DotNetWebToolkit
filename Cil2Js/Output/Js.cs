@@ -123,7 +123,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     instanceConstructors.Add(ctx);
                 }
 
-                var cctors = VisitorFindStaticConstructors.V(ast).Where(x => !TypeExtensions.MethodRefEqComparerInstance.Equals(x, mRef)).ToArray();
+                var cctors = VisitorFindStaticConstructors.V(ast)
+                    .Where(x => !TypeExtensions.MethodRefEqComparerInstance.Equals(x, mRef))
+                    .Distinct(TypeExtensions.MethodRefEqComparerInstance)
+                    .ToArray();
                 if (cctors.Any()) {
                     // All methods that access static fields or methods must call the static constructor at the very
                     // start of the method. Except the static construtor itself, which must not recurse into itself.
@@ -254,23 +257,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     }
                 }
             }
-
-            //// Make sure fields of _Int64 and _UInt64 are names
-            //var special64Bits = typesSeen.Keys.Where(x => {
-            //    var revMapped = JsResolver.ReverseTypeMap(x);
-            //    return revMapped.IsInt64() || revMapped.IsUInt64();
-            //}).ToArray();
-            //foreach (var bit64 in special64Bits) {
-            //    var hi = bit64.GetField("hi");
-            //    var lo = bit64.GetField("lo");
-            //    // TODO: Counts are not correct (and this whole thing can probably be done better)
-            //    if (!fieldAccesses.ContainsKey(hi)) {
-            //        fieldAccesses.Add(hi, 1);
-            //    }
-            //    if (!fieldAccesses.ContainsKey(lo)) {
-            //        fieldAccesses.Add(lo, 1);
-            //    }
-            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)

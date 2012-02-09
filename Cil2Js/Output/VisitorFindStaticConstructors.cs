@@ -35,12 +35,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
-        protected override ICode VisitCall(ExprCall e) {
-            if (e.IsStatic) {
-                this.Add(e.CallMethod.DeclaringType, e.Ctx);
-            }
-            return e;
-        }
+        //protected override ICode VisitCall(ExprCall e) {
+        //    if (e.IsStatic) {
+        //        this.Add(e.CallMethod.DeclaringType, e.Ctx);
+        //    }
+        //    return e;
+        //}
 
     }
 
