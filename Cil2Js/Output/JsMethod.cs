@@ -276,7 +276,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var mdt = e.Type.MetadataType;
                 switch (mdt) {
                 case MetadataType.String:
-                    value = "\"" + e.Value + "\"";
+                    var s = (string)e.Value;
+                    s = s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\"", "\\\"");
+                    value = "\"" + s + "\"";
                     break;
                 case MetadataType.Char:
                     value = (int)(char)e.Value;
