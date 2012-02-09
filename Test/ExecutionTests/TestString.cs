@@ -145,6 +145,26 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        private static object ForceObject(object o) { return o; }
+        private static bool GetFalse() { return false; }
+        private static bool GetTrue() { return true; }
+
+        [Test]
+        public void TestEmptyStringAsObjectNullCheck() {
+            // Test only works in Release build
+            Func<bool> f = () => {
+                var so = ForceObject("");
+                bool b;
+                if (so == null) {
+                    b = GetTrue();
+                } else {
+                    b = GetFalse();
+                }
+                return !b;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

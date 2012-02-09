@@ -411,7 +411,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt BrTrue(Instruction inst) {
             var expr = this.stack.Pop();
-            if (expr.Type.IsString()) {
+            if (expr.Type.IsString() || expr.Type.IsObject()) {
                 // TODO: Move this JS-specific processing into a later, JS-specific stage
                 // Special processing of string null-check required, as empty string == false in Javascript
                 var check = new ExprBinary(this.ctx, BinaryOp.NotEqual, this.ctx.Boolean, expr, new ExprLiteral(this.ctx, null, this.ctx.String));
@@ -423,7 +423,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt BrFalse(Instruction inst) {
             var expr = this.stack.Pop();
-            if (expr.Type.IsString()) {
+            if (expr.Type.IsString() || expr.Type.IsObject()) {
                 // TODO: Move this JS-specific processing into a later, JS-specific stage
                 // Special processing of string null-check required, as empty string == false in Javascript
                 var check = new ExprBinary(this.ctx, BinaryOp.Equal, this.ctx.Boolean, expr, new ExprLiteral(this.ctx, null, this.ctx.String));

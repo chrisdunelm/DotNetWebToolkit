@@ -74,6 +74,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitBinary(ExprBinary e) {
             var ctx = e.Ctx;
+            // Special cases for == and != needed as an empty string is false, not true
             if (e.Op == BinaryOp.Equal) {
                 if (e.Left.IsLiteralNull()) {
                     return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Right.Named("e"));
