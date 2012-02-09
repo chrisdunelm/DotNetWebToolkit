@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Attributes;
+using DotNetWebToolkit.WebGL;
 
 #pragma warning disable 0626
 
@@ -19,7 +20,11 @@ namespace DotNetWebToolkit.Web {
         }
 
         public WebGLRenderingContext GetContextWebGL(WebGLContextAttributes attrs = null) {
-            return (WebGLRenderingContext)(this.GetContext("webgl", attrs) ?? this.GetContext("experimental-webgl", attrs));
+            return (WebGLRenderingContext)
+                (this.GetContext("webgl", attrs) ?? 
+                this.GetContext("experimental-webgl", attrs) ??
+                this.GetContext("webkit-3d", attrs) ??
+                this.GetContext("moz-webgl", attrs));
         }
 
     }
