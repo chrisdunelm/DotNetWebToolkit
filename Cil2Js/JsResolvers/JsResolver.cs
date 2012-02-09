@@ -87,14 +87,19 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             if (jsClass != null && mDef.IsExternal()) {
                 if (mDef.IsSetter || mDef.IsGetter) {
                     var propertyName = JsCase(mDef.Name.Substring(4));
+                    if (mDef.IsSpecialName) {
+                        if (mDef.Name.Substring(4) == "Item") {
+                            propertyName = null;
+                        }
+                    }
                     if (mDef.IsStatic) {
                         propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
                     }
-                    var jsProperty = new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName);
+                    var jsProperty = new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName, call.Args);
                     if (mDef.IsGetter) {
                         return jsProperty;
                     } else {
-                        var arg = call.Args.First();
+                        var arg = call.Args.Last();
                         var js = "jsProperty = value";
                         var expr = new ExprJsExplicit(ctx, js, arg.Type, jsProperty.Named("jsProperty"), arg.Named("value"));
                         return expr;

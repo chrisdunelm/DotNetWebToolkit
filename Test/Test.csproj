@@ -75,6 +75,7 @@
     <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
     <Compile Include="ExecutionTests\TestEqualityComparer.cs" />
     <Compile Include="ExecutionTests\TestInt64UInt64.cs" />
+    <Compile Include="BrowserTests\TestJsTypes.cs" />
     <Compile Include="ExecutionTests\TestList.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
     <Compile Include="ExecutionTests\TestLoops.cs" />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
 
@@ -37,15 +38,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
     public class ExprJsResolvedProperty : Expr {
 
-        public ExprJsResolvedProperty(Ctx ctx, TypeReference returnType, Expr obj, string propertyName)
+        public ExprJsResolvedProperty(Ctx ctx, TypeReference returnType, Expr obj, string propertyName, IEnumerable<Expr> indexerArgs)
             : base(ctx) {
             this.Obj = obj;
             this.PropertyName = propertyName;
             this.returnType = returnType;
+            this.IndexerArgs = indexerArgs.EmptyIfNull();
         }
 
         public Expr Obj { get; private set; }
         public string PropertyName { get; private set; }
+        public IEnumerable<Expr> IndexerArgs { get; set; }
         private TypeReference returnType;
 
         public override Expr.NodeType ExprType {

@@ -624,9 +624,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
             if (e.Obj != null) {
                 this.Visit(e.Obj);
-                this.js.Append(".");
+                if (e.PropertyName != null) {
+                    this.js.Append(".");
+                }
             }
-            this.js.Append(e.PropertyName);
+            if (e.PropertyName != null) {
+                this.js.Append(e.PropertyName);
+            } else {
+                this.js.Append("[");
+                this.Visit(e.IndexerArgs.First());
+                this.js.Append("]");
+            }
             return e;
         }
 
