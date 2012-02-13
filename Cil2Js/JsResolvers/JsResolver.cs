@@ -125,7 +125,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                         return expr;
                     }
                 } else if (mDef.IsConstructor) {
-                    var typeName = (string)jsClass.ConstructorArguments[0].Value;
+                    string typeName = null;
+                    if (jsDetail != null) {
+                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                        typeName = (string)nameProp.Argument.Value;
+                    }
+                    if (typeName == null) {
+                        typeName = (string)jsClass.ConstructorArguments[0].Value;
+                    }
                     var expr = new ExprJsResolvedCtor(ctx, typeName, mRef.DeclaringType, call.Args);
                     return expr;
                 } else {
@@ -200,7 +207,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 }
             }
             // Type map
-            if (ctx.TDef.Methods.Any(x=>x.IsExternal())) {
+            if (ctx.TDef.Methods.Any(x => x.IsExternal())) {
                 // Type contains external methods, which cannot be loaded
                 return null;
             }
