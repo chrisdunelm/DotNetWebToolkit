@@ -5,12 +5,14 @@ using System.Text;
 using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.WebGL;
 
-#pragma warning disable 0626
+#pragma warning disable 0626, 0824
 
 namespace DotNetWebToolkit.Web {
 
     [JsClass("CANVAS")]
     public class HtmlCanvasElement : HtmlElement {
+
+        private HtmlCanvasElement() { }
 
         public extern CanvasRenderingContext GetContext(string contextId);
         public extern CanvasRenderingContext GetContext(string contextId, object attrs);

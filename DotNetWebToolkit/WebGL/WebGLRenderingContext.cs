@@ -15,6 +15,7 @@ namespace DotNetWebToolkit.WebGL {
 
         public extern HtmlCanvasElement Canvas { get; }
 
+        public extern void ActiveTexture(TextureUnit texture);
         public extern void AttachShader(WebGLProgram program, WebGLShader shader);
         public extern void BindBuffer(BufferTarget target, WebGLBuffer buffer);
         public extern void BindTexture(TextureTarget target, WebGLTexture texture);
@@ -30,6 +31,9 @@ namespace DotNetWebToolkit.WebGL {
         public extern void Enable(EnableCap cap);
         public extern void EnableVertexAttribArray(uint index);
         public extern uint GetAttribLocation(WebGLProgram program, string name);
+        public extern object GetProgramParameter(WebGLProgram program, ProgramParameter pname);
+        public extern string GetShaderInfoLog(WebGLShader shader);
+        public extern object GetShaderParameter(WebGLShader shader, ShaderParameter pname);
         public extern WebGLUniformLocation GetUniformLocation(WebGLProgram program, string name);
         public extern void LinkProgram(WebGLProgram program);
         public extern void PixelStorei(PixelStoreParameter pname, int param);
@@ -37,11 +41,12 @@ namespace DotNetWebToolkit.WebGL {
         public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlImageElement image);
         public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlCanvasElement image);
         public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlVideoElement image);
-        public extern void TexParameter(TextureTarget target, TextureParameterName pname, int param);
-        public extern void TexParameter(TextureTarget target, TextureParameterName pname, TextureMagFilter param);
-        public extern void TexParameter(TextureTarget target, TextureParameterName pname, TextureMinFilter param);
-        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, Float32Array value);
-        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, float[] value);
+        public extern void TexParameteri(TextureTarget target, TextureParameterName pname, int param);
+        public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMagFilter param);
+        public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMinFilter param);
+        public extern void Uniform1i(WebGLUniformLocation location, int x);
+        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, Float32Array v);
+        public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, float[] v);
         public extern void UseProgram(WebGLProgram program);
         public extern void Viewport(int x, int y, int width, int height);
         public extern void VertexAttribPointer(uint index, int size, DataType type, bool normalized, int stride, int offset);

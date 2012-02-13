@@ -51,12 +51,15 @@
     <Compile Include="WebGL\EnableCap.cs" />
     <Compile Include="WebGL\PixelFormat.cs" />
     <Compile Include="WebGL\PixelStoreParameter.cs" />
+    <Compile Include="WebGL\ProgramParameter.cs" />
+    <Compile Include="WebGL\ShaderParameter.cs" />
     <Compile Include="WebGL\ShaderType.cs" />
     <Compile Include="WebGL\TextureMagFilter.cs" />
     <Compile Include="WebGL\TextureMinFilter.cs" />
     <Compile Include="WebGL\TextureParameterName.cs" />
     <Compile Include="WebGL\TextureTarget.cs" />
     <Compile Include="WebGL\DataType.cs" />
+    <Compile Include="WebGL\TextureUnit.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />
     <Compile Include="Web\CanvasRenderingContext2D.cs" />
     <Compile Include="Web\HtmlImageElement.cs" />

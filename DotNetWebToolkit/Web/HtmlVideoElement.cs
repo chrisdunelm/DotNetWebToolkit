@@ -9,6 +9,9 @@ namespace DotNetWebToolkit.Web {
 
     [JsClass("VIDEO")]
     public class HtmlVideoElement : HtmlElement {
+
+        private HtmlVideoElement() { }
+
     }
 
 }

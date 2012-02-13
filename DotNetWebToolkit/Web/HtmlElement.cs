@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Attributes;
 
-#pragma warning disable 0626
+#pragma warning disable 0626, 0824
 
 namespace DotNetWebToolkit.Web {
 
