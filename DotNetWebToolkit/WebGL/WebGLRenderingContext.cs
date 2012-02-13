@@ -28,6 +28,7 @@ namespace DotNetWebToolkit.WebGL {
         public extern WebGLShader CreateShader(ShaderType type);
         public extern WebGLTexture CreateTexture();
         public extern void DrawArrays(BeginMode mode, int first, int count);
+        public extern void DrawElements(BeginMode mode, int size, DataType type, int offset);
         public extern void Enable(EnableCap cap);
         public extern void EnableVertexAttribArray(uint index);
         public extern uint GetAttribLocation(WebGLProgram program, string name);
