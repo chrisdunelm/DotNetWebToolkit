@@ -20,6 +20,17 @@ namespace DotNetWebToolkit.Web {
         public extern uint ByteLength { get; }
     }
 
+    [JsClass("Uint16Array")]
+    public sealed class UInt16Array : ArrayBufferView {
+
+        public extern UInt16Array(uint size);
+        public extern UInt16Array(UInt16[] array);
+        public extern UInt16Array(UInt16Array array);
+
+        public extern UInt16 this[int index] { get; set; }
+
+    }
+
     [JsClass("Float32Array")]
     public sealed class Float32Array : ArrayBufferView {
 
