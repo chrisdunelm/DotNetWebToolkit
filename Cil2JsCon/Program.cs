@@ -23,12 +23,14 @@ namespace Cil2JsCon {
 
             Environment.CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
+            bool verbose = false;
             string inFilename = null;
             string outFilename = null;
 
             var p = new OptionSet {
-                { "in=", "Input dll file", s=>inFilename = s },
-                { "out=", "Output JavaScript file. Will be overwritten if already exists", s=>outFilename = s },
+                { "v", "Verbose", v => verbose = v != null },
+                { "in=", "Input dll file", s => inFilename = s },
+                { "out=", "Output JavaScript file. Will be overwritten if already exists", s => outFilename = s },
             };
 
             var r = p.Parse(args);
@@ -41,7 +43,7 @@ namespace Cil2JsCon {
                 return 1;
             }
 
-            var js = Transcoder.ToJs(inFilename, true);
+            var js = Transcoder.ToJs(inFilename, verbose);
             try {
                 File.WriteAllText(outFilename, js, Encoding.UTF8);
             } catch (Exception e) {
