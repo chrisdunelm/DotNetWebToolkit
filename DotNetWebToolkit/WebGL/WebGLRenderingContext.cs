@@ -45,6 +45,7 @@ namespace DotNetWebToolkit.WebGL {
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, int param);
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMagFilter param);
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMinFilter param);
+        public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureWrapMode param);
         public extern void Uniform1i(WebGLUniformLocation location, int x);
         public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, Float32Array v);
         public extern void UniformMatrix4fv(WebGLUniformLocation location, bool transpose, float[] v);

@@ -60,6 +60,7 @@
     <Compile Include="WebGL\TextureTarget.cs" />
     <Compile Include="WebGL\DataType.cs" />
     <Compile Include="WebGL\TextureUnit.cs" />
+    <Compile Include="WebGL\TextureWrapMode.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />
     <Compile Include="Web\CanvasRenderingContext2D.cs" />
     <Compile Include="Web\HtmlImageElement.cs" />

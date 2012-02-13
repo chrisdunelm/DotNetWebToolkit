@@ -13,7 +13,5 @@ namespace DotNetWebToolkit.WebGL {
         Int = 0x1404,
         UnsignedInt = 0x1405,
         Float = 0x1406,
-        Double = 0x140A,
-        HalfFloat = 0x140B,
     }
 }
