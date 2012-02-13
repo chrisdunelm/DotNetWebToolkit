@@ -91,5 +91,13 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return this.Literal(value, type).Named(name);
         }
 
+        public ExprLiteral Literal(bool value) {
+            return this.Literal(value, this.Boolean);
+        }
+
+        public ExprLiteral Literal(int value) {
+            return this.Literal(value, this.Int32);
+        }
+
     }
 }

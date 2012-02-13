@@ -22,7 +22,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         public override TypeReference Type {
-            get { throw new NotImplementedException(); }
+            // HACK - but probably doesn't matter....
+            get { return this.Ctx.Object; }
         }
 
     }

@@ -85,8 +85,28 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var type = mDef.DeclaringType;
             var jsClass = type.GetCustomAttribute<JsClassAttribute>() ?? type.GetCustomAttribute<JsAbstractClassAttribute>();
             if (jsClass != null && mDef.IsExternal()) {
+                var jsDetail = mDef.GetCustomAttribute<JsDetailAttribute>();
                 if (mDef.IsSetter || mDef.IsGetter) {
-                    var propertyName = JsCase(mDef.Name.Substring(4));
+                    var property = mDef.DeclaringType.Properties.First(x => {
+                        if (x.GetMethod != null && TypeExtensions.MethodRefEqComparerInstance.Equals(x.GetMethod, mDef)) {
+                            return true;
+                        }
+                        if (x.SetMethod != null && TypeExtensions.MethodRefEqComparerInstance.Equals(x.SetMethod, mDef)) {
+                            return true;
+                        }
+                        return false;
+                    });
+                    jsDetail = property.GetCustomAttribute<JsDetailAttribute>();
+                    string propertyName = null;
+                    if (jsDetail != null) {
+                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                        if (nameProp.Name != null) {
+                            propertyName = (string)nameProp.Argument.Value;
+                        }
+                    }
+                    if (propertyName == null) {
+                        propertyName = JsCase(mDef.Name.Substring(4));
+                    }
                     if (mDef.IsSpecialName) {
                         if (mDef.Name.Substring(4) == "Item") {
                             propertyName = null;
@@ -116,7 +136,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     return new ExprJsResolvedMethod(ctx, call.Type, call.Obj, methodName, call.Args);
                 }
             }
-            var callType = Type.GetType(mRef.DeclaringType.Resolve().FullName);
+            var mDeclTypeDef = mRef.DeclaringType.Resolve();
+            if (mDeclTypeDef.Methods.Any(x => x.IsExternal())) {
+                // Method is in a class that contains external methods. These cannot be loaded
+                return null;
+            }
+            var fullTypeName = mDeclTypeDef.AssemblyQualifiedName();
+            var callType = Type.GetType(fullTypeName);
             if (callType == null) {
                 // Method is outside this module or its references
                 return null;
@@ -128,12 +154,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     var args = ((GenericInstanceType)mRef.DeclaringType).GenericArguments.ToArray();
                     tRef = tRef.MakeGeneric(args);
                 }
-                var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => x.Resolve().IsPublic && x.MatchMethodOnly(mRef));
+                var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => {
+                    var xResolved = x.FullResolve(mRef.DeclaringType, mRef);
+                    return x.Resolve().IsPublic && xResolved.MatchMethodOnly(mRef);
+                });
                 if (mappedMethod != null) {
                     Expr expr;
                     if (mDef.IsConstructor) {
                         expr = new ExprNewObj(ctx, mappedMethod, call.Args);
                     } else {
+                        mappedMethod = mappedMethod.FullResolve(mRef.DeclaringType, mRef);
                         expr = new ExprCall(ctx, mappedMethod, call.Obj, call.Args, call.IsVirtualCall);
                     }
                     return expr;
@@ -170,7 +200,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 }
             }
             // Type map
-            var methodType = Type.GetType(ctx.TRef.Resolve().FullName);
+            if (ctx.TDef.Methods.Any(x=>x.IsExternal())) {
+                // Type contains external methods, which cannot be loaded
+                return null;
+            }
+            var typeFullName = ctx.TDef.AssemblyQualifiedName();
+            var methodType = Type.GetType(typeFullName);
             if (methodType == null) {
                 // Method is outside this module or its references
                 return null;
@@ -199,16 +234,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             if (tRef.IsGenericInstance) {
                 tRefGen = (GenericInstanceType)tRef;
                 tRef = tRef.Resolve();
-                //var tRefDef = tRef.Resolve();
-                //var tttt = Type.GetType(tRefDef.FullName);
-                //if (tttt != null) {
-                //    var rvrv = reverseTypeMap.ValueOrDefault(tttt);
-                //    if (rvrv != null) {
-                //        var xxxx = thisModule.Import(rvrv);
-                //        var gggg = xxxx.MakeGeneric(((GenericInstanceType)tRef).GenericArguments.ToArray());
-                //        return gggg;
-                //    }
-                //}
             }
             var type = Type.GetType(tRef.FullName);
             if (type == null) {

@@ -38,9 +38,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         public static string CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false, bool testing = false) {
-            var todo = new Stack<MethodReference>();
+            var todo = new Queue<MethodReference>();
             foreach (var method in rootMethods) {
-                todo.Push(method);
+                todo.Enqueue(method);
             }
             // Each method, with the count of how often it is referenced.
             var methodsSeen = new Dictionary<MethodReference, int>(rootMethods.ToDictionary(x => x, x => 1), TypeExtensions.MethodRefEqComparerInstance);
@@ -62,7 +62,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var instanceConstructors = new List<Ctx>();
 
             while (todo.Any()) {
-                var mRef = todo.Pop();
+                var mRef = todo.Dequeue();
                 var mDef = mRef.Resolve();
                 var tRef = mRef.DeclaringType;
                 var tDef = tRef.Resolve();
@@ -188,7 +188,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         methodsSeen[call.CallMethod]++;
                     } else {
                         methodsSeen.Add(call.CallMethod, 1);
-                        todo.Push(call.CallMethod);
+                        todo.Enqueue(call.CallMethod);
                     }
                 }
 
@@ -217,7 +217,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var requireMethodsArray = requireMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in requireMethodsArray) {
                         methodsSeen.Add(method, 1); // TODO: How to properly handle count?
-                        todo.Push(method);
+                        todo.Enqueue(method);
                     }
                     // Scan all interface calls and add any required methods
                     var iFaceMethods =
@@ -237,7 +237,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var iFaceMethodsArray = iFaceMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in iFaceMethodsArray) {
                         methodsSeen.Add(method, 1);
-                        todo.Push(method);
+                        todo.Enqueue(method);
                     }
                 }
             }

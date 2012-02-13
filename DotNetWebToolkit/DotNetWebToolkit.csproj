@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\JsDetailAttribute.cs" />
     <Compile Include="Attributes\JsExportAttribute.cs" />
     <Compile Include="Attributes\JsClassAttribute.cs" />
     <Compile Include="Attributes\JsUseTypeAttribute.cs" />
@@ -60,11 +61,13 @@
     <Compile Include="Web\CanvasRenderingContext2D.cs" />
     <Compile Include="Web\HtmlImageElement.cs" />
     <Compile Include="Web\HtmlVideoElement.cs" />
+    <Compile Include="Web\MessageEvent.cs" />
     <Compile Include="Web\TypedArray.cs" />
     <Compile Include="WebGL\WebGLRenderingContext.cs" />
     <Compile Include="Web\Document.cs" />
     <Compile Include="Web\HtmlCanvasElement.cs" />
     <Compile Include="Web\HtmlElement.cs" />
+    <Compile Include="Web\WebSocket.cs" />
     <Compile Include="Web\Window.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

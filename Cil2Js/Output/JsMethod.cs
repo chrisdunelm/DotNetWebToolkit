@@ -181,7 +181,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitBinary(ExprBinary e) {
             var forceInt = e.Op == BinaryOp.Div && e.Type.IsInteger();
             if (forceInt) {
-                this.js.Append("(~~");
+                if (e.Type.IsUInt32()) {
+                    this.js.Append("(");
+                } else {
+                    this.js.Append("(~~");
+                }
             }
             this.js.Append("(");
             this.Visit(e.Left);
@@ -189,7 +193,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             this.Visit(e.Right);
             this.js.Append(")");
             if (forceInt) {
-                this.js.Append(")");
+                if (e.Type.IsUInt32()) {
+                    this.js.Append(">>>0");
+                } else {
+                    this.js.Append(")");
+                }
             }
             return e;
         }

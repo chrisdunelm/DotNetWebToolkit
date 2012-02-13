@@ -30,7 +30,7 @@ namespace Cil2JsCon {
                 { "in=", "Input dll file", s=>inFilename = s },
                 { "out=", "Output JavaScript file. Will be overwritten if already exists", s=>outFilename = s },
             };
-            
+
             var r = p.Parse(args);
             if (inFilename == null || outFilename == null || r.Any()) {
                 Console.WriteLine("Cil2JsCon");
@@ -41,9 +41,9 @@ namespace Cil2JsCon {
                 return 1;
             }
 
-                var js = Transcoder.ToJs(inFilename);
-                try {
-                    File.WriteAllText(outFilename, js, Encoding.UTF8);
+            var js = Transcoder.ToJs(inFilename, true);
+            try {
+                File.WriteAllText(outFilename, js, Encoding.UTF8);
             } catch (Exception e) {
                 Console.WriteLine("Error:");
                 Console.WriteLine(e);

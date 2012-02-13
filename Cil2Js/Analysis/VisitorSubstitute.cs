@@ -23,7 +23,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 // Must never substitute when leaving protected region.
                 // This would change which statements were inside the try/catch/finally region
                 if (s.To.StmtType == Stmt.NodeType.Continuation && !((StmtContinuation)s.To).LeaveProtectedRegion) {
-                    return s.To;
+                    return this.Visit(s.To);
                 }
                 var count = VisitorCounter.GetCount(s.To, this.root);
                 if (count == 1) {

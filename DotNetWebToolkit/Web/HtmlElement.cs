@@ -9,7 +9,7 @@ using DotNetWebToolkit.Attributes;
 namespace DotNetWebToolkit.Web {
 
     [JsAbstractClass]
-    public class HtmlElement {
+    public abstract class HtmlElement {
 
         public extern int Width { get; set; }
         public extern int Height { get; set; }

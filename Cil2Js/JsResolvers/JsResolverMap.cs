@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using System.Threading;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
@@ -30,6 +31,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(EqualityComparer<>), typeof(Cls._EqualityComparer<>) },
             { typeof(Math), typeof(Cls._Math) },
             { typeof(Array), typeof(Cls._Array) },
+            { typeof(Thread), typeof(Cls._Thread) },
+            { typeof(Enumerable), typeof(Cls._Enumerable) },
+            { typeof(Console), typeof(Cls._Console) },
             { typeof(Action), typeof(Cls._Action) },
             { typeof(Action<>), typeof(Cls._Action) },
             { typeof(Action<,>), typeof(Cls._Action) },

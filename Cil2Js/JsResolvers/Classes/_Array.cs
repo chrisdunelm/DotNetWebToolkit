@@ -41,5 +41,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return stmt;
         }
 
+        [Js]
+        public static Expr get_Length(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsExplicit(ctx, "this.length", ctx.Int32, ctx.ThisNamed);
+        }
+
     }
 }

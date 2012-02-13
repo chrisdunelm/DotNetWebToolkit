@@ -138,6 +138,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Not:
                 return this.SsaLocalAssignment(this.Unary(UnaryOp.BitwiseNot));
             case Code.Add:
+            case Code.Add_Ovf: // HACK
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Add));
             case Code.Sub:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.Sub));

@@ -189,16 +189,24 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     var handlerExs = exs.Where(x => x.TryStart.Offset >= ex.HandlerStart.Offset && x.TryEnd.Offset < ex.HandlerEnd.Offset).ToArray();
                     this.CreatePart(ex.HandlerStart.GetRange(ex.HandlerEnd.Previous), handlerExs);
                     StmtTry tryStmt;
-                    if (ex.HandlerType == ExceptionHandlerType.Catch) {
+                    switch (ex.HandlerType) {
+                    case ExceptionHandlerType.Catch:
                         tryStmt = new StmtTry(this.ctx, ex.TryStart, ex.HandlerStart, null, ex.CatchType);
-                    } else if (ex.HandlerType == ExceptionHandlerType.Finally) {
+                        break;
+                    case ExceptionHandlerType.Finally:
                         tryStmt = new StmtTry(this.ctx, ex.TryStart, null, ex.HandlerStart, null);
-                    } else {
+                        break;
+                    case ExceptionHandlerType.Fault: // TODO: Handle this properly, can emulate with 2 try statements
+                        tryStmt = new StmtTry(this.ctx, ex.TryStart, null, ex.HandlerStart, null); // INCORRECT
+                        break;
+                    default:
                         throw new NotImplementedException("Cannot handle handler-type: " + ex.HandlerType);
                     }
-                    this.mappable.Add(tryStmt);
-                    // Put all 'try' statements in outer-first order. CIL will be at the end of the list
-                    this.blockMap[inst].Insert(0, tryStmt);
+                    if (tryStmt != null) {
+                        this.mappable.Add(tryStmt);
+                        // Put all 'try' statements in outer-first order. CIL will be at the end of the list
+                        this.blockMap[inst].Insert(0, tryStmt);
+                    }
                     stmtStart = ex.HandlerEnd;
                     inst = ex.HandlerEnd.Previous;
                 }

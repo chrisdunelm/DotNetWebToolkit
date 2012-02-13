@@ -16,6 +16,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private VisitorDerecurse() { }
 
         private Dictionary<ICode, ICode> replaces = new Dictionary<ICode, ICode>();
+        private HashSet<Stmt> seen = new HashSet<Stmt>();
 
         protected override ICode VisitStmt(Stmt s) {
             var r = this.replaces.ValueOrDefault(s);
@@ -27,7 +28,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected override ICode VisitContinuation(StmtContinuation s) {
+            // Why is this de-recursing blocks in contuations? Why doesn't it just derecurse itself (if possible)???
             if (s.To.StmtType != Stmt.NodeType.Block) {
+                return base.VisitContinuation(s);
+            }
+            if (!this.seen.Add(s.To)) {
                 return base.VisitContinuation(s);
             }
             var block = (StmtBlock)s.To;

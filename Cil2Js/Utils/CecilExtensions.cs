@@ -501,6 +501,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return m.CustomAttributes.Where(x => x.AttributeType.Name == typeof(TAttr).Name).ToArray();
         }
 
+        public static CustomAttribute GetCustomAttribute<TAttr>(this PropertyDefinition p) {
+            return p.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        }
+
         public static string Name(this TypeReference t) {
             var fullName = t.FullName;
             int depth = 0;
@@ -529,6 +533,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             var nType = t.Module.Import(typeof(Nullable<>)).MakeGeneric(t);
             return nType;
+        }
+
+        public static string AssemblyQualifiedName(this TypeDefinition tDef) {
+            return tDef.FullName + ", " + tDef.Module.Assembly.FullName;
         }
 
     }

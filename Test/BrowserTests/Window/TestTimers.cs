@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using DotNetWebToolkit.Web;
 
-namespace Test.BrowserTests {
+namespace Test.BrowserTests.Window_ {
 
     [TestFixture]
     public class TestTimers : BrowserTestBase {

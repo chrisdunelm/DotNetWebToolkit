@@ -76,8 +76,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestJsTypes() { Verbose = true };
-            t.TestJsItemProperty();
+            var t = new TestString() { Verbose = true };
+            t.TestIndexOfString();
             return;
 
         }

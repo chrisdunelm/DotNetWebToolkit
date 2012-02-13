@@ -90,6 +90,7 @@
     <Compile Include="Analysis\VisitorExpressionSimplifier.cs" />
     <Compile Include="Analysis\VisitorFindCalls.cs" />
     <Compile Include="Analysis\VisitorFindContinuations.cs" />
+    <Compile Include="Analysis\VisitorFindDuplicateStmts.cs" />
     <Compile Include="Analysis\VisitorFindSpecials.cs" />
     <Compile Include="Analysis\VisitorIfDistribution.cs" />
     <Compile Include="Analysis\VisitorIfReorder.cs" />
@@ -155,6 +156,8 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="JsResolvers\Classes\_Console.cs" />
+    <Compile Include="JsResolvers\Classes\_Enumerable.cs" />
     <Compile Include="JsResolvers\Classes\_Action.cs" />
     <Compile Include="JsResolvers\Classes\_Array.cs" />
     <Compile Include="JsResolvers\Classes\_Boolean.cs" />
@@ -171,6 +174,7 @@
     <Compile Include="JsResolvers\Classes\_RuntimeType.cs" />
     <Compile Include="JsResolvers\Classes\_String.cs" />
     <Compile Include="JsResolvers\Classes\_StringBuilder.cs" />
+    <Compile Include="JsResolvers\Classes\_Thread.cs" />
     <Compile Include="JsResolvers\Classes\_ThrowHelper.cs" />
     <Compile Include="JsResolvers\Classes\_Type.cs" />
     <Compile Include="JsResolvers\IJsImpl.cs">

@@ -35,6 +35,15 @@ namespace DotNetWebToolkit.Cil2Js {
                 var s1 = fn(s0);
                 if (s1 != s0) {
                     print(s1, name);
+                    var dupStmts = VisitorFindDuplicateStmts.Find(s1);
+                    if (dupStmts.Any()) {
+                        Console.WriteLine("*** ERROR *** {0} DUPLICATE STMT(S) ***", dupStmts.Count());
+                        foreach (var dup in dupStmts) {
+                            Console.WriteLine();
+                            Console.WriteLine(ShowVisitor.V(dup));
+                        }
+                        throw new InvalidOperationException("Duplicate stmt(s) found");
+                    }
                 }
                 return s1;
             };
@@ -42,6 +51,7 @@ namespace DotNetWebToolkit.Cil2Js {
             ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
             HashSet<Expr> booleanSimplification = new HashSet<Expr>();
+            bool lastChance = false;
             for (int i = 0; ; i++) {
                 var astOrg = ast;
                 ast = doStep(s => (Stmt)VisitorSubstitute.V(s), ast, "VisitorSubstitute");
@@ -53,17 +63,24 @@ namespace DotNetWebToolkit.Cil2Js {
                 ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
                 ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
-                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s), ast, "VisitorSwitchSequencing");
+                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, lastChance), ast, "VisitorSwitchSequencing");
                 if (ast == astOrg) {
-                    break;
+                    if (VisitorFindContinuations.Any(ast)) {
+                        if (!lastChance) {
+                            lastChance = true;
+                        } else {
+                            throw new InvalidOperationException("Error: Cannot reduce IL to AST with no continuations");
+                        }
+                    } else {
+                        break;
+                    }
+                } else {
+                    lastChance = false;
                 }
                 if (i > 20) {
                     // After 20 iterations even the most complex method should be sorted out
                     throw new InvalidOperationException("Error: Stuck in loop trying to reduce AST");
                 }
-            }
-            if (VisitorFindContinuations.Any(ast)) {
-                throw new InvalidOperationException("Error: Cannot reduce IL to AST with no continuations");
             }
             // Simplify AST
             for (int i = 0; ; i++) {
