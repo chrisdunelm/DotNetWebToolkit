@@ -38,25 +38,21 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
     public class ExprJsResolvedProperty : Expr {
 
-        public ExprJsResolvedProperty(Ctx ctx, TypeReference returnType, Expr obj, string propertyName, IEnumerable<Expr> indexerArgs)
+        public ExprJsResolvedProperty(Ctx ctx, ICall call, string propertyName)
             : base(ctx) {
-            this.Obj = obj;
+            this.Call = call;
             this.PropertyName = propertyName;
-            this.returnType = returnType;
-            this.IndexerArgs = indexerArgs.EmptyIfNull();
         }
 
-        public Expr Obj { get; private set; }
+        public ICall Call { get; private set; }
         public string PropertyName { get; private set; }
-        public IEnumerable<Expr> IndexerArgs { get; set; }
-        private TypeReference returnType;
 
         public override Expr.NodeType ExprType {
             get { return (Expr.NodeType)JsExprType.JsResolvedProperty; }
         }
 
         public override TypeReference Type {
-            get { return this.returnType; }
+            get { return this.Call.Type; }
         }
     }
 

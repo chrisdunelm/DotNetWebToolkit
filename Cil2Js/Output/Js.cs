@@ -100,6 +100,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     ast = VisitorJsRewriteSealedVCalls.V(ast);
                     ast = VisitorJsResolveAll.V(ast);
                     ast = VisitorJsResolveConv.V(ast);
+                    ast = VisitorJsResolveSpecialTypes.V(ast);
                     if (ast == astOrg) {
                         break;
                     }
@@ -519,6 +520,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             js.Append("]");
                         }
                     }
+                }
+                if (tDef.IsEnum && tDef.GetCustomAttribute<JsStringEnumAttribute>() != null) {
+                    // JS string/enum map
+                    var values = tDef.Fields.Where(x => x.IsLiteral).Select(x => {
+                        return string.Format("{0}:\"{1}\",\"{1}\":{0}", x.Constant, JsResolver.JsName(x));
+                    }).ToArray();
+                    js.AppendFormat(", {0}:{{{1}}}", typeDataNames[TypeData.EnumStringMap], string.Join(", ", values));
                 }
                 // end
                 js.Append("};");

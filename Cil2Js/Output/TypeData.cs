@@ -10,13 +10,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         VTable,
         Name,
         Namespace,
-        //BaseType,
         IsValueType,
         IsArray,
         ElementType,
         IsInterface,
-        //Interfaces,
         AssignableTo,
+        EnumStringMap,
 
     }
 }

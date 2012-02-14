@@ -33,8 +33,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js(typeof(int))]
         public static Expr get_Length(ICall call) {
-            var ctx = call.Ctx;
-            return new ExprJsResolvedProperty(ctx, ctx.Int32, call.Obj, "length", null);
+            return new ExprJsResolvedProperty(call.Ctx, call, "length");
         }
 
         [Js(typeof(char), typeof(int))]

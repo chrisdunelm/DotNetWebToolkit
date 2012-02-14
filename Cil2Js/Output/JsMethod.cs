@@ -630,18 +630,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
-            if (e.Obj != null) {
-                this.Visit(e.Obj);
-                if (e.PropertyName != null) {
+            if (e.PropertyName == null) {
+                // Indexer
+                this.Visit(e.Call.Obj);
+                this.js.Append("[");
+                this.Visit(e.Call.Args.First());
+                this.js.Append("]");
+            } else {
+                // Normal attribute/property
+                if (e.Call.Obj != null) {
+                    this.Visit(e.Call.Obj);
                     this.js.Append(".");
                 }
-            }
-            if (e.PropertyName != null) {
                 this.js.Append(e.PropertyName);
-            } else {
-                this.js.Append("[");
-                this.Visit(e.IndexerArgs.First());
-                this.js.Append("]");
+            }
+            if (e.Call.CallMethod != null && e.Call.CallMethod.Resolve().IsSetter) {
+                this.js.Append(" = ");
+                this.Visit(e.Call.Args.Last());
             }
             return e;
         }

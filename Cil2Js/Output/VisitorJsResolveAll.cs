@@ -19,7 +19,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitCall(ExprCall e) {
-            var expr = this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
+            var expr = this.HandleCall(e, (obj, args) => new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
             var res = JsResolver.ResolveCall(expr);
             if (res != null) {
                 return this.Visit(res);
@@ -50,7 +50,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitNewObj(ExprNewObj e) {
-            var expr = this.HandleCall(e, (ctor, obj, args) => new ExprNewObj(e.Ctx, ctor, args));
+            var expr = this.HandleCall(e, (obj, args) => new ExprNewObj(e.Ctx, e.CallMethod, args));
             var res = JsResolver.ResolveCall(expr);
             if (res == null) {
                 return expr;

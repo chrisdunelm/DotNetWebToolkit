@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Analysis;
 using DotNetWebToolkit.Cil2Js.Ast;
+using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
 
@@ -141,11 +142,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected virtual ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
             this.ThrowOnNoOverride();
-            //var objInit = (Expr)this.Visit(e.ObjInit);
             var runtimeType = (Expr)this.Visit(e.RuntimeType);
             var objRef = (Expr)this.Visit(e.ObjRef);
             var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
-            //if (objInit != e.ObjInit || objRef != e.ObjRef || args != null) {
             if (runtimeType != e.RuntimeType || objRef != e.ObjRef || args != null) {
                 return new ExprJsVirtualCall(e.Ctx, e.CallMethod, runtimeType, objRef, args ?? e.Args);
             } else {
@@ -175,12 +174,33 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             }
         }
 
+        class DupCall : ICall {
+            public Expr.NodeType ExprType {get;set;}
+            public MethodReference CallMethod {get;set;}
+            public bool IsVirtualCall {get;set;}
+            public Expr Obj {get;set;}
+            public IEnumerable<Expr> Args {get;set;}
+            public TypeReference Type {get;set;}
+            public CodeType CodeType {get{return CodeType.Expression;}}
+            public Ctx Ctx {get;set;}
+            public object Clone() {
+                throw new NotImplementedException();
+            }
+        }
+
         protected virtual ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
             this.ThrowOnNoOverride();
-            var obj = (Expr)this.Visit(e.Obj);
-            var indexerArgs = this.HandleList(e.IndexerArgs, arg => (Expr)this.Visit(arg));
-            if (obj != e.Obj || indexerArgs != null) {
-                return new ExprJsResolvedProperty(e.Ctx, e.Type, obj, e.PropertyName, indexerArgs ?? e.IndexerArgs);
+            var call = this.HandleCall(e.Call, (obj, args) => new DupCall {
+                ExprType = e.Call.ExprType,
+                CallMethod = e.Call.CallMethod,
+                IsVirtualCall = e.Call.IsVirtualCall,
+                Obj = obj,
+                Args = args,
+                Type = e.Call.Type,
+                Ctx = e.Call.Ctx,
+            });
+            if (call != e.Call) {
+                return new ExprJsResolvedProperty(e.Ctx, call, e.PropertyName);
             } else {
                 return e;
             }

@@ -226,14 +226,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return expr == s.Expr ? s : new StmtReturn(s.Ctx, (Expr)expr);
         }
 
-        protected T HandleCall<T>(T call, Func<MethodReference, Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
+        protected T HandleCall<T>(T call, Func<Expr, IEnumerable<Expr>, T> fnCreate) where T : ICall {
             this.ThrowOnNoOverride();
             var obj = (Expr)this.Visit(call.Obj);
             var argsNew = this.HandleList(call.Args, x => (Expr)this.Visit(x));
             if (argsNew == null && obj == call.Obj) {
                 return call;
             } else {
-                return fnCreate(call.CallMethod, obj, argsNew ?? call.Args);
+                return fnCreate(obj, argsNew ?? call.Args);
             }
         }
 
@@ -356,7 +356,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitNewObj(ExprNewObj e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprNewObj(e.Ctx, method, args));
+            return this.HandleCall(e, (obj, args) => new ExprNewObj(e.Ctx, e.CallMethod, args));
         }
 
         protected virtual ICode VisitFieldAccess(ExprFieldAccess e) {
@@ -375,7 +375,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual ICode VisitCall(ExprCall e) {
-            return this.HandleCall(e, (method, obj, args) => new ExprCall(e.Ctx, method, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
+            return this.HandleCall(e, (obj, args) => new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
         }
 
         protected virtual ICode VisitVar(ExprVar e) {

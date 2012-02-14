@@ -77,6 +77,29 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return tRef;
         }
 
+        public static string JsName(MemberReference m) {
+            var mType = m.MetadataToken.TokenType;
+            string name = JsCase(m.Name);
+            CustomAttribute jsDetail = null;
+            switch (mType) {
+            case TokenType.Field:
+                jsDetail = ((FieldDefinition)m).GetCustomAttribute<JsDetailAttribute>();
+                break;
+            case TokenType.Method:
+                jsDetail = ((MethodReference)m).Resolve().GetCustomAttribute<JsDetailAttribute>();
+                break;
+            default:
+                throw new NotImplementedException("Cannot handle: " + mType);
+            }
+            if (jsDetail != null) {
+                var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                if (nameProp.Name != null) {
+                    name = (string)nameProp.Argument.Value;
+                }
+            }
+            return name;
+        }
+
         public static Expr ResolveCall(ICall call) {
             var ctx = call.Ctx;
             var mRef = call.CallMethod;
@@ -87,6 +110,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             if (jsClass != null && mDef.IsExternal()) {
                 var jsDetail = mDef.GetCustomAttribute<JsDetailAttribute>();
                 if (mDef.IsSetter || mDef.IsGetter) {
+                    // TODO: Use JsName()
                     var property = mDef.DeclaringType.Properties.First(x => {
                         if (x.GetMethod != null && TypeExtensions.MethodRefEqComparerInstance.Equals(x.GetMethod, mDef)) {
                             return true;
@@ -107,47 +131,29 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     if (propertyName == null) {
                         propertyName = JsCase(mDef.Name.Substring(4));
                     }
-                    if (mDef.IsSpecialName) {
-                        if (mDef.Name.Substring(4) == "Item") {
-                            propertyName = null;
-                        }
+                    if (mDef.Name.Substring(4) == "Item") {
+                        propertyName = null;
                     }
                     if (mDef.IsStatic) {
                         propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
                     }
-                    var jsProperty = new ExprJsResolvedProperty(ctx, call.Type, call.Obj, propertyName, call.Args);
-                    if (mDef.IsGetter) {
-                        return jsProperty;
-                    } else {
-                        var arg = call.Args.Last();
-                        var js = "jsProperty = value";
-                        var expr = new ExprJsExplicit(ctx, js, arg.Type, jsProperty.Named("jsProperty"), arg.Named("value"));
-                        return expr;
-                    }
+                    var jsProperty = new ExprJsResolvedProperty(ctx, call, propertyName);
+                    return jsProperty;
                 } else if (mDef.IsConstructor) {
                     string typeName = null;
-                    if (jsDetail != null) {
-                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-                        if (nameProp.Name != null) {
-                            typeName = (string)nameProp.Argument.Value;
-                        }
-                    }
+                    //if (jsDetail != null) {
+                    //    var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                    //    if (nameProp.Name != null) {
+                    //        typeName = (string)nameProp.Argument.Value;
+                    //    }
+                    //}
                     if (typeName == null) {
                         typeName = (string)jsClass.ConstructorArguments[0].Value;
                     }
                     var expr = new ExprJsResolvedCtor(ctx, typeName, mRef.DeclaringType, call.Args);
                     return expr;
                 } else {
-                    string methodName = null;
-                    if (jsDetail != null) {
-                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-                        if (nameProp.Name != null) {
-                            methodName = (string)nameProp.Argument.Value;
-                        }
-                    }
-                    if (methodName == null) {
-                        methodName = JsCase(mDef.Name);
-                    }
+                    string methodName = JsName(mDef);
                     if (mDef.IsStatic) {
                         methodName = JsCase(mDef.DeclaringType.Name) + "." + methodName;
                     }

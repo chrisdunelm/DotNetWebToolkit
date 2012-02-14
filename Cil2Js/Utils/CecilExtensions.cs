@@ -489,20 +489,12 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return t.EnumAllInterfaces().Any(x => x.IsSame(iFace));
         }
 
-        public static CustomAttribute GetCustomAttribute<TAttr>(this TypeDefinition t) {
-            return t.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        public static CustomAttribute GetCustomAttribute<TAttr>(this Mono.Cecil.ICustomAttributeProvider cap) {
+            return cap.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
         }
 
-        public static CustomAttribute GetCustomAttribute<TAttr>(this MethodDefinition m) {
-            return m.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
-        }
-
-        public static IEnumerable<CustomAttribute> GetCustomAttributes<TAttr>(this MethodDefinition m) {
-            return m.CustomAttributes.Where(x => x.AttributeType.Name == typeof(TAttr).Name).ToArray();
-        }
-
-        public static CustomAttribute GetCustomAttribute<TAttr>(this PropertyDefinition p) {
-            return p.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        public static IEnumerable<CustomAttribute> GetCustomAttributes<TAttr>(this Mono.Cecil.ICustomAttributeProvider cap) {
+            return cap.CustomAttributes.Where(x => x.AttributeType.Name == typeof(TAttr).Name).ToArray();
         }
 
         public static string Name(this TypeReference t) {
