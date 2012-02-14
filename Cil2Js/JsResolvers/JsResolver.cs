@@ -128,7 +128,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     string typeName = null;
                     if (jsDetail != null) {
                         var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-                        typeName = (string)nameProp.Argument.Value;
+                        if (nameProp.Name != null) {
+                            typeName = (string)nameProp.Argument.Value;
+                        }
                     }
                     if (typeName == null) {
                         typeName = (string)jsClass.ConstructorArguments[0].Value;
@@ -136,7 +138,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     var expr = new ExprJsResolvedCtor(ctx, typeName, mRef.DeclaringType, call.Args);
                     return expr;
                 } else {
-                    var methodName = JsCase(mDef.Name);
+                    string methodName = null;
+                    if (jsDetail != null) {
+                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                        if (nameProp.Name != null) {
+                            methodName = (string)nameProp.Argument.Value;
+                        }
+                    }
+                    if (methodName == null) {
+                        methodName = JsCase(mDef.Name);
+                    }
                     if (mDef.IsStatic) {
                         methodName = JsCase(mDef.DeclaringType.Name) + "." + methodName;
                     }
