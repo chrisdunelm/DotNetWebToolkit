@@ -179,11 +179,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Brtrue_S:
             case Code.Brtrue:
                 return this.BrTrue(inst);
-                //return this.SsaInstResultAssignment(inst, this.stack.Pop());
             case Code.Brfalse_S:
             case Code.Brfalse:
                 return this.BrFalse(inst);
-                //return this.SsaInstResultAssignment(inst, this.Unary(UnaryOp.Not));
             case Code.Beq_S:
             case Code.Beq:
                 return this.SsaInstResultAssignment(inst, this.Binary(BinaryOp.Equal));
@@ -254,7 +252,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.LoadElem(inst);
             case Code.Ldelema:
                 return this.LoadElema(inst);
+            case Code.Stelem_I1:
+            case Code.Stelem_I2:
             case Code.Stelem_I4:
+            case Code.Stelem_I8:
+            case Code.Stelem_R4:
+            case Code.Stelem_R8:
             case Code.Stelem_Ref:
             case Code.Stelem_Any:
                 return this.StoreElem(inst);
