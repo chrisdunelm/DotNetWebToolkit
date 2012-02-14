@@ -19,6 +19,7 @@ using DotNetWebToolkit.Web;
 using DotNetWebToolkit.Cil2Js;
 using Test.BrowserTests;
 using Test.BrowserTests.Canvas;
+using Test.BrowserTests.TypedArrays;
 
 namespace Test {
 
@@ -69,7 +70,6 @@ namespace Test {
         }
 
         static void Main(string[] args) {
-            var s = new Object().ToString();
             //var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
             //Console.WriteLine(js);
 
@@ -77,8 +77,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestType() { Verbose = true };
-            t.TestTypeToString();
+            var t = new TestDataView() { Verbose = true };
+            t.TestSetGetUInt8();
             return;
 
         }
