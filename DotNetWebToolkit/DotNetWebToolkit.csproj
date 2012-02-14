@@ -42,6 +42,7 @@
     <Compile Include="Attributes\JsDetailAttribute.cs" />
     <Compile Include="Attributes\JsExportAttribute.cs" />
     <Compile Include="Attributes\JsClassAttribute.cs" />
+    <Compile Include="Attributes\JsStringEnumAttribute.cs" />
     <Compile Include="Attributes\JsUseTypeAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebGL\BeginMode.cs" />

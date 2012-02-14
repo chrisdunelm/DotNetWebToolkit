@@ -17,16 +17,20 @@ namespace DotNetWebToolkit.Web {
         public extern CanvasRenderingContext GetContext(string contextId);
         public extern CanvasRenderingContext GetContext(string contextId, object attrs);
 
-        public CanvasRenderingContext2D GetContext2D() {
-            return (CanvasRenderingContext2D)this.GetContext("2d");
+    }
+
+    public static class HtmlCanvasExtensions {
+
+        public static CanvasRenderingContext2D GetContext2D(this HtmlCanvasElement canvas) {
+            return (CanvasRenderingContext2D)canvas.GetContext("2d");
         }
 
-        public WebGLRenderingContext GetContextWebGL(WebGLContextAttributes attrs = null) {
+        public static WebGLRenderingContext GetContextWebGL(this HtmlCanvasElement canvas, WebGLContextAttributes attrs = null) {
             return (WebGLRenderingContext)
-                (this.GetContext("webgl", attrs) ?? 
-                this.GetContext("experimental-webgl", attrs) ??
-                this.GetContext("webkit-3d", attrs) ??
-                this.GetContext("moz-webgl", attrs));
+                (canvas.GetContext("webgl", attrs) ??
+                canvas.GetContext("experimental-webgl", attrs) ??
+                canvas.GetContext("webkit-3d", attrs) ??
+                canvas.GetContext("moz-webgl", attrs));
         }
 
     }

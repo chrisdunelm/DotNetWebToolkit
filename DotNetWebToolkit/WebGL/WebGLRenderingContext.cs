@@ -13,6 +13,8 @@ namespace DotNetWebToolkit.WebGL {
     [JsClass("WebGLRenderingContext")]
     public class WebGLRenderingContext : CanvasRenderingContext {
 
+        private WebGLRenderingContext() { }
+
         public extern HtmlCanvasElement Canvas { get; }
 
         public extern void ActiveTexture(TextureUnit texture);
@@ -75,34 +77,42 @@ namespace DotNetWebToolkit.WebGL {
 
     [JsClass("WebGLBuffer")]
     public class WebGLBuffer : WebGLObject {
+        private WebGLBuffer() { }
     }
 
     [JsClass("WebGLFrameBuffer")]
     public class WebGLFrameBuffer : WebGLObject {
+        private WebGLFrameBuffer() { }
     }
 
     [JsClass("WebGLProgram")]
     public class WebGLProgram : WebGLObject {
+        private WebGLProgram() { }
     }
 
     [JsClass("WebGLRenderBuffer")]
     public class WebGLRenderBuffer : WebGLObject {
+        private WebGLRenderBuffer() { }
     }
 
     [JsClass("WebGLShader")]
     public class WebGLShader : WebGLObject {
+        private WebGLShader() { }
     }
 
     [JsClass("WebGLTexture")]
     public class WebGLTexture : WebGLObject {
+        private WebGLTexture() { }
     }
 
     [JsClass("WebGLUniformLocation")]
     public class WebGLUniformLocation {
+        private WebGLUniformLocation() { }
     }
 
     [JsClass("WebGLActiveInfo")]
     public class WebGLActiveInfo {
+        private WebGLActiveInfo() { }
         public extern int Size { get; }
         //public extern GLenum Type { get; }
         public extern string Name { get; }

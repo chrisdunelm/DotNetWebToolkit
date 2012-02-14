@@ -32,7 +32,7 @@ namespace DotNetWebToolkit.Web {
         public extern Int8Array(ArrayBuffer buffer, uint byteOffset);
         public extern Int8Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern SByte this[int index] { get; set; }
         public extern void Set(Int8Array array);
         public extern void Set(Int8Array array, uint offset);
         public extern void Set(SByte[] array);
@@ -42,7 +42,7 @@ namespace DotNetWebToolkit.Web {
     }
 
     [JsClass("Uint8Array")]
-    public sealed class UInt8Array : ArrayBufferView {
+    public class UInt8Array : ArrayBufferView {
         public const uint BytesPerElement = 1;
         public extern UInt8Array(uint size);
         public extern UInt8Array(Byte[] array);
@@ -51,13 +51,28 @@ namespace DotNetWebToolkit.Web {
         public extern UInt8Array(ArrayBuffer buffer, uint byteOffset);
         public extern UInt8Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern Byte this[int index] { get; set; }
         public extern void Set(UInt8Array array);
         public extern void Set(UInt8Array array, uint offset);
         public extern void Set(Byte[] array);
         public extern void Set(Byte[] array, uint offset);
         public extern UInt8Array Subarray(int begin);
         public extern UInt8Array Subarray(int begin, int end);
+    }
+
+    [JsClass("Uint8ClampedArray")]
+    public sealed class UInt8ClampedArray : UInt8Array {
+        public extern UInt8ClampedArray(uint size);
+        public extern UInt8ClampedArray(Byte[] array);
+        public extern UInt8ClampedArray(UInt8Array array);
+        public extern UInt8ClampedArray(UInt8ClampedArray array);
+        public extern UInt8ClampedArray(ArrayBuffer buffer);
+        public extern UInt8ClampedArray(ArrayBuffer buffer, uint byteOffset);
+        public extern UInt8ClampedArray(ArrayBuffer buffer, uint byteOffset, uint length);
+        public extern void Set(UInt8ClampedArray array);
+        public extern void Set(UInt8ClampedArray array, uint offset);
+        public extern new UInt8ClampedArray Subarray(int begin);
+        public extern new UInt8ClampedArray Subarray(int begin, int end);
     }
 
     [JsClass("Int16Array")]
@@ -70,7 +85,7 @@ namespace DotNetWebToolkit.Web {
         public extern Int16Array(ArrayBuffer buffer, uint byteOffset);
         public extern Int16Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern Int16 this[int index] { get; set; }
         public extern void Set(Int16Array array);
         public extern void Set(Int16Array array, uint offset);
         public extern void Set(Int16[] array);
@@ -89,7 +104,7 @@ namespace DotNetWebToolkit.Web {
         public extern UInt16Array(ArrayBuffer buffer, uint byteOffset);
         public extern UInt16Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern UInt16 this[int index] { get; set; }
         public extern void Set(UInt16Array array);
         public extern void Set(UInt16Array array, uint offset);
         public extern void Set(UInt16[] array);
@@ -108,7 +123,7 @@ namespace DotNetWebToolkit.Web {
         public extern Int32Array(ArrayBuffer buffer, uint byteOffset);
         public extern Int32Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern Int32 this[int index] { get; set; }
         public extern void Set(Int32Array array);
         public extern void Set(Int32Array array, uint offset);
         public extern void Set(Int32[] array);
@@ -127,7 +142,7 @@ namespace DotNetWebToolkit.Web {
         public extern UInt32Array(ArrayBuffer buffer, uint byteOffset);
         public extern UInt32Array(ArrayBuffer buffer, uint byteOffset, uint length);
         public extern uint Length { get; }
-        public extern float this[int index] { get; set; }
+        public extern UInt32 this[int index] { get; set; }
         public extern void Set(UInt32Array array);
         public extern void Set(UInt32Array array, uint offset);
         public extern void Set(UInt32[] array);
