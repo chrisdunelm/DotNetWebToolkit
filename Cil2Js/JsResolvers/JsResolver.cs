@@ -141,12 +141,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     return jsProperty;
                 } else if (mDef.IsConstructor) {
                     string typeName = null;
-                    //if (jsDetail != null) {
-                    //    var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-                    //    if (nameProp.Name != null) {
-                    //        typeName = (string)nameProp.Argument.Value;
-                    //    }
-                    //}
+                    if (jsDetail != null) {
+                        var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
+                        if (nameProp.Name != null) {
+                            typeName = (string)nameProp.Argument.Value;
+                        }
+                    }
                     if (typeName == null) {
                         typeName = (string)jsClass.ConstructorArguments[0].Value;
                     }
