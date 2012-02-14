@@ -23,6 +23,27 @@ namespace Test.BrowserTests.Canvas {
             this.Start(f);
         }
 
+        private static TextAlign GetEnd() { return TextAlign.End; }
+
+        [Test]
+        public void TestTextAlign() {
+            this.HtmlBody = "<canvas id='x'></canvas>";
+            Action f = () => {
+                var canvas = (HtmlCanvasElement)Document.GetElementById("x");
+                var ctx2 = canvas.GetContext2D();
+                ctx2.TextAlign = TextAlign.Center;
+                if (ctx2.TextAlign != TextAlign.Center) {
+                    Fail();
+                }
+                ctx2.TextAlign = GetEnd();
+                if (ctx2.TextAlign != TextAlign.End) {
+                    Fail();
+                }
+                Pass();
+            };
+            this.Start(f);
+        }
+
     }
 
 }

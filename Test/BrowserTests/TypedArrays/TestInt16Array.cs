@@ -41,7 +41,7 @@ namespace Test.BrowserTests.TypedArrays {
         }
 
         [Test]
-        public void TestCtorFloat32Array() {
+        public void TestCtorTypedArray() {
             Action f = () => {
                 var b = new TypedArray(new ElementType[] { 1, 2 });
                 var a = new TypedArray(b);

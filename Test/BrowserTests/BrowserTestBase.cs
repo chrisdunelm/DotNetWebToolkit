@@ -90,6 +90,7 @@ var _done = document.createElement('div');
 _done.setAttribute('id', '__done__');
 _done.innerHTML = a;
 document.body.appendChild(_done);
+throw {};
 ")]
         private static void SetDoneJs(string text) {
             throw new Exception();

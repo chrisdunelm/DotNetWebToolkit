@@ -77,8 +77,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestDataView() { Verbose = true };
-            t.TestSetGetUInt8();
+            var t = new TestInt16Array() { Verbose = true };
+            t.TestIndexer();
             return;
 
         }
