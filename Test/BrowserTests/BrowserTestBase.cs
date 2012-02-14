@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.JsResolvers;
@@ -30,7 +31,9 @@ namespace Test.BrowserTests {
         <script type=""text/javascript"">
 " + js + @"
 window.onload = function() {
-    main();
+    try {
+        main();
+    } catch (e) { }
 };
         </script>
     </head>
@@ -53,20 +56,25 @@ window.onload = function() {
                 http.Prefixes.Add("http://localhost:7890/");
                 http.Start();
                 IAsyncResult getContextAsync = null;
-                getContextAsync = http.BeginGetContext(state => {
+                AsyncCallback cb = null;
+                cb = state => {
                     var context = http.EndGetContext(getContextAsync);
                     var response = context.Response;
                     var output = response.OutputStream;
                     var bHtml = Encoding.UTF8.GetBytes(completeHtml);
                     output.Write(bHtml, 0, bHtml.Length);
                     output.Close();
-                }, null);
+                    //getContextAsync = http.BeginGetContext(cb, null);
+                };
+                getContextAsync = http.BeginGetContext(cb, null);
+                //var usingNamespace = NamespaceSetup.Chrome != null;
+                //var chrome = usingNamespace ? NamespaceSetup.Chrome : new ChromeDriver();
                 using (var chrome = NamespaceSetup.ChromeService != null ?
                     new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
                     new ChromeDriver()) {
                     try {
-                        chrome.Url = "http://localhost:7890/";
                         chrome.Manage().Timeouts().ImplicitlyWait(timeout.Value);
+                        chrome.Url = "http://localhost:7890/";
                         bool isPass;
                         try {
                             var done = chrome.FindElementById("__done__");
@@ -78,7 +86,10 @@ window.onload = function() {
                         }
                         Assert.That(isPass, Is.True);
                     } finally {
-                        chrome.Quit();
+                        //if (!usingNamespace) {
+                            chrome.Quit();
+                            chrome.Dispose();
+                        //}
                     }
                 }
                 http.Stop();
@@ -128,16 +139,20 @@ throw {};
     public class NamespaceSetup {
 
         public static ChromeDriverService ChromeService;
+        //public static RemoteWebDriver Chrome;
 
         [SetUp]
         public void Setup() {
             ChromeService = ChromeDriverService.CreateDefaultService();
             ChromeService.Start();
-
+            //Chrome = new RemoteWebDriver(ChromeService.ServiceUrl, DesiredCapabilities.Chrome());
         }
 
         [TearDown]
         public void Teardown() {
+            //Chrome.Quit();
+            //Chrome.Dispose();
+            //Chrome = null;
             ChromeService.Dispose();
             ChromeService = null;
         }

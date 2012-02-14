@@ -77,8 +77,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestInt16Array() { Verbose = true };
-            t.TestIndexer();
+            var t = new TestToStringGetHashCode() { Verbose = true };
+            t.TestBooleanGetHashCode();
             return;
 
         }

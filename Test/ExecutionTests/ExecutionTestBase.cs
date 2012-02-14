@@ -219,9 +219,12 @@ namespace Test.ExecutionTests {
                 return Tuple.Create(r, e);
             }).ToArray();
 
-            using (var chrome = NamespaceSetup.ChromeService != null ?
-                new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
-                new ChromeDriver()) {
+            var usingNamespace = NamespaceSetup.Chrome != null;
+            var chrome = usingNamespace ? NamespaceSetup.Chrome : new ChromeDriver();
+            //using (var chrome = NamespaceSetup.ChromeService != null ?
+            //    //new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
+            //    NamespaceSetup.Chrome:
+            //    new ChromeDriver()) {
                 try {
                     for (int i = 0; i < args.Length; i++) {
                         var arg = args[i];
@@ -266,9 +269,13 @@ namespace Test.ExecutionTests {
                         Assert.That(jsResult, expected);
                     }
                 } finally {
-                    chrome.Quit();
+                    //chrome.Quit();
+                    if (!usingNamespace) {
+                        chrome.Quit();
+                        chrome.Dispose();
+                    }
                 }
-            }
+           // }
 
         }
 
@@ -277,17 +284,21 @@ namespace Test.ExecutionTests {
     [SetUpFixture]
     public class NamespaceSetup {
 
-        public static ChromeDriverService ChromeService;
+        private static ChromeDriverService ChromeService;
+        public static RemoteWebDriver Chrome;
 
         [SetUp]
         public void Setup() {
             ChromeService = ChromeDriverService.CreateDefaultService();
             ChromeService.Start();
-
+            Chrome = new RemoteWebDriver(ChromeService.ServiceUrl, DesiredCapabilities.Chrome());
         }
 
         [TearDown]
         public void Teardown() {
+            Chrome.Quit();
+            Chrome.Dispose();
+            Chrome = null;
             ChromeService.Dispose();
             ChromeService = null;
         }
