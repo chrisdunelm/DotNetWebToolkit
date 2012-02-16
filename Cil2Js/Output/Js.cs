@@ -137,9 +137,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
 
                 if (mDef.IsConstructor && mDef.IsStatic) {
-                    // At the end of the static constructor, it rewrites itself as an empty function, so it is only called once.
+                    // At the beginning of the static constructor, it rewrites itself as an empty function, so it is only called once.
                     var rewrite = new StmtAssignment(ctx, new ExprJsVarMethodReference(ctx, mRef), new ExprJsEmptyFunction(ctx));
-                    ast = new StmtBlock(ctx, (Stmt)ast, rewrite);
+                    ast = new StmtBlock(ctx, rewrite, (Stmt)ast);
                 }
 
                 methodAsts.Add(mRef, ast);
