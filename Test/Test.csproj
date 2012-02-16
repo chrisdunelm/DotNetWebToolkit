@@ -69,7 +69,8 @@
     <Compile Include="BrowserTests\TypedArrays\TestUInt16Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestUInt32Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestUInt8Array.cs" />
-    <Compile Include="BrowserTests\Window\TestTimers.cs" />
+    <Compile Include="BrowserTests\Window_\TestRequestAnimationFrame.cs" />
+    <Compile Include="BrowserTests\Window_\TestTimers.cs" />
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />

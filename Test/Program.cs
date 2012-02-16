@@ -20,6 +20,7 @@ using DotNetWebToolkit.Cil2Js;
 using Test.BrowserTests;
 using Test.BrowserTests.Canvas;
 using Test.BrowserTests.TypedArrays;
+using Test.BrowserTests.Window_;
 
 namespace Test {
 
@@ -77,8 +78,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestToStringGetHashCode() { Verbose = true };
-            t.TestBooleanGetHashCode();
+            var t = new TestSwitch() { Verbose = true };
+            t.TestWithFlag();
             return;
 
         }

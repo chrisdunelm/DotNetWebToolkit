@@ -179,6 +179,33 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test, Ignore("Phi generation fails due to blocks being processing in wrong order")]
+        public void TestWithFlag() {
+            Func<int, int> f = a => {
+                bool flag = false;
+                var r = 0;
+                switch (a & 3) {
+                case 0:
+                    if (a > 50) {
+                        flag = true;
+                    }
+                    r = 6;
+                    break;
+                case 1:
+                    if (a > 25) {
+                        flag = true;
+                    }
+                    r = -1;
+                    break;
+                }
+                if (flag) {
+                    r++;
+                }
+                return r;
+            };
+            this.Test(f);
+        }
+
     }
 
 }
