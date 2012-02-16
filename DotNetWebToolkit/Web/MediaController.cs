@@ -9,14 +9,13 @@ using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Web {
 
-    [JsClass("IMG")]
-    public class HtmlImageElement : HtmlElement {
+    [JsClass("MediaController")]
+    public class MediaController {
 
-        [JsDetail(Name = "Image")]
-        public extern HtmlImageElement();
+        public extern MediaController();
 
-        public extern string Src { get; set; }
+        [JsDetail(Name = "ontimeupdate")]
+        public extern Action OnTimeUpdate { set; }
 
     }
-
 }

@@ -14,5 +14,12 @@ namespace DotNetWebToolkit.Web {
         public extern int Width { get; set; }
         public extern int Height { get; set; }
 
+        public extern T AppendChild<T>(T child) where T : HtmlElement;
+
+        public extern void AddEventListener(string type, Action listener);
+
+        [JsDetail(Name = "onload")]
+        public extern Action OnLoad { get; set; }
+
     }
 }
