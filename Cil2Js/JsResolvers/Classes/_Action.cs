@@ -13,8 +13,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js(".ctor", typeof(void), typeof(object), typeof(IntPtr))]
         public static Expr ctor(ICall call) {
             var ctx = call.Ctx;
-            var _this = call.Args.ElementAt(0);
             var mRef = ((ExprMethodReference)call.Args.ElementAt(1)).Method;
+            //if (!mRef.HasThis) {
+            //    return call.Args.ElementAt(1);
+            //}
+            var _this = mRef.HasThis ? call.Args.ElementAt(0) : null;
             var args = mRef.Parameters.Select(x => new ExprVarLocal(ctx, x.ParameterType)).ToArray();
             var boundCall = new ExprCall(ctx, mRef, _this, args, false);
             var innerStmt = boundCall.Type.IsVoid() ?

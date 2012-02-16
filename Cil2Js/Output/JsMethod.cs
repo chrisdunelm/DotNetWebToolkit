@@ -359,6 +359,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return e;
         }
 
+        //protected override ICode VisitMethodReference(ExprMethodReference e) {
+        //    this.js.Append(e.Method.Name);
+        //    return e;
+        //}
+
         protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
             var isIFaceCall = e.CallMethod.DeclaringType.Resolve().IsInterface;
             if (isIFaceCall) {
@@ -584,6 +589,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitJsFunction(ExprJsFunction e) {
+            Expr innerExpr = null;
+            switch (e.Body.StmtType) {
+            case Stmt.NodeType.Return:
+                innerExpr = ((StmtReturn)e.Body).Expr;
+                break;
+            case Stmt.NodeType.WrapExpr:
+                innerExpr = ((StmtWrapExpr)e.Body).Expr;
+                break;
+            }
+            if (innerExpr != null) {
+                switch (innerExpr.ExprType) {
+                case (Expr.NodeType)JsExprType.JsResolvedMethod:
+                    var mName = ((ExprJsResolvedMethod)innerExpr).MethodName;
+                    this.js.AppendFormat("!{0} ? null : ", mName);
+                    break;
+                }
+            }
             this.js.Append("(function(");
             bool needComma = false;
             foreach (var arg in e.Args) {
