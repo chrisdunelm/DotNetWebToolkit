@@ -68,9 +68,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             this.instResults = v.instResults.ToDictionary(x => x.Inst);
             this.CreateOrMergeBsi((Stmt)root, new ExprVarPhi[0],
                 this.ctx.MDef.Body.Variables.Select(x => (Expr)new ExprVarLocal(this.ctx, x.VariableType.FullResolve(this.ctx))).ToArray(),
-                this.ctx.MRef.Parameters.Select(x =>
-                    (Expr)new ExprVarParameter(this.ctx, x)
-                    ).ToArray());
+                this.ctx.MRef.Parameters.Select(x => (Expr)new ExprVarParameter(this.ctx, x)).ToArray());
         }
 
         class BlockInitInfo {
@@ -79,9 +77,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             public ExprVarPhi[] Args;
         }
 
+        class StmtVarChanged {
+            public bool[] Stack;
+            public bool[] Locals;
+            public bool[] Args;
+        }
+
         private Ctx ctx;
         private Dictionary<Instruction, ExprVarInstResult> instResults;
         private Dictionary<ICode, BlockInitInfo> blockStartInfos = new Dictionary<ICode, BlockInitInfo>();
+        private Dictionary<ICode, StmtVarChanged> stmtVarsChanged = new Dictionary<ICode, StmtVarChanged>();
 
         private void CreateOrMergeBsi(Stmt s, Expr[] stack, Expr[] locals, Expr[] args) {
             if (s.StmtType == Stmt.NodeType.Try) {
@@ -111,7 +116,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             };
             Action<ExprVarPhi[], IEnumerable<Expr>> merge = (bsiVars, thisVars) => {
                 foreach (var v in bsiVars.Zip(thisVars, (a, b) => new { phi = a, add = b })) {
-                    v.phi.Exprs = flattenPhiExprs(v.add).Concat(v.phi.Exprs).Where(x => x != null && x != v.phi).Distinct().ToArray();
+                    if (v.add != null) {
+                        v.phi.Exprs = flattenPhiExprs(v.add).Concat(v.phi.Exprs).Where(x => x != null && x != v.phi).Distinct().ToArray();
+                    }
                 }
             };
             BlockInitInfo bsi;
@@ -125,15 +132,43 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     }
                     return new ExprVarPhi(this.ctx) { Exprs = new[] { x } };
                 }).ToArray();
-                this.blockStartInfos.Add(s, new BlockInitInfo {
+                bsi = new BlockInitInfo {
                     Stack = create(stack),
                     Locals = create(locals),
                     Args = create(args),
-                });
+                };
+                this.blockStartInfos.Add(s, bsi);
             } else {
                 merge(bsi.Stack, stack);
                 merge(bsi.Locals, locals);
                 merge(bsi.Args, args);
+                // Forward-merge through already-processed nodes for vars that are not changed in a node
+                var fmSeen = new HashSet<Stmt>();
+                Action<Stmt> forwardMerge = null;
+                forwardMerge = (stmt) => {
+                    if (fmSeen.Add(stmt)) {
+                        var fmBsi = this.blockStartInfos.ValueOrDefault(stmt);
+                        var fmChanges = this.stmtVarsChanged.ValueOrDefault(stmt);
+                        if (fmBsi != null && fmChanges != null) {
+                            var fmStack = fmBsi.Stack.Take(fmChanges.Stack.Length).Select((x, i) => fmChanges.Stack[i] ? x : null).ToArray();
+                            var fmLocals = fmBsi.Locals.Take(fmChanges.Locals.Length).Select((x, i) => fmChanges.Locals[i] ? x : null).ToArray();
+                            var fmArgs = fmBsi.Args.Take(fmChanges.Args.Length).Select((x, i) => fmChanges.Args[i] ? x : null).ToArray();
+                            if (fmStack.Any(x => x != null) || fmLocals.Any(x => x != null) || fmArgs.Any(x => x != null)) {
+                                var fmConts = VisitorFindContinuations.Get(stmt);
+                                foreach (var fmCont in fmConts) {
+                                    var fmContBsi = this.blockStartInfos.ValueOrDefault(fmCont.To);
+                                    if (fmContBsi != null) {
+                                        merge(fmContBsi.Stack, fmStack);
+                                        merge(fmContBsi.Locals, fmLocals);
+                                        merge(fmContBsi.Args, fmArgs);
+                                        forwardMerge(fmCont.To);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                forwardMerge(s);
             }
         }
 
@@ -142,6 +177,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var stack = new Stack<Expr>(bsi.Stack.Reverse());
             var locals = bsi.Locals.Cast<Expr>().ToArray();
             var args = bsi.Args.Cast<Expr>().ToArray();
+            var orgStack = stack.ToArray();
+            var orgLocals = locals.ToArray();
+            var orgArgs = args.ToArray();
             var cil = new CilProcessor(this.ctx, stack, locals, args, this.instResults);
             var stmts = new List<Stmt>();
             switch (s.BlockType) {
@@ -162,6 +200,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             default:
                 throw new InvalidOperationException("Invalid block type: " + s.BlockType);
             }
+            this.stmtVarsChanged.Add(s, new StmtVarChanged {
+                Stack = stack.Zip(orgStack, (a, b) => a == b).ToArray(),
+                Locals = locals.Zip(orgLocals, (a, b) => a == b).ToArray(),
+                Args = args.Zip(orgArgs, (a, b) => a == b).ToArray(),
+            });
             // Merge phi's
             var continuations = VisitorFindContinuations.Get(s);
             foreach (var continuation in continuations) {

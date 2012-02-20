@@ -179,7 +179,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Phi generation fails due to blocks being processing in wrong order")]
+        [Test(Description = "Specifically tests phi-generation that requires forward-merging")]
         public void TestWithFlag() {
             Func<int, int> f = a => {
                 bool flag = false;
