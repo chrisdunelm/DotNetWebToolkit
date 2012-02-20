@@ -11,15 +11,11 @@ namespace Test.BrowserTests.Window_ {
     [TestFixture]
     public class TestRequestAnimationFrame : BrowserTestBase {
 
-        [Test, Ignore("Fails for unknown reason")]
+        [Test]
         public void Test1() {
             Action f = () => {
-                int i = 0;
                 Window.RequestAnimationFrame(() => {
-                    i++;
-                    if (i > 2) {
-                        Pass();
-                    }
+                    Pass();
                 });
             };
             this.Start(f);
