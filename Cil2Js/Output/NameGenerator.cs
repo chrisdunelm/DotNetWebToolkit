@@ -196,17 +196,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         private readonly static char[] c0 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToArray();
         private readonly static char[] cN = c0.Concat("0123456789".ToArray()).ToArray();
 
-        public NameGenerator() {
-            this.gen = this.GenFn().GetEnumerator();
+        public NameGenerator(IEnumerable<string> forbidden = null) {
+            this.gen = this.GenFn(forbidden == null ? null : new HashSet<string>(forbidden)).GetEnumerator();
         }
 
         private IEnumerator<string> gen;
 
-        private IEnumerable<string> GenFn() {
+        private IEnumerable<string> GenFn(HashSet<string> forbidden) {
             int[] indexes = { 0 };
             for (; ; ) {
                 var name = new string(indexes.Select((index, position) => (position == 0 ? c0 : cN)[index]).ToArray());
-                if (!reservedWords.Contains(name)) {
+                if (!reservedWords.Contains(name) && (forbidden == null || !forbidden.Contains(name))) {
                     yield return name;
                 }
                 bool ok = false;
