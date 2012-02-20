@@ -37,14 +37,15 @@ namespace DotNetWebToolkit.Web {
         public extern float Volume { get; set; }
 
         public extern string MediaGroup { get; set; }
-        public extern MediaController Controller { get; set; }
 
         public extern void Load();
         public extern void Pause();
         public extern void Play();
 
-        [JsDetail(Name = "onloadstart")]
+        [JsDetail(IsDomEvent = true)]
         public extern Action OnLoadStart { set; }
+        [JsDetail(IsDomEvent = true)]
+        public extern Action OnLoadedMetaData { set; }
 
     }
 

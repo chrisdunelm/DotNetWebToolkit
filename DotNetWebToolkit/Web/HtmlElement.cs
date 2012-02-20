@@ -14,12 +14,21 @@ namespace DotNetWebToolkit.Web {
         public extern int Width { get; set; }
         public extern int Height { get; set; }
 
+        [JsDetail(Name = "innerHTML")]
+        public extern string InnerHtml { get; set; }
+
         public extern T AppendChild<T>(T child) where T : HtmlElement;
 
-        public extern void AddEventListener(string type, Action listener);
-
-        [JsDetail(Name = "onload")]
-        public extern Action OnLoad { get; set; }
+        [JsDetail(IsDomEvent = true)]
+        public extern Action OnLoad { set; }
 
     }
+
+    public static class HtmlElementExtensions {
+
+        internal static void SafeSetEvent(this HtmlElement el, string evName, Action listener) {
+        }
+
+    }
+
 }

@@ -8,6 +8,7 @@ namespace DotNetWebToolkit.Attributes {
     public class JsDetailAttribute : Attribute {
 
         public string Name { get; set; }
+        public bool IsDomEvent { get; set; }
 
     }
 }

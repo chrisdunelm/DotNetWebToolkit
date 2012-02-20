@@ -68,7 +68,6 @@
     <Compile Include="Web\HtmlImageElement.cs" />
     <Compile Include="Web\HtmlMediaElement.cs" />
     <Compile Include="Web\HtmlVideoElement.cs" />
-    <Compile Include="Web\MediaController.cs" />
     <Compile Include="Web\MessageEvent.cs" />
     <Compile Include="Web\TypedArray.cs" />
     <Compile Include="WebGL\WebGLRenderingContext.cs" />

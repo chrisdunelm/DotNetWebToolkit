@@ -19,8 +19,9 @@ namespace DotNetWebToolkit.Web {
 
         static Window() {
             RequestAnimationFrame =
-                (Action<Action>)WebkitRequestAnimationFrame ??
-                (Action<Action>)MozRequestAnimationFrame;
+                requestAnimationFrame ??
+                webkitRequestAnimationFrame ??
+                mozRequestAnimationFrame;
         }
 
         public static extern int InnerWidth { get; }
@@ -42,8 +43,9 @@ namespace DotNetWebToolkit.Web {
 
         public static extern void ClearTimeout(TimeoutId timeoutId);
 
-        private static extern void MozRequestAnimationFrame(Action callback);
-        private static extern void WebkitRequestAnimationFrame(Action callback);
+        private static extern Action<Action> mozRequestAnimationFrame { get; }
+        private static extern Action<Action> webkitRequestAnimationFrame { get; }
+        private static extern Action<Action> requestAnimationFrame { get; }
         public static Action<Action> RequestAnimationFrame { get; private set; }
 
     }
