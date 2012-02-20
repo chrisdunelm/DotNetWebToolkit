@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
-    public class ExprJsFunction : Expr {
+    public class ExprJsDelegateInvoke : Expr {
 
-        public ExprJsFunction(Ctx ctx, IEnumerable<Expr> args, Stmt body)
+        public ExprJsDelegateInvoke(Ctx ctx, Expr methodToInvoke, IEnumerable<Expr> args)
             : base(ctx) {
+            this.MethodToInvoke = methodToInvoke;
             this.Args = args;
-            this.Body = body;
         }
 
+        public Expr MethodToInvoke { get; private set; }
         public IEnumerable<Expr> Args { get; private set; }
-        public Stmt Body { get; private set; }
 
         public override Expr.NodeType ExprType {
-            get { return (Expr.NodeType)JsExprType.JsFunction; }
+            get { return (Expr.NodeType)JsExprType.JsDelegateInvoke; }
         }
 
         public override TypeReference Type {
-            // HACK - but probably doesn't matter....
-            get { return this.Ctx.Object; }
+            get { return this.MethodToInvoke.Type; }
         }
 
     }

@@ -11,8 +11,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
     public enum JsExprType {
         First = Expr.NodeType.Max,
 
-        JsFunction,
-        JsInvoke,
         JsVarMethodReference,
         JsEmptyFunction,
         JsVirtualCall,
@@ -24,6 +22,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         JsTypeVarName,
         JsExplicit,
         JsFieldVarName,
+        JsDelegateCtor,
+        JsDelegateInvoke,
     }
 
     public enum JsStmtType {
@@ -73,10 +73,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitExpr(Expr e) {
             var jsExprType = (JsExprType)e.ExprType;
             switch (jsExprType) {
-            case JsExprType.JsFunction:
-                return this.VisitJsFunction((ExprJsFunction)e);
-            case JsExprType.JsInvoke:
-                return this.VisitJsInvoke((ExprJsInvoke)e);
+            //case JsExprType.JsFunction:
+            //    return this.VisitJsFunction((ExprJsFunction)e);
+            //case JsExprType.JsInvoke:
+            //    return this.VisitJsInvoke((ExprJsInvoke)e);
             case JsExprType.JsEmptyFunction:
                 return this.VisitJsEmptyFunction((ExprJsEmptyFunction)e);
             case JsExprType.JsVarMethodReference:
@@ -99,34 +99,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return this.VisitJsExplicit((ExprJsExplicit)e);
             case JsExprType.JsFieldVarName:
                 return this.VisitJsFieldVarName((ExprJsFieldVarName)e);
+            case JsExprType.JsDelegateCtor:
+                return this.VisitJsDelegateCtor((ExprJsDelegateCtor)e);
+            case JsExprType.JsDelegateInvoke:
+                return this.VisitJsDelegateInvoke((ExprJsDelegateInvoke)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
                 } else {
                     return base.VisitExpr(e);
                 }
-            }
-        }
-
-        protected virtual ICode VisitJsFunction(ExprJsFunction e) {
-            this.ThrowOnNoOverride();
-            var body = (Stmt)this.Visit(e.Body);
-            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
-            if (body != e.Body || args != null) {
-                return new ExprJsFunction(e.Ctx, args ?? e.Args, body);
-            } else {
-                return e;
-            }
-        }
-
-        protected virtual ICode VisitJsInvoke(ExprJsInvoke e) {
-            this.ThrowOnNoOverride();
-            var methodToInvoke = (Expr)this.Visit(e.MethodToInvoke);
-            var args = this.HandleList(e.Args, x => (Expr)this.Visit(x));
-            if (methodToInvoke != e.MethodToInvoke || args != null) {
-                return new ExprJsInvoke(e.Ctx, methodToInvoke, args ?? e.Args, e.Type);
-            } else {
-                return e;
             }
         }
 
@@ -175,14 +157,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         class DupCall : ICall {
-            public Expr.NodeType ExprType {get;set;}
-            public MethodReference CallMethod {get;set;}
-            public bool IsVirtualCall {get;set;}
-            public Expr Obj {get;set;}
-            public IEnumerable<Expr> Args {get;set;}
-            public TypeReference Type {get;set;}
-            public CodeType CodeType {get{return CodeType.Expression;}}
-            public Ctx Ctx {get;set;}
+            public Expr.NodeType ExprType { get; set; }
+            public MethodReference CallMethod { get; set; }
+            public bool IsVirtualCall { get; set; }
+            public Expr Obj { get; set; }
+            public IEnumerable<Expr> Args { get; set; }
+            public TypeReference Type { get; set; }
+            public CodeType CodeType { get { return CodeType.Expression; } }
+            public Ctx Ctx { get; set; }
             public object Clone() {
                 throw new NotImplementedException();
             }
@@ -245,6 +227,27 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected virtual ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
             this.ThrowOnNoOverride();
             return e;
+        }
+
+        protected virtual ICode VisitJsDelegateCtor(ExprJsDelegateCtor e) {
+            this.ThrowOnNoOverride();
+            var obj = (Expr)this.Visit(e.Obj);
+            if (obj != e.Obj) {
+                return new ExprJsDelegateCtor(e.Ctx, e.Type, obj, e.Method);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsDelegateInvoke(ExprJsDelegateInvoke e) {
+            this.ThrowOnNoOverride();
+            var methodToInvoke = (Expr)this.Visit(e.MethodToInvoke);
+            var args = this.HandleList(e.Args, arg => (Expr)this.Visit(arg));
+            if (methodToInvoke != e.MethodToInvoke || args != null) {
+                return new ExprJsDelegateInvoke(e.Ctx, methodToInvoke, args ?? e.Args);
+            } else {
+                return e;
+            }
         }
 
     }

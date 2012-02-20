@@ -588,59 +588,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return s;
         }
 
-        protected override ICode VisitJsFunction(ExprJsFunction e) {
-            Expr innerExpr = null;
-            switch (e.Body.StmtType) {
-            case Stmt.NodeType.Return:
-                innerExpr = ((StmtReturn)e.Body).Expr;
-                break;
-            case Stmt.NodeType.WrapExpr:
-                innerExpr = ((StmtWrapExpr)e.Body).Expr;
-                break;
-            }
-            if (innerExpr != null) {
-                switch (innerExpr.ExprType) {
-                case (Expr.NodeType)JsExprType.JsResolvedMethod:
-                    var mName = ((ExprJsResolvedMethod)innerExpr).MethodName;
-                    this.js.AppendFormat("!{0} ? null : ", mName);
-                    break;
-                }
-            }
-            this.js.Append("(function(");
-            bool needComma = false;
-            foreach (var arg in e.Args) {
-                if (needComma) {
-                    this.js.Append(", ");
-                } else {
-                    needComma = true;
-                }
-                this.Visit(arg);
-            }
-            this.js.Append(") {");
-            this.indent++;
-            this.Visit(e.Body);
-            this.indent--;
-            this.NewLine();
-            this.js.Append("})");
-            return e;
-        }
-
-        protected override ICode VisitJsInvoke(ExprJsInvoke e) {
-            this.Visit(e.MethodToInvoke);
-            this.js.Append("(");
-            bool needComma = false;
-            foreach (var arg in e.Args) {
-                if (needComma) {
-                    this.js.Append(", ");
-                } else {
-                    needComma = true;
-                }
-                this.Visit(arg);
-            }
-            this.js.Append(")");
-            return e;
-        }
-
         protected override ICode VisitJsEmptyFunction(ExprJsEmptyFunction e) {
             this.js.Append("function() { }");
             return e;
@@ -739,6 +686,46 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
             var name = this.resolver.FieldNames[e.FieldRef];
             this.js.Append(name);
+            return e;
+        }
+
+        protected override ICode VisitJsDelegateCtor(ExprJsDelegateCtor e) {
+            var methodName = this.resolver.MethodNames[e.Method];
+            if (e.Obj == null) {
+                this.js.Append(methodName);
+            } else {
+                // TODO improve naming - can share names with enclosing function
+                var nameGen = new NameGenerator();
+                var argList = string.Join(", ", e.Method.Parameters.Select(x => "_" + nameGen.GetNewName()));
+                this.js.Append("(function(");
+                this.js.Append(argList);
+                this.js.Append(") { ");
+                if (!e.Type.IsVoid()) {
+                    this.js.Append("return ");
+                }
+                this.js.Append(methodName);
+                this.js.Append("(");
+                this.Visit(e.Obj);
+                if (argList.Any()) {
+                    this.js.Append(", ");
+                    this.js.Append(argList);
+                }
+                this.js.Append("); })");
+            }
+            return e;
+        }
+
+        protected override ICode VisitJsDelegateInvoke(ExprJsDelegateInvoke e) {
+            this.Visit(e.MethodToInvoke);
+            this.js.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.js.Append(", ");
+                }
+                this.js.Length -= 2;
+            }
+            this.js.Append(")");
             return e;
         }
 

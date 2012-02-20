@@ -32,5 +32,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitJsVirtualCall(e);
         }
 
+        protected override ICode VisitJsDelegateCtor(ExprJsDelegateCtor e) {
+            this.calls.Add(new ExprMethodReference(e.Ctx, e.Method));
+            return base.VisitJsDelegateCtor(e);
+        }
+
     }
 }

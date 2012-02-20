@@ -158,7 +158,6 @@
     <Compile Include="Ast\VisitorSameStmt.cs" />
     <Compile Include="JsResolvers\Classes\_Console.cs" />
     <Compile Include="JsResolvers\Classes\_Enumerable.cs" />
-    <Compile Include="JsResolvers\Classes\_Action.cs" />
     <Compile Include="JsResolvers\Classes\_Array.cs" />
     <Compile Include="JsResolvers\Classes\_Boolean.cs" />
     <Compile Include="JsResolvers\Classes\_Char.cs" />
@@ -194,16 +193,16 @@
     <Compile Include="JsResolvers\JsResolver.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
+    <Compile Include="Output\ExprJsDelegateCtor.cs" />
+    <Compile Include="Output\ExprJsDelegateInvoke.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
     <Compile Include="Output\ExprJsExplicit.cs" />
     <Compile Include="Output\ExprJsFieldVarName.cs" />
-    <Compile Include="Output\ExprJsFunction.cs" />
     <Compile Include="Output\ExprJsTypeData.cs" />
     <Compile Include="Output\ExprJsTypeVarName.cs" />
     <Compile Include="Output\ExprJsVarMethodReference.cs" />
     <Compile Include="Output\ExprJsVirtualCall.cs" />
     <Compile Include="Output\JsAstVisitor.cs" />
-    <Compile Include="Output\ExprJsInvoke.cs" />
     <Compile Include="Output\JsResolved.cs" />
     <Compile Include="Output\Js.cs">
       <SubType>Code</SubType>
@@ -222,6 +221,7 @@
     <Compile Include="Output\VisitorGetVars.cs" />
     <Compile Include="Output\VisitorJsPhiClusters.cs" />
     <Compile Include="Output\VisitorJsResolve64Bit.cs" />
+    <Compile Include="Output\VisitorJsResolveDelegates.cs" />
     <Compile Include="Output\VisitorJsResolveSpecialTypes.cs" />
     <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />

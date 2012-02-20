@@ -62,6 +62,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var instanceConstructors = new List<Ctx>();
 
             while (todo.Any()) {
+                // TODO: parallelise
                 var mRef = todo.Dequeue();
                 var mDef = mRef.Resolve();
                 var tRef = mRef.DeclaringType;
@@ -101,6 +102,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     ast = VisitorJsResolveAll.V(ast);
                     ast = VisitorJsResolveConv.V(ast);
                     ast = VisitorJsResolveSpecialTypes.V(ast);
+                    ast = VisitorJsResolveDelegates.V(ast);
                     if (ast == astOrg) {
                         break;
                     }
