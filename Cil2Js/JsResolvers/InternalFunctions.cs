@@ -294,6 +294,36 @@ return isNeg ? negCall : r;
             }
         }
 
+        [Js(typeof(SafeAddEventListenerImpl))]
+        public static void SafeAddEventListener(object obj, string eventName, Delegate listener) {
+            throw new Exception();
+        }
+
+        class SafeAddEventListenerImpl : IJsImpl {
+            public Stmt GetImpl(Ctx ctx) {
+                var obj = ctx.MethodParameter(0, "obj");
+                var eventName = ctx.MethodParameter(1, "eventName");
+                var listener = ctx.MethodParameter(2, "listener");
+                var cacheName = ctx.Local(ctx.String, "cacheName");
+                var cacheValue = ctx.Local(ctx.Object, "cacheValue");
+                // From http://dustindiaz.com/rock-solid-addevent:
+                var js = @"
+cacheName = 'c'+ eventName;
+cacheValue = obj[cacheName];
+if (obj.addEventListener) {
+    if (cacheValue) obj.removeEventListener(eventName, cacheValue, false);
+    if (listener) obj.addEventListener(eventName, listener, false);
+} else {
+    if (cacheValue) obj.detachEvent('on' + eventName, cacheValue);
+    if (listener) obj.attachEvent('on' + eventName, listener);
+}
+obj[cacheName] = listener;
+";
+                var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, obj, eventName, listener, cacheName, cacheValue);
+                return stmt;
+            }
+        }
+
 
     }
 }

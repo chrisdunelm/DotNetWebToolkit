@@ -123,6 +123,23 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     jsDetail = property.GetCustomAttribute<JsDetailAttribute>();
                     string propertyName = null;
                     if (jsDetail != null) {
+                        var isDomEventProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "IsDomEvent");
+                        if (isDomEventProp.Name != null && (bool)isDomEventProp.Argument.Value) {
+                            // Special handling of DOM events
+                            if (!mDef.Name.StartsWith("set_On")) {
+                                throw new InvalidOperationException("DOM event name must start with 'On'");
+                            }
+                            if (!mDef.IsSetter) {
+                                throw new InvalidOperationException("Only setters supported on DOM events");
+                            }
+                            if (call.Args.Count() != 1) {
+                                throw new InvalidOperationException("DOM event setter should have one argument");
+                            }
+                            var eventName = mDef.Name.Substring(6).ToLowerInvariant();
+                            var eventNameExpr = ctx.Literal(eventName, ctx.String);
+                            var safeCall = new ExprCall(ctx, (Action<object, string, Delegate>)InternalFunctions.SafeAddEventListener, null, call.Obj, eventNameExpr, call.Args.First());
+                            return safeCall;
+                        }
                         var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
                         if (nameProp.Name != null) {
                             propertyName = (string)nameProp.Argument.Value;
@@ -160,11 +177,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     return new ExprJsResolvedMethod(ctx, call.Type, call.Obj, methodName, call.Args);
                 }
             }
-            var mDeclTypeDef = mRef.DeclaringType.Resolve();
-            if (mDeclTypeDef.Methods.Any(x => x.IsExternal())) {
-                // Method is in a class that contains external methods. These cannot be loaded
+            if (jsClass != null) {
                 return null;
             }
+            var mDeclTypeDef = mRef.DeclaringType.Resolve();
+            //if (mDeclTypeDef.Methods.Any(x => x.IsExternal())) {
+            //    // Method is in a class that contains external methods. These cannot be loaded
+            //    return null;
+            //}
             var fullTypeName = mDeclTypeDef.AssemblyQualifiedName();
             var callType = Type.GetType(fullTypeName);
             if (callType == null) {
