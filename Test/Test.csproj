@@ -82,6 +82,7 @@
     <Compile Include="ExecutionTests\TestDelegates.cs" />
     <Compile Include="ExecutionTests\TestDictionary.cs" />
     <Compile Include="ExecutionTests\TestEnumerable.cs" />
+    <Compile Include="ExecutionTests\TestEnums.cs" />
     <Compile Include="ExecutionTests\TestFuncsClosures.cs" />
     <Compile Include="ExecutionTests\TestExceptions.cs" />
     <Compile Include="ExecutionTests\TestGenericInterfaces.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="ExecutionTests\TestEqualityComparer.cs" />
     <Compile Include="ExecutionTests\TestInt64UInt64.cs" />
     <Compile Include="BrowserTests\TestJsTypes.cs" />
+    <Compile Include="ExecutionTests\TestInterfaces.cs" />
     <Compile Include="ExecutionTests\TestLinq.cs" />
     <Compile Include="ExecutionTests\TestList.cs" />
     <Compile Include="ExecutionTests\TestLogic.cs" />
