@@ -104,5 +104,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return expr;
         }
 
+        [Js]
+        public static Expr op_Inequality(ICall call) {
+            var left = call.Args.ElementAt(0);
+            var right = call.Args.ElementAt(1);
+            var expr = call.Ctx.ExprGen.NotEqual(left, right);
+            return expr;
+        }
+
     }
 }
