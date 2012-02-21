@@ -31,6 +31,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case MetadataType.Char: return "0";
                 default: throw new NotImplementedException("Cannot handle: " + mdt);
                 }
+            } else if (type.Resolve().IsEnum) {
+                return "0";
             } else {
                 var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
                 var defaultValue = "{" + string.Join(",",
