@@ -118,4 +118,20 @@ namespace DotNetWebToolkit.WebGL {
         public extern string Name { get; }
     }
 
+    public static class WebGLRenderingContextExtensions {
+
+        public static void TexImage2D(this WebGLRenderingContext gl, HtmlImageElement image) {
+            gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
+        }
+
+        public static void TexImage2D(this WebGLRenderingContext gl, HtmlCanvasElement image) {
+            gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
+        }
+
+        public static void TexImage2D(this WebGLRenderingContext gl, HtmlVideoElement image) {
+            gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
+        }
+
+    }
+
 }

@@ -14,8 +14,16 @@ namespace DotNetWebToolkit.Web {
 
         [JsDetail(Name = "Image")]
         public extern HtmlImageElement();
+        [JsDetail(Name = "Image")]
+        public extern HtmlImageElement(uint width);
+        [JsDetail(Name = "Image")]
+        public extern HtmlImageElement(uint width, uint height);
 
         public extern string Src { get; set; }
+        public extern string Alt { get; set; }
+        public extern uint NaturalWidth { get; }
+        public extern uint NaturalHeight { get; }
+        public extern bool Complete { get; }
 
     }
 
