@@ -206,6 +206,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
                     var requireMethods =
                         from type in typesSeen.Keys
+                        let typeReverseMapped = JsResolver.ReverseTypeMap(type)
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
                         let methods = type.EnumResolvedMethods(mVRoots).ToArray()
@@ -214,7 +215,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
                         where !methodsSeen.ContainsKey(method)
                         let mBasemost = method.GetBasemostMethod(method)
-                        where virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull().Any(x => x.IsBaseOfOrEqual(type) || type.IsBaseOfOrEqual(x))
+                        where virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull().Any(x => {
+                            return x.IsBaseOfOrEqual(typeReverseMapped) || typeReverseMapped.IsBaseOfOrEqual(x);
+                        })
                         where virtualRoots.Contains(mBasemost)
                         select method;
                     var requireMethodsArray = requireMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();

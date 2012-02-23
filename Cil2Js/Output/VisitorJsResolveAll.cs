@@ -97,7 +97,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitBox(ExprBox e) {
             if (!e.Type.IsValueType) {
                 // For ref-types 'box' does nothing
-                return base.Visit(e.Expr);
+                return this.Visit(e.Expr);
             }
             var ctx = e.Ctx;
             var eType = new ExprJsTypeVarName(ctx, e.Type);

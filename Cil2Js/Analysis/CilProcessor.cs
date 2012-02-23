@@ -303,6 +303,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.Box(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Unbox_Any:
                 return this.UnboxAny(((TypeReference)inst.Operand).FullResolve(this.ctx));
+            case Code.Stobj:
+                return this.StObj(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Constrained:
                 this.constrainted = 2;
                 this.constrainedType = ((TypeReference)inst.Operand).FullResolve(this.ctx);
@@ -616,6 +618,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var expr = new ExprRuntimeHandle(this.ctx, member);
             this.stack.Push(expr);
             return null;
+        }
+
+        private Stmt StObj(TypeReference type) {
+            throw new Exception();
         }
 
     }

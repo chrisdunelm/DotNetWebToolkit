@@ -156,7 +156,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return self.FullResolve(scope.DeclaringType, null);
         }
 
-        public static TypeReference FullResolve(this TypeReference self, TypeReference scopeType, MethodReference scopeMethod) {
+        public static TypeReference FullResolve(this TypeReference self, TypeReference scopeType, MethodReference scopeMethod, bool allowFailure = false) {
             var selfDef = self.Resolve();
             if (selfDef != null) {
                 var jsUseTypeAttr = selfDef.GetCustomAttribute<JsUseTypeAttribute>();
@@ -208,8 +208,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     return ret;
                 }
             case MetadataType.Var: {
-                    var scope = (GenericInstanceType)scopeType;
-                    var param = (GenericParameter)self;
+                    var scope = scopeType as GenericInstanceType;
+                    var param = self as GenericParameter;
+                    if (scope == null || param == null) {
+                        if (allowFailure) {
+                            return self;
+                        }
+                        throw new InvalidCastException();
+                    }
                     var type = scope.GenericArguments[param.Position];
                     return type;
                 }
@@ -217,14 +223,20 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     if (scopeMethod == null) {
                         return self;
                     }
-                    var scope = (GenericInstanceMethod)scopeMethod;
-                    var param = (GenericParameter)self;
+                    var scope = scopeMethod as GenericInstanceMethod;
+                    var param = self as GenericParameter;
+                    if (scope == null || param == null) {
+                        if (allowFailure) {
+                            return self;
+                        }
+                        throw new InvalidCastException();
+                    }
                     var type = scope.GenericArguments[param.Position];
                     return type;
                 }
             case MetadataType.Array: {
                     var array = (ArrayType)self;
-                    var elType = array.ElementType.FullResolve(scopeType, scopeMethod);
+                    var elType = array.ElementType.FullResolve(scopeType, scopeMethod,allowFailure);
                     if (elType != array.ElementType) {
                         return new ArrayType(elType);
                     } else {
@@ -233,9 +245,18 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 }
             case MetadataType.Pointer: {
                     var ptr = (PointerType)self;
-                    var elType = ptr.ElementType.FullResolve(scopeType, scopeMethod);
+                    var elType = ptr.ElementType.FullResolve(scopeType, scopeMethod, allowFailure);
                     if (elType != ptr.ElementType) {
                         return new PointerType(elType);
+                    } else {
+                        return self;
+                    }
+                }
+            case MetadataType.ByReference: {
+                    var byRef = (ByReferenceType)self;
+                    var elType = byRef.ElementType.FullResolve(scopeType, scopeMethod, allowFailure);
+                    if (elType != byRef.ElementType) {
+                        return new ByReferenceType(elType);
                     } else {
                         return self;
                     }
@@ -254,9 +275,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return self.FullResolve(ctx.TRef, ctx.MRef);
         }
 
-        public static MethodReference FullResolve(this MethodReference self, TypeReference scopeType, MethodReference scopeMethod) {
+        public static MethodReference FullResolve(this MethodReference self, TypeReference scopeType, MethodReference scopeMethod, bool allowFailure = false) {
             MethodReference m = null;
-            var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod);
+            var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod, allowFailure);
             if (declType != self.DeclaringType) {
                 m = new MethodReference(self.Name, self.ReturnType, declType) {
                     ExplicitThis = self.ExplicitThis,
@@ -286,7 +307,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             if (self.IsGenericInstance) {
                 var selfGenInst = (GenericInstanceMethod)self;
-                var genArgs = selfGenInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod)).ToArray();
+                var genArgs = selfGenInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod, allowFailure)).ToArray();
                 if (!genArgs.SequenceEqual(selfGenInst.GenericArguments)) {
                     var m2 = new GenericInstanceMethod(m ?? selfGenInst.ElementMethod);
                     foreach (var genArg in genArgs) {
@@ -299,7 +320,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             if (mSelf.HasGenericParameters) {
                 var m2 = new GenericInstanceMethod(mSelf);
                 foreach (var genParam in mSelf.GenericParameters) {
-                    var genArg = genParam.FullResolve(scopeType, scopeMethod);
+                    var genArg = genParam.FullResolve(scopeType, scopeMethod, allowFailure);
                     m2.GenericArguments.Add(genArg);
                 }
                 return m2;
@@ -528,7 +549,27 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static string AssemblyQualifiedName(this TypeDefinition tDef) {
-            return tDef.FullName + ", " + tDef.Module.Assembly.FullName;
+            var fullName = tDef.FullName.Replace('/', '+');
+            return fullName + ", " + tDef.Module.Assembly.FullName;
+        }
+
+        public static Type LoadType(this TypeReference tRef) {
+            var name = tRef.Resolve().AssemblyQualifiedName();
+            var type = Type.GetType(name);
+            if (tRef.IsGenericInstance) {
+                var tRefGen = (GenericInstanceType)tRef;
+                var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
+                type = type.MakeGenericType(tArgs);
+            }
+            return type;
+        }
+
+        public static TypeReference GetGenericArgument(this MethodReference mRef, int index) {
+            return ((GenericInstanceMethod)mRef).GenericArguments[index];
+        }
+
+        public static TypeReference GetGenericArgument(this TypeReference tRef, int index) {
+            return ((GenericInstanceType)tRef).GenericArguments[index];
         }
 
     }

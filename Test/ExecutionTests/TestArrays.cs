@@ -46,6 +46,24 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestIndexOfT() {
+            Func<int, int> f = a => {
+                var array = new int[] { 1, 2, 3, 4, 5, 6 };
+                return Array.IndexOf(array, a & 7);
+            };
+            this.Test(f);
+        }
+
+        [Test, Ignore("Array.GetValue() does not yet work")]
+        public void TestIndexOfArray() {
+            Func<int, int> f = a => {
+                var array = (Array)new int[] { 1, 2, 3, 4, 5, 6 };
+                return Array.IndexOf(array, a);
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestEnumerable() {
             Func<int, int, int, int> f = (a, b, c) => {
                 IEnumerable<int> array = new[] { a, b, c };
@@ -249,6 +267,49 @@ namespace Test.ExecutionTests {
                 object o = ForceObject(array);
                 var array2 = (int[])o;
                 return array2[0];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSort() {
+            Func<int, int, int, int, int, bool> f = (a, b, c, d, e) => {
+                var array = new int[] { a, b, c, d, e };
+                Array.Sort(array);
+                return array[0] <= array[1] && array[1] <= array[2] && array[2] <= array[3] && array[3] <= array[4];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSortWithRange() {
+            Func<int, int, int, int, int, bool> f = (a, b, c, d, e) => {
+                var array = new int[] { a, b, c, d, e };
+                Array.Sort(array, 1, 3);
+                return array[0] == a && array[4] == e && array[1] <= array[2] && array[2] <= array[3];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestBinarySearch() {
+            Func<int, int, int, int, int, int> f = (a, b, c, d, e) => {
+                var array = new int[] { a, b, c, d, e };
+                Array.Sort(array);
+                for (int i=0; i<4; i++) {
+                    if (array[i] == array[i + 1]) {
+                        array[i] = 200 + i;
+                    }
+                }
+                Array.Sort(array);
+                var aIdx = Array.BinarySearch(array, a);
+                var bIdx = Array.BinarySearch(array, b);
+                var cIdx = Array.BinarySearch(array, c);
+                var dIdx = Array.BinarySearch(array, d);
+                var eIdx = Array.BinarySearch(array, e);
+                var yIdx = ~Array.BinarySearch(array, -1);
+                var zIdx = ~Array.BinarySearch(array, 10001);
+                return aIdx + bIdx * 10 + cIdx * 100 + dIdx * 1000 + eIdx * 10000 + yIdx * 100000 + zIdx * 1000000;
             };
             this.Test(f);
         }

@@ -44,6 +44,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         public Type ReturnType { get; private set; }
         public IEnumerable<Type> Parameters { get; private set; }
 
+        public bool? IsStaticFull { get; private set; }
+        public bool IsStatic {
+            get { return this.IsStaticFull.GetValueOrDefault(); }
+            set {
+                this.IsStaticFull = value;
+            }
+        }
+
     }
 
 }

@@ -23,14 +23,6 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall, TypeReference constrainedType)
             :this(ctx, callMethod, obj, args, isVirtualCall, constrainedType, null){
         }
-        //    : base(ctx) {
-        //    this.CallMethod = callMethod;
-        //    this.Obj = obj;
-        //    this.Args = args;
-        //    this.IsVirtualCall = isVirtualCall;
-        //    this.ConstrainedType = constrainedType;
-        //    this.returnType = callMethod.ReturnType.FullResolve(callMethod);
-        //}
 
         public ExprCall(Ctx ctx, MethodReference callMethod, Expr obj, IEnumerable<Expr> args, bool isVirtualCall)
             : this(ctx, callMethod, obj, args, isVirtualCall, null) {

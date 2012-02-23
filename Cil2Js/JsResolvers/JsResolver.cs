@@ -11,6 +11,8 @@ using System.Reflection;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
+    using Cls = DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
+
     public static partial class JsResolver {
 
         private static Type T(string typeName) {
@@ -28,6 +30,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         private static MemberInfo FindJsMember(MethodReference mRef, Type type) {
             Func<IEnumerable<JsAttribute>, string, bool> isMatch = (attrs, mName) => {
                 return attrs.Any(a => {
+                    if (a.IsStaticFull != null) {
+                        if (a.IsStaticFull.Value == mRef.HasThis) {
+                            return false;
+                        }
+                    }
                     if (a.MethodName == null && a.Parameters == null && mName == mRef.Name) {
                         return true;
                     }
@@ -44,11 +51,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                         return false;
                     }
                     for (int i = 0; i < mRef.Parameters.Count; i++) {
-                        if (a.Parameters.ElementAt(i).FullName != mRef.Parameters[i].ParameterType.FullName) {
+                        var parameter = mRef.Parameters[i];
+                        var mRefParameterResolved = parameter.ParameterType.FullResolve(mRef);
+                        var aParameterFullName = Cls.GenericParamPlaceholders.ResolveFullName(a.Parameters.ElementAt(i), mRef);
+                        if (aParameterFullName != mRefParameterResolved.FullName) {
                             return false;
                         }
                     }
-                    if (a.ReturnType.FullName != mRef.ReturnType.FullName) {
+                    var mRefReturnTypeResolved = mRef.ReturnType.FullResolve(mRef);
+                    var aReturnTypeFullName = Cls.GenericParamPlaceholders.ResolveFullName(a.ReturnType, mRef);
+                    if (mRefReturnTypeResolved.FullName != aReturnTypeFullName) {
                         return false;
                     }
                     return true;
@@ -180,13 +192,19 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             if (jsClass != null) {
                 return null;
             }
+            var redirect = mDef.GetCustomAttribute<JsRedirectAttribute>();
+            if (redirect != null) {
+                var tRedirect = (TypeReference)redirect.ConstructorArguments[0].Value;
+                if (tRedirect.HasGenericParameters) {
+                    var args = ((GenericInstanceType)mRef.DeclaringType).GenericArguments.ToArray();
+                    tRedirect = tRedirect.MakeGeneric(args);
+                }
+                var mRedirect = tRedirect.EnumResolvedMethods(mRef).First(x => x.MatchMethodOnly(mRef));
+                var expr = new ExprCall(ctx, mRedirect, call.Obj, call.Args, call.IsVirtualCall, null, call.Type);
+                return expr;
+            }
             var mDeclTypeDef = mRef.DeclaringType.Resolve();
-            //if (mDeclTypeDef.Methods.Any(x => x.IsExternal())) {
-            //    // Method is in a class that contains external methods. These cannot be loaded
-            //    return null;
-            //}
-            var fullTypeName = mDeclTypeDef.AssemblyQualifiedName();
-            var callType = Type.GetType(fullTypeName);
+            var callType = mDeclTypeDef.LoadType();
             if (callType == null) {
                 // Method is outside this module or its references
                 return null;
@@ -199,12 +217,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     tRef = tRef.MakeGeneric(args);
                 }
                 var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => {
-                    var xResolved = x.FullResolve(mRef.DeclaringType, mRef);
+                    var xResolved = x.FullResolve(mRef.DeclaringType, mRef, true);
                     return x.Resolve().IsPublic && xResolved.MatchMethodOnly(mRef);
                 });
                 if (mappedMethod != null) {
                     Expr expr;
-                    if (mDef.IsConstructor) {
+                    if (call.ExprType == Expr.NodeType.NewObj) {
+                        //if (mDef.IsConstructor) {
                         expr = new ExprNewObj(ctx, mappedMethod, call.Args);
                     } else {
                         mappedMethod = mappedMethod.FullResolve(mRef.DeclaringType, mRef);
@@ -215,6 +234,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 // Look for methods that generate AST
                 var method = FindJsMember(call.CallMethod, altType);
                 if (method != null && method.ReturnType() == typeof(Expr)) {
+                    if (method.DeclaringType.ContainsGenericParameters) {
+                        var tArgs = ((GenericInstanceType)call.CallMethod.DeclaringType).GenericArguments;
+                        var typeArgs = tArgs.Select(x => x.LoadType()).ToArray();
+                        var t = method.DeclaringType.MakeGenericType(typeArgs);
+                        method = t.GetMethod(method.Name);
+                    }
                     var expr = (Expr)((MethodInfo)method).Invoke(null, new object[] { call });
                     return expr;
                 }

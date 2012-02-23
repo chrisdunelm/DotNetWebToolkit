@@ -10,7 +10,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     
     class _RuntimeType {
 
-        [Js("ToString", typeof(string))]
+        [Js]
+        public static Stmt Equals(Ctx ctx) {
+            // TODO!!
+            return new StmtReturn(ctx, ctx.Literal(false));
+        }
+
+        [Js(typeof(string))]
         public static Stmt ToString(Ctx ctx) {
             var eNamespace = new ExprJsTypeData(ctx, TypeData.Namespace).Named("namespace");
             var eName = new ExprJsTypeData(ctx, TypeData.Name).Named("name");
