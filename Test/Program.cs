@@ -84,7 +84,7 @@ namespace Test {
             //var net = Array.BinarySearch(ii, val);
 
             var t = new TestDictionary() { Verbose = true };
-            t.TestTryGetValue();
+            t.TestClear();
             return;
 
         }

@@ -24,6 +24,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         JsFieldVarName,
         JsDelegateCtor,
         JsDelegateInvoke,
+        JsByRefWrapper,
     }
 
     public enum JsStmtType {
@@ -73,10 +74,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitExpr(Expr e) {
             var jsExprType = (JsExprType)e.ExprType;
             switch (jsExprType) {
-            //case JsExprType.JsFunction:
-            //    return this.VisitJsFunction((ExprJsFunction)e);
-            //case JsExprType.JsInvoke:
-            //    return this.VisitJsInvoke((ExprJsInvoke)e);
             case JsExprType.JsEmptyFunction:
                 return this.VisitJsEmptyFunction((ExprJsEmptyFunction)e);
             case JsExprType.JsVarMethodReference:
@@ -103,6 +100,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return this.VisitJsDelegateCtor((ExprJsDelegateCtor)e);
             case JsExprType.JsDelegateInvoke:
                 return this.VisitJsDelegateInvoke((ExprJsDelegateInvoke)e);
+            case JsExprType.JsByRefWrapper:
+                return this.VisitJsByRefWrapper((ExprJsByRefWrapper)e);
             default:
                 if ((int)jsExprType >= (int)JsExprType.First) {
                     throw new NotImplementedException("Cannot handle: " + jsExprType);
@@ -245,6 +244,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var args = this.HandleList(e.Args, arg => (Expr)this.Visit(arg));
             if (methodToInvoke != e.MethodToInvoke || args != null) {
                 return new ExprJsDelegateInvoke(e.Ctx, methodToInvoke, args ?? e.Args);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitJsByRefWrapper(ExprJsByRefWrapper e) {
+            this.ThrowOnNoOverride();
+            var expr = (Expr)this.Visit(e.Expr);
+            // These visits are required so the variable namer finds them
+            this.Visit(e.ResultTemp);
+            foreach (var byRef in e.ByRefs) {
+                this.Visit(byRef.Item1);
+                this.Visit(byRef.Item2);
+            }
+            if (expr != e.Expr) {
+                return new ExprJsByRefWrapper(e.Ctx, expr, e.ResultTemp, e.ByRefs);
             } else {
                 return e;
             }

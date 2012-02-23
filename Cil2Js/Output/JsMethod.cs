@@ -105,8 +105,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitAssignment(StmtAssignment s) {
             this.NewLine();
             this.Visit(s.Target);
+            if (s.Target.Type.IsByReference && !s.Expr.Type.IsByReference) {
+                this.js.Append("[0]");
+            }
             this.js.Append(" = ");
             this.Visit(s.Expr);
+            if (!s.Target.Type.IsByReference && s.Expr.Type.IsByReference) {
+                this.js.Append("[0]");
+            }
             this.js.Append(";");
             return s;
         }
@@ -276,6 +282,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             this.js.Append("break;");
             return s;
         }
+
+        //protected override ICode VisitStoreObj(StmtStoreObj s) {
+        //    this.NewLine();
+        //    this.Visit(s.Destination);
+        //    this.js.Append("[0] = ");
+        //    this.Visit(s.Source);
+        //    this.js.Append(";");
+        //    return s;
+        //}
 
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Value == null) {
@@ -726,6 +741,30 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
                 this.js.Length -= 2;
             }
+            this.js.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsByRefWrapper(ExprJsByRefWrapper e) {
+            this.js.Append("(");
+            foreach (var byRef in e.ByRefs) {
+                this.Visit(byRef.Item2);
+                this.js.Append(" = [");
+                this.Visit(byRef.Item1);
+                this.js.Append("], ");
+            }
+            this.Visit(e.ResultTemp);
+            this.js.Append(" = ");
+            this.Visit(e.Expr);
+            foreach (var byRef in e.ByRefs) {
+                this.js.Append(", ");
+                this.Visit(byRef.Item1);
+                this.js.Append(" = ");
+                this.Visit(byRef.Item2);
+                this.js.Append("[0]");
+            }
+            this.js.Append(", ");
+            this.Visit(e.ResultTemp);
             this.js.Append(")");
             return e;
         }

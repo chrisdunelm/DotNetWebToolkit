@@ -99,7 +99,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             protected override ICode VisitAssignment(StmtAssignment s) {
                 var aInfo = this.GetAInfo(s.Target);
                 aInfo.assignment = s;
-                if (s.Target.ExprType != Expr.NodeType.VarLocal ||
+                if (s.Target.ExprType != Expr.NodeType.VarLocal || s.Target.Type.IsByReference ||
                     VisitorFindSpecials.Any(s.Expr, Expr.Special.PossibleSideEffects)) {
                     aInfo.mustKeep = true;
                 }

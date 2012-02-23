@@ -36,6 +36,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         private List<KeyValue>[] buckets;
         private IEqualityComparer<TKey> comparer;
+        private int count;
 
         private void Add(TKey key, TValue value, bool allowOverwrite) {
             var keyHash = this.comparer.GetHashCode(key);
@@ -59,6 +60,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 this.buckets[bucketIdx] = items;
             }
             items.Add(new KeyValue { key = key, value = value });
+            this.count++;
         }
 
         public void Add(TKey key, TValue value) {
@@ -66,7 +68,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public bool ContainsKey(TKey key) {
-            throw new NotImplementedException();
+            TValue dummy;
+            return this.TryGetValue(key, out dummy);
         }
 
         public ICollection<TKey> Keys {
@@ -99,15 +102,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         public TValue this[TKey key] {
             get {
-                var keyHash = this.comparer.GetHashCode(key);
-                var items = this.buckets[keyHash % this.buckets.Length];
-                if (items != null) {
-                    for (int i = 0; i < items.Count; i++) {
-                        var item = items[i];
-                        if (this.comparer.GetHashCode(item.key) == keyHash && this.comparer.Equals(item.key, key)) {
-                            return item.value;
-                        }
-                    }
+                TValue result;
+                if (this.TryGetValue(key, out result)) {
+                    return result;
                 }
                 throw new KeyNotFoundException();
             }
@@ -121,7 +118,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public void Clear() {
-            throw new NotImplementedException();
+            this.buckets = new List<KeyValue>[15];
+            this.count = 0;
         }
 
         public bool Contains(KeyValuePair<TKey, TValue> item) {
@@ -133,7 +131,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public int Count {
-            get { throw new NotImplementedException(); }
+            get { return this.count; }
         }
 
         public bool IsReadOnly {

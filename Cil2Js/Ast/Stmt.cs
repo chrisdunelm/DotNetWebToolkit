@@ -22,6 +22,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             DoLoop,
             Return,
             Break,
+            StoreObj,
 
             Max = 1000,
         }

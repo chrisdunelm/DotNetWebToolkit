@@ -128,6 +128,7 @@
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
     <Compile Include="Ast\ExprRuntimeHandle.cs" />
+    <Compile Include="Ast\StmtStoreObj.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
     <Compile Include="Ast\ExprUnboxAny.cs" />
     <Compile Include="Ast\ExprVariableAddress.cs" />
@@ -198,6 +199,7 @@
     <Compile Include="JsResolvers\JsResolver.cs" />
     <Compile Include="Output\DefaultValuer.cs" />
     <Compile Include="Output\ExprJsArrayLiteral.cs" />
+    <Compile Include="Output\ExprJsByRefWrapper.cs" />
     <Compile Include="Output\ExprJsDelegateCtor.cs" />
     <Compile Include="Output\ExprJsDelegateInvoke.cs" />
     <Compile Include="Output\ExprJsEmptyFunction.cs" />
@@ -232,6 +234,7 @@
     <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorJsResolveAll.cs" />
     <Compile Include="Output\VisitorJsResolveConv.cs" />
+    <Compile Include="Output\VisitorJsResolveByRefParameters.cs" />
     <Compile Include="Transcoder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\CecilExtensions.cs" />

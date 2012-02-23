@@ -111,6 +111,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
                 }
+                ast = VisitorJsResolveByRefParameters.V(ast);
 
                 if (mDef.IsVirtual && mRef.DeclaringType.IsValueType) {
                     // 'this' may be boxed or unboxed. Must be unboxed if boxed

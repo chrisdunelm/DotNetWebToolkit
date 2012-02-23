@@ -621,7 +621,9 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt StObj(TypeReference type) {
-            throw new Exception();
+            var source = this.stack.Pop();
+            var destination = this.stack.Pop();
+            return new StmtAssignment(ctx, (ExprVar)destination, source);
         }
 
     }
