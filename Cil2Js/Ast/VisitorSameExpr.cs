@@ -10,11 +10,6 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
     public static class VisitorSameExpr {
 
         public static bool AreSame(Expr a, Expr b, bool exact) {
-            // exact: Don't allow swapped left/right parameters, or boolean simplification
-            //if (!exact) {
-            //    a = (Expr)VisitorBooleanSimplification.V(a);
-            //    b = (Expr)VisitorBooleanSimplification.V(b);
-            //}
             if (a.ExprType != b.ExprType) {
                 return false;
             }
@@ -54,6 +49,9 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
                     case BinaryOp.BitwiseOr:
                     case BinaryOp.BitwiseXor:
                     case BinaryOp.NotEqual:
+                    case BinaryOp.Equal:
+                    case BinaryOp.Add:
+                    case BinaryOp.Mul:
                         return AreSame(aBin.Left, bBin.Right, exact) && AreSame(aBin.Right, bBin.Left, exact);
                     default:
                         return false;
@@ -72,7 +70,8 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             case Expr.NodeType.FieldAccess:
                 return ((ExprFieldAccess)a).Field.Resolve() == ((ExprFieldAccess)b).Field.Resolve();
             default:
-                throw new NotImplementedException("Cannot handle: " + a.ExprType);
+                return a == b;
+                //throw new NotImplementedException("Cannot handle: " + a.ExprType);
             }
         }
 

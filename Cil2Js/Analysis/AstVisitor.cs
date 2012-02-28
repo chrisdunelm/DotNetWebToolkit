@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.Analysis {
     public abstract class AstVisitor {
@@ -95,7 +96,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         protected IEnumerable<T> HandleList<T>(IEnumerable<T> items, Func<T, T> fn) where T : class {
             List<T> newItems = null;
             int i = 0;
-            foreach (var item in items) {
+            foreach (var item in items.EmptyIfNull()) {
                 var o = fn(item);
                 if (!object.ReferenceEquals(o, item) && newItems == null) {
                     newItems = new List<T>(items.Take(i));

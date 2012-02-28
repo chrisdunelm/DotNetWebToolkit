@@ -64,6 +64,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestRemove() {
+            Func<bool> f = () => {
+                var d = new Dictionary<int, int>();
+                d.Add(0, 0);
+                d.Remove(0);
+                int i;
+                return d.TryGetValue(0, out i);
+            };
+            this.Test(f);
+        }
+
     }
 
 }

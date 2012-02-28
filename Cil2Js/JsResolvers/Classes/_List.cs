@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    class _List<T> {
+    class _List<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable {
 
         public _List() {
             array = new T[0];
@@ -59,8 +60,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsExplicit(ctx, "array.length", ctx.Int32, array);
         }
 
-        [JsRedirect(typeof(List<>))]
-        private void Add(T item) { throw new Exception(); }
         [Js]
         public static Expr Add(ICall call) {
             var ctx = call.Ctx;
@@ -90,6 +89,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             foreach (var item in collection) {
                 this.Insert(index++, item);
             }
+        }
+
+        [Js]
+        public static Expr RemoveAt(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            var index = call.Arg(0, "index");
+            return new ExprJsExplicit(ctx, "array.splice(index, 1)", ctx.Void, array, index);
         }
 
         [Js]
@@ -154,6 +161,113 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprCall(ctx, mBinarySearch, null, GetNamedArrayField(call).Expr, call.Arg(0), call.Arg(1));
         }
 
+        [Js]
+        public static Expr ToArray(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            return new ExprJsExplicit(ctx, "array.slice(0)", call.Type, array);
+        }
+
+
+        void IList<T>.Insert(int index, T item) {
+            throw new NotImplementedException();
+        }
+
+        [JsRedirect(typeof(List<>))]
+        public void RemoveAt(int index) {
+            throw new JsImplException();
+        }
+
+        [JsRedirect(typeof(List<>))]
+        public T this[int index] {
+            get { throw new JsImplException(); }
+            set { throw new JsImplException(); }
+        }
+
+        [JsRedirect(typeof(List<>))]
+        public void Add(T item) { throw new JsImplException(); }
+        [JsRedirect(typeof(List<>))]
+        public void Clear() { throw new JsImplException(); }
+
+        public bool Contains(T item) {
+            throw new NotImplementedException();
+        }
+
+        public void CopyTo(T[] array, int arrayIndex) {
+            throw new NotImplementedException();
+        }
+
+        [JsRedirect(typeof(List<>))]
+        public int Count {
+            get { throw new JsImplException(); }
+        }
+
+        public bool IsReadOnly {
+            get { throw new NotImplementedException(); }
+        }
+
+        public bool Remove(T item) {
+            throw new NotImplementedException();
+        }
+
+        private IEnumerator<T> Enum() {
+            for (int i = 0; i < this.array.Length; i++) {
+                yield return this.array[i];
+            }
+        }
+
+        public IEnumerator<T> GetEnumerator() {
+            return this.Enum();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            throw new NotImplementedException();
+        }
+
+        public int Add(object value) {
+            throw new NotImplementedException();
+        }
+
+        public bool Contains(object value) {
+            throw new NotImplementedException();
+        }
+
+        public int IndexOf(object value) {
+            throw new NotImplementedException();
+        }
+
+        public void Insert(int index, object value) {
+            throw new NotImplementedException();
+        }
+
+        public bool IsFixedSize {
+            get { throw new NotImplementedException(); }
+        }
+
+        public void Remove(object value) {
+            throw new NotImplementedException();
+        }
+
+        object IList.this[int index] {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        public void CopyTo(Array array, int index) {
+            throw new NotImplementedException();
+        }
+
+        public bool IsSynchronized {
+            get { throw new NotImplementedException(); }
+        }
+
+        public object SyncRoot {
+            get { throw new NotImplementedException(); }
+        }
     }
 
 }

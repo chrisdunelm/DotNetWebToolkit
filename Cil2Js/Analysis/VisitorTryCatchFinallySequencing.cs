@@ -91,6 +91,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         return new StmtBlock(s.Ctx, newTry, @try.Item2 ?? @finally.Item2);
                     }
                 }
+                // TODO: This is a hack for badly handling fault handlers. They are ignored at the moment
+                if (s.Catches == null && s.Finally == null) {
+                    return new StmtBlock(s.Ctx, @try.Item1, new StmtContinuation(s.Ctx, @try.Item2, false));
+                }
             }
             return base.VisitTry(s);
         }

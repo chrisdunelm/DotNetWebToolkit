@@ -13,6 +13,7 @@ using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Chrome;
 using System.Threading;
 using NUnit.Framework.Constraints;
+using System.Diagnostics;
 
 namespace Test.ExecutionTests {
     public abstract class ExecutionTestBase {
@@ -186,6 +187,9 @@ namespace Test.ExecutionTests {
 
         protected void Test(Delegate d) {
             var mi = d.Method;
+            var stackTrace = new StackTrace();
+            var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
+            Console.WriteLine("Test++ {0}", testMethod);
             var method = CecilHelper.GetMethod(d);
             var js = Js.CreateFrom(method, this.Verbose, true);
             if (this.Verbose) {
@@ -225,58 +229,59 @@ namespace Test.ExecutionTests {
             //    //new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
             //    NamespaceSetup.Chrome:
             //    new ChromeDriver()) {
-                try {
-                    for (int i = 0; i < args.Length; i++) {
-                        var arg = args[i];
-                        if (!mi.IsStatic) {
-                            arg = arg.Prepend(null).ToArray();
-                        }
-                        var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
-                        var jsResult = chrome.ExecuteScript(js + jsCall);
-                        if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                            var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
-                            switch (returnTypeCode) {
-                            case TypeCode.Int64: {
-                                    var array = (IList<object>)jsResult;
-                                    var hi = Convert.ToUInt64(array[0]);
-                                    var lo = Convert.ToUInt64(array[1]);
-                                    jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
-                                }
-                                break;
-                            case TypeCode.UInt64: {
-                                    var array = (IList<object>)jsResult;
-                                    var hi = Convert.ToUInt64(array[0]);
-                                    var lo = Convert.ToUInt64(array[1]);
-                                    jsResult = ((ulong)hi) << 32 | (ulong)lo;
-                                }
-                                break;
-                            default:
-                                jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
-                                break;
+            try {
+                for (int i = 0; i < args.Length; i++) {
+                    var arg = args[i];
+                    if (!mi.IsStatic) {
+                        arg = arg.Prepend(null).ToArray();
+                    }
+                    var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
+                    var jsResult = chrome.ExecuteScript(js + jsCall);
+                    if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
+                        var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
+                        switch (returnTypeCode) {
+                        case TypeCode.Int64: {
+                                var array = (IList<object>)jsResult;
+                                var hi = Convert.ToUInt64(array[0]);
+                                var lo = Convert.ToUInt64(array[1]);
+                                jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
                             }
+                            break;
+                        case TypeCode.UInt64: {
+                                var array = (IList<object>)jsResult;
+                                var hi = Convert.ToUInt64(array[0]);
+                                var lo = Convert.ToUInt64(array[1]);
+                                jsResult = ((ulong)hi) << 32 | (ulong)lo;
+                            }
+                            break;
+                        default:
+                            jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                            break;
                         }
-                        EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
-                        IResolveConstraint expected = equalTo;
-                        if (withinAttr != null) {
-                            expected = equalTo.Within(withinAttr.Delta);
-                        }
-                        if (withinUlpsAttr != null) {
-                            expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
-                        }
-                        if (withinPercentAttr != null) {
-                            expected = equalTo.Within(withinPercentAttr.Percent).Percent;
-                        }
-                        Assert.That(jsResult, expected);
                     }
-                } finally {
-                    //chrome.Quit();
-                    if (!usingNamespace) {
-                        chrome.Quit();
-                        chrome.Dispose();
+                    EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
+                    IResolveConstraint expected = equalTo;
+                    if (withinAttr != null) {
+                        expected = equalTo.Within(withinAttr.Delta);
                     }
+                    if (withinUlpsAttr != null) {
+                        expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
+                    }
+                    if (withinPercentAttr != null) {
+                        expected = equalTo.Within(withinPercentAttr.Percent).Percent;
+                    }
+                    Assert.That(jsResult, expected);
                 }
-           // }
+            } finally {
+                //chrome.Quit();
+                if (!usingNamespace) {
+                    chrome.Quit();
+                    chrome.Dispose();
+                }
+            }
+            // }
 
+            Console.WriteLine("Test-- {0}", testMethod);
         }
 
     }

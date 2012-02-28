@@ -80,9 +80,8 @@
     <Compile Include="Analysis\StmtCil.cs" />
     <Compile Include="Analysis\StmtContinuation.cs" />
     <Compile Include="Analysis\TypeCombiner.cs" />
-    <Compile Include="Analysis\VisitorCounter.cs" />
     <Compile Include="Analysis\VisitorBooleanSimplification.cs" />
-    <Compile Include="Analysis\VisitorConditionRemoval.cs" />
+    <Compile Include="Analysis\VisitorCounter.cs" />
     <Compile Include="Analysis\VisitorConvertCilToSsa.cs" />
     <Compile Include="Analysis\VisitorDerecurse.cs" />
     <Compile Include="Analysis\VisitorDoLoopSimplification.cs" />
@@ -95,6 +94,7 @@
     <Compile Include="Analysis\VisitorIfDistribution.cs" />
     <Compile Include="Analysis\VisitorIfReorder.cs" />
     <Compile Include="Analysis\VisitorIfSimplification.cs" />
+    <Compile Include="Analysis\VisitorDefiniteAssignment.cs" />
     <Compile Include="Analysis\VisitorMoveOutOfLoop.cs" />
     <Compile Include="Analysis\VisitorOnlyStatements.cs" />
     <Compile Include="Analysis\VisitorPhiClusters.cs" />
@@ -158,6 +158,7 @@
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
     <Compile Include="JsResolvers\Classes\GenericParamPlaceholders.cs" />
+    <Compile Include="JsResolvers\Classes\JsImplException.cs" />
     <Compile Include="JsResolvers\Classes\_Comparer.cs" />
     <Compile Include="JsResolvers\Classes\_Console.cs" />
     <Compile Include="JsResolvers\Classes\_Dictionary.cs" />

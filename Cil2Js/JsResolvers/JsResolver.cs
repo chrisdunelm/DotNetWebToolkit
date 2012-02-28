@@ -192,7 +192,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             if (jsClass != null) {
                 return null;
             }
-            var redirect = mDef.GetCustomAttribute<JsRedirectAttribute>();
+            var redirect = mDef.GetCustomAttribute<JsRedirectAttribute>(true);
             if (redirect != null) {
                 var tRedirect = (TypeReference)redirect.ConstructorArguments[0].Value;
                 if (tRedirect.HasGenericParameters) {
@@ -218,7 +218,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 }
                 var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => {
                     var xResolved = x.FullResolve(mRef.DeclaringType, mRef, true);
-                    return x.Resolve().IsPublic && xResolved.MatchMethodOnly(mRef);
+                    var res = xResolved.Resolve();
+                    var visible = res.IsPublic || (res.Name.Contains(".") && !res.IsConstructor); // to handle explicit interface methods
+                    return visible && res.GetCustomAttribute<JsRedirectAttribute>(true) == null && xResolved.MatchMethodOnly(mRef);
                 });
                 if (mappedMethod != null) {
                     Expr expr;
@@ -238,7 +240,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                         var tArgs = ((GenericInstanceType)call.CallMethod.DeclaringType).GenericArguments;
                         var typeArgs = tArgs.Select(x => x.LoadType()).ToArray();
                         var t = method.DeclaringType.MakeGenericType(typeArgs);
-                        method = t.GetMethod(method.Name);
+                        method = t.GetMethods().First(x => x.Name == method.Name && x.ReturnType == typeof(Expr));
                     }
                     var expr = (Expr)((MethodInfo)method).Invoke(null, new object[] { call });
                     return expr;
@@ -282,7 +284,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var altType = map.ValueOrDefault(methodType);
             if (altType != null) {
                 if (altType.IsGenericTypeDefinition) {
-                    var args = ((GenericInstanceType)ctx.TRef).GenericArguments.Select(x => Type.GetType(x.FullName)).ToArray();
+                    var args = ((GenericInstanceType)ctx.TRef).GenericArguments.Select(x => x.LoadType()).ToArray();
                     altType = altType.MakeGenericType(args);
                 }
                 // Look for methods that generate AST

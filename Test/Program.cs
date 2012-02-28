@@ -78,13 +78,14 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            //var ii = new[] { 1, 3, 5, 7 };
-            //int val = 2;
-            //var mine = DotNetWebToolkit.Cil2Js.JsResolvers.Classes._Array.BinarySearch(ii, 0, ii.Length, val, null);
-            //var net = Array.BinarySearch(ii, val);
+            // TestMultiOr
+            // TestThrowReturnDirect
+            // TestThrowReturnVar
+            // TestLoops.Test1Do
 
-            var t = new TestDictionary() { Verbose = true };
-            t.TestClear();
+            var t = new TestList() { Verbose = true };
+            t.TestBinarySearch();
+
             return;
 
         }

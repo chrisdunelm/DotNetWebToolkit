@@ -15,6 +15,7 @@ namespace Test.ExecutionTests {
         A ForceA(int i) { return (A)i; }
         B ForceB(int i) { return (B)i; }
         B ForceB(A a) { return (B)a; }
+        [Test]
         public void TestCast() {
             Func<int, int> f = a => {
                 var aa = ForceA(a);

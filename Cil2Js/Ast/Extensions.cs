@@ -52,7 +52,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
                 if (eLit.Type.IsInt32()) {
                     return value == ((int)eLit.Value != 0 ? true : false);
                 }
-                throw new InvalidOperationException("This literal cannot be treated like a boolean");
+                //throw new InvalidOperationException("This literal cannot be treated like a boolean");
             }
             return false;
         }

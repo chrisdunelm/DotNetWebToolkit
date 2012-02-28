@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -216,6 +217,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                         }
                         throw new InvalidCastException();
                     }
+                    if (param.Position >= scope.GenericArguments.Count && allowFailure) {
+                        return self;
+                    }
                     var type = scope.GenericArguments[param.Position];
                     return type;
                 }
@@ -231,12 +235,15 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                         }
                         throw new InvalidCastException();
                     }
+                    if (param.Position >= scope.GenericArguments.Count && allowFailure) {
+                        return self;
+                    }
                     var type = scope.GenericArguments[param.Position];
                     return type;
                 }
             case MetadataType.Array: {
                     var array = (ArrayType)self;
-                    var elType = array.ElementType.FullResolve(scopeType, scopeMethod,allowFailure);
+                    var elType = array.ElementType.FullResolve(scopeType, scopeMethod, allowFailure);
                     if (elType != array.ElementType) {
                         return new ArrayType(elType);
                     } else {
@@ -510,8 +517,23 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return t.EnumAllInterfaces().Any(x => x.IsSame(iFace));
         }
 
-        public static CustomAttribute GetCustomAttribute<TAttr>(this Mono.Cecil.ICustomAttributeProvider cap) {
-            return cap.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+        public static CustomAttribute GetCustomAttribute<TAttr>(this Mono.Cecil.ICustomAttributeProvider cap, bool incProperty = false) {
+            var attr = cap.CustomAttributes.FirstOrDefault(x => x.AttributeType.Name == typeof(TAttr).Name);
+            if (attr != null) {
+                return attr;
+            }
+            if (incProperty) {
+                var mRef = cap as MethodReference;
+                if (mRef != null) {
+                    var property = mRef.Resolve().DeclaringType.Properties
+                        .FirstOrDefault(x => (x.SetMethod != null && x.SetMethod.Name == mRef.Name)
+                            || (x.GetMethod != null && x.GetMethod.Name == mRef.Name));
+                    if (property != null) {
+                        return property.GetCustomAttribute<TAttr>(false);
+                    }
+                }
+            }
+            return null;
         }
 
         public static IEnumerable<CustomAttribute> GetCustomAttributes<TAttr>(this Mono.Cecil.ICustomAttributeProvider cap) {
@@ -551,6 +573,22 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static string AssemblyQualifiedName(this TypeDefinition tDef) {
             var fullName = tDef.FullName.Replace('/', '+');
             return fullName + ", " + tDef.Module.Assembly.FullName;
+        }
+
+        static CecilExtensions() {
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+        }
+
+        public static string SourceDirectory = null;
+
+        static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+            if (SourceDirectory == null) {
+                return null;
+            }
+            var assemblyName = args.Name.Split(',')[0];
+            var fn = Path.Combine(SourceDirectory, assemblyName + ".dll");
+            var assembly = Assembly.LoadFrom(fn);
+            return assembly;
         }
 
         public static Type LoadType(this TypeReference tRef) {

@@ -44,7 +44,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 var ctorExpr = new ExprNewObj(ctx, ctor);
                 return new StmtReturn(ctx, ctorExpr);
             }
-            throw new NotImplementedException();
+            return new StmtThrow(ctx, ctx.Literal(null, ctx.Object));
         }
 
     }

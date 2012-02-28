@@ -197,7 +197,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         tryStmt = new StmtTry(this.ctx, ex.TryStart, null, ex.HandlerStart, null);
                         break;
                     case ExceptionHandlerType.Fault: // TODO: Handle this properly, can emulate with 2 try statements
-                        tryStmt = new StmtTry(this.ctx, ex.TryStart, null, ex.HandlerStart, null); // INCORRECT
+                        tryStmt = new StmtTry(this.ctx, ex.TryStart, null, null, null); // INCORRECT
                         break;
                     default:
                         throw new NotImplementedException("Cannot handle handler-type: " + ex.HandlerType);

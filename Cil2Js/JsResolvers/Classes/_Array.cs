@@ -7,10 +7,11 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
+using System.Collections;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    class _Array {
+    class _Array : IList, ICollection, IEnumerable {
 
         [Js("Copy", typeof(void), typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))]
         public static Expr Copy(ICall call) {
@@ -42,6 +43,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return stmt;
         }
 
+        [JsRedirect(typeof(Array))]
+        public int get_Length() { throw new JsImplException(); }
         [Js]
         public static Expr get_Length(ICall call) {
             // This is only when Array.Length is called. Typed arrays (1 dimensional) use a specific CIL opcode to get length
@@ -202,5 +205,75 @@ copyPartCall;
             }
         }
 
+
+
+        int IList.Add(object value) {
+            throw new NotImplementedException();
+        }
+
+        void IList.Clear() {
+            throw new NotImplementedException();
+        }
+
+        bool IList.Contains(object value) {
+            throw new NotImplementedException();
+        }
+
+        int IList.IndexOf(object value) {
+            throw new NotImplementedException();
+        }
+
+        void IList.Insert(int index, object value) {
+            throw new NotImplementedException();
+        }
+
+        bool IList.IsFixedSize {
+            get { throw new NotImplementedException(); }
+        }
+
+        bool IList.IsReadOnly {
+            get { throw new NotImplementedException(); }
+        }
+
+        void IList.Remove(object value) {
+            throw new NotImplementedException();
+        }
+
+        void IList.RemoveAt(int index) {
+            throw new NotImplementedException();
+        }
+
+        object IList.this[int index] {
+            get {
+                throw new NotImplementedException();
+            }
+            set {
+                throw new NotImplementedException();
+            }
+        }
+
+        void ICollection.CopyTo(Array array, int index) {
+            throw new NotImplementedException();
+        }
+
+        int ICollection.Count {
+            get { throw new JsImplException(); }
+        }
+        [Js("System.Collections.ICollection.get_Count", typeof(int))]
+        public static Stmt get_Count(Ctx ctx) {
+            return new StmtReturn(ctx, ctx.Literal(0));
+        }
+
+        bool ICollection.IsSynchronized {
+            get { throw new NotImplementedException(); }
+        }
+
+        object ICollection.SyncRoot {
+            get { throw new NotImplementedException(); }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            throw new NotImplementedException();
+        }
     }
 }

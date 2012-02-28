@@ -12,6 +12,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         IDictionary, ICollection, IEnumerable {
 
         class KeyValue {
+            public int keyHash;
             public TKey key;
             public TValue value;
         }
@@ -59,7 +60,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 items = new List<KeyValue>();
                 this.buckets[bucketIdx] = items;
             }
-            items.Add(new KeyValue { key = key, value = value });
+            items.Add(new KeyValue { keyHash = keyHash, key = key, value = value });
             this.count++;
         }
 
@@ -77,7 +78,19 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public bool Remove(TKey key) {
-            throw new NotImplementedException();
+            var keyHash = this.comparer.GetHashCode(key);
+            var items = this.buckets[keyHash % this.buckets.Length];
+            if (items != null) {
+                for (int i = 0; i < items.Count; i++) {
+                    var item = items[i];
+                    if (item.keyHash == keyHash && comparer.Equals(item.key, key)) {
+                        items.RemoveAt(i);
+                        this.count--;
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         public bool TryGetValue(TKey key, out TValue value) {
@@ -86,7 +99,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             if (items != null) {
                 for (int i = 0; i < items.Count; i++) {
                     var item = items[i];
-                    if (this.comparer.GetHashCode(item.key) == keyHash && this.comparer.Equals(item.key, key)) {
+                    if (item.keyHash == keyHash && this.comparer.Equals(item.key, key)) {
                         value = item.value;
                         return true;
                     }

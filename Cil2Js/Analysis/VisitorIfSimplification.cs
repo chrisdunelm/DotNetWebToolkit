@@ -102,15 +102,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         // Both 'if' statements contain the same bodies, so 'or' conditions together
                         return new StmtIf(s.Ctx, s.Ctx.ExprGen.Or(aIf.Condition, bIf.Condition), aIf.Then, aIf.Else);
                     }
+                } else if (a.StmtType == Stmt.NodeType.If && b.StmtType == Stmt.NodeType.Continuation) {
+                    var aIf = (StmtIf)a;
+                    if (aIf.Then.DoesEqual(b) || aIf.Else.DoesEqual(b)) {
+                        return b;
+                    }
                 }
                 return null;
             }).ToArray();
-            //stNew = stNew.Combine((a, b) => {
-            //    if (a.StmtType == Stmt.NodeType.If && b.StmtType == Stmt.NodeType.If) {
-
-            //    }
-            //    return null;
-            //}).ToArray();
             if (!Enumerable.SequenceEqual(s.Statements, stNew)) {
                 return new StmtBlock(s.Ctx, stNew);
             } else {

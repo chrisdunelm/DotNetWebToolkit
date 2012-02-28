@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +25,15 @@ namespace Test.ExecutionTests {
             Func<int, int, int, int> f = (a, b, c) => {
                 var list = new List<int> { a, b, c };
                 return list[0] + list[1] * 100 + list[2] * 10000;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestCount() {
+            Func<int> f = () => {
+                var list = new List<int> { 1, 2 };
+                return list.Count;
             };
             this.Test(f);
         }
@@ -93,6 +103,16 @@ namespace Test.ExecutionTests {
                 var list = new List<int> { 1 };
                 list.Clear();
                 return list.Count;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestRemove() {
+            Func<int> f = () => {
+                var list = new List<int> { 1, 2 };
+                list.RemoveAt(0);
+                return list[0];
             };
             this.Test(f);
         }
@@ -168,6 +188,44 @@ namespace Test.ExecutionTests {
                 var zIdx = ~list.BinarySearch(10001, comp);
                 var midIdx = ~list.BinarySearch(a - 1, comp);
                 return aIdx + bIdx * 10 + cIdx * 100 + yIdx * 1000 + zIdx * 10000 + midIdx * 100000;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAsEnumerableT() {
+            Func<int, int, int> f = (a, b) => {
+                var list = new List<int> { a, b };
+                var e = (IEnumerable<int>)list;
+                int sum = 0;
+                foreach (var i in e) {
+                    sum += i;
+                }
+                return sum;
+            };
+            this.Test(f);
+        }
+
+        [Test, Ignore("Non-generic not quite supported yet")]
+        public void TestAsEnumerable() {
+            Func<int, int, int> f = (a, b) => {
+                var list = new List<int> { a, b };
+                var e = (IEnumerable)list;
+                int sum = 0;
+                foreach (int i in e) {
+                    sum += i;
+                }
+                return sum;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestToArray() {
+            Func<int, int, int> f = (a, b) => {
+                var list = new List<int> { a, b };
+                var array = list.ToArray();
+                return array[0] + array[1] * 100;
             };
             this.Test(f);
         }

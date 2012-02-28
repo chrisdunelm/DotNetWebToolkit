@@ -8,6 +8,25 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.Analysis {
     class VisitorPhiClusters : AstRecursiveVisitor {
 
+        public class EqualityComparer : IEqualityComparer<Expr> {
+
+            public EqualityComparer(IEnumerable<IEnumerable<Expr>> phiClusters) {
+                this.phiMap = phiClusters
+                    .SelectMany(x => x.Select(y => new { key = x.First(), expr = y }))
+                    .ToDictionary(x => x.expr, x => x.key);
+            }
+
+            private Dictionary<Expr, Expr> phiMap;
+
+            public bool Equals(Expr x, Expr y) {
+                return this.phiMap.ValueOrDefault(x, x) == this.phiMap.ValueOrDefault(y, y);
+            }
+
+            public int GetHashCode(Expr obj) {
+                return this.phiMap.ValueOrDefault(obj, obj).GetHashCode();
+            }
+        }
+
         public static IEnumerable<IEnumerable<ExprVar>> V(ICode c) {
             var v = new VisitorPhiClusters();
             v.Visit(c);

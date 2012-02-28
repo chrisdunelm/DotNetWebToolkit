@@ -28,8 +28,11 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         }
 
         public override string ToString() {
-            return string.Format("Var_{0:x8}:{1}{2}", this.GetHashCode(), this.Type.Name,
-                this.Name == null ? "" : " \"" + this.Name + "\"");
+            if (this.Name == null) {
+                return string.Format("Var_{0:x8}:{1}", this.GetHashCode(), this.Type.Name);
+            } else {
+                return this.Name;
+            }
         }
 
     }

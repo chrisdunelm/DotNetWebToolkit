@@ -20,7 +20,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         public override TypeReference Type {
-            get { throw new NotImplementedException(); }
+            get { return this.Ctx.IntPtr; }
         }
 
     }

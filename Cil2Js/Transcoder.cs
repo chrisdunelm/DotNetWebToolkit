@@ -9,6 +9,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 using System.Reflection;
 using DotNetWebToolkit.Cil2Js.Utils;
 using DotNetWebToolkit.Attributes;
+using System.IO;
 
 namespace DotNetWebToolkit.Cil2Js {
     public static class Transcoder {
@@ -50,7 +51,6 @@ namespace DotNetWebToolkit.Cil2Js {
             print(ast, null);
             ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
-            HashSet<Expr> booleanSimplification = new HashSet<Expr>();
             bool lastChance = false;
             for (int i = 0; ; i++) {
                 var astOrg = ast;
@@ -58,10 +58,9 @@ namespace DotNetWebToolkit.Cil2Js {
                 ast = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), ast, "VisitorTryCatchFinallySequencing");
                 ast = doStep(s => (Stmt)VisitorIfDistribution.V(s), ast, "VisitorIfDistribution");
                 ast = doStep(s => (Stmt)VisitorDerecurse.V(s), ast, "VisitorDerecurse");
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s, booleanSimplification, out booleanSimplification), ast, "VisitorBooleanSimplification");
+                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
-                ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
                 ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, lastChance), ast, "VisitorSwitchSequencing");
                 if (ast == astOrg) {
@@ -86,10 +85,9 @@ namespace DotNetWebToolkit.Cil2Js {
             for (int i = 0; ; i++) {
                 var astOrg = ast;
                 // TODO: VisitorBooleanSimplification may re-order logic, which should not be done at this stage
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s, booleanSimplification, out booleanSimplification), ast, "VisitorBooleanSimplification");
+                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
-                //ast = doStep(s => (Stmt)VisitorConditionRemoval.V(s), ast, "VisitorConditionRemoval");
                 ast = doStep(s => (Stmt)VisitorSsaSimplifier.V(s), ast, "VisitorSsaSimplifier");
                 ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
                 ast = doStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier");
@@ -102,6 +100,7 @@ namespace DotNetWebToolkit.Cil2Js {
                     throw new InvalidOperationException("Error: Stuck in loop trying to simplify AST");
                 }
             }
+            ast = doStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment");
             ast = doStep(s => (Stmt)VisitorRemoveCasts.V(s), ast, "VisitorRemoveCasts");
             ast = doStep(s => (Stmt)VisitorRemoveFinalReturn.V(s), ast, "VisitorRemoveFinalReturn");
             ast = doStep(s => (Stmt)VisitorTypeCorrector.V(s), ast, "VisitorTypeCorrector");
@@ -125,6 +124,7 @@ namespace DotNetWebToolkit.Cil2Js {
         }
 
         public static string ToJs(string filename, bool verbose = false) {
+            CecilExtensions.SourceDirectory = Path.GetDirectoryName(filename);
             var module = ModuleDefinition.ReadModule(filename);
             return ToJs(module, verbose);
         }

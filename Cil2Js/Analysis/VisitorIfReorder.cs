@@ -20,6 +20,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected override ICode VisitBlock(StmtBlock s) {
+            var ctx = s.Ctx;
             var statements = s.Statements
                 .Select(x => (Stmt)this.Visit(x))
                 .Where(x => x != null)
@@ -35,35 +36,76 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         var aCont = (StmtContinuation)aIf.Then;
                         var bCont = (StmtContinuation)bIf.Then;
                         if (aCont.To != this.block && bCont.To == this.block) {
-                            return new StmtBlock(s.Ctx, b, a);
+                            return new StmtBlock(ctx, b, a);
                         }
                     }
                 }
-                // If an 'if' statement containing only a continuation is followed by any other kind of statement then swap them
-                // (with suitable 'if' guard)
-                if (a.StmtType == Stmt.NodeType.If) {
-                    var aIf = (StmtIf)a;
-                    if (aIf.Then != null && aIf.Then.StmtType == Stmt.NodeType.Continuation && aIf.Else == null) {
-                        bool swap;
-                        if (b.StmtType != Stmt.NodeType.If) {
-                            swap = true;
-                        } else {
-                            var bIf = (StmtIf)b;
-                            swap = bIf.Then == null || bIf.Then.StmtType != Stmt.NodeType.Continuation || bIf.Else != null;
-                        }
-                        if (swap) {
-                            return new StmtBlock(s.Ctx,
-                                new StmtIf(s.Ctx, s.Ctx.ExprGen.NotAutoSimplify(aIf.Condition), b, null),
-                                a);
-                        }
-                    }
-                }
+                //// If an 'if' statement containing only a continuation is followed by any other kind of statement then swap them
+                //// (with suitable 'if' guard). Look ahead and encase as much as possible in the 'if' guard
+                //if (a.StmtType == Stmt.NodeType.If) {
+                //    var aIf = (StmtIf)a;
+                //    if (aIf.Then != null && aIf.Then.StmtType == Stmt.NodeType.Continuation && aIf.Else == null) {
+                //        bool swap;
+                //        if (b.StmtType != Stmt.NodeType.If) {
+                //            swap = true;
+                //        } else {
+                //            var bIf = (StmtIf)b;
+                //            swap = bIf.Then == null || bIf.Then.StmtType != Stmt.NodeType.Continuation || bIf.Else != null;
+                //        }
+                //        if (swap) {
+                //            return new StmtBlock(s.Ctx,
+                //                new StmtIf(s.Ctx, s.Ctx.ExprGen.NotAutoSimplify(aIf.Condition), b, null),
+                //                a);
+                //        }
+                //    }
+                //}
                 return null;
             })
             .ToArray();
             if (!statements.SequenceEqual(stNew)) {
-                return new StmtBlock(s.Ctx, stNew);
+                return new StmtBlock(ctx, stNew);
             }
+            // If an 'if' statement containing only a continuation is followed by any other kind of statement then swap them
+            // (with suitable 'if' guard). Look ahead and encase as much as possible in the 'if' guard
+            for (int i = 0; i < statements.Length - 1; i++) {
+                var stmt = statements[i];
+                if (stmt.StmtType == Stmt.NodeType.If) {
+                    var sIf = (StmtIf)stmt;
+                    if (sIf.Then != null && sIf.Then.StmtType == Stmt.NodeType.Continuation && sIf.Else == null) {
+                        var moveCount = 0;
+                        for (int j = i + 1; j < statements.Length; j++) {
+                            var b = statements[j];
+                            bool move;
+                            if (b.StmtType == Stmt.NodeType.Continuation) {
+                                move = false;
+                            } else if (b.StmtType != Stmt.NodeType.If) {
+                                move = true;
+                            } else {
+                                var bIf = (StmtIf)b;
+                                move = bIf.Then == null || bIf.Then.StmtType != Stmt.NodeType.Continuation || bIf.Else != null;
+                            }
+                            if (move) {
+                                moveCount++;
+                            } else {
+                                break;
+                            }
+                        }
+                        if (moveCount > 0) {
+                            var moveBlock = new StmtBlock(ctx, statements.Skip(i + 1).Take(moveCount));
+                            var ifBlock = new StmtIf(ctx, ctx.ExprGen.Not(sIf.Condition), moveBlock, null);
+                            var allStmts =
+                                statements.Take(i)
+                                .Concat(ifBlock)
+                                .Concat(statements[i])
+                                .Concat(statements.Skip(i + 1 + moveCount))
+                                .ToArray();
+                            return new StmtBlock(ctx, allStmts);
+                        }
+                    }
+                }
+            }
+
+            // Reorder if/continuations at end of block to group by continuation target
             var finalContsRev = statements.Reverse().TakeWhile(x => {
                 if (x.StmtType == Stmt.NodeType.Continuation) {
                     return true;
@@ -109,13 +151,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 if (dups.Any()) {
                     var finalStmts = finalContsRev.Reverse().ToArray();
                     foreach (var dup in dups) {
-                        var movingBack = new List<StmtIf>();
+                        var movingBack = new List<Stmt>();
                         var addIfs = new Dictionary<Stmt, IEnumerable<Expr>>();
                         foreach (var stmt in finalStmts) {
                             if (stmt.to == dup.to) {
-                                movingBack.Add((StmtIf)stmt.stmt);
+                                movingBack.Add(stmt.stmt);
                             } else {
-                                addIfs.Add(stmt.stmt, movingBack.Select(x => s.Ctx.ExprGen.Not(x.Condition)).ToArray());
+                                addIfs.Add(stmt.stmt, movingBack.Select(x => s.Ctx.ExprGen.Not(((StmtIf)x).Condition)).ToArray());
                             }
                             if (movingBack.Count == dup.count) {
                                 finalStmts = finalStmts.SelectMany(x => {
