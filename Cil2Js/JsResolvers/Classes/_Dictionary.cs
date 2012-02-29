@@ -148,7 +148,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public bool IsReadOnly {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public bool Remove(KeyValuePair<TKey, TValue> item) {
