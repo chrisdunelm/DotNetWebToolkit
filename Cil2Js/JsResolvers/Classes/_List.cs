@@ -34,48 +34,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprFieldAccess(ctx, call.Obj, arrayFieldRef).Named("array");
         }
 
-        [Js]
-        public static Expr get_Item(ICall call) {
-            var ctx = call.Ctx;
-            var genType = call.CallMethod.DeclaringType.GetGenericArgument(0);
-            var array = GetNamedArrayField(call);
-            var index = call.Arg(0, "index");
-            return new ExprJsExplicit(ctx, "array[index]", genType, array, index);
-        }
-
-        [Js]
-        public static Expr set_Item(ICall call) {
-            var ctx = call.Ctx;
-            var genType = call.CallMethod.DeclaringType.GetGenericArgument(0);
-            var array = GetNamedArrayField(call);
-            var index = call.Arg(0, "index");
-            var value = call.Arg(1, "value");
-            return new ExprJsExplicit(ctx, "array[index] = value", genType, array, index, value);
-        }
-
-        [Js]
-        public static Expr get_Count(ICall call) {
-            var ctx = call.Ctx;
-            var array = GetNamedArrayField(call);
-            return new ExprJsExplicit(ctx, "array.length", ctx.Int32, array);
-        }
-
-        [Js]
-        public static Expr Add(ICall call) {
-            var ctx = call.Ctx;
-            var array = GetNamedArrayField(call);
-            var value = call.Arg(0, "value");
-            return new ExprJsExplicit(ctx, "array.push(value)", ctx.Void, array, value);
-        }
-
-        public void AddRange(IEnumerable<T> collection) {
-            foreach (var item in collection) {
-                this.Add(item);
-            }
-        }
-
         [JsRedirect(typeof(List<>))]
-        private void Insert(int index, T item) { throw new Exception(); }
+        private void Insert(int index, T item) { throw new JsImplException(); }
         [Js]
         public static Expr Insert(ICall call) {
             var ctx = call.Ctx;
@@ -91,22 +51,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             }
         }
 
-        [Js]
-        public static Expr RemoveAt(ICall call) {
-            var ctx = call.Ctx;
-            var array = GetNamedArrayField(call);
-            var index = call.Arg(0, "index");
-            return new ExprJsExplicit(ctx, "array.splice(index, 1)", ctx.Void, array, index);
-        }
-
-        [Js]
-        public static Expr Clear(ICall call) {
-            var ctx = call.Ctx;
-            var array = GetNamedArrayField(call);
-            return new ExprJsExplicit(ctx, "array.length = 0", ctx.Void, array);
-        }
-
-        public virtual int IndexOf(T item) {
+        public int IndexOf(T item) {
             return this.IndexOf(item, 0, this.array.Length);
         }
 
@@ -168,7 +113,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsExplicit(ctx, "array.slice(0)", call.Type, array);
         }
 
-
         void IList<T>.Insert(int index, T item) {
             throw new NotImplementedException();
         }
@@ -177,17 +121,62 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public void RemoveAt(int index) {
             throw new JsImplException();
         }
+        [Js]
+        public static Expr RemoveAt(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            var index = call.Arg(0, "index");
+            return new ExprJsExplicit(ctx, "array.splice(index, 1)", ctx.Void, array, index);
+        }
 
         [JsRedirect(typeof(List<>))]
         public T this[int index] {
             get { throw new JsImplException(); }
             set { throw new JsImplException(); }
         }
+        [Js]
+        public static Expr get_Item(ICall call) {
+            var ctx = call.Ctx;
+            var genType = call.CallMethod.DeclaringType.GetGenericArgument(0);
+            var array = GetNamedArrayField(call);
+            var index = call.Arg(0, "index");
+            return new ExprJsExplicit(ctx, "array[index]", genType, array, index);
+        }
+
+        [Js]
+        public static Expr set_Item(ICall call) {
+            var ctx = call.Ctx;
+            var genType = call.CallMethod.DeclaringType.GetGenericArgument(0);
+            var array = GetNamedArrayField(call);
+            var index = call.Arg(0, "index");
+            var value = call.Arg(1, "value");
+            return new ExprJsExplicit(ctx, "array[index] = value", genType, array, index, value);
+        }
 
         [JsRedirect(typeof(List<>))]
         public void Add(T item) { throw new JsImplException(); }
+        [Js]
+        public static Expr Add(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            var value = call.Arg(0, "value");
+            return new ExprJsExplicit(ctx, "array.push(value)", ctx.Void, array, value);
+        }
+
+        public void AddRange(IEnumerable<T> collection) {
+            foreach (var item in collection) {
+                this.Add(item);
+            }
+        }
+
         [JsRedirect(typeof(List<>))]
         public void Clear() { throw new JsImplException(); }
+        [Js]
+        public static Expr Clear(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            return new ExprJsExplicit(ctx, "array.length = 0", ctx.Void, array);
+        }
 
         public bool Contains(T item) {
             throw new NotImplementedException();
@@ -201,9 +190,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public int Count {
             get { throw new JsImplException(); }
         }
+        [Js]
+        public static Expr get_Count(ICall call) {
+            var ctx = call.Ctx;
+            var array = GetNamedArrayField(call);
+            return new ExprJsExplicit(ctx, "array.length", ctx.Int32, array);
+        }
 
         public bool IsReadOnly {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public bool Remove(T item) {
