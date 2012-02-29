@@ -7,10 +7,10 @@ using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
 
-    public class VisitorGetVars : JsAstVisitor {
+    public class VisitorFindVars : JsAstVisitor {
 
         public static IEnumerable<ExprVar> V(ICode ast) {
-            var v = new VisitorGetVars();
+            var v = new VisitorFindVars();
             v.Visit(ast);
             return v.vars;
         }

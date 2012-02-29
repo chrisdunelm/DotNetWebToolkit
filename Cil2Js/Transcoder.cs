@@ -81,6 +81,8 @@ namespace DotNetWebToolkit.Cil2Js {
                     throw new InvalidOperationException("Error: Stuck in loop trying to reduce AST");
                 }
             }
+            ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
+            ast = doStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment");
             // Simplify AST
             for (int i = 0; ; i++) {
                 var astOrg = ast;
@@ -88,7 +90,7 @@ namespace DotNetWebToolkit.Cil2Js {
                 ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
-                ast = doStep(s => (Stmt)VisitorSsaSimplifier.V(s), ast, "VisitorSsaSimplifier");
+                ast = doStep(s => (Stmt)VisitorSsaCopyPropagation.V(s), ast, "VisitorSsaSimplifier");
                 ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
                 ast = doStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
@@ -100,7 +102,6 @@ namespace DotNetWebToolkit.Cil2Js {
                     throw new InvalidOperationException("Error: Stuck in loop trying to simplify AST");
                 }
             }
-            ast = doStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment");
             ast = doStep(s => (Stmt)VisitorRemoveCasts.V(s), ast, "VisitorRemoveCasts");
             ast = doStep(s => (Stmt)VisitorRemoveFinalReturn.V(s), ast, "VisitorRemoveFinalReturn");
             ast = doStep(s => (Stmt)VisitorTypeCorrector.V(s), ast, "VisitorTypeCorrector");

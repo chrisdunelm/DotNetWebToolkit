@@ -34,11 +34,13 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private void AddKnownTrue(Expr e) {
-            this.knownTrue.Peek().Add(e);
+            if (VisitorFindVars.V(e).Any()) {
+                this.knownTrue.Peek().Add(e);
+            }
         }
 
         private void AddKnownTrue(IEnumerable<Expr> es) {
-            this.knownTrue.Peek().AddRange(es);
+            this.knownTrue.Peek().AddRange(es.Where(x => VisitorFindVars.V(x).Any()));
         }
 
         private bool HasBlockExit(Stmt s) {
@@ -145,14 +147,24 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             if (s.Target.Type.IsBoolean()) {
                 this.assignmentsTo.Add(s.Target);
             }
-            return base.VisitAssignment(s);
+            var expr = this.Visit(s.Expr);
+            if (expr != s.Expr) {
+                return new StmtAssignment(s.Ctx, s.Target, (Expr)expr);
+            } else {
+                return s;
+            }
         }
 
         protected override ICode VisitAssignment(ExprAssignment e) {
             if (e.Target.Type.IsBoolean()) {
                 this.assignmentsTo.Add(e.Target);
             }
-            return base.VisitAssignment(e);
+            var expr = (Expr)this.Visit(e.Expr);
+            if (expr != e.Expr) {
+                return new ExprAssignment(e.Ctx, e.Target, expr);
+            } else {
+                return e;
+            }
         }
 
         protected override ICode VisitExpr(Expr e) {
@@ -167,7 +179,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 runSimplification = eBinary.Op == BinaryOp.And || eBinary.Op == BinaryOp.Or;
                 break;
             default:
-                runSimplification = e.IsVar();
+                runSimplification = e.IsVar() && e.Type.IsBoolean();
                 break;
             }
             if (!runSimplification) {

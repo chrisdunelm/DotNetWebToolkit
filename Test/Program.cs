@@ -83,8 +83,8 @@ namespace Test {
             // TestThrowReturnVar
             // TestLoops.Test1Do
 
-            var t = new TestList() { Verbose = true };
-            t.TestBinarySearch();
+            var t = new TestSwitch() { Verbose = true };
+            t.TestWithFlag();
 
             return;
 

@@ -40,25 +40,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                         }
                     }
                 }
-                //// If an 'if' statement containing only a continuation is followed by any other kind of statement then swap them
-                //// (with suitable 'if' guard). Look ahead and encase as much as possible in the 'if' guard
-                //if (a.StmtType == Stmt.NodeType.If) {
-                //    var aIf = (StmtIf)a;
-                //    if (aIf.Then != null && aIf.Then.StmtType == Stmt.NodeType.Continuation && aIf.Else == null) {
-                //        bool swap;
-                //        if (b.StmtType != Stmt.NodeType.If) {
-                //            swap = true;
-                //        } else {
-                //            var bIf = (StmtIf)b;
-                //            swap = bIf.Then == null || bIf.Then.StmtType != Stmt.NodeType.Continuation || bIf.Else != null;
-                //        }
-                //        if (swap) {
-                //            return new StmtBlock(s.Ctx,
-                //                new StmtIf(s.Ctx, s.Ctx.ExprGen.NotAutoSimplify(aIf.Condition), b, null),
-                //                a);
-                //        }
-                //    }
-                //}
                 return null;
             })
             .ToArray();

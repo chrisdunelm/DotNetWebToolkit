@@ -19,10 +19,19 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             private Dictionary<Expr, Expr> phiMap;
 
             public bool Equals(Expr x, Expr y) {
+                if (x.ExprType == Expr.NodeType.VarPhi) {
+                    x = ((ExprVarPhi)x).Exprs.First();
+                }
+                if (y.ExprType == Expr.NodeType.VarPhi) {
+                    y = ((ExprVarPhi)y).Exprs.First();
+                }
                 return this.phiMap.ValueOrDefault(x, x) == this.phiMap.ValueOrDefault(y, y);
             }
 
             public int GetHashCode(Expr obj) {
+                if (obj.ExprType == Expr.NodeType.VarPhi) {
+                    obj = ((ExprVarPhi)obj).Exprs.First();
+                }
                 return this.phiMap.ValueOrDefault(obj, obj).GetHashCode();
             }
         }

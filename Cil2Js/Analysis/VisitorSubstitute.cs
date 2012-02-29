@@ -26,7 +26,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     var newCont = new StmtContinuation(s.Ctx, ((StmtContinuation)s.To).To, false);
                     return this.Visit(newCont);
                 }
-                var count = VisitorCounter.GetCount(s.To, this.root);
+                var count = VisitorContToCounter.GetCount(s.To, this.root);
                 if (count == 1) {
                     return this.Visit(s.To);
                 }

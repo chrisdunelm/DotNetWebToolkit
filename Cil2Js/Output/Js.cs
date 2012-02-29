@@ -311,7 +311,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var clusters = methodAsts.Values.SelectMany(x => VisitorJsPhiClusters.V(x).Select(y => new ExprVarCluster(y))).ToArray();
             var varToCluster = clusters.SelectMany(x => x.Vars.Select(y => new { cluster = x, var = y })).ToDictionary(x => x.var, x => x.cluster);
             var varsWithCount = methodAsts.Values.Select(x => {
-                var methodVars = VisitorGetVars.V(x);
+                var methodVars = VisitorFindVars.V(x);
                 // Parameters need one extra count, as they appear in the method declaration
                 methodVars = methodVars.Concat(methodVars.Where(y => y.ExprType == Expr.NodeType.VarParameter).Distinct());
                 var ret = methodVars.Select(y => varToCluster.ValueOrDefault(y) ?? y)

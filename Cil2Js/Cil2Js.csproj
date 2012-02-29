@@ -81,8 +81,9 @@
     <Compile Include="Analysis\StmtContinuation.cs" />
     <Compile Include="Analysis\TypeCombiner.cs" />
     <Compile Include="Analysis\VisitorBooleanSimplification.cs" />
-    <Compile Include="Analysis\VisitorCounter.cs" />
+    <Compile Include="Analysis\VisitorContToCounter.cs" />
     <Compile Include="Analysis\VisitorConvertCilToSsa.cs" />
+    <Compile Include="Analysis\VisitorCounter.cs" />
     <Compile Include="Analysis\VisitorDerecurse.cs" />
     <Compile Include="Analysis\VisitorDoLoopSimplification.cs" />
     <Compile Include="Analysis\VisitorEmptyBlockRemoval.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Analysis\VisitorFindContinuations.cs" />
     <Compile Include="Analysis\VisitorFindDuplicateStmts.cs" />
     <Compile Include="Analysis\VisitorFindSpecials.cs" />
+    <Compile Include="Analysis\VisitorFindVars.cs" />
     <Compile Include="Analysis\VisitorIfDistribution.cs" />
     <Compile Include="Analysis\VisitorIfReorder.cs" />
     <Compile Include="Analysis\VisitorIfSimplification.cs" />
@@ -102,7 +104,7 @@
     <Compile Include="Analysis\VisitorRemoveCasts.cs" />
     <Compile Include="Analysis\VisitorRemoveFinalReturn.cs" />
     <Compile Include="Analysis\VisitorReplace.cs" />
-    <Compile Include="Analysis\VisitorSsaSimplifier.cs" />
+    <Compile Include="Analysis\VisitorSsaCopyPropagation.cs" />
     <Compile Include="Analysis\VisitorSubstitute.cs" />
     <Compile Include="Analysis\VisitorSwitchSequencing.cs" />
     <Compile Include="Analysis\VisitorTryCatchFinallySequencing.cs" />
@@ -226,7 +228,7 @@
     <Compile Include="Output\VisitorFindRequiredTypes.cs" />
     <Compile Include="Output\VisitorFindNewArrays.cs" />
     <Compile Include="Output\VisitorFindStaticConstructors.cs" />
-    <Compile Include="Output\VisitorGetVars.cs" />
+    <Compile Include="Output\VisitorFindVars.cs" />
     <Compile Include="Output\VisitorJsPhiClusters.cs" />
     <Compile Include="Output\VisitorJsResolve64Bit.cs" />
     <Compile Include="Output\VisitorJsResolveDelegates.cs" />
