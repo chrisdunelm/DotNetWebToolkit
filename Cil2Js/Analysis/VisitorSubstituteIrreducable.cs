@@ -13,13 +13,23 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var ctx = ast.Ctx;
             var blockInfo = FindSuitableBlocks.GetInfo(ast);
             var bestBlock = blockInfo
-                .Where(x => !x.Value.containsLeaveProtectedRegion && x.Value.numConts > 0)
-                .OrderBy(x => x.Value.numConts)
+                .Where(x => !x.Value.containsLeaveProtectedRegion && x.Value.numConts <= 1)
+                .OrderBy(x => x.Value.numConts == 0 ? 1000 : x.Value.numConts)
                 .ThenBy(x => x.Value.numICodes)
-                .First();
-            if (bestBlock.Value.numConts != 1) {
+                .FirstOrDefault();
+            if (bestBlock.Key == null) {
+                return ast;
+            }
+            if (bestBlock.Value.numConts > 1) {
                 // Best block must have just one continuation
                 return ast;
+            }
+            Stmt addContTo = null;
+            if (bestBlock.Value.numConts == 0) {
+                addContTo = (Stmt)blockInfo.FirstOrDefault(x => x.Value.numConts == 0 && x.Key != bestBlock.Key).Key;
+                if (addContTo == null) {
+                    return ast;
+                }
             }
             var blockAst = (Stmt)bestBlock.Key;
             if (blockAst.StmtType != Stmt.NodeType.Block) {
@@ -28,18 +38,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
             var stmtBlock = (StmtBlock)blockAst;
             var stmts = stmtBlock.Statements.ToArray();
-            if (stmts.Last().StmtType != Stmt.NodeType.Continuation) {
-                throw new InvalidOperationException("Last stmt must be continuation");
-            }
-            var cont = (StmtContinuation)stmts.Last();
+            var cont = bestBlock.Value.numConts == 0 ? new StmtContinuation(ctx, addContTo, false) : (StmtContinuation)stmts.Last();
 
             var ifSkipContentPhi = new ExprVarPhi(ctx);
             var ifSkipInitialVar = ctx.Local(ctx.Boolean);
             var ifSkipContentVar = ctx.Local(ctx.Boolean);
-            var ifSkipContentPhiExprs = new List<Expr>{ifSkipInitialVar,ifSkipContentVar};
+            var ifSkipContentPhiExprs = new List<Expr> { ifSkipInitialVar, ifSkipContentVar };
             var ifSkipReset = new StmtAssignment(ctx, ifSkipContentVar, ctx.Literal(false));
 
-            var inIfBlock = new StmtBlock(ctx, stmts.Take(stmts.Length - 1));
+            var inIfBlock = new StmtBlock(ctx, stmts.Take(stmts.Length - (bestBlock.Value.numConts == 0 ? 0 : 1)));
             var ifBlock = new StmtIf(ctx, ctx.ExprGen.Not(ifSkipContentPhi), inIfBlock, null);
             var newBlock = new StmtBlock(ctx, ifBlock, ifSkipReset, cont);
             ast = VisitorReplace.V(ast, blockAst, newBlock);
@@ -65,11 +72,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             // TODO: Shouldn't be required, but definite-assignment doesn't quite work properly, so is required
             var initalSkipVarAssignment = new StmtAssignment(ctx, ifSkipInitialVar, ctx.Literal(false));
             var newAst = new StmtBlock(ctx, initalSkipVarAssignment, (Stmt)ast);
-            
+
             return newAst;
         }
 
-        class BlockInfo {
+        public class BlockInfo {
             public int numICodes;
             public int numConts;
             public bool containsLeaveProtectedRegion;
@@ -78,7 +85,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
         }
 
-        class FindSuitableBlocks : AstRecursiveVisitor {
+        public class FindSuitableBlocks : AstRecursiveVisitor {
 
             public static Dictionary<ICode, BlockInfo> GetInfo(ICode ast) {
                 var v = new FindSuitableBlocks();
