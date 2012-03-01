@@ -21,7 +21,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         protected override ICode VisitStmt(Stmt s) {
             var r = this.replaces.ValueOrDefault(s);
             if (r != null) {
-                this.map.Add(s, r);
                 return r;
             }
             return base.VisitStmt(s);
