@@ -488,7 +488,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], unmappedType.Namespace);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], unmappedType.IsValueType ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], unmappedType.IsArray ? "true" : "false");
-                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], unmappedType.IsArray ? typeNames.ValueOrDefault(unmappedType.GetElementType(), "null") : "null");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], unmappedType.IsArray ? typeNames.ValueOrDefault(((ArrayType)unmappedType).ElementType, "null") : "null");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
                 var assignableTo = typesSeenOrdered.Where(x => unmappedType.IsAssignableTo(x)).Where(x => !x.IsSame(unmappedType)).ToArray();
                 js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
@@ -548,6 +548,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
                 js.Append(typeNames[typeRuntimeType]);
                 js.Append(";");
+            }
+            // Add comments descibing each interface
+            foreach (var iFace in interfaceNames) {
+                jsNewLine();
+                js.AppendFormat("// {0} = {1}", iFace.Value, iFace.Key.FullName);
             }
             // Add map of DOM types
             if (domTypes.Any()) {
