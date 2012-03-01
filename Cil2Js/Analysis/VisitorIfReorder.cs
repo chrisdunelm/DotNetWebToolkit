@@ -168,7 +168,11 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     return new StmtBlock(s.Ctx, stmts);
                 }
             }
-            return s;
+            if (!statements.SequenceEqual(s.Statements)) {
+                return new StmtBlock(ctx, statements);
+            } else {
+                return s;
+            }
         }
 
     }
