@@ -65,7 +65,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             // Check array element-type
             if (b.IsArray) {
-                var bElType = b.GetElementType();
+                var bElType = ((ArrayType)b).ElementType;
                 if (bElType.IsSame(a)) {
                     return true;
                 }
@@ -212,7 +212,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             // Rule 7
             if (from.IsArray && to.IsArray) {
-                return from.GetElementType().IsAssignableTo(to.GetElementType());
+                return ((ArrayType)from).ElementType.IsAssignableTo(((ArrayType)to).ElementType);
             }
             // Rule 3
             var baseFrom = from.GetBaseType();

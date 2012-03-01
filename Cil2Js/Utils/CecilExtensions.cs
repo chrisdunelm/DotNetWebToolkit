@@ -422,7 +422,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             if (type.IsArray) {
                 // Special processing for arrays - they are not normal - add all generic interface methods
                 var module = type.Module;
-                var elType = type.GetElementType();
+                var elType = ((ArrayType)type).ElementType;
                 var arrayMethodsType = module.Import(typeof(GenericArrayMethods<>)).MakeGeneric(elType);
                 var ms = arrayMethodsType.EnumResolvedMethods().ToArray();
                 return ms;
@@ -495,7 +495,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static IEnumerable<TypeReference> EnumAllInterfaces(this TypeReference type) {
             if (type.IsArray) {
                 // Special processing for arrays - they are not normal
-                var elType = type.GetElementType();
+                var elType = ((ArrayType)type).ElementType;
                 var module = type.Module;
                 var nonGenericIFaces = module.Import(typeof(Array)).EnumAllInterfaces();
                 var iListGeneric = module.Import(typeof(IList<>)).MakeGeneric(elType);

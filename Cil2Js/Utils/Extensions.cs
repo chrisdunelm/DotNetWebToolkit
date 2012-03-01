@@ -203,5 +203,18 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e is ExprVar;
         }
 
+        public static Dictionary<TKey, TValue> Merge<TKey, TValue>(this Dictionary<TKey, TValue> a, Dictionary<TKey, TValue> b, Func<TValue,TValue,TValue> merge) {
+            var ret = new Dictionary<TKey, TValue>(a);
+            foreach (var x in b) {
+                TValue existing;
+                if (ret.TryGetValue(x.Key, out existing)) {
+                    ret[x.Key] = merge(x.Value, existing);
+                } else {
+                    ret.Add(x.Key, x.Value);
+                }
+            }
+            return ret;
+        }
+
     }
 }
