@@ -51,7 +51,6 @@ namespace DotNetWebToolkit.Cil2Js {
             print(ast, null);
             ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
             // Reduce to AST with no continuations
-            bool lastChance = false;
             for (int i = 0; ; i++) {
                 var astOrg = ast;
                 ast = doStep(s => (Stmt)VisitorSubstitute.V(s), ast, "VisitorSubstitute");
@@ -62,26 +61,30 @@ namespace DotNetWebToolkit.Cil2Js {
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
-                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, lastChance), ast, "VisitorSwitchSequencing");
+                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, false), ast, "VisitorSwitchSequencing");
                 if (ast == astOrg) {
-                    if (VisitorFindContinuations.Any(ast)) {
-                        if (!lastChance) {
-                            lastChance = true;
-                        } else {
-                            throw new InvalidOperationException("Error: Cannot reduce IL to AST with no continuations");
-                        }
-                    } else {
+                    if (!VisitorFindContinuations.Any(ast)) {
                         break;
+                    } else {
+                        ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, true), ast, "VisitorSwitchSequencing-LastChance");
+                        if (ast != astOrg) {
+                            continue;
+                        }
+                        ast = doStep(s => (Stmt)VisitorSubstituteIrreducable.V(s), ast, "VisitorSubstituteIrreducable");
+                        if (ast != astOrg) {
+                            continue;
+                        }
+                        throw new InvalidOperationException("Error: Cannot reduce IL to AST with no continuations");
                     }
-                } else {
-                    lastChance = false;
                 }
                 if (i > 20) {
                     // After 20 iterations even the most complex method should be sorted out
                     throw new InvalidOperationException("Error: Stuck in loop trying to reduce AST");
                 }
             }
+            // PhiSimplifier must be done before DefiniteAssignment
             ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
+            // DefiniteAssignment must be done before SsaCopyPropagation
             ast = doStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment");
             // Simplify AST
             for (int i = 0; ; i++) {
@@ -90,7 +93,7 @@ namespace DotNetWebToolkit.Cil2Js {
                 ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
                 ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
                 ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
-                ast = doStep(s => (Stmt)VisitorSsaCopyPropagation.V(s), ast, "VisitorSsaSimplifier");
+                ast = doStep(s => (Stmt)VisitorSsaCopyPropagation.V(s), ast, "VisitorSsaCopyPropagation");
                 ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
                 ast = doStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier");
                 ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
