@@ -87,6 +87,7 @@
     <Compile Include="Analysis\VisitorCounter.cs" />
     <Compile Include="Analysis\VisitorDerecurse.cs" />
     <Compile Include="Analysis\VisitorDoLoopSimplification.cs" />
+    <Compile Include="Analysis\VisitorDuplicateCode.cs" />
     <Compile Include="Analysis\VisitorEmptyBlockRemoval.cs" />
     <Compile Include="Analysis\VisitorExpressionSimplifier.cs" />
     <Compile Include="Analysis\VisitorFindCalls.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Analysis\VisitorRemoveCasts.cs" />
     <Compile Include="Analysis\VisitorRemoveFinalReturn.cs" />
     <Compile Include="Analysis\VisitorReplace.cs" />
+    <Compile Include="Analysis\VisitorReplaceExprUse.cs" />
     <Compile Include="Analysis\VisitorSsaCopyPropagation.cs" />
     <Compile Include="Analysis\VisitorSubstitute.cs" />
     <Compile Include="Analysis\VisitorSubstituteIrreducable.cs" />

@@ -74,6 +74,10 @@ namespace DotNetWebToolkit.Cil2Js {
                         if (ast != astOrg) {
                             continue;
                         }
+                        ast = doStep(s => (Stmt)VisitorDuplicateCode.V(s), ast, "VisitorDuplicateCode");
+                        if (ast != astOrg) {
+                            continue;
+                        }
                         throw new InvalidOperationException("Error: Cannot reduce IL to AST with no continuations");
                     }
                 }
