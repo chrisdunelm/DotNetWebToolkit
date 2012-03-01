@@ -11,7 +11,8 @@
     <RootNamespace>DotNetWebToolkit.Cil2Js</RootNamespace>
     <AssemblyName>DotNetWebToolkit.Cil2Js</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -90,6 +91,7 @@
     <Compile Include="Analysis\VisitorExpressionSimplifier.cs" />
     <Compile Include="Analysis\VisitorFindCalls.cs" />
     <Compile Include="Analysis\VisitorFindContinuations.cs" />
+    <Compile Include="Analysis\VisitorFindContinuationsRecursive.cs" />
     <Compile Include="Analysis\VisitorFindDuplicateStmts.cs" />
     <Compile Include="Analysis\VisitorFindSpecials.cs" />
     <Compile Include="Analysis\VisitorFindVars.cs" />
@@ -106,6 +108,7 @@
     <Compile Include="Analysis\VisitorReplace.cs" />
     <Compile Include="Analysis\VisitorSsaCopyPropagation.cs" />
     <Compile Include="Analysis\VisitorSubstitute.cs" />
+    <Compile Include="Analysis\VisitorSubstituteIrreducable.cs" />
     <Compile Include="Analysis\VisitorSwitchSequencing.cs" />
     <Compile Include="Analysis\VisitorTryCatchFinallySequencing.cs" />
     <Compile Include="Analysis\VisitorTypeCorrector.cs" />

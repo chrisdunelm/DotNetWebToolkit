@@ -83,8 +83,8 @@ namespace Test {
             // TestThrowReturnVar
             // TestLoops.Test1Do
 
-            var t = new TestSwitch() { Verbose = true };
-            t.TestWithFlag();
+            var t = new TestLinq() { Verbose = true };
+            t.TestWhereIndex();
 
             return;
 
