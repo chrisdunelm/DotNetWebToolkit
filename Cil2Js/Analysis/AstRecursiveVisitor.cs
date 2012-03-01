@@ -8,6 +8,9 @@ using DotNetWebToolkit.Cil2Js.Utils;
 namespace DotNetWebToolkit.Cil2Js.Analysis {
     public abstract class AstRecursiveVisitor : AstVisitor {
 
+        public AstRecursiveVisitor() { }
+        public AstRecursiveVisitor(bool throwOnNoOverride) : base(throwOnNoOverride) { }
+
         private bool first = true;
         private List<StmtContinuation> continuations = new List<StmtContinuation>();
         private Queue<ICode> todo = new Queue<ICode>();
