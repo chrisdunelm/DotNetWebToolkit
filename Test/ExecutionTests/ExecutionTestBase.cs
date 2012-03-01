@@ -225,10 +225,6 @@ namespace Test.ExecutionTests {
 
             var usingNamespace = NamespaceSetup.Chrome != null;
             var chrome = usingNamespace ? NamespaceSetup.Chrome : new ChromeDriver();
-            //using (var chrome = NamespaceSetup.ChromeService != null ?
-            //    //new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
-            //    NamespaceSetup.Chrome:
-            //    new ChromeDriver()) {
             try {
                 for (int i = 0; i < args.Length; i++) {
                     var arg = args[i];
@@ -273,13 +269,11 @@ namespace Test.ExecutionTests {
                     Assert.That(jsResult, expected);
                 }
             } finally {
-                //chrome.Quit();
                 if (!usingNamespace) {
                     chrome.Quit();
                     chrome.Dispose();
                 }
             }
-            // }
 
             Console.WriteLine("Test-- {0}", testMethod);
         }
