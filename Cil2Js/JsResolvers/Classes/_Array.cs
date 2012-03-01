@@ -35,7 +35,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var array = ctx.MethodParameter(0);
             var index = ctx.MethodParameter(1).Named("index");
             var length = ctx.MethodParameter(2).Named("length");
-            var arrayElementType = array.Type.GetElementType();
+            var arrayElementType = ((ArrayType)array.Type).ElementType;
             var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
             var value = new ExprDefaultValue(ctx, arrayElementType).Named("value");
             var js = "for (i=0; i<length; i++) a[index+i]=value;";

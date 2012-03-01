@@ -17,7 +17,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var array = (ExprVar)call.Args.ElementAt(0);
             var initExpr = (ExprRuntimeHandle)call.Args.ElementAt(1);
             var initData = ((FieldDefinition)initExpr.Member).InitialValue;
-            var arrayElType = array.Type.GetElementType();
+            var arrayElType = ((ArrayType)array.Type).ElementType;
 
             int inc;
             Func<int, object> getValue;
