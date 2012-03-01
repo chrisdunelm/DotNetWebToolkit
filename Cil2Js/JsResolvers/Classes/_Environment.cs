@@ -30,5 +30,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return expr;
         }
 
+        [Js]
+        public static Expr get_CurrentManagedThreadId(ICall call) {
+            return call.Ctx.Literal(0);
+        }
+
     }
 }
