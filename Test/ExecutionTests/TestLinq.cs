@@ -41,6 +41,50 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region First
+
+        [Test]
+        public void TestFirstOk() {
+            Func<int, int> f = a => {
+                var array = new int[] { a };
+                return array.First();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestFirstEmpty() {
+            Func<int> f = () => {
+                var array = new int[0];
+                try {
+                    return array.First();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestFirstOrDefaultOk() {
+            Func<int, int> f = a => {
+                var array = new int[] { a };
+                return array.FirstOrDefault();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestFirstOrDefaultEmpty() {
+            Func<int, int> f = a => {
+                var array = new int[0];
+                return array.FirstOrDefault();
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Select
 
         [Test]
@@ -57,6 +101,54 @@ namespace Test.ExecutionTests {
             Func<int, int, int, int, int> f = (a, b, c, d) => {
                 var array = new[] { a, b, c, d };
                 return array.Select((x, i) => x * i).Sum();
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
+        #region SelectMany
+
+        [Test]
+        public void TestSelectMany() {
+            Func<int, int, int, int, int> f = (a, b, c, d) => {
+                var a1 = new int[] { a, b };
+                var a2 = new int[] { c, d };
+                var array = new[] { a1, a2 };
+                return array.SelectMany(x => x).Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSelectManyIndex() {
+            Func<int, int, int, int, int> f = (a, b, c, d) => {
+                var a1 = new int[] { a, b };
+                var a2 = new int[] { c, d };
+                var array = new[] { a1, a2 };
+                return array.SelectMany((x, i) => x.Select(y => y * (i + 1))).Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSelectManyCollection() {
+            Func<int, int, int, int, int> f = (a, b, c, d) => {
+                var a1 = new int[] { a, b };
+                var a2 = new int[] { c, d };
+                var array = new[] { a1, a2 };
+                return array.SelectMany(x => x, (s, x) => s[0] * x).Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSelectManyIndexCollection() {
+            Func<int, int, int, int, int> f = (a, b, c, d) => {
+                var a1 = new int[] { a, b };
+                var a2 = new int[] { c, d };
+                var array = new[] { a1, a2 };
+                return array.SelectMany((x, i) => x.Select(y => y * (i + 1)), (s, x) => s[0] * x).Sum();
             };
             this.Test(f);
         }
@@ -127,6 +219,46 @@ namespace Test.ExecutionTests {
                 var e = (IEnumerable<int>)new List<int> { a, b };
                 var list = e.ToList();
                 return list[0] + list[1] * 100;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestToDictionary() {
+            Func<int, int> f = a => {
+                var array = new[] { a };
+                var d = array.ToDictionary(x => x);
+                return d[a];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestToDictionaryComparer() {
+            Func<int, int> f = a => {
+                var array = new[] { a };
+                var d = array.ToDictionary(x => x, EqualityComparer<int>.Default);
+                return d[a];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestToDictionaryElementSelector() {
+            Func<int, string> f = a => {
+                var array = new[] { a };
+                var d = array.ToDictionary(x => x, x => x.ToString());
+                return d[a];
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestToDictionaryElementSelectorComparer() {
+            Func<int, string> f = a => {
+                var array = new[] { a };
+                var d = array.ToDictionary(x => x, x => x.ToString(), EqualityComparer<int>.Default);
+                return d[a];
             };
             this.Test(f);
         }
