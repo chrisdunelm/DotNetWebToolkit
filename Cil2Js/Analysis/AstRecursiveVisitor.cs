@@ -11,7 +11,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private bool first = true;
         private List<StmtContinuation> continuations = new List<StmtContinuation>();
         private Queue<ICode> todo = new Queue<ICode>();
-        protected Dictionary<ICode, ICode> map = new Dictionary<ICode, ICode>();
+        private Dictionary<ICode, ICode> map = new Dictionary<ICode, ICode>();
         private HashSet<ICode> seen = new HashSet<ICode>();
 
         protected virtual ICode TopLevel(ICode c) {
@@ -22,6 +22,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 var node = todo.Dequeue();
                 this.BlockStart(node);
                 var transformed = this.Visit(node);
+                this.BlockEnd(node, transformed);
                 if (ret == null) {
                     ret = transformed;
                 }
@@ -43,6 +44,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected virtual void BlockStart(ICode block) { }
+        protected virtual void BlockEnd(ICode originalBlock, ICode transformedBlock) { }
 
         protected override ICode VisitContinuation(StmtContinuation s) {
             this.continuations.Add(s);
@@ -57,16 +59,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 this.first = false;
                 return this.TopLevel(c);
             } else {
-                return base.Visit(c);
+                var ret = base.Visit(c);
+                if (c != ret) {
+                    if (c.CodeType == CodeType.Statement) {
+                        this.map.Add(c, ret);
+                    }
+                }
+                return ret;
             }
-        }
-
-        protected override ICode VisitStmt(Stmt s) {
-            var ret = base.VisitStmt(s);
-            if (s != ret) {
-                this.map.Add(s, ret);
-            }
-            return ret;
         }
 
     }
