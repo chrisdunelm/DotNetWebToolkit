@@ -592,14 +592,19 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static Type LoadType(this TypeReference tRef) {
-            var name = tRef.Resolve().AssemblyQualifiedName();
-            var type = Type.GetType(name);
-            if (tRef.IsGenericInstance) {
-                var tRefGen = (GenericInstanceType)tRef;
-                var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
-                type = type.MakeGenericType(tArgs);
+            // TODO: Must rework to remove exception
+            try {
+                var name = tRef.Resolve().AssemblyQualifiedName();
+                var type = Type.GetType(name);
+                if (tRef.IsGenericInstance) {
+                    var tRefGen = (GenericInstanceType)tRef;
+                    var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
+                    type = type.MakeGenericType(tArgs);
+                }
+                return type;
+            } catch (TypeLoadException) {
+                return null;
             }
-            return type;
         }
 
         public static TypeReference GetGenericArgument(this MethodReference mRef, int index) {

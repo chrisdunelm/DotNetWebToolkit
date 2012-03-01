@@ -216,7 +216,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
-            throw new NotImplementedException();
+            return this.Enum();
         }
 
         public int Add(object value) {

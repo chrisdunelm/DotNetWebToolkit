@@ -206,7 +206,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Non-generic not quite supported yet")]
+        [Test]
         public void TestAsEnumerable() {
             Func<int, int, int> f = (a, b) => {
                 var list = new List<int> { a, b };

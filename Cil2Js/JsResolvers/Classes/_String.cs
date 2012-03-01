@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     [Js("ToString", typeof(string))]
     [Js("Concat", typeof(string), typeof(object), typeof(object))]
     [Js("Concat", typeof(string), typeof(object), typeof(object), typeof(object))]
-    class _String {
+    class _String : IEnumerable<char>, IEnumerable {
 
         [Js(typeof(bool), typeof(object))]
         [Js(typeof(bool), typeof(string))]
@@ -110,6 +111,45 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var right = call.Args.ElementAt(1);
             var expr = call.Ctx.ExprGen.NotEqual(left, right);
             return expr;
+        }
+
+        class CharEnum : IEnumerator<char>, IEnumerator {
+
+            public CharEnum(string s) {
+                this.s = s;
+                this.i = -1;
+            }
+
+            private string s;
+            private int i;
+
+            public char Current {
+                get { return this.s[this.i]; }
+            }
+
+            public void Dispose() {
+            }
+
+            object System.Collections.IEnumerator.Current {
+                get { return this.s[this.i]; }
+            }
+
+            public bool MoveNext() {
+                this.i++;
+                return this.i < this.s.Length;
+            }
+
+            public void Reset() {
+                this.i = -1;
+            }
+        }
+
+        IEnumerator<char> IEnumerable<char>.GetEnumerator() {
+            return new CharEnum((string)(object)this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return new CharEnum((string)(object)this);
         }
 
     }

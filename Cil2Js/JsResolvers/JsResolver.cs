@@ -297,6 +297,33 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return null;
         }
 
+        public static MethodReference ResolveMethod(MethodReference mRef) {
+            var tRef = mRef.DeclaringType;
+            var type = tRef.LoadType();
+            if (type == null) {
+                return mRef;
+            }
+            var altType = map.ValueOrDefault(type);
+            if (altType == null) {
+                return mRef;
+            }
+            if (altType.IsGenericTypeDefinition) {
+                var args = ((GenericInstanceType)tRef).GenericArguments.Select(x => x.LoadType()).ToArray();
+                altType = altType.MakeGenericType(args);
+            }
+            var altTRef = thisModule.Import(altType);
+            var mappedMethod = altTRef.EnumResolvedMethods().FirstOrDefault(x => {
+                var xResolved = x.FullResolve(tRef, mRef, true);
+                var res = xResolved.Resolve();
+                var visible = res.IsPublic || (res.Name.Contains(".") && !res.IsConstructor); // to handle explicit interface methods
+                return visible && res.GetCustomAttribute<JsRedirectAttribute>(true) == null && xResolved.MatchMethodOnly(mRef);
+            });
+            if (mappedMethod == null) {
+                return mRef;
+            }
+            return mappedMethod;
+        }
+
         public static TypeReference ReverseTypeMap(TypeReference tRef) {
             if (tRef.IsNested) {
                 return tRef;

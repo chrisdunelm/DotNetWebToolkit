@@ -165,6 +165,21 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        private static T Force<T>(T o) { return o; }
+
+        [Test]
+        public void TestAsCharEnumerable() {
+            Func<string, string> f = a => {
+                string ret = "";
+                var z = Force<IEnumerable<char>>(a);
+                foreach (var c in z) {
+                    ret = c.ToString() + ret;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

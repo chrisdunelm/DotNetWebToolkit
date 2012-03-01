@@ -211,7 +211,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
                         let methods = type.EnumResolvedMethods(mVRoots).ToArray()
-                        from method in methods
+                        from method in methods.Select(x => JsResolver.ResolveMethod(x))
                         let methodDef = method.Resolve()
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
                         where !methodsSeen.ContainsKey(method)
@@ -234,7 +234,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         where typeAndBases.Any(x => x.DoesImplement(iFaceType))
                         let methods = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iFace.Value)).ToArray()
-                        from method in methods
+                        from method in methods.Select(x => JsResolver.ResolveMethod(x))
                         where !methodsSeen.ContainsKey(method)
                         let methodDef = method.Resolve()
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
@@ -517,9 +517,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             var qInterfaceTableNames =
                                 from iMethod in iFace.Value
                                 let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
+                                let tM2 = JsResolver.ResolveMethod(tMethod)
                                 let idx = interfaceCallIndices[iMethod]
                                 orderby idx
-                                let methodName = methodNames[tMethod]
+                                let methodName = methodNames[tM2]
                                 select methodName;
                             var interfaceTableNames = qInterfaceTableNames.ToArray();
                             js.Append(string.Join(", ", interfaceTableNames));

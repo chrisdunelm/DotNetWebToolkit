@@ -272,7 +272,7 @@ copyPartCall;
             get { throw new NotImplementedException(); }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
+        public IEnumerator GetEnumerator() {
             throw new NotImplementedException();
         }
     }

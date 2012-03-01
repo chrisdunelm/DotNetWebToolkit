@@ -83,8 +83,8 @@ namespace Test {
             // TestThrowReturnVar
             // TestLoops.Test1Do
 
-            var t = new TestLinq() { Verbose = true };
-            t.TestWhereIndex();
+            var t = new TestList() { Verbose = true };
+            t.TestAsEnumerable();
 
             return;
 
