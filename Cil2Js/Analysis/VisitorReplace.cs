@@ -12,18 +12,25 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return v.Visit(ast);
         }
 
-        public VisitorReplace(ICode find, ICode replace) {
+        private VisitorReplace(ICode find, ICode replace) {
             this.find = find;
             this.replace = replace;
         }
 
         private ICode find, replace;
 
-        public override ICode Visit(ICode c) {
-            if (c == this.find) {
+        protected override ICode VisitStmt(Stmt s) {
+            if (s == this.find) {
                 return this.replace;
             }
-            return base.Visit(c);
+            return base.VisitStmt(s);
+        }
+
+        protected override ICode VisitExpr(Expr e) {
+            if (e == this.find) {
+                return this.replace;
+            }
+            return base.VisitExpr(e);
         }
 
     }
