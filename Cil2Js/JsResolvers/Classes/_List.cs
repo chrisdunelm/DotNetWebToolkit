@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
 using DotNetWebToolkit.Cil2Js.Utils;
@@ -115,9 +116,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public static Expr SortComparer(ICall call) {
             var ctx = call.Ctx;
             var t = call.CallMethod.DeclaringType.GetGenericArgument(0);
+            var tComparer = call.CallMethod.Parameters.First().ParameterType.FullResolve(call.CallMethod);
             var mGenSort = ((Action<T[], IComparer<T>>)Array.Sort<T>).Method.GetGenericMethodDefinition();
             var mSort = ctx.Module.Import(mGenSort).MakeGeneric(t);
-            return new ExprCall(ctx, mSort, null, GetNamedArrayField(call).Expr, call.Arg(0));
+            var comparer = call.Arg(0, "comparer");
+            var mDefaultComparerNet = typeof(Comparer<T>).GetProperty("Default").GetMethod;
+            var mDefaultComparer = ctx.Module.Import(mDefaultComparerNet);
+            var defaultComparerCall = new ExprCall(ctx, mDefaultComparer, null).Named("defaultComparerCall");
+            var ensureComparer = new ExprJsExplicit(ctx, "(comparer || defaultComparerCall)", tComparer, comparer, defaultComparerCall);
+            return new ExprCall(ctx, mSort, null, GetNamedArrayField(call).Expr, ensureComparer);
         }
 
         [Js("BinarySearch", typeof(int), typeof(GenTypeParam0))]
@@ -237,12 +244,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new NotImplementedException();
         }
 
-        private IEnumerator<T> Enum() {
-            for (int i = 0; i < this.array.Length; i++) {
-                yield return this.array[i];
-            }
-        }
-
+        [JsDetail(Signature = new[] { typeof(List<GenTypeParam0>.Enumerator) })]
         public Enumerator GetEnumerator() {
             return new Enumerator(this);
         }
