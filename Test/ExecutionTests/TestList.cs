@@ -160,6 +160,16 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestSortNullComparer() {
+            Func<int, int, int, bool> f = (a, b, c) => {
+                var list = new List<int> { a, b, c };
+                list.Sort((IComparer<int>)null);
+                return list[0] <= list[1] && list[1] <= list[2];
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestBinarySearch() {
             Func<int, int, int, int> f = (a, b, c) => {
                 var list = new List<int> { a, b, c };

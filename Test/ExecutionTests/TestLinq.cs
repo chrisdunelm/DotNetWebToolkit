@@ -107,6 +107,30 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region OrderBy, OrderByDescending, ThenBy, ThenByDescending
+
+        [Test]
+        public void TestOrderBy() {
+            Func<bool> f = () => {
+                var a = new int[] { 3, 1, 2 };
+                var o = a.OrderBy(x => x).ToArray();
+                return o[0] == 1 && o[1] == 2 && o[2] == 3;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestOrderByDescending() {
+            Func<bool> f = () => {
+                var a = new int[] { 3, 1, 2 };
+                var o = a.OrderByDescending(x => x).ToArray();
+                return o[0] == 3 && o[1] == 2 && o[2] == 1;
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Select
 
         [Test]
