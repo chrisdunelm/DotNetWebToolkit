@@ -7,7 +7,6 @@ using DotNetWebToolkit.Cil2Js.Ast;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    [JsIncomplete]
     class _ThrowHelper {
 
         // TODO: These may not be required finally.

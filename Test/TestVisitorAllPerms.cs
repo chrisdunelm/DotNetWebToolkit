@@ -6,10 +6,11 @@ using NUnit.Framework;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Test.Utils;
 using Mono.Cecil;
+using Test.Categories;
 
 namespace Test {
 
-    [TestFixture]
+    [TestFixture, MiscTest]
     public class TestVisitorAllPerms : TestBase {
 
         [Test]

@@ -34,6 +34,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(Array), typeof(Cls._Array) },
             { typeof(List<>), typeof(Cls._List<>) },
             { typeof(Dictionary<,>), typeof(Cls._Dictionary<,>) },
+            { typeof(HashSet<>), typeof(Cls._HashSet<>) },
             { typeof(Thread), typeof(Cls._Thread) },
             { typeof(Enumerable), typeof(Cls._Enumerable) },
             { typeof(Console), typeof(Cls._Console) },

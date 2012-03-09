@@ -8,7 +8,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    [Js("get_FullName", typeof(string))]
+    //[Js("get_FullName", typeof(string))]
     class _Type {
 
         [Js]

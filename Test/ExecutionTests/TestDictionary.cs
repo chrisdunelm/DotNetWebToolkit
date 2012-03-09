@@ -76,6 +76,100 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestRemoveReinsertLarge() {
+            Func<int, int> f = a => {
+                var d = new Dictionary<int, int>();
+                int ret = 0;
+                for (int i = 0; i < 10; i++) {
+                    for (int j = 0; j < a; j++) {
+                        d.Add(j, j * 2);
+                    }
+                    for (int j = 10; j < a; j++) {
+                        d.Remove(j);
+                    }
+                    for (int j = 20; j < a; j++) {
+                        d.Add(j, j * 10);
+                    }
+                    for (int j = 0; j < a; j++) {
+                        int v;
+                        if (d.TryGetValue(j, out v)) {
+                            ret += v;
+                        }
+                        ret += (d.Remove(j) ? 100 : 101) * j;
+                    }
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLarge() {
+            Func<int, int> f = a => {
+                var d = new Dictionary<int, int>();
+                for (int i = 0; i < a; i++) {
+                    d.Add(i, i * 2);
+                }
+                int ret = 0;
+                for (int i = 0; i < a; i++) {
+                    ret += d[i];
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestEnumerator() {
+            Func<int, int, int> f = (a, b) => {
+                var d = new Dictionary<int, int> {
+                    { a, a * 2 },
+                    { b, b * 3 },
+                };
+                var ret = 0;
+                var en = d.GetEnumerator();
+                while (en.MoveNext()) {
+                    ret += en.Current.Key + en.Current.Value;
+                }
+                foreach (var e in d) {
+                    ret += e.Key + e.Value;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestKeys() {
+            Func<int, int, int> f = (a, b) => {
+                var d = new Dictionary<int, object>();
+                d.Add(a, null);
+                d.Add(b, null);
+                var ret = d.Keys.Count * 1000;
+                foreach (var k in d.Keys) {
+                    ret += k;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestValues() {
+            Func<int, int, int> f = (a, b) => {
+                var d = new Dictionary<int, int>();
+                d.Add(a, a);
+                d.Add(b, b);
+                var ret = d.Values.Count * 1000;
+                foreach (var k in d.Values) {
+                    ret += k;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

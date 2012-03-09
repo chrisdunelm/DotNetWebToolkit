@@ -5,11 +5,12 @@ using System.Text;
 using DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
 using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
     public class Ctx {
 
-        public Ctx(TypeReference tRef, MethodReference mRef) {
+        public Ctx(TypeReference tRef, MethodReference mRef, Ctx fromCtx = null) {
             this.TRef = tRef;
             this.TDef = tRef.Resolve();
             this.MRef = mRef;
@@ -17,7 +18,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.Module = mRef.Module;
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
-            this.This = this.MDef.IsStatic ? null : new ExprVarThis(this, tRef);
+            this.This = fromCtx == null ? (this.MDef.IsStatic ? null : new ExprVarThis(this, tRef)) : fromCtx.This;
             this.type = new Lazy<TypeReference>(() => this.Module.Import(typeof(Type)));
             this._int64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_Int64)));
             this._uint64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_UInt64)));
@@ -29,7 +30,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public MethodDefinition MDef { get; private set; }
 
         public ExprVarThis This { get; private set; }
-        public NamedExpr ThisNamed { get { return this.This.Named("this"); } }
+        public NamedExpr ThisNamed { get { return this.This.NullThru(x => x.Named("this")); } }
 
         public ModuleDefinition Module { get; private set; }
         public TypeSystem TypeSystem { get; private set; }
@@ -95,8 +96,24 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return this.Literal(value, this.Boolean);
         }
 
+        public NamedExpr Literal(bool value, string name) {
+            return this.Literal(value).Named(name);
+        }
+
         public ExprLiteral Literal(int value) {
             return this.Literal(value, this.Int32);
+        }
+
+        public NamedExpr Literal(int value, string name) {
+            return this.Literal(value).Named(name);
+        }
+
+        public ExprLiteral Literal(string value) {
+            return this.Literal(value, this.String);
+        }
+
+        public NamedExpr Literal(string value, string name) {
+            return this.Literal(value).Named(name);
         }
 
     }

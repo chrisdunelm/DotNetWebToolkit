@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Cil2Js.Output;
 using NUnit.Framework;
+using Test.Categories;
 
 namespace Test {
 
-    [TestFixture]
+    [TestFixture, MiscTest]
     public class TestNameGenerator {
 
         [Test]

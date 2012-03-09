@@ -70,6 +70,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region OrderBy, OrderByDescending
+
+        #endregion
+
         #region Select
 
         public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector) {
@@ -174,7 +178,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
-        #region Converters
+        #region ToArray, ToList, ToDictionary
 
         public static T[] ToArray<T>(this IEnumerable<T> source) {
             return new List<T>(source).ToArray();

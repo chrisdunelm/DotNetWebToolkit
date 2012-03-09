@@ -165,6 +165,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.FullName == "System.Delegate";
         }
 
+        public static bool IsType(this TypeReference type) {
+            return type.FullName == "System.Type";
+        }
+
         public static bool IsNullable(this TypeReference type) {
             return type.FullName.StartsWith("System.Nullable`1");
         }

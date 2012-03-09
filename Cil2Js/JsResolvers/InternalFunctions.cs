@@ -19,7 +19,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         // Although the other option requires getting default value at runtime, also not great
         [Js(typeof(CreateArrayValueTypeImpl))]
         public static T[] CreateArrayValueType<T>(int size) where T : struct {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class CreateArrayValueTypeImpl : IJsImpl {
@@ -45,7 +45,7 @@ return a;
 
         [Js(typeof(CreateArrayRefTypeImpl))]
         public static T[] CreateArrayRefType<T>(int size) where T : class {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class CreateArrayRefTypeImpl : IJsImpl {
@@ -63,7 +63,7 @@ return a;
 
         [Js(typeof(CanAssignToImpl))]
         private static bool CanAssignTo(object o, Type toType) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class CanAssignToImpl : IJsImpl {
@@ -94,7 +94,7 @@ return false;
 
         [Js(typeof(IsInstImpl))]
         public static object IsInst(object o, Type toType) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class IsInstImpl : IJsImpl {
@@ -111,7 +111,7 @@ return false;
 
         [Js(typeof(CastImpl))]
         public static object Cast(object o, Type toType) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class CastImpl : IJsImpl {
@@ -142,20 +142,22 @@ throw callCtorEx
 
         [Js(typeof(DeepCopyValueTypeImpl))]
         public static T DeepCopyValueType<T>(T o) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class DeepCopyValueTypeImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 // Recursively deep-copy a value-type
-                var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var unmappedType = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
+                var type = JsResolver.TypeMap(unmappedType) ?? unmappedType;
                 var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
                 var o = ctx.MethodParameter(0, "o");
                 var copy = string.Join(",", fields.Select((x, i) => string.Format("f{0}:v{0}", i)));
                 var fieldNames = fields.Select((x, i) => new ExprJsFieldVarName(ctx, x).Named("f" + i)).ToArray();
                 var fieldValues = fields.Select((x, i) => {
                     var fieldAccess = new ExprJsExplicit(ctx, "o.field", x.FieldType, o, new ExprJsFieldVarName(ctx, x).Named("field"));
-                    var dc = ValueTypeDeepCopyIfRequired(x.FieldType, () => fieldAccess);
+                    var fieldType = x.FieldType.FullResolve(x);
+                    var dc = ValueTypeDeepCopyIfRequired(fieldType, () => fieldAccess);
                     return (dc ?? fieldAccess).Named("v" + i);
                 }).ToArray();
                 var js = "return {" + copy + "}";
@@ -166,6 +168,9 @@ throw callCtorEx
         public static Expr ValueTypeDeepCopyIfRequired(TypeReference type, Func<Expr> fnExpr) {
             // If a value-type requires a deep-copy then return an expression that is the deep-copy.
             // Otherwise return null
+            if (type.ContainsGenericParameters()) {
+                throw new ArgumentException("Cannot have open generic parameters in type");
+            }
             if (type.IsValueType && !type.IsPrimitive) {
                 var expr = fnExpr();
                 var ctx = expr.Ctx;
@@ -181,7 +186,7 @@ throw callCtorEx
 
         [Js(typeof(UnboxAnyNullableImpl))]
         public static T? UnboxAnyNullable<T>(object obj) where T : struct {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class UnboxAnyNullableImpl : IJsImpl {
@@ -209,7 +214,7 @@ return { hasValue:true, value:obj.v };
 
         [Js(typeof(UnboxAnyNonNullableImpl))]
         public static T UnboxAnyNonNullable<T>(object obj) where T : struct {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class UnboxAnyNonNullableImpl : IJsImpl {
@@ -236,7 +241,7 @@ return obj.v;
 
         [Js(typeof(ConvImpl))]
         public static TTo Conv<TFrom, TTo>(TFrom v) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class ConvImpl : IJsImpl {
@@ -296,7 +301,7 @@ return isNeg ? negCall : r;
 
         [Js(typeof(SafeAddEventListenerImpl))]
         public static void SafeAddEventListener(object obj, string eventName, Delegate listener) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         class SafeAddEventListenerImpl : IJsImpl {

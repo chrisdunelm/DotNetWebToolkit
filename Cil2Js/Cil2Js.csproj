@@ -164,8 +164,8 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
-    <Compile Include="JsResolvers\Classes\GenericParamPlaceholders.cs" />
-    <Compile Include="JsResolvers\Classes\JsImplException.cs" />
+    <Compile Include="JsResolvers\GenericParamPlaceholders.cs" />
+    <Compile Include="JsResolvers\JsImplException.cs" />
     <Compile Include="JsResolvers\Classes\_Comparer.cs" />
     <Compile Include="JsResolvers\Classes\_Console.cs" />
     <Compile Include="JsResolvers\Classes\_Dictionary.cs" />
@@ -176,6 +176,7 @@
     <Compile Include="JsResolvers\Classes\_Double.cs" />
     <Compile Include="JsResolvers\Classes\_Environment.cs" />
     <Compile Include="JsResolvers\Classes\_EqualityComparer.cs" />
+    <Compile Include="JsResolvers\Classes\_HashSet.cs" />
     <Compile Include="JsResolvers\Classes\_Int64UInt64.cs" />
     <Compile Include="JsResolvers\Classes\_List.cs" />
     <Compile Include="JsResolvers\Classes\_Math.cs" />
@@ -198,7 +199,6 @@
     <Compile Include="JsResolvers\JsAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsResolvers\JsIncompleteAttribute.cs" />
     <Compile Include="JsResolvers\JsRedirectAttribute.cs" />
     <Compile Include="JsResolvers\JsResolverMap.cs" />
     <Compile Include="JsResolvers\JsIgnoreCastsAttribute.cs">

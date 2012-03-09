@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
-namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
-    class JsImplException : Exception {
+namespace Test.Categories {
+    class BrowserTestAttribute : CategoryAttribute {
     }
 }

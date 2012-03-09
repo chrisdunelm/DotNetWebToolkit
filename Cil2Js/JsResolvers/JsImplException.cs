@@ -5,6 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    class JsIncompleteAttribute : Attribute {
+    class JsImplException : Exception {
     }
 }

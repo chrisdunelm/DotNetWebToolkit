@@ -8,16 +8,38 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    [Js("GetHashCode", typeof(int))]
-    [Js("ToString", typeof(string))]
     class _Boolean {
 
+        [JsRedirect(typeof(bool))]
+        public override bool Equals(object obj) {
+            throw new JsImplException();
+        }
         [Js("Equals", typeof(bool), typeof(object))]
         public static Stmt Equals(Ctx ctx) {
             var other = ctx.MethodParameter(0).Named("other");
             var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicit(ctx, "return this._===other._&&this.v===other.v;", ctx.ThisNamed, other);
+            var stmt = new StmtJsExplicit(ctx, "return this._ === other._ && this.v === other.v;", ctx.ThisNamed, other);
             return stmt;
+        }
+
+        [JsRedirect(typeof(bool))]
+        public override int GetHashCode() {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Stmt GetHashCode(Ctx ctx) {
+            return new StmtJsExplicit(ctx, "return this ? 1 : 0;", ctx.ThisNamed);
+        }
+
+        [JsRedirect(typeof(bool))]
+        public override string ToString() {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Stmt ToString(Ctx ctx) {
+            var trueString = ctx.Literal(bool.TrueString, "trueString");
+            var falseString = ctx.Literal(bool.FalseString, "falseString");
+            return new StmtJsExplicit(ctx, "return this ? trueString : falseString;", ctx.ThisNamed, trueString, falseString);
         }
 
     }

@@ -4,10 +4,12 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWebToolkit.Attributes;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     sealed class _Number {
 
+        [JsDetail(Signature = new[] { typeof(string), typeof(int), typeof(string), typeof(NumberFormatInfo) })]
         public static string FormatInt32(int value, string format, _NumberFormatInfo info) {
             // TODO: Very basic, mostly broken
             if (value == int.MinValue) {
@@ -33,6 +35,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return s;
         }
 
+        [JsDetail(Signature = new[] { typeof(string), typeof(double), typeof(string), typeof(NumberFormatInfo) })]
         public static string FormatDouble(double value, string format, _NumberFormatInfo info) {
             return "double!";
         }

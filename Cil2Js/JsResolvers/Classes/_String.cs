@@ -9,9 +9,9 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    [Js("ToString", typeof(string))]
-    [Js("Concat", typeof(string), typeof(object), typeof(object))]
-    [Js("Concat", typeof(string), typeof(object), typeof(object), typeof(object))]
+    //[Js("ToString", typeof(string))]
+    //[Js("Concat", typeof(string), typeof(object), typeof(object))]
+    //[Js("Concat", typeof(string), typeof(object), typeof(object), typeof(object))]
     class _String : IEnumerable<char>, IEnumerable {
 
         [Js(typeof(bool), typeof(object))]
@@ -22,7 +22,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return stmt;
         }
 
-        [Js(typeof(int))]
+        [JsRedirect(typeof(string))]
+        public override int GetHashCode() {
+            throw new JsImplException();
+        }
+        [Js]
         public static Stmt GetHashCode(Ctx ctx) {
             var acc = new ExprVarLocal(ctx, ctx.Int32).Named("acc");
             var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
@@ -30,6 +34,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var js = "acc=5381;for(i=Math.min(this.length-1,100);i>=0;i--) acc=((acc<<5)+acc+this.charCodeAt(i))&mask; return acc;";
             var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, acc, i, mask);
             return stmt;
+        }
+
+        [JsRedirect(typeof(string))]
+        public override string ToString() {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Stmt ToString(Ctx ctx) {
+            return new StmtJsExplicit(ctx, "return this;", ctx.ThisNamed);
         }
 
         [Js(typeof(int))]
@@ -57,21 +70,24 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsResolvedMethod(ctx, ctx.String, call.Args.First(), "join", new ExprLiteral(ctx, "", ctx.String));
         }
 
-        [Js("Concat", typeof(string), typeof(object[]))]
-        public static string ConcatObjectArray(object[] args) {
-            var sb = new StringBuilder();
-            foreach (var arg in args) {
-                sb.Append(arg);
-            }
-            return sb.ToString();
+        public static string Concat(object arg0) {
+            return string.Concat(new[] { arg0 });
+        }
+
+        public static string Concat(object arg0, object arg1) {
+            return string.Concat(new[] { arg0, arg1 });
+        }
+
+        public static string Concat(object arg0, object arg1, object arg2) {
+            return string.Concat(new[] { arg0, arg1, arg2 });
         }
 
         public static string Concat(params object[] args) {
-            var sb = new _StringBuilder();
+            string ret = "";
             foreach (var arg in args) {
-                sb.Append(arg);
+                ret += (arg ?? "").ToString();
             }
-            return sb.ToString();
+            return ret;
         }
 
         [Js("IndexOf", typeof(int), typeof(char))]

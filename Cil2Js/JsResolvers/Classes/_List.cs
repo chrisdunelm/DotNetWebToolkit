@@ -13,6 +13,38 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     class _List<T> : IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable {
 
+        public struct Enumerator : IEnumerator<T>, IEnumerator, IDisposable {
+
+            internal Enumerator(_List<T> list)
+                : this() {
+                this.list = list;
+                this.ofs = -1;
+            }
+
+            private _List<T> list;
+            private int ofs;
+
+            public T Current {
+                get { return this.list[this.ofs]; }
+            }
+
+            public void Dispose() {
+            }
+
+            object IEnumerator.Current {
+                get { return this.list[this.ofs]; }
+            }
+
+            public bool MoveNext() {
+                this.ofs++;
+                return this.ofs < this.list.Count;
+            }
+
+            void IEnumerator.Reset() {
+                this.ofs = -1;
+            }
+        }
+
         public _List() {
             array = new T[0];
         }
@@ -211,12 +243,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             }
         }
 
-        public IEnumerator<T> GetEnumerator() {
-            return this.Enum();
+        public Enumerator GetEnumerator() {
+            return new Enumerator(this);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+            return new Enumerator(this);
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
-            return this.Enum();
+            return new Enumerator(this);
         }
 
         public int Add(object value) {

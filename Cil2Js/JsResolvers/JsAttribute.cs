@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class JsAttribute : Attribute {
 
         public JsAttribute() {
@@ -21,16 +21,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             this.Parameters = parameters;
         }
 
-        public JsAttribute(Type returnType, params Type[] parameters) {
+        public JsAttribute(Type returnTypeOrImplType, params Type[] parameters) {
             this.MethodName = null;
-            this.ReturnType = returnType;
+            this.ReturnType = returnTypeOrImplType;
             this.Parameters = parameters;
-        }
-
-        public JsAttribute(Type implType) {
-            this.ImplType = implType;
-            this.ReturnType = implType;
-            this.Parameters = Enumerable.Empty<Type>();
+            this.ImplType = returnTypeOrImplType;
         }
 
         public JsAttribute(string jsExplicit) {

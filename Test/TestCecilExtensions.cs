@@ -6,10 +6,11 @@ using NUnit.Framework;
 using Mono.Cecil;
 using System.Reflection;
 using DotNetWebToolkit.Cil2Js.Utils;
+using Test.Categories;
 
 namespace Test {
 
-    [TestFixture]
+    [TestFixture, MiscTest]
     public class TestCecilExtensions {
 
         class A {

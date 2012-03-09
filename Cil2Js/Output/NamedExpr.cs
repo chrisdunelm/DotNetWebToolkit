@@ -17,6 +17,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         public Expr Expr { get; private set; }
         public string Name { get; private set; }
 
+        public override string ToString() {
+            return string.Format("{{ \"{0}\": {1} }}", this.Name, this.Expr);
+        }
+
     }
 
     static class NamedExprExtensions {

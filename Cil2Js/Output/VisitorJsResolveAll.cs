@@ -20,7 +20,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitCall(ExprCall e) {
             var expr = this.HandleCall(e, (obj, args) => new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
-            var res = JsResolver.ResolveCall(expr);
+            var res = JsResolver.ResolveCallSite(expr);
             if (res != null) {
                 return this.Visit(res);
             }
@@ -51,7 +51,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitNewObj(ExprNewObj e) {
             var expr = this.HandleCall(e, (obj, args) => new ExprNewObj(e.Ctx, e.CallMethod, args));
-            var res = JsResolver.ResolveCall(expr);
+            var res = JsResolver.ResolveCallSite(expr);
             if (res == null) {
                 return expr;
             } else {
@@ -77,18 +77,34 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             // Special cases for == and != needed as an empty string is false, not true
             if (e.Op == BinaryOp.Equal) {
                 if (e.Left.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Right.Named("e"));
+                    if (e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
+                        return ctx.Literal(false); // Non-nullable Value-type can never be null
+                    } else {
+                        return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Right.Named("e"));
+                    }
                 }
                 if (e.Right.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Left.Named("e"));
+                    if (e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
+                        return ctx.Literal(false); // Non-nullable Value-type can never be null
+                    } else {
+                        return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Left.Named("e"));
+                    }
                 }
             }
             if (e.Op == BinaryOp.NotEqual || e.Op == BinaryOp.GreaterThan_Un) {
                 if (e.Left.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Right.Named("e"));
+                    if (e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
+                        return ctx.Literal(true); // Non-nullable Value-type can never be null
+                    } else {
+                        return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Right.Named("e"));
+                    }
                 }
                 if (e.Right.IsLiteralNull()) {
-                    return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Left.Named("e"));
+                    if (e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
+                        return ctx.Literal(true); // Non-nullable Value-type can never be null
+                    } else {
+                        return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Left.Named("e"));
+                    }
                 }
             }
             return base.VisitBinary(e);

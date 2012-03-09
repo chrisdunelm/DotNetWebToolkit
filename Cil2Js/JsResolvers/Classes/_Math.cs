@@ -3,24 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Math {
-        
-        // TODO: Implement mechanism to allow this to be replaced at call site.
-        // Although the (currently hypothetical) global optimiser should inline these
 
-        [Js("return Math.sqrt(a);")]
-        public static double Sqrt(double a) { throw new Exception(); }
+        [Js]
+        public static Expr Sqrt(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.sqrt", call.Args);
+        }
 
-        [Js("return Math.sin(a);")]
-        public static double Sin(double a) { throw new Exception(); }
+        [Js]
+        public static Expr Sin(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.sin", call.Args);
+        }
 
-        [Js("return Math.cos(a);")]
-        public static double Cos(double a) { throw new Exception(); }
+        [Js]
+        public static Expr Cos(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.cos", call.Args);
+        }
 
-        [Js("return Math.tan(a);")]
-        public static double Tan(double a) { throw new Exception(); }
+        [Js]
+        public static Expr Tan(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.tan", call.Args);
+        }
 
     }
 }

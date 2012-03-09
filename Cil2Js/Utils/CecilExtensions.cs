@@ -12,6 +12,7 @@ using DotNetWebToolkit.Cil2Js.JsResolvers;
 using Mono.Cecil;
 
 namespace DotNetWebToolkit.Cil2Js.Utils {
+
     public static class CecilExtensions {
 
         public static TypeReference GetBaseType(this TypeReference tRef) {
@@ -94,6 +95,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static bool MatchMethodOnly(this MethodReference a, MethodReference b) {
             var aDef = a.Resolve();
             var bDef = b.Resolve();
+            if (aDef == null || bDef == null) {
+                return false;
+            }
             if (aDef.IsStatic != bDef.IsStatic) {
                 return false;
             }
@@ -106,21 +110,21 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             if (a.GenericParameters.Count != b.GenericParameters.Count) {
                 return false;
             }
-            var aReturnType = JsResolver.ReverseTypeMap(a.ReturnType.FullResolve(a));
-            var bReturnType = JsResolver.ReverseTypeMap(b.ReturnType.FullResolve(b));
+            var aReturnType = a.ReturnType.FullResolve(a);
+            var bReturnType = b.ReturnType.FullResolve(b);
             if (!TypeExtensions.TypeRefEqComparerInstance.Equals(aReturnType, bReturnType)) {
                 return false;
             }
-            var aParamTypes = a.Parameters.Select(x => JsResolver.ReverseTypeMap(x.ParameterType.FullResolve(a))).ToArray();
-            var bParamTypes = b.Parameters.Select(x => JsResolver.ReverseTypeMap(x.ParameterType.FullResolve(b))).ToArray();
+            var aParamTypes = a.Parameters.Select(x => x.ParameterType.FullResolve(a)).ToArray();
+            var bParamTypes = b.Parameters.Select(x => x.ParameterType.FullResolve(b)).ToArray();
             if (!aParamTypes.SequenceEqual(bParamTypes, TypeExtensions.TypeRefEqComparerInstance)) {
                 return false;
             }
             if (a.IsGenericInstance) {
                 var aGenInst = (GenericInstanceMethod)a;
                 var bGenInst = (GenericInstanceMethod)b;
-                var aGenArgs = aGenInst.GenericArguments.Select(x => JsResolver.ReverseTypeMap(x));
-                var bGenArgs = bGenInst.GenericArguments.Select(x => JsResolver.ReverseTypeMap(x));
+                var aGenArgs = aGenInst.GenericArguments;
+                var bGenArgs = bGenInst.GenericArguments;
                 if (!aGenArgs.SequenceEqual(bGenArgs, TypeExtensions.TypeRefEqComparerInstance)) {
                     return false;
                 }
@@ -166,6 +170,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     self = self.Module.Import(useType);
                 }
             }
+            //self = JsResolver.TypeMap(self);
             switch (self.MetadataType) {
             case MetadataType.Void:
             case MetadataType.Boolean:
@@ -195,10 +200,34 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     }
                     return ret;
                 }
+                if (self.FullName == typeof(GenTypeParam0).FullName) {
+                    return ((GenericInstanceType)scopeType).GenericArguments[0];
+                }
+                if (self.FullName == typeof(GenTypeParam1).FullName) {
+                    return ((GenericInstanceType)scopeType).GenericArguments[1];
+                }
+                if (self.FullName == typeof(GenTypeParam2).FullName) {
+                    return ((GenericInstanceType)scopeType).GenericArguments[2];
+                }
+                if (self.FullName == typeof(GenTypeParam3).FullName) {
+                    return ((GenericInstanceType)scopeType).GenericArguments[3];
+                }
+                if (self.FullName == typeof(GenMethodParam0).FullName) {
+                    return ((GenericInstanceMethod)scopeMethod).GenericArguments[0];
+                }
+                if (self.FullName == typeof(GenMethodParam1).FullName) {
+                    return ((GenericInstanceMethod)scopeMethod).GenericArguments[1];
+                }
+                if (self.FullName == typeof(GenMethodParam2).FullName) {
+                    return ((GenericInstanceMethod)scopeMethod).GenericArguments[2];
+                }
+                if (self.FullName == typeof(GenMethodParam3).FullName) {
+                    return ((GenericInstanceMethod)scopeMethod).GenericArguments[3];
+                }
                 return self;
             case MetadataType.GenericInstance:
                 var genInst = (GenericInstanceType)self;
-                var genArgs = genInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod)).ToArray();
+                var genArgs = genInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod, allowFailure)).ToArray();
                 if (genInst.GenericArguments.SequenceEqual(genArgs)) {
                     return self;
                 } else {
@@ -224,9 +253,6 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     return type;
                 }
             case MetadataType.MVar: {
-                    if (scopeMethod == null) {
-                        return self;
-                    }
                     var scope = scopeMethod as GenericInstanceMethod;
                     var param = self as GenericParameter;
                     if (scope == null || param == null) {
@@ -283,56 +309,161 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static MethodReference FullResolve(this MethodReference self, TypeReference scopeType, MethodReference scopeMethod, bool allowFailure = false) {
-            MethodReference m = null;
+            // Resolve declaring type. Create new MethodReference if different
+            // Convert method with GenericParameters to new GenericInstanceMethod
+            // Convert GenericInstanceMethod with generic parameters to new GenericInstanceMethod with resolved parameters
+            // Return type and parameters types must not be resolved - Cecil requires them to be generic-parameters
             var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod, allowFailure);
-            if (declType != self.DeclaringType) {
-                m = new MethodReference(self.Name, self.ReturnType, declType) {
+            MethodReference mDeclType = null;
+            MethodReference ret;
+            if (!declType.IsSame(self.DeclaringType)) {
+                mDeclType = new MethodReference(self.Name, self.ReturnType, declType) {
                     ExplicitThis = self.ExplicitThis,
                     HasThis = self.HasThis,
                     CallingConvention = self.CallingConvention,
                     MetadataToken = self.MetadataToken,
                 };
                 foreach (var p in self.Parameters) {
-                    m.Parameters.Add(p);
+                    mDeclType.Parameters.Add(p);
                 }
                 if (self.IsGenericInstance) {
                     var selfGenInst = (GenericInstanceMethod)self;
-                    if (selfGenInst.GenericArguments.Any(x => x.IsGenericParameter)) {
-                        if (!selfGenInst.GenericArguments.All(x => x.IsGenericParameter)) {
-                            throw new InvalidOperationException("Either all or none should be generic parameters");
-                        }
-                        foreach (var a in selfGenInst.GenericArguments) {
-                            var gp = new GenericParameter(a.Name, m);
-                            m.GenericParameters.Add(gp);
-                        }
+                    foreach (var p in selfGenInst.ElementMethod.GenericParameters) {
+                        mDeclType.GenericParameters.Add(p);
                     }
+                    var mDeclTypeGenInst = new GenericInstanceMethod(mDeclType);
+                    foreach (var p in selfGenInst.GenericArguments) {
+                        mDeclTypeGenInst.GenericArguments.Add(p);
+                    }
+                    mDeclType = mDeclTypeGenInst;
                 } else {
-                    foreach (var a in self.GenericParameters) {
-                        m.GenericParameters.Add(a);
+                    foreach (var p in self.GenericParameters) {
+                        mDeclType.GenericParameters.Add(p);
                     }
                 }
             }
-            if (self.IsGenericInstance) {
-                var selfGenInst = (GenericInstanceMethod)self;
-                var genArgs = selfGenInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod, allowFailure)).ToArray();
-                if (!genArgs.SequenceEqual(selfGenInst.GenericArguments)) {
-                    var m2 = new GenericInstanceMethod(m ?? selfGenInst.ElementMethod);
-                    foreach (var genArg in genArgs) {
-                        m2.GenericArguments.Add(genArg);
+            if (self.HasGenericParameters) {
+                var mGenInst = new GenericInstanceMethod(mDeclType ?? self);
+                foreach (var p in self.GenericParameters) {
+                    var pResolved = p.FullResolve(scopeType, scopeMethod, allowFailure);
+                    mGenInst.GenericArguments.Add(pResolved);
+                }
+                ret = mGenInst;
+            } else if (self.IsGenericInstance) {
+                var mGenInst = (GenericInstanceMethod)(mDeclType ?? self);
+                if (mGenInst.GenericArguments.Any(x => x.IsGenericParameter)) {
+                    var mGenInstRet = new GenericInstanceMethod(mGenInst.ElementMethod);
+                    foreach (var p in mGenInst.GenericArguments) {
+                        var pResolved = p.FullResolve(scopeType, scopeMethod, allowFailure);
+                        mGenInstRet.GenericArguments.Add(pResolved);
                     }
-                    return m2;
+                    ret = mGenInstRet;
+                } else {
+                    ret = mGenInst;
+                }
+            } else {
+                ret = mDeclType ?? self;
+            }
+            // For verification that the resolved method is OK - can be removed later
+            if (!allowFailure) {
+                if (ret.HasGenericParameters) {
+                    throw new Exception("Return should not have generic parameters");
+                }
+                if (ret.DeclaringType.HasGenericParameters) {
+                    throw new Exception("Return declaring type should not have generic parameters");
+                }
+                if (ret.IsGenericInstance && ((GenericInstanceMethod)ret).GenericArguments.Any(x => x.IsGenericParameter)) {
+                    throw new Exception("Return should not have parameters that are generic parameters");
+                }
+                if (ret.DeclaringType.IsGenericInstance && ((GenericInstanceType)ret.DeclaringType).GenericArguments.Any(x => x.IsGenericParameter)) {
+                    throw new Exception("Return type should not have parameters that are generic parameters");
                 }
             }
-            var mSelf = m ?? self;
-            if (mSelf.HasGenericParameters) {
-                var m2 = new GenericInstanceMethod(mSelf);
-                foreach (var genParam in mSelf.GenericParameters) {
-                    var genArg = genParam.FullResolve(scopeType, scopeMethod, allowFailure);
-                    m2.GenericArguments.Add(genArg);
-                }
-                return m2;
+            var mDef = ret.Resolve();
+            if (mDef == null) {
+                throw new Exception("FullResolve() created unresolvable method");
             }
-            return mSelf;
+            return ret;
+            //MethodReference mResolved = self;
+            //if (declType != self.DeclaringType || self.HasGenericParameters) {
+            //    mResolved = new MethodReference(self.Name, self.ReturnType, declType) {
+            //        ExplicitThis = self.ExplicitThis,
+            //        HasThis = self.HasThis,
+            //        CallingConvention = self.CallingConvention,
+            //        MetadataToken = self.MetadataToken,
+            //    };
+            //    foreach (var gp in self.GenericParameters) {
+            //        mResolved.GenericParameters.Add(gp);
+            //    }
+            //    foreach (var p in self.Parameters) {
+            //        mResolved.Parameters.Add(p);
+            //    }
+            //}
+            //if (self.HasGenericParameters) {
+            //    var mGenInst = new GenericInstanceMethod(mResolved);
+            //    foreach (var genArg in self.GenericParameters) {
+            //        var genArgResolved = genArg.FullResolve(scopeType, scopeMethod);
+            //        mGenInst.GenericArguments.Add(genArgResolved);
+            //    }
+            //    mResolved = mGenInst;
+            //} else if (self.IsGenericInstance) {
+
+            //    var genArgs = 
+            //    mResolved = new GenericInstanceMethod(
+            //}
+            //return mResolved;
+
+            //MethodReference m = null;
+            //var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod, allowFailure);
+            //if (declType != self.DeclaringType) {
+            //    var returnType = self.ReturnType.FullResolve(scopeType, scopeMethod, allowFailure);
+            //    m = new MethodReference(self.Name, returnType, declType) {
+            //        ExplicitThis = self.ExplicitThis,
+            //        HasThis = self.HasThis,
+            //        CallingConvention = self.CallingConvention,
+            //        MetadataToken = self.MetadataToken,
+            //    };
+            //    foreach (var p in self.Parameters) {
+            //        m.Parameters.Add(p);
+            //    }
+            //    if (self.IsGenericInstance) {
+            //        var selfGenInst = (GenericInstanceMethod)self;
+            //        if (selfGenInst.GenericArguments.Any(x => x.IsGenericParameter)) {
+            //            if (!selfGenInst.GenericArguments.All(x => x.IsGenericParameter)) {
+            //                throw new InvalidOperationException("Either all or none should be generic parameters");
+            //            }
+            //            foreach (var a in selfGenInst.GenericArguments) {
+            //                var gp = new GenericParameter(a.Name, m);
+            //                m.GenericParameters.Add(gp);
+            //            }
+            //        }
+            //    } else {
+            //        foreach (var a in self.GenericParameters) {
+            //            m.GenericParameters.Add(a);
+            //        }
+            //    }
+            //}
+            //if (self.IsGenericInstance) {
+            //    var selfGenInst = (GenericInstanceMethod)self;
+            //    var genArgs = selfGenInst.GenericArguments.Select(x => x.FullResolve(scopeType, scopeMethod, allowFailure)).ToArray();
+            //    if (!genArgs.SequenceEqual(selfGenInst.GenericArguments)) {
+            //        var m2 = new GenericInstanceMethod(m ?? selfGenInst.ElementMethod);
+            //        foreach (var genArg in genArgs) {
+            //            m2.GenericArguments.Add(genArg);
+            //        }
+            //        return m2;
+            //    }
+            //}
+            //var mSelf = m ?? self;
+            //if (mSelf.HasGenericParameters) {
+            //    var m2 = new GenericInstanceMethod(mSelf);
+            //    foreach (var genParam in mSelf.GenericParameters) {
+            //        var genArg = genParam.FullResolve(scopeType, scopeMethod, allowFailure);
+            //        m2.GenericArguments.Add(genArg);
+            //    }
+            //    return m2;
+            //}
+            //return mSelf;
         }
 
         public static FieldReference FullResolve(this FieldReference self, Ctx ctx) {
@@ -341,13 +472,21 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static FieldReference FullResolve(this FieldReference self, TypeReference scopeType, MethodReference scopeMethod) {
             var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod);
-            if (declType != self.DeclaringType) {
+            //var fieldType = self.FieldType.FullResolve(scopeType, scopeMethod);
+            FieldReference ret;
+            if (declType != self.DeclaringType){// || fieldType != self.FieldType) {
                 var f = new FieldReference(self.Name, self.FieldType, declType) {
                     MetadataToken = self.MetadataToken,
                 };
-                return f;
+                ret = f;
+            } else {
+                ret = self;
             }
-            return self;
+            // Verify - can be removed later
+            if (ret.Resolve() == null) {
+                throw new Exception("Cannot resolve field");
+            }
+            return ret;
         }
 
         public static void TypeTreeTraverse<T, TState>(this IEnumerable<T> en, Func<T, TypeReference> selectType, Func<T, TState, TState> action, TState initState = default(TState)) {
@@ -390,6 +529,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             // TODO: This way of sorting out interfaces is not efficient.
             // Better to have a method that returns the interface map for a type
             var mDef = method.Resolve();
+            if (mDef == null) {
+                return false;
+            }
             if (mDef.Overrides.Any(x => {
                 var xResolved = x.FullResolve(method.DeclaringType, method);
                 return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
@@ -397,7 +539,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 return true;
             }
             var allMethods = method.DeclaringType.FullResolve(method).EnumResolvedMethods(method, iFaceMethod).ToArray();
-            if (allMethods.SelectMany(x => x.Resolve().Overrides).Any(x => {
+            if (allMethods.SelectMany(x => {
+                var xResolved = x.Resolve();
+                if (xResolved != null) {
+                    return x.Resolve().Overrides;
+                } else {
+                    return Enumerable.Empty<MethodReference>();
+                }
+            }).Any(x => {
                 var xResolved = x.FullResolve(method.DeclaringType, method);
                 return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
             })) {
@@ -432,7 +581,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 foreach (var m in tDef.Methods) {
                     var mScopes = baseMethods.EmptyIfNull().Where(x => x.MatchMethodOnlyLoose(m)).DefaultIfEmpty().ToArray();
                     foreach (var mScope in mScopes) {
-                        var mResolved = m.FullResolve(type, mScope);
+                        var mResolved = m.FullResolve(type, mScope, true);
                         ret.Add(mResolved);
                     }
                 }
@@ -458,6 +607,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static TypeReference MakeGeneric(this TypeReference t, params TypeReference[] args) {
+            if (!t.HasGenericParameters) {
+                throw new ArgumentException("Type must have generic parameters");
+            }
             if (t.GenericParameters.Count != args.Length) {
                 throw new ArgumentException("Wrong number of generic arguments");
             }
@@ -477,6 +629,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static MethodReference MakeGeneric(this MethodReference m, params TypeReference[] args) {
+            if (!m.HasGenericParameters) {
+                throw new ArgumentException("Method must have generic parameters");
+            }
             if (m.GenericParameters.Count != args.Length) {
                 throw new ArgumentException("Wrong number of generic arguments");
             }
@@ -607,12 +762,67 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
         }
 
+        public static MethodBase LoadMethod(this MethodReference mRef) {
+            var type = mRef.DeclaringType.LoadType();
+            type.Module.ResolveMethod(mRef.MetadataToken.ToInt32());
+            var methods = type.GetMethods();
+            var mRefMDToken = mRef.MetadataToken.ToInt32();
+            var ret = methods.First(x => x.MetadataToken == mRefMDToken);
+            return ret;
+        }
+
         public static TypeReference GetGenericArgument(this MethodReference mRef, int index) {
             return ((GenericInstanceMethod)mRef).GenericArguments[index];
         }
 
         public static TypeReference GetGenericArgument(this TypeReference tRef, int index) {
             return ((GenericInstanceType)tRef).GenericArguments[index];
+        }
+
+        private static bool ContainsGenericParameters(this TypeReference tRef, MethodReference scope) {
+            var tRefResolved = tRef.FullResolve(scope != null ? scope.DeclaringType : null, scope, true);
+            if (tRefResolved.IsArray) {
+                return ((ArrayType)tRefResolved).ElementType.ContainsGenericParameters(scope);
+            }
+            if (tRefResolved.IsByReference) {
+                return ((ByReferenceType)tRefResolved).ElementType.ContainsGenericParameters(scope);
+            }
+            if (tRefResolved.IsGenericParameter) {
+                return true;
+            }
+            if (tRefResolved.HasGenericParameters) {
+                return true;
+            }
+            if (tRefResolved.IsGenericInstance) {
+                var tRefGenInst = (GenericInstanceType)tRefResolved;
+                if (tRefGenInst.GenericArguments.Any(x => x.ContainsGenericParameters(scope))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool ContainsGenericParameters(this TypeReference tRef) {
+            return tRef.ContainsGenericParameters(null);
+        }
+
+        public static bool ContainsGenericParameters(this MethodReference mRef) {
+            if (mRef.HasGenericParameters) {
+                return true;
+            }
+            if (mRef.IsGenericInstance) {
+                var mRefGenInst = (GenericInstanceMethod)mRef;
+                if (mRefGenInst.GenericArguments.Any(x => x.ContainsGenericParameters(mRef))) {
+                    return true;
+                }
+            }
+            if (mRef.ReturnType.ContainsGenericParameters(mRef)) {
+                return true;
+            }
+            if (mRef.Parameters.Any(x => x.ParameterType.ContainsGenericParameters(mRef))) {
+                return true;
+            }
+            return false;
         }
 
     }

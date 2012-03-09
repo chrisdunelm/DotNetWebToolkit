@@ -70,29 +70,27 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var ctx = new Ctx(tRef, mRef);
                 var ast = (ICode)JsResolver.ResolveMethod(ctx);
                 if (ast == null) {
-                    if (tRef.HasGenericParameters) {
-                        throw new InvalidOperationException("Type must not have generic parameters");
+                    var transcodeCtx = JsResolver.TranslateCtx(ctx) ?? ctx;
+                    if (transcodeCtx.MRef.ContainsGenericParameters()) {
+                        throw new InvalidOperationException("Method/type must not have generic parameters");
                     }
-                    if (mRef.HasGenericParameters) {
-                        throw new InvalidOperationException("Method must not have generic parameters");
-                    }
-                    if (mDef.IsAbstract) {
+                    if (transcodeCtx.MDef.IsAbstract) {
                         throw new InvalidOperationException("Cannot transcode an abstract method");
                     }
-                    if (mDef.IsInternalCall) {
+                    if (transcodeCtx.MDef.IsInternalCall) {
                         throw new InvalidOperationException("Cannot transcode an internal call");
                     }
-                    if (mDef.IsExternal()) {
+                    if (transcodeCtx.MDef.IsExternal()) {
                         throw new InvalidOperationException("Cannot transcode an external method");
                     }
-                    if (!mDef.HasBody) {
+                    if (!transcodeCtx.MDef.HasBody) {
                         throw new InvalidOperationException("Cannot transcode method without body");
                     }
 
                     if (!typesSeen.ContainsKey(tRef)) {
                         typesSeen.Add(tRef, 0);
                     }
-                    ast = Transcoder.ToAst(ctx, verbose);
+                    ast = Transcoder.ToAst(transcodeCtx, verbose);
                 }
 
                 for (int i = 0; ; i++) {
@@ -111,14 +109,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
                 }
+                ast = VisitorIfSimplification.V(ast);
                 ast = VisitorJsResolveByRefParameters.V(ast);
 
                 if (mDef.IsVirtual && mRef.DeclaringType.IsValueType) {
                     // 'this' may be boxed or unboxed. Must be unboxed if boxed
                     // This is required because in real .NET the boxed and unboxed versions are both directly
                     // available at the this reference; this is not the case in the JS emulation of boxing
-                    var unboxJs = "if(this._)this=this.v;";
-                    var unbox = new StmtJsExplicit(ctx, unboxJs, ctx.This.Named("this"));
+                    var unbox = new StmtJsExplicit(ctx, "if (this._) this = this.v;", ctx.ThisNamed);
                     ast = new StmtBlock(ctx, unbox, (Stmt)ast);
                 }
 
@@ -207,17 +205,19 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var virtualRoots = new HashSet<MethodReference>(virtualCalls.SelectMany(x => x.Value), TypeExtensions.MethodRefEqComparerInstance);
                     var requireMethods =
                         from type in typesSeen.Keys
-                        let typeReverseMapped = JsResolver.ReverseTypeMap(type)
+                        //let typeReverseMapped = JsResolver.ReverseTypeMap(type)
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         let mVRoots = typeAndBases.SelectMany(x => virtualCalls.ValueOrDefault(x).EmptyIfNull()).ToArray()
                         let methods = type.EnumResolvedMethods(mVRoots).ToArray()
-                        from method in methods.Select(x => JsResolver.ResolveMethod(x))
+                        from method in methods//.Select(x => JsResolver.ResolveMethod(x))
                         let methodDef = method.Resolve()
+                        where methodDef != null // HACK?
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
                         where !methodsSeen.ContainsKey(method)
                         let mBasemost = method.GetBasemostMethod(method)
                         where virtualCallExactMethods.ValueOrDefault(mBasemost).EmptyIfNull().Any(x => {
-                            return x.IsBaseOfOrEqual(typeReverseMapped) || typeReverseMapped.IsBaseOfOrEqual(x);
+                            //return x.IsBaseOfOrEqual(typeReverseMapped) || typeReverseMapped.IsBaseOfOrEqual(x);
+                            return x.IsBaseOfOrEqual(type) || type.IsBaseOfOrEqual(x);
                         })
                         where virtualRoots.Contains(mBasemost)
                         select method;
@@ -234,9 +234,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         let typeAndBases = type.EnumThisAllBaseTypes().ToArray()
                         where typeAndBases.Any(x => x.DoesImplement(iFaceType))
                         let methods = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iFace.Value)).ToArray()
-                        from method in methods.Select(x => JsResolver.ResolveMethod(x))
+                        from method in methods//.Select(x => JsResolver.ResolveMethod(x))
                         where !methodsSeen.ContainsKey(method)
                         let methodDef = method.Resolve()
+                        where methodDef != null // HACK?
                         where !methodDef.IsStatic && methodDef.IsVirtual && !methodDef.IsAbstract
                         from iFaceMethod in iFace.Value
                         where method.IsImplementationOf(iFaceMethod)
@@ -467,7 +468,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 .ToArray();
             var domTypes = new Dictionary<string, TypeReference>();
             foreach (var type in typesSeenOrdered) {
-                var unmappedType = JsResolver.ReverseTypeMap(type);
+                var unmappedType = type; // JsResolver.ReverseTypeMap(type);
                 var tDef = unmappedType.Resolve();
                 // Check for DOM types
                 var jsClassAttr = tDef.GetCustomAttribute<JsClassAttribute>();
@@ -517,10 +518,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                             var qInterfaceTableNames =
                                 from iMethod in iFace.Value
                                 let tMethod = typeAndBases.SelectMany(x => x.EnumResolvedMethods(iMethod)).First(x => x.IsImplementationOf(iMethod))
-                                let tM2 = JsResolver.ResolveMethod(tMethod)
+                                //let tM2 = JsResolver.ResolveMethod(tMethod)
                                 let idx = interfaceCallIndices[iMethod]
                                 orderby idx
-                                let methodName = methodNames[tM2]
+                                let methodName = methodNames[tMethod]
                                 select methodName;
                             var interfaceTableNames = qInterfaceTableNames.ToArray();
                             js.Append(string.Join(", ", interfaceTableNames));
@@ -550,6 +551,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.Append(";");
             }
             // Add comments descibing each interface
+            jsNewLine();
+            js.Append("// Interface name map");
+            jsNewLine();
+            js.AppendFormat("// {0} = VTable", typeDataNames[TypeData.VTable]);
             foreach (var iFace in interfaceNames) {
                 jsNewLine();
                 js.AppendFormat("// {0} = {1}", iFace.Value, iFace.Key.FullName);

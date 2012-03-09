@@ -17,9 +17,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         private List<FieldReference> fieldAccesses = new List<FieldReference>();
 
-        protected override Ast.ICode VisitFieldAccess(ExprFieldAccess e) {
+        protected override ICode VisitFieldAccess(ExprFieldAccess e) {
             this.fieldAccesses.Add(e.Field);
             return base.VisitFieldAccess(e);
+        }
+
+        protected override ICode VisitFieldAddress(ExprFieldAddress e) {
+            this.fieldAccesses.Add(e.Field);
+            return base.VisitFieldAddress(e);
         }
 
     }

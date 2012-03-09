@@ -8,10 +8,11 @@ using DotNetWebToolkit.Cil2Js.Analysis;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 using NUnit.Framework;
+using Test.Categories;
 
 namespace Test {
 
-    [TestFixture]
+    [TestFixture, MiscTest]
     public class TestQuineMcCluskey {
 
         public bool Verbose { get; set; }

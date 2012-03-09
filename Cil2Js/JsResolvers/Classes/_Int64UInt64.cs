@@ -102,9 +102,8 @@ return [rr[1] + rr[0] * limit, rr[3] + rr[2] * limit];
 
         [Js(typeof(UInt64DivRemImpl))]
         public static object UInt64DivRem(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
-
         class UInt64DivRemImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0, "a");
@@ -264,24 +263,23 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
 
         [Js(typeof(_Int64UInt64.AddImpl))]
         public static Int64 Add(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.SubtractImpl))]
         public static Int64 Subtract(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.MultiplyImpl))]
         public static Int64 Multiply(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(DivideImpl))]
         public static Int64 Divide(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
-
         class DivideImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0, "a");
@@ -314,9 +312,8 @@ return neg ? rNegate : r;
 
         [Js(typeof(RemainderImpl))]
         public static Int64 Remainder(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
-
         class RemainderImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0, "a");
@@ -346,52 +343,52 @@ return neg ? rNegate : r;
 
         [Js(typeof(_Int64UInt64.BitwiseNotImpl))]
         public static Int64 BitwiseNot(Int64 a) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseAndImpl))]
         public static Int64 BitwiseAnd(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseOrImpl))]
         public static Int64 BitwiseOr(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseXorImpl))]
         public static Int64 BitwiseXor(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.Equals))]
         public static bool Equals(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.NotEquals))]
         public static bool NotEquals(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] < ~~b[1]);")]
         public static bool LessThan(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] <= ~~b[1]);")]
         public static bool LessThanOrEqual(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] > ~~b[1]);")]
         public static bool GreaterThan(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] >= ~~b[1]);")]
         public static bool GreaterThanOrEqual(Int64 a, Int64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
     }
@@ -400,24 +397,23 @@ return neg ? rNegate : r;
 
         [Js(typeof(_Int64UInt64.AddImpl))]
         public static UInt64 Add(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.SubtractImpl))]
         public static UInt64 Subtract(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.MultiplyImpl))]
         public static UInt64 Multiply(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(DivideImpl))]
         public static UInt64 Divide(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
-
         class DivideImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0);
@@ -431,9 +427,8 @@ return neg ? rNegate : r;
 
         [Js(typeof(RemainderImpl))]
         public static UInt64 Remainder(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
-
         class RemainderImpl : IJsImpl {
             public Stmt GetImpl(Ctx ctx) {
                 var a = ctx.MethodParameter(0);
@@ -447,52 +442,52 @@ return neg ? rNegate : r;
 
         [Js(typeof(_Int64UInt64.BitwiseNotImpl))]
         public static UInt64 BitwiseNot(UInt64 a) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseAndImpl))]
         public static UInt64 BitwiseAnd(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseOrImpl))]
         public static UInt64 BitwiseOr(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.BitwiseXorImpl))]
         public static UInt64 BitwiseXor(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.Equals))]
         public static bool Equals(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js(typeof(_Int64UInt64.NotEquals))]
         public static bool NotEquals(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return a[0] < b[0] || (a[0] == b[0] && a[1] < b[1]);")]
         public static bool LessThan(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return a[0] < b[0] || (a[0] == b[0] && a[1] <= b[1]);")]
         public static bool LessThanOrEqual(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] > b[1]);")]
         public static bool GreaterThan(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
         [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
         public static bool GreaterThanOrEqual(UInt64 a, UInt64 b) {
-            throw new Exception();
+            throw new JsImplException();
         }
 
     }

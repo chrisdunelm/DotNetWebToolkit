@@ -24,6 +24,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         public const int tabSize = 4;
 
         public static string Create(MethodReference mRef, Resolver resolver, ICode ast) {
+            if (mRef.ContainsGenericParameters()) {
+                throw new ArgumentException("Cannot create JS for method with open generic parameters");
+            }
             var mDef = mRef.Resolve();
             if (mDef.IsAbstract) {
                 throw new ArgumentException("Should never need to transcode an abstract method");
@@ -31,14 +34,17 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var tRef = mRef.DeclaringType;
             var tDef = tRef.Resolve();
 
-            var v = new JsMethod(mDef, resolver);
+            var v = new JsMethod(resolver);
             v.Visit(ast);
             var js = v.js.ToString();
 
             var sb = new StringBuilder();
             // Method declaration
             var methodName = resolver.MethodNames[mRef];
-            var parameterNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y])).ToArray();
+            //var parameterNames = mRef.Parameters.Select(x => v.parameters.ValueOrDefault(x).NullThru(y => resolver.LocalVarNames[y])).ToArray();
+            // Match parameters, but have to do by position, as method built may be a custom method replacing a BCL method,
+            // so parameters are not the same.
+            var parameterNames = mRef.Parameters.Select(x => v.parameters.FirstOrDefault(y => y.Key.Sequence == x.Sequence).Value.NullThru(y => resolver.LocalVarNames[y])).ToArray();
             if (!mDef.IsStatic) {
                 var thisName = v.vars.FirstOrDefault(x => x.ExprType == Expr.NodeType.VarThis).NullThru(x => resolver.LocalVarNames[x]);
                 parameterNames = parameterNames.Prepend(thisName).ToArray();
@@ -75,13 +81,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return sbStr;
         }
 
-        private JsMethod(MethodDefinition method, Resolver resolver)
+        private JsMethod(Resolver resolver)//MethodDefinition method, Resolver resolver)
             : base(true) {
-            this.method = method;
+            //this.method = method;
             this.resolver = resolver;
         }
 
-        private MethodDefinition method;
+        //private MethodDefinition method;
         private Resolver resolver;
 
         private Dictionary<ParameterDefinition, ExprVar> parameters = new Dictionary<ParameterDefinition, ExprVar>();

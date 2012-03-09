@@ -83,8 +83,8 @@ namespace Test {
             // TestThrowReturnVar
             // TestLoops.Test1Do
 
-            var t = new TestList() { Verbose = true };
-            t.TestAsEnumerable();
+            var t = new TestMath() { Verbose = true };
+            t.TestTan();
 
             return;
 

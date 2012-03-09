@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
+using System.Collections;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
@@ -21,11 +22,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
     }
 
-    [Js("get_Default", typeof(Comparer<GenTypeParam0>))]
-    class _Comparer<T> {
+    //[Js("get_Default", typeof(Comparer<GenTypeParam0>))]
+    abstract class _Comparer<T> : IComparer<T>, IComparer {
 
         public _Comparer() { }
 
+        [JsRedirect(typeof(Comparer<>))]
+        private static Comparer<T> CreateComparer() {
+            throw new JsImplException();
+        }
         [Js]
         public static Stmt CreateComparer(Ctx ctx) {
             var type = ((GenericInstanceType)ctx.MRef.DeclaringType).GenericArguments[0];
@@ -45,6 +50,27 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 return new StmtReturn(ctx, ctorExpr);
             }
             return new StmtThrow(ctx, ctx.Literal(null, ctx.Object));
+        }
+
+        private static Comparer<T> @default; // Do not assign to null - avoids static constructor
+        public static Comparer<T> get_Default() {
+            if (@default == null) {
+                @default = CreateComparer();
+            }
+            return @default;
+        }
+
+        public abstract int Compare(T x, T y);
+
+        int IComparer.Compare(object x, object y) {
+            if (x == null) {
+                return y != null ? -1 : 0;
+            } else {
+                if (y == null) {
+                    return 1;
+                }
+                return this.Compare((T)x, (T)y);
+            }
         }
 
     }

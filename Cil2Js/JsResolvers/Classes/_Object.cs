@@ -10,7 +10,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     
-    [Js("ToString", typeof(string))]
+    //[Js("ToString", typeof(string))]
     class _Object {
 
         private _Object() { }
@@ -46,6 +46,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var a = call.Args.ElementAt(0);
             var b = call.Args.ElementAt(1);
             return new ExprBinary(call.Ctx, BinaryOp.Equal, call.Ctx.Boolean, a, b);
+        }
+
+        public override string ToString() {
+            return this.GetType().ToString();
         }
 
     }

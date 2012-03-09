@@ -9,6 +9,7 @@ namespace DotNetWebToolkit.Attributes {
 
         public string Name { get; set; }
         public bool IsDomEvent { get; set; }
+        public Type[] Signature { get; set; }
 
     }
 }

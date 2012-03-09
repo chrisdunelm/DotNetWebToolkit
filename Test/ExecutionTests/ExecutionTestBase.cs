@@ -14,8 +14,11 @@ using OpenQA.Selenium.Chrome;
 using System.Threading;
 using NUnit.Framework.Constraints;
 using System.Diagnostics;
+using Test.Categories;
 
 namespace Test.ExecutionTests {
+
+    [ExecutionTest]
     public abstract class ExecutionTestBase {
 
         private const int defaultTestIterations = 20;

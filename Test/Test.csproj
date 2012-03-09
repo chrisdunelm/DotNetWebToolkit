@@ -73,6 +73,9 @@
     <Compile Include="BrowserTests\TypedArrays\TestUInt8Array.cs" />
     <Compile Include="BrowserTests\Window_\TestRequestAnimationFrame.cs" />
     <Compile Include="BrowserTests\Window_\TestTimers.cs" />
+    <Compile Include="Categories\BrowserTestAttribute.cs" />
+    <Compile Include="Categories\ExecutionTestAttribute.cs" />
+    <Compile Include="Categories\MiscTestAttribute.cs" />
     <Compile Include="ExecutionTests\ExecutionTestBase.cs" />
     <Compile Include="ExecutionTests\TestArithmetic.cs" />
     <Compile Include="ExecutionTests\TestArrays.cs" />
@@ -90,6 +93,7 @@
     <Compile Include="ExecutionTests\TestGenerics.cs" />
     <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
     <Compile Include="ExecutionTests\TestEqualityComparer.cs" />
+    <Compile Include="ExecutionTests\TestHashSet.cs" />
     <Compile Include="ExecutionTests\TestInt64UInt64.cs" />
     <Compile Include="BrowserTests\TestJsTypes.cs" />
     <Compile Include="ExecutionTests\TestInterfaces.cs" />
