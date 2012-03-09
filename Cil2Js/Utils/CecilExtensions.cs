@@ -366,18 +366,21 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             // For verification that the resolved method is OK - can be removed later
             if (!allowFailure) {
-                if (ret.HasGenericParameters) {
+                if (ret.ContainsGenericParameters()) {
                     throw new Exception("Return should not have generic parameters");
                 }
-                if (ret.DeclaringType.HasGenericParameters) {
-                    throw new Exception("Return declaring type should not have generic parameters");
-                }
-                if (ret.IsGenericInstance && ((GenericInstanceMethod)ret).GenericArguments.Any(x => x.IsGenericParameter)) {
-                    throw new Exception("Return should not have parameters that are generic parameters");
-                }
-                if (ret.DeclaringType.IsGenericInstance && ((GenericInstanceType)ret.DeclaringType).GenericArguments.Any(x => x.IsGenericParameter)) {
-                    throw new Exception("Return type should not have parameters that are generic parameters");
-                }
+                //if (ret.HasGenericParameters) {
+                //    throw new Exception("Return should not have generic parameters");
+                //}
+                //if (ret.DeclaringType.HasGenericParameters) {
+                //    throw new Exception("Return declaring type should not have generic parameters");
+                //}
+                //if (ret.IsGenericInstance && ((GenericInstanceMethod)ret).GenericArguments.Any(x => x.IsGenericParameter)) {
+                //    throw new Exception("Return should not have parameters that are generic parameters");
+                //}
+                //if (ret.DeclaringType.IsGenericInstance && ((GenericInstanceType)ret.DeclaringType).GenericArguments.Any(x => x.IsGenericParameter)) {
+                //    throw new Exception("Return type should not have parameters that are generic parameters");
+                //}
             }
             var mDef = ret.Resolve();
             if (mDef == null) {
@@ -527,13 +530,13 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static bool IsImplementationOf(this MethodReference method, MethodReference iFaceMethod) {
             // TODO: This way of sorting out interfaces is not efficient.
-            // Better to have a method that returns the interface map for a type
+            // Maybe better to have a method that returns the interface map for a type - or cache results?
             var mDef = method.Resolve();
             if (mDef == null) {
                 return false;
             }
             if (mDef.Overrides.Any(x => {
-                var xResolved = x.FullResolve(method.DeclaringType, method);
+                var xResolved = x.FullResolve(method.DeclaringType, method, true);
                 return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
             })) {
                 return true;
@@ -547,7 +550,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     return Enumerable.Empty<MethodReference>();
                 }
             }).Any(x => {
-                var xResolved = x.FullResolve(method.DeclaringType, method);
+                var xResolved = x.FullResolve(method.DeclaringType, method, true);
                 return TypeExtensions.MethodRefEqComparerInstance.Equals(xResolved, iFaceMethod);
             })) {
                 return false;
