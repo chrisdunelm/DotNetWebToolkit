@@ -41,6 +41,28 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Distinct
+
+        [Test]
+        public void TestDistinctUniques() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3, 4, 5 };
+                return a.Distinct().Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestDistinctOverlaps() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 10 };
+                return a.Distinct().Sum();
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
         #region First
 
         [Test]

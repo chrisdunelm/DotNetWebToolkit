@@ -78,8 +78,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestTimers() { Verbose = true };
-            t.TestSetIntervalTimespan();
+            var t = new TestLinq() { Verbose = true };
+            t.TestDistinctOverlaps();
 
             return;
 

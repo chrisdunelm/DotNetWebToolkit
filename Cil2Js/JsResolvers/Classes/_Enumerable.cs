@@ -34,6 +34,23 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Distinct
+
+        public static IEnumerable<TSource> Distinct<TSource>(this IEnumerable<TSource> source) {
+            return source.Distinct(null);
+        }
+
+        public static IEnumerable<TSource> Distinct<TSource>(this IEnumerable<TSource> source, IEqualityComparer<TSource> comparer) {
+            var hs = new HashSet<TSource>(comparer);
+            foreach (var item in source) {
+                if (hs.Add(item)) {
+                    yield return item;
+                }
+            }
+        }
+
+        #endregion
+
         #region First
 
         public static TSource First<TSource>(this IEnumerable<TSource> source) {
