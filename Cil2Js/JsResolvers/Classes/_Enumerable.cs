@@ -6,6 +6,50 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
+
+    class OrderedEnumerable<TElement, TKey> : IOrderedEnumerable<TElement>, IEnumerable<TElement>, IEnumerable {
+
+        class Comparer : IComparer<TElement> {
+
+            internal Comparer(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
+                this.keySelector = keySelector;
+                this.comparer = comparer ?? Comparer<TKey>.Default;
+                this.isDescending = isDescending;
+            }
+
+            private Func<TElement, TKey> keySelector;
+            private IComparer<TKey> comparer;
+            private bool isDescending;
+
+            public int Compare(TElement x, TElement y) {
+                return this.comparer.Compare(this.keySelector(x), this.keySelector(y)) * (this.isDescending ? -1 : 1);
+            }
+
+        }
+
+        internal OrderedEnumerable(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
+            this.source = source;
+            this.comparer = new Comparer(keySelector, comparer, isDescending);
+        }
+
+        private IEnumerable<TElement> source;
+        private Comparer comparer;
+
+        IOrderedEnumerable<TElement> IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TSubKey>(Func<TElement, TSubKey> keySelector, IComparer<TSubKey> comparer, bool descending) {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<TElement> GetEnumerator() {
+            var list = this.source.ToList();
+            list.Sort(this.comparer);
+            return list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            throw new NotImplementedException();
+        }
+    }
+
     static class _Enumerable {
 
         #region Count
@@ -87,7 +131,39 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
-        #region OrderBy, OrderByDescending
+        #region OrderBy, OrderByDescending, ThenBy, ThenByDescending
+
+        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return new OrderedEnumerable<TSource, TKey>(source, keySelector, null, false);
+        }
+
+        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) {
+            return new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, false);
+        }
+
+        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return new OrderedEnumerable<TSource, TKey>(source, keySelector, null, true);
+        }
+
+        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) {
+            return new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, true);
+        }
+
+        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return source.CreateOrderedEnumerable(keySelector, null, false);
+        }
+
+        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) {
+            return source.CreateOrderedEnumerable(keySelector, comparer, false);
+        }
+
+        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return source.CreateOrderedEnumerable(keySelector, null, true);
+        }
+
+        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) {
+            return source.CreateOrderedEnumerable(keySelector, comparer, true);
+        }
 
         #endregion
 
