@@ -37,7 +37,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var customType = thisModule.Import(m.Value).Resolve();
                 addWithNested(bclType, customType);
             }
-            //cMapReverse = cMap.ToDictionary(x => x.Value, x => x.Key);
         }
 
         private static Type T(string typeName) {
@@ -45,7 +44,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         private static Dictionary<TypeDefinition, TypeDefinition> cMap;
-        //private static Dictionary<TypeDefinition, TypeDefinition> cMapReverse;
 
         private static string JsCase(string s) {
             return char.ToLowerInvariant(s[0]) + s.Substring(1);
@@ -177,8 +175,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 default:
                     throw new NotImplementedException("Cannot handle: " + call.ExprType);
                 }
-                throw new Exception();
-                // Must carry result through to FindExprReturn() call
             }
             var exprRet = FindExprReturn(call);
             if (exprRet != null) {
@@ -282,7 +278,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             var mappedType = TypeMap(mRef.DeclaringType);
             if (mappedType != null) {
                 var methods = mappedType.EnumResolvedMethods(mRef);
-                var method = methods.FirstOrDefault(x => DoesMatchMethod(x, mRef));// x.MatchMethodOnly(mRef));
+                var method = methods.FirstOrDefault(x => DoesMatchMethod(x, mRef));
                 if (method == null) {
                     throw new NotImplementedException("Mapped method not implemented: " + mRef);
                 }
@@ -365,143 +361,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return null;
         }
 
-        //public static Expr ResolveCall(ICall call) {
-        //    var ctx = call.Ctx;
-        //    var mRef = call.CallMethod;
-        //    var mDef = mRef.Resolve();
-        //    // A call defined on a class requiring external methods/properties translating to native JS
-        //    var type = mDef.DeclaringType;
-        //    var jsClass = type.GetCustomAttribute<JsClassAttribute>() ?? type.GetCustomAttribute<JsAbstractClassAttribute>();
-        //    if (jsClass != null && mDef.IsExternal()) {
-        //        var jsDetail = mDef.GetCustomAttribute<JsDetailAttribute>();
-        //        if (mDef.IsSetter || mDef.IsGetter) {
-        //            // TODO: Use JsName()
-        //            var property = mDef.DeclaringType.Properties.First(x => {
-        //                if (x.GetMethod != null && TypeExtensions.MethodRefEqComparerInstance.Equals(x.GetMethod, mDef)) {
-        //                    return true;
-        //                }
-        //                if (x.SetMethod != null && TypeExtensions.MethodRefEqComparerInstance.Equals(x.SetMethod, mDef)) {
-        //                    return true;
-        //                }
-        //                return false;
-        //            });
-        //            jsDetail = property.GetCustomAttribute<JsDetailAttribute>();
-        //            string propertyName = null;
-        //            if (jsDetail != null) {
-        //                var isDomEventProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "IsDomEvent");
-        //                if (isDomEventProp.Name != null && (bool)isDomEventProp.Argument.Value) {
-        //                    // Special handling of DOM events
-        //                    if (!mDef.Name.StartsWith("set_On")) {
-        //                        throw new InvalidOperationException("DOM event name must start with 'On'");
-        //                    }
-        //                    if (!mDef.IsSetter) {
-        //                        throw new InvalidOperationException("Only setters supported on DOM events");
-        //                    }
-        //                    if (call.Args.Count() != 1) {
-        //                        throw new InvalidOperationException("DOM event setter should have one argument");
-        //                    }
-        //                    var eventName = mDef.Name.Substring(6).ToLowerInvariant();
-        //                    var eventNameExpr = ctx.Literal(eventName, ctx.String);
-        //                    var safeCall = new ExprCall(ctx, (Action<object, string, Delegate>)InternalFunctions.SafeAddEventListener, null, call.Obj, eventNameExpr, call.Args.First());
-        //                    return safeCall;
-        //                }
-        //                var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-        //                if (nameProp.Name != null) {
-        //                    propertyName = (string)nameProp.Argument.Value;
-        //                }
-        //            }
-        //            if (propertyName == null) {
-        //                propertyName = JsCase(mDef.Name.Substring(4));
-        //            }
-        //            if (mDef.Name.Substring(4) == "Item") {
-        //                propertyName = null;
-        //            }
-        //            if (mDef.IsStatic) {
-        //                propertyName = JsCase(mDef.DeclaringType.Name) + "." + propertyName;
-        //            }
-        //            var jsProperty = new ExprJsResolvedProperty(ctx, call, propertyName);
-        //            return jsProperty;
-        //        } else if (mDef.IsConstructor) {
-        //            string typeName = null;
-        //            if (jsDetail != null) {
-        //                var nameProp = jsDetail.Properties.FirstOrDefault(x => x.Name == "Name");
-        //                if (nameProp.Name != null) {
-        //                    typeName = (string)nameProp.Argument.Value;
-        //                }
-        //            }
-        //            if (typeName == null) {
-        //                typeName = (string)jsClass.ConstructorArguments[0].Value;
-        //            }
-        //            var expr = new ExprJsResolvedCtor(ctx, typeName, mRef.DeclaringType, call.Args);
-        //            return expr;
-        //        } else {
-        //            string methodName = JsName(mDef);
-        //            if (mDef.IsStatic) {
-        //                methodName = JsCase(mDef.DeclaringType.Name) + "." + methodName;
-        //            }
-        //            return new ExprJsResolvedMethod(ctx, call.Type, call.Obj, methodName, call.Args);
-        //        }
-        //    }
-        //    if (jsClass != null) {
-        //        return null;
-        //    }
-        //    var redirect = mDef.GetCustomAttribute<JsRedirectAttribute>(true);
-        //    if (redirect != null) {
-        //        var tRedirect = (TypeReference)redirect.ConstructorArguments[0].Value;
-        //        if (tRedirect.HasGenericParameters) {
-        //            var args = ((GenericInstanceType)mRef.DeclaringType).GenericArguments.ToArray();
-        //            tRedirect = tRedirect.MakeGeneric(args);
-        //        }
-        //        var mRedirect = tRedirect.EnumResolvedMethods(mRef).First(x => x.MatchMethodOnly(mRef));
-        //        var expr = new ExprCall(ctx, mRedirect, call.Obj, call.Args, call.IsVirtualCall, null, call.Type);
-        //        return expr;
-        //    }
-        //    var mDeclTypeDef = mRef.DeclaringType.Resolve();
-        //    var callType = mDeclTypeDef.LoadType();
-        //    if (callType == null) {
-        //        // Method is outside this module or its references
-        //        return null;
-        //    }
-        //    var altType = map.ValueOrDefault(callType);
-        //    if (altType != null) {
-        //        var tRef = thisModule.Import(altType);
-        //        if (tRef.HasGenericParameters) {
-        //            var args = ((GenericInstanceType)mRef.DeclaringType).GenericArguments.ToArray();
-        //            tRef = tRef.MakeGeneric(args);
-        //        }
-        //        var mappedMethod = tRef.EnumResolvedMethods().FirstOrDefault(x => {
-        //            var xResolved = x.FullResolve(mRef.DeclaringType, mRef, true);
-        //            var res = xResolved.Resolve();
-        //            var visible = res.IsPublic || (res.Name.Contains(".") && !res.IsConstructor); // to handle explicit interface methods
-        //            return visible && res.GetCustomAttribute<JsRedirectAttribute>(true) == null && DoesMatchMethod(xResolved, mRef);
-        //        });
-        //        if (mappedMethod != null) {
-        //            Expr expr;
-        //            if (call.ExprType == Expr.NodeType.NewObj) {
-        //                //if (mDef.IsConstructor) {
-        //                expr = new ExprNewObj(ctx, mappedMethod, call.Args);
-        //            } else {
-        //                mappedMethod = mappedMethod.FullResolve(mRef.DeclaringType, mRef);
-        //                expr = new ExprCall(ctx, mappedMethod, call.Obj, call.Args, call.IsVirtualCall);
-        //            }
-        //            return expr;
-        //        }
-        //        // Look for methods that generate AST
-        //        var method = FindJsMember(call.CallMethod, altType);
-        //        if (method != null && method.ReturnType() == typeof(Expr)) {
-        //            if (method.DeclaringType.ContainsGenericParameters) {
-        //                var tArgs = ((GenericInstanceType)call.CallMethod.DeclaringType).GenericArguments;
-        //                var typeArgs = tArgs.Select(x => x.LoadType()).ToArray();
-        //                var t = method.DeclaringType.MakeGenericType(typeArgs);
-        //                method = t.GetMethods().First(x => x.Name == method.Name && x.ReturnType == typeof(Expr));
-        //            }
-        //            var expr = (Expr)((MethodInfo)method).Invoke(null, new object[] { call });
-        //            return expr;
-        //        }
-        //    }
-        //    return null;
-        //}
-
         private static TypeReference PerformMapping(Dictionary<TypeDefinition, TypeDefinition> map, TypeReference tRef) {
             if (tRef.IsGenericParameter) {
                 return null;
@@ -522,10 +381,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         public static TypeReference TypeMap(TypeReference tRef) {
             return PerformMapping(cMap, tRef);
         }
-
-        //public static TypeReference ReverseTypeMap(TypeReference tRef) {
-        //    return PerformMapping(cMapReverse, tRef);
-        //}
 
     }
 }
