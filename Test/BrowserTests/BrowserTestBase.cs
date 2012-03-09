@@ -66,7 +66,7 @@ window.onload = function() {
                     var bHtml = Encoding.UTF8.GetBytes(completeHtml);
                     output.Write(bHtml, 0, bHtml.Length);
                     output.Close();
-                    getContextAsync = http.BeginGetContext(cb, null);
+                    //getContextAsync = http.BeginGetContext(cb, null);
                 };
                 getContextAsync = http.BeginGetContext(cb, null);
                 //var usingNamespace = NamespaceSetup.Chrome != null;

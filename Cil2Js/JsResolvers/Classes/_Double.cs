@@ -17,9 +17,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return stmt;
         }
 
-        [Js("return isNaN(a);")]
-        public static bool IsNaN(double d) {
-            throw new Exception();
+        [Js]
+        public static Expr IsNaN(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "isNaN", call.Args);
         }
     
     }

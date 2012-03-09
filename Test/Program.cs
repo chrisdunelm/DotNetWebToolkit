@@ -78,13 +78,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            // TestMultiOr
-            // TestThrowReturnDirect
-            // TestThrowReturnVar
-            // TestLoops.Test1Do
-
-            var t = new TestMath() { Verbose = true };
-            t.TestTan();
+            var t = new TestTimers() { Verbose = true };
+            t.TestSetIntervalTimespan();
 
             return;
 

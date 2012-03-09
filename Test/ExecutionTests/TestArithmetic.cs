@@ -86,5 +86,13 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestDoubleIsNan() {
+            Func<int> f = () => {
+                return (double.IsNaN(0) ? 1 : 2) + (double.IsNaN(double.NaN) ? 11 : 12);
+            };
+            this.Test(f);
+        }
+
     }
 }
