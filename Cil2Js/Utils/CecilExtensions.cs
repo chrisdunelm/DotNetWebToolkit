@@ -135,7 +135,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         public static bool MatchMethodOnlyLoose(this MethodReference a, MethodReference b) {
             // HACK: This whole method needs to go. All users of this method are able to use
             // .MatchMethodOnly() with a bit of work
-            if (a.Name != b.Name) {
+            if (a.Name != b.Name && !(b.Name.Length > a.Name.Length && b.Name.EndsWith(a.Name) && b.Name[b.Name.Length - a.Name.Length - 1] == '.')) {
                 return false;
             }
             if (a.Parameters.Count != b.Parameters.Count) {
@@ -477,7 +477,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             var declType = self.DeclaringType.FullResolve(scopeType, scopeMethod);
             //var fieldType = self.FieldType.FullResolve(scopeType, scopeMethod);
             FieldReference ret;
-            if (declType != self.DeclaringType){// || fieldType != self.FieldType) {
+            if (declType != self.DeclaringType) {// || fieldType != self.FieldType) {
                 var f = new FieldReference(self.Name, self.FieldType, declType) {
                     MetadataToken = self.MetadataToken,
                 };
