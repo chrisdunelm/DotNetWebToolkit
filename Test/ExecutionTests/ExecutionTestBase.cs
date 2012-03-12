@@ -188,7 +188,15 @@ namespace Test.ExecutionTests {
             }
         }
 
-        protected void Test(Delegate d) {
+        protected void TestTrue(Delegate d) {
+            this.Test(d, true);
+        }
+
+        protected void TestFalse(Delegate d) {
+            this.Test(d, false);
+        }
+
+        protected void Test(Delegate d, object knownResult = null, bool knownResultNull = false) {
             var mi = d.Method;
             var stackTrace = new StackTrace();
             var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
@@ -222,6 +230,9 @@ namespace Test.ExecutionTests {
                     r = d.DynamicInvoke(args[i]);
                 } catch (TargetInvocationException ex) {
                     e = ex.InnerException;
+                }
+                if (knownResult != null || knownResultNull) {
+                    Assert.That(r, Is.EqualTo(knownResult));
                 }
                 return Tuple.Create(r, e);
             }).ToArray();
