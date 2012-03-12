@@ -34,14 +34,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         }
 
-        internal OrderedEnumerable(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
-            this.source = source.Select((x, i) => new OrderedEnumerableItem<TElement> { item = x, newSubOrder = i == 0 });
-            this.keySelector = keySelector;
-            if (comparer == null) {
-                comparer = Comparer<TKey>.Default;
-            }
-            this.keyComparer = comparer;
-            this.comparer = new Comparer(comparer, isDescending);
+        internal OrderedEnumerable(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending)
+            : this(source.Select((x, i) => new OrderedEnumerableItem<TElement> { item = x, newSubOrder = i == 0 }), keySelector, comparer, isDescending) {
         }
 
         private OrderedEnumerable(IEnumerable<OrderedEnumerableItem<TElement>> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
