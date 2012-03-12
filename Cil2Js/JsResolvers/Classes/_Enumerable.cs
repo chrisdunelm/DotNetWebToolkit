@@ -7,46 +7,101 @@ using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
+    class OrderedEnumerableItem<TElement> {
+        public TElement item;
+        public bool newSubOrder;
+    }
+
     class OrderedEnumerable<TElement, TKey> : IOrderedEnumerable<TElement>, IEnumerable<TElement>, IEnumerable {
 
-        class Comparer : IComparer<TElement> {
+        class ItemWithKey : OrderedEnumerableItem<TElement> {
+            public TKey key;
+        }
 
-            internal Comparer(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
-                this.keySelector = keySelector;
-                this.comparer = comparer ?? Comparer<TKey>.Default;
-                this.isDescending = isDescending;
+        class Comparer : IComparer<ItemWithKey> {
+
+            internal Comparer(IComparer<TKey> comparer, bool isDescending) {
+                this.comparer = comparer;
+                this.mult = isDescending ? -1 : 1;
             }
 
-            private Func<TElement, TKey> keySelector;
             private IComparer<TKey> comparer;
-            private bool isDescending;
+            private int mult;
 
-            public int Compare(TElement x, TElement y) {
-                return this.comparer.Compare(this.keySelector(x), this.keySelector(y)) * (this.isDescending ? -1 : 1);
+            public int Compare(ItemWithKey x, ItemWithKey y) {
+                return this.comparer.Compare(x.key, y.key) * this.mult;
             }
 
         }
 
         internal OrderedEnumerable(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
-            this.source = source;
-            this.comparer = new Comparer(keySelector, comparer, isDescending);
+            this.source = source.Select((x, i) => new OrderedEnumerableItem<TElement> { item = x, newSubOrder = i == 0 });
+            this.keySelector = keySelector;
+            if (comparer == null) {
+                comparer = Comparer<TKey>.Default;
+            }
+            this.keyComparer = comparer;
+            this.comparer = new Comparer(comparer, isDescending);
         }
 
-        private IEnumerable<TElement> source;
+        private OrderedEnumerable(IEnumerable<OrderedEnumerableItem<TElement>> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isDescending) {
+            this.source = source;
+            this.keySelector = keySelector;
+            if (comparer == null) {
+                comparer = Comparer<TKey>.Default;
+            }
+            this.keyComparer = comparer;
+            this.comparer = new Comparer(comparer, isDescending);
+        }
+
+        private IEnumerable<OrderedEnumerableItem<TElement>> source;
+        private Func<TElement, TKey> keySelector;
+        private IComparer<TKey> keyComparer;
         private Comparer comparer;
 
         IOrderedEnumerable<TElement> IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TSubKey>(Func<TElement, TSubKey> keySelector, IComparer<TSubKey> comparer, bool descending) {
-            throw new NotImplementedException();
+            return new OrderedEnumerable<TElement, TSubKey>(this.GetElementEnumerator(), keySelector, comparer, descending);
+        }
+
+        private IEnumerable<OrderedEnumerableItem<TElement>> GetElementEnumerator() {
+            var list = new List<ItemWithKey>();
+            var en = this.source.GetEnumerator();
+            var current = default(OrderedEnumerableItem<TElement>);
+            var prevKey = default(TKey);
+            for (; ; ) {
+                var valid = en.MoveNext();
+                if (valid) {
+                    current = en.Current;
+                }
+                if (current.newSubOrder || !valid) {
+                    var count = list.Count;
+                    if (count > 1) {
+                        list.Sort(this.comparer);
+                    }
+                    for (int i = 0; i < count; i++) {
+                        list[i].newSubOrder = i == 0 || this.keyComparer.Compare(list[i].key, list[i - 1].key) != 0; // Note: relies on lazy boolean evaluation
+                        yield return list[i];
+                    }
+                    list.Clear();
+                    if (!valid) {
+                        break;
+                    }
+                }
+                var key = this.keySelector(current.item);
+                list.Add(new ItemWithKey {
+                    item = current.item,
+                    key = key,
+                });
+                prevKey = key;
+            }
         }
 
         public IEnumerator<TElement> GetEnumerator() {
-            var list = this.source.ToList();
-            list.Sort(this.comparer);
-            return list.GetEnumerator();
+            return this.GetElementEnumerator().Select(x => x.item).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() {
-            throw new NotImplementedException();
+            return this.GetEnumerator();
         }
     }
 
