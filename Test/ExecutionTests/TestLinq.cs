@@ -116,7 +116,7 @@ namespace Test.ExecutionTests {
                 var o = a.OrderBy(x => x).ToArray();
                 return o[0] == 1 && o[1] == 2 && o[2] == 3;
             };
-            this.TestTrue(f);
+            this.Test(f, true);
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace Test.ExecutionTests {
                 var o = a.OrderByDescending(x => x).ToArray();
                 return o[0] == 3 && o[1] == 2 && o[2] == 1;
             };
-            this.TestTrue(f);
+            this.Test(f, true);
         }
 
         [Test]
@@ -136,7 +136,7 @@ namespace Test.ExecutionTests {
                 var o = a.OrderBy(x => x & 1).ThenBy(x => x).ToArray();
                 return o[0] == 2 && o[1] == 4 && o[2] == 6 && o[3] == 1 && o[4] == 3 && o[5] == 5;
             };
-            this.TestTrue(f);
+            this.Test(f, true);
         }
 
         [Test]
@@ -146,7 +146,7 @@ namespace Test.ExecutionTests {
                 var o = a.OrderBy(x => x & 1).ThenByDescending(x => x).ToArray();
                 return o[0] == 6 && o[1] == 4 && o[2] == 2 && o[3] == 5 && o[4] == 3 && o[5] == 1;
             };
-            this.TestTrue(f);
+            this.Test(f, true);
         }
 
         #endregion
