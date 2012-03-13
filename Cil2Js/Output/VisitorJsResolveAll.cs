@@ -177,5 +177,32 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return expr;
         }
 
+        protected override ICode VisitAssignment(StmtAssignment s) {
+            var ctx = s.Ctx;
+            var expr = (Expr)this.Visit(s.Expr);
+            var target = (ExprVar)this.Visit(s.Target);
+            if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
+                expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
+            }
+            if (expr != s.Expr || target != s.Target) {
+                return new StmtAssignment(ctx, target, expr);
+            } else {
+                return s;
+            }
+        }
+
+        protected override ICode VisitReturn(StmtReturn s) {
+            var ctx = s.Ctx;
+            var expr = (Expr)this.Visit(s.Expr);
+            if (expr != null && expr.Type.IsInteger() && ctx.MRef.ReturnType.FullResolve(ctx).IsBoolean()) {
+                expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
+            }
+            if (expr != s.Expr) {
+                return new StmtReturn(ctx, expr);
+            } else {
+                return s;
+            }
+        }
+
     }
 }
