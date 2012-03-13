@@ -238,16 +238,19 @@ namespace Test.ExecutionTests {
 
         #region Skip, SkipWhile
 
+        [Test]
         public void TestSkip() {
             Func<int, int> f = a => Enumerable.Range(0, 50).Skip(a).Sum();
             this.Test(f);
         }
 
+        [Test]
         public void TestSkipWhile() {
             Func<int, int, int> f = (a, b) => Enumerable.Range(a, 50).SkipWhile(x => x < b).Sum();
             this.Test(f);
         }
 
+        [Test]
         public void TestSkipWhileInt() {
             Func<int, int, int, int> f = (a, b, c) => Enumerable.Range(a, 50).SkipWhile((x, i) => x < b && i < c).Sum();
             this.Test(f);
@@ -450,6 +453,12 @@ namespace Test.ExecutionTests {
                 return r[0] == 3 && r[1] == 4 && r[2] == 5 && r[3] == 6;
             };
             this.Test(f, true);
+        }
+
+        [Test]
+        public void TestRepeat() {
+            Func<int, int, int> f = (a, b) => Enumerable.Repeat(a, b).Sum();
+            this.Test(f);
         }
 
         [Test]

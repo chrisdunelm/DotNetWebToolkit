@@ -492,7 +492,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
-        #region Empty, Range, SequenceEqual
+        #region Empty, Range, Repeat, SequenceEqual
 
         public static IEnumerable<TResult> Empty<TResult>() {
             return new TResult[0];
@@ -501,6 +501,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public static IEnumerable<int> Range(int start, int count) {
             for (int i = 0; i < count; i++) {
                 yield return start + i;
+            }
+        }
+
+        public static IEnumerable<TResult> Repeat<TResult>(TResult element, int count) {
+            while (--count >= 0) {
+                yield return element;
             }
         }
 
