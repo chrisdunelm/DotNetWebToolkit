@@ -188,6 +188,20 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Reverse
+
+        [Test]
+        public void TestReverse() {
+            Func<bool> f = () => {
+                var a = new int[] { 0, 1, 2 };
+                var r = a.Reverse().ToArray();
+                return r[0] == 2 && r[1] == 1 && r[2] == 0;
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Select
 
         [Test]

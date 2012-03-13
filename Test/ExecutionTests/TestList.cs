@@ -240,6 +240,16 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestReverse() {
+            Func<int, int, bool> f = (a, b) => {
+                var list = new List<int> { a, b };
+                list.Reverse();
+                return list[0] == b && list[1] == a;
+            };
+            this.Test(f, true);
+        }
+
     }
 
 }

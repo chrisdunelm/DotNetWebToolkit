@@ -282,7 +282,7 @@ return a;
         }
 
         public bool IsFixedSize {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public void Remove(object value) {
@@ -303,12 +303,20 @@ return a;
         }
 
         public bool IsSynchronized {
-            get { throw new NotImplementedException(); }
+            get { return false; }
         }
 
         public object SyncRoot {
-            get { throw new NotImplementedException(); }
+            get { return this; }
         }
+
+        [Js(typeof(void))]
+        public static Expr Reverse(ICall call) {
+            var ctx = call.Ctx;
+            var array  = GetNamedArrayField(call);
+            return new ExprJsExplicit(ctx, "array.reverse()", ctx.Void, array);
+        }
+
     }
 
 }

@@ -266,6 +266,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Reverse
+
+        public static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source) {
+            var list = source.ToList();
+            list.Reverse();
+            return list;
+        }
+
+        #endregion
+
         #region Select
 
         public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector) {
