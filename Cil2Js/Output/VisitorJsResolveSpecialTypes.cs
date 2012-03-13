@@ -40,7 +40,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return v.Visit(ast);
         }
 
-        protected override Ast.ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
+        protected override ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
             if (e.Call.CallMethod != null) {
                 var ctx = e.Ctx;
                 var mDef = e.Call.CallMethod.Resolve();
