@@ -309,6 +309,21 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Zip
+
+        [Test]
+        public void TestZip() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 0, 1 };
+                var a2 = new string[] { "zero", "one" };
+                var r = a1.Zip(a2, (a, b) => new { a, b }).ToArray();
+                return r.Length == 2 && r[0].a == 0 && r[0].b == "zero" && r[1].a == 1 && r[1].b == "one";
+            };
+            this.Test(f, true);
+        }
+
+        #endregion
+
         #region Converters
 
         [Test]

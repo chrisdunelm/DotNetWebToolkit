@@ -349,6 +349,29 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Zip
+
+        public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector) {
+            IEnumerator<TFirst> enFirst = null;
+            IEnumerator<TSecond> enSecond = null;
+            try {
+                enFirst = first.GetEnumerator();
+                enSecond = second.GetEnumerator();
+                while (enFirst.MoveNext() && enSecond.MoveNext()) {
+                    yield return resultSelector(enFirst.Current, enSecond.Current);
+                }
+            } finally {
+                if (enFirst != null) {
+                    enFirst.Dispose();
+                }
+                if (enSecond != null) {
+                    enSecond.Dispose();
+                }
+            }
+        }
+
+        #endregion
+
         #region ToArray, ToList, ToDictionary
 
         public static T[] ToArray<T>(this IEnumerable<T> source) {
@@ -417,9 +440,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             if (comparer == null) {
                 comparer = EqualityComparer<TSource>.Default;
             }
-            var enFirst = first.GetEnumerator();
-            var enSecond = second.GetEnumerator();
+            IEnumerator<TSource> enFirst = null;
+            IEnumerator<TSource> enSecond = null;
             try {
+                enFirst = first.GetEnumerator();
+                enSecond = second.GetEnumerator();
                 for (; ; ) {
                     var validFirst = enFirst.MoveNext();
                     var validSecond = enSecond.MoveNext();
@@ -434,8 +459,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                     }
                 }
             } finally {
-                enFirst.Dispose();
-                enSecond.Dispose();
+                if (enFirst != null) {
+                    enFirst.Dispose();
+                }
+                if (enSecond != null) {
+                    enSecond.Dispose();
+                }
             }
         }
 
