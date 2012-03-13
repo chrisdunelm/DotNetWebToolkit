@@ -295,6 +295,44 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Skip, SkipWhile
+
+        public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count) {
+            foreach (var item in source) {
+                if (--count < 0) {
+                    yield return item;
+                }
+            }
+        }
+
+        public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            bool skipping = true;
+            foreach (var item in source) {
+                if (skipping && !predicate(item)) {
+                    skipping = false;
+                }
+                if (!skipping) {
+                    yield return item;
+                }
+            }
+        }
+
+        public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate) {
+            bool skipping = true;
+            int i = 0;
+            foreach (var item in source) {
+                if (skipping && !predicate(item, i)) {
+                    skipping = false;
+                }
+                i++;
+                if (!skipping) {
+                    yield return item;
+                }
+            }
+        }
+
+        #endregion
+
         #region Sum
 
         public static int Sum(this IEnumerable<int> source) {
@@ -311,6 +349,40 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 sum += item;
             }
             return sum;
+        }
+
+        #endregion
+
+        #region Take, TakeWhile
+
+        public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count) {
+            foreach (var item in source) {
+                if (count <= 0) {
+                    break;
+                }
+                count--;
+                yield return item;
+            }
+        }
+
+        public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            foreach (var item in source) {
+                if (!predicate(item)) {
+                    break;
+                }
+                yield return item;
+            }
+        }
+
+        public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate) {
+            int i = 0;
+            foreach (var item in source) {
+                if (!predicate(item, i)) {
+                    break;
+                }
+                i++;
+                yield return item;
+            }
         }
 
         #endregion

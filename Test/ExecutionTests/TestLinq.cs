@@ -236,6 +236,25 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Skip, SkipWhile
+
+        public void TestSkip() {
+            Func<int, int> f = a => Enumerable.Range(0, 50).Skip(a).Sum();
+            this.Test(f);
+        }
+
+        public void TestSkipWhile() {
+            Func<int, int, int> f = (a, b) => Enumerable.Range(a, 50).SkipWhile(x => x < b).Sum();
+            this.Test(f);
+        }
+
+        public void TestSkipWhileInt() {
+            Func<int, int, int, int> f = (a, b, c) => Enumerable.Range(a, 50).SkipWhile((x, i) => x < b && i < c).Sum();
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Sum
 
         [Test]
@@ -253,6 +272,28 @@ namespace Test.ExecutionTests {
                 var array = new[] { a, b, c };
                 return array.Sum();
             };
+            this.Test(f);
+        }
+
+        #endregion
+
+        #region Take, TakeWhile
+
+        [Test]
+        public void TestTake() {
+            Func<int, int> f = a => Enumerable.Range(0, 50).Take(a).Sum();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTakeWhile() {
+            Func<int, int, int> f = (a, b) => Enumerable.Range(a, 50).TakeWhile(x => x < b).Sum();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTakeWhileInt() {
+            Func<int, int, int, int> f = (a, b, c) => Enumerable.Range(a, 50).TakeWhile((x, i) => x < b && i < c).Sum();
             this.Test(f);
         }
 
