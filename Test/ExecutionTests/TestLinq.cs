@@ -10,6 +10,28 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestLinq : ExecutionTestBase {
 
+        #region Aggregate
+
+        [Test]
+        public void TestAggregate() {
+            Func<int, int> f = a => Enumerable.Repeat(1, a + 10).Aggregate((x, y) => x + y);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAggregateSeed() {
+            Func<int, string> f = a => Enumerable.Repeat(1, a + 10).Aggregate("Concat:", (x, i) => x + i.ToString());
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAggregateSeedResultSelector() {
+            Func<int, string> f = a => Enumerable.Repeat(1, a + 10).Aggregate("Concat:", (x, i) => x + i.ToString(), acc => "RS:" + acc);
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Concat
 
         [Test]
@@ -432,7 +454,7 @@ namespace Test.ExecutionTests {
 
         #endregion
 
-        #region Empty, Range, SequenceEqual
+        #region Empty, Range, Repeat, SequenceEqual
 
         [Test]
         public void TestEmpty() {

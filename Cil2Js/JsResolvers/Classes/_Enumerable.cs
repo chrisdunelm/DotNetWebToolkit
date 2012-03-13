@@ -105,6 +105,39 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     static class _Enumerable {
 
+        #region Aggregate
+
+        public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
+            var acc = default(TSource);
+            var first = true;
+            foreach (var item in source) {
+                if (first) {
+                    acc = item;
+                    first = false;
+                } else {
+                    acc = func(acc, item);
+                }
+            }
+            if (first) {
+                throw new InvalidOperationException();
+            }
+            return acc;
+        }
+
+        public static TAccumulate Aggregate<TSource, TAccumulate>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func) {
+            var acc = seed;
+            foreach (var item in source) {
+                acc = func(acc, item);
+            }
+            return acc;
+        }
+
+        public static TResult Aggregate<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector) {
+            return resultSelector(source.Aggregate(seed, func));
+        }
+
+        #endregion
+
         #region Concat
 
         public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
