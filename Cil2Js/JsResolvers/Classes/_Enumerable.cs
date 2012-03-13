@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
+    #region Ordering classes
+
     class OrderedEnumerableItem<TElement> {
         public TElement item;
         public bool newSubOrder;
@@ -99,7 +101,22 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
     }
 
+    #endregion
+
     static class _Enumerable {
+
+        #region Concat
+
+        public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
+            foreach (var item in first) {
+                yield return item;
+            }
+            foreach (var item in second) {
+                yield return item;
+            }
+        }
+
+        #endregion
 
         #region Count
 
@@ -144,7 +161,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
-        #region First
+        #region First, FirstOrDefault
 
         public static TSource First<TSource>(this IEnumerable<TSource> source) {
             foreach (var item in source) {
@@ -298,6 +315,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Union
+
+        public static IEnumerable<TSource> Union<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
+            return first.Concat(second).Distinct();
+        }
+
+        public static IEnumerable<TSource> Union<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer) {
+            return first.Concat(second).Distinct(comparer);
+        }
+
+        #endregion
+
         #region Where
 
         public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
@@ -364,6 +393,50 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 d.Add(keySelector(item), elementSelector(item));
             }
             return d;
+        }
+
+        #endregion
+
+        #region Empty, Range, SequenceEqual
+
+        public static IEnumerable<TResult> Empty<TResult>() {
+            return new TResult[0];
+        }
+
+        public static IEnumerable<int> Range(int start, int count) {
+            for (int i = 0; i < count; i++) {
+                yield return start + i;
+            }
+        }
+
+        public static bool SequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
+            return first.SequenceEqual(second, null);
+        }
+
+        public static bool SequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer) {
+            if (comparer == null) {
+                comparer = EqualityComparer<TSource>.Default;
+            }
+            var enFirst = first.GetEnumerator();
+            var enSecond = second.GetEnumerator();
+            try {
+                for (; ; ) {
+                    var validFirst = enFirst.MoveNext();
+                    var validSecond = enSecond.MoveNext();
+                    if (validFirst != validSecond) {
+                        return false;
+                    }
+                    if (!validFirst) {
+                        return true;
+                    }
+                    if (!comparer.Equals(enFirst.Current, enSecond.Current)) {
+                        return false;
+                    }
+                }
+            } finally {
+                enFirst.Dispose();
+                enSecond.Dispose();
+            }
         }
 
         #endregion

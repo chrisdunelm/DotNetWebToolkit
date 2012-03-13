@@ -10,6 +10,21 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestLinq : ExecutionTestBase {
 
+        #region Concat
+
+        [Test]
+        public void TestConcat() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 0, 1 };
+                var a2 = new int[] { 2, 3 };
+                var r = a1.Concat(a2).ToArray();
+                return r[0] == 0 && r[1] == 1 && r[2] == 2 && r[3] == 3;
+            };
+            this.Test(f, true);
+        }
+
+        #endregion
+
         #region Count
 
         [Test]
@@ -243,6 +258,33 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Union
+
+        [Test]
+        public void TestUnionUnique() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 0, 1 };
+                var a2 = new int[] { 2, 3 };
+                var r = a1.Union(a2).ToArray();
+                return r[0] == 0 && r[1] == 1 && r[2] == 2 && r[3] == 3;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestUnionOverlap() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 0, 1, 2, 3, 2, 1, 0 };
+                var a2 = new int[] { 0, 4, 1, 5, 3, 2, 1, 0, 6 };
+                var r = a1.Union(a2);
+                var expected = new int[] { 0, 1, 2, 3, 4, 5, 6 };
+                return r.SequenceEqual(expected);
+            };
+            this.Test(f, true);
+        }
+
+        #endregion
+
         #region Where
 
         [Test]
@@ -327,6 +369,71 @@ namespace Test.ExecutionTests {
                 return d[a];
             };
             this.Test(f);
+        }
+
+        #endregion
+
+        #region Empty, Range, SequenceEqual
+
+        [Test]
+        public void TestEmpty() {
+            Func<int> f = () => Enumerable.Empty<int>().Count();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestRangeCount() {
+            Func<int> f = () => Enumerable.Range(0, 10).Count();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestRangeValues() {
+            Func<bool> f = () => {
+                var r = Enumerable.Range(3, 4).ToArray();
+                return r[0] == 3 && r[1] == 4 && r[2] == 5 && r[3] == 6;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSequenceEqualOk() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 1, 2, 3 };
+                var a2 = new int[] { 1, 2, 3 };
+                return a1.SequenceEqual(a2);
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSequenceEqualOkEmpty() {
+            Func<bool> f = () => {
+                var a1 = Enumerable.Empty<int>();
+                var a2 = Enumerable.Empty<int>();
+                return a1.SequenceEqual(a2);
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSequenceEqualBadValues() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 1, 2, 3 };
+                var a2 = new int[] { 1, 2, 4 };
+                return a1.SequenceEqual(a2);
+            };
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestSequenceEqualBadLength() {
+            Func<bool> f = () => {
+                var a1 = new int[] { 1, 2, 3 };
+                var a2 = new int[] { };
+                return a1.SequenceEqual(a2);
+            };
+            this.Test(f, false);
         }
 
         #endregion
