@@ -47,11 +47,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public _List() {
-            array = new T[0];
+            this.array = new T[0];
         }
 
         public _List(int capacity) {
-            array = new T[0];
+            this.array = new T[0];
         }
 
         public _List(IEnumerable<T> collection)
@@ -146,10 +146,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
-        public static Expr ToArray(ICall call) {
-            var ctx = call.Ctx;
-            var array = GetNamedArrayField(call);
-            return new ExprJsExplicit(ctx, "array.slice(0)", call.Type, array);
+        public static Stmt ToArray(Ctx ctx) {
+            var returnType = ctx.MRef.ReturnType.FullResolve(ctx);
+            var a = ctx.Local(returnType, "a");
+            var arrayFieldRef = ctx.Module.Import(typeof(_List<T>)).EnumResolvedFields().First();
+            var array = new ExprFieldAccess(ctx, ctx.This, arrayFieldRef).Named("array");
+            var type = new ExprJsTypeVarName(ctx, returnType).Named("type");
+            var js = @"
+a = array.slice(0);
+a._ = type;
+return a;
+";
+            return new StmtJsExplicit(ctx, js, a, type, array);
         }
 
         void IList<T>.Insert(int index, T item) {
