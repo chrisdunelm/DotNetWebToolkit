@@ -176,6 +176,90 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region ElementAt, ElementAtOrDefault
+
+        [Test]
+        public void TestElementAtListIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.ElementAt(1);
+            };
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestElementAtListNotIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                try {
+                    return a.ElementAt(10);
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestElementAtNonListIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.Skip(1).ElementAt(1);
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestElementAtNonListNotIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                try {
+                    return a.Skip(1).ElementAt(10);
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestElementAtOrDefaultListIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.ElementAtOrDefault(1);
+            };
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestElementAtOrDefaultListNotIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.ElementAtOrDefault(10);
+            };
+            this.Test(f, 0);
+        }
+
+        [Test]
+        public void TestElementAtOrDefaultNonListIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.Skip(1).ElementAtOrDefault(1);
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestElementAtOrDefaultNonListNotIn() {
+            Func<int> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.Skip(1).ElementAtOrDefault(10);
+            };
+            this.Test(f, 0);
+        }
+
+        #endregion
+
         #region First, FirstOrDefault
 
         [Test]

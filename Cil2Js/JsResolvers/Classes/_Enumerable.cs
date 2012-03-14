@@ -377,6 +377,60 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region ElementAt, ElementAtOrDefault
+
+        public static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index) {
+            var result = default(TSource);
+            var resultSet = false;
+            var list = source as IList<TSource>;
+            if (list != null) {
+                if (index >= 0 && index < list.Count) {
+                    result = list[index];
+                    resultSet = true;
+                }
+            } else {
+                if (index >= 0) {
+                    using (var en = source.GetEnumerator()) {
+                        while (en.MoveNext()) {
+                            if (index-- == 0) {
+                                result = en.Current;
+                                resultSet = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (resultSet) {
+                return result;
+            }
+            throw new ArgumentOutOfRangeException();
+        }
+
+        public static TSource ElementAtOrDefault<TSource>(this IEnumerable<TSource> source, int index) {
+            var result = default(TSource);
+            var list = source as IList<TSource>;
+            if (list != null) {
+                if (index >= 0 && index < list.Count) {
+                    result = list[index];
+                }
+            } else {
+                if (index >= 0) {
+                    using (var en = source.GetEnumerator()) {
+                        while (en.MoveNext()) {
+                            if (index-- == 0) {
+                                result = en.Current;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        #endregion
+
         #region First, FirstOrDefault
 
         public static TSource First<TSource>(this IEnumerable<TSource> source) {
