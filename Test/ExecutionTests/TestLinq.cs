@@ -268,6 +268,32 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region GroupJoin
+
+        [Test]
+        public void TestGroupJoin() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                var b = new int[] { 1, 2, 4 };
+                var r = a.GroupJoin(b, x => x, x => x, (x, y) => x * y.Sum()).ToArray();
+                return r.Length == 2 && r[0] == 1 && r[1] == 4;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestGroupJoinMoreComplex() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                var b = new int[] { 1, 2, 4 };
+                var r = a.GroupJoin(b, x => x & 1, x => x & 1, (x, y) => x * y.Sum()).ToArray();
+                return r.Length == 3 && r[0] == 1 && r[1] == 12 && r[2] == 3;
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Join
 
         [Test]
@@ -291,7 +317,6 @@ namespace Test.ExecutionTests {
             };
             this.Test(f);
         }
-
 
         #endregion
 
