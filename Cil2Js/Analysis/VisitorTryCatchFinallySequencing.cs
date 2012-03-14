@@ -62,9 +62,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     }
                     var sCatch = s.Catches.First();
                     var @catch = this.RemoveContinuation(sCatch.Stmt);
-                    if ((@try.Item2 == null || @catch.Item2 == null || @try.Item2 == @catch.Item2) && (@try.Item2 != null || @catch.Item2 != null)) {
-                        var newTry = new StmtTry(s.Ctx, @try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionVar) }, null);
-                        return new StmtBlock(s.Ctx, newTry, @try.Item2 ?? @catch.Item2);
+                    if (@catch != null) {
+                        if ((@try.Item2 == null || @catch.Item2 == null || @try.Item2 == @catch.Item2) && (@try.Item2 != null || @catch.Item2 != null)) {
+                            var newTry = new StmtTry(s.Ctx, @try.Item1, new[] { new StmtTry.Catch(@catch.Item1, sCatch.ExceptionVar) }, null);
+                            var newCont = new StmtContinuation(s.Ctx, @try.Item2 ?? @catch.Item2, false);
+                            return new StmtBlock(s.Ctx, newTry, newCont);
+                        }
                     }
                     // Special case
                     // When 'leave' CIL branch to different instructions, allow specific code to be
@@ -86,9 +89,12 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 }
                 if (s.Finally != null) {
                     var @finally = this.RemoveContinuation(s.Finally);
-                    if ((@try.Item2 == null || @finally.Item2 == null || @try.Item2 == @finally.Item2) && (@try.Item2 != null || @finally.Item2 != null)) {
-                        var newTry = new StmtTry(s.Ctx, @try.Item1, null, @finally.Item1);
-                        return new StmtBlock(s.Ctx, newTry, @try.Item2 ?? @finally.Item2);
+                    if (@finally != null) {
+                        if ((@try.Item2 == null || @finally.Item2 == null || @try.Item2 == @finally.Item2) && (@try.Item2 != null || @finally.Item2 != null)) {
+                            var newTry = new StmtTry(s.Ctx, @try.Item1, null, @finally.Item1);
+                            var newCont = new StmtContinuation(s.Ctx, @try.Item2 ?? @finally.Item2, false);
+                            return new StmtBlock(s.Ctx, newTry, newCont);
+                        }
                     }
                 }
                 // TODO: This is a hack for badly handling fault handlers. They are ignored at the moment
