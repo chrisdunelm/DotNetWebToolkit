@@ -138,15 +138,103 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Any, All
+
+        public static bool Any<TSource>(this IEnumerable<TSource> source) {
+            var col = source as ICollection;
+            if (col != null) {
+                return col.Count > 0;
+            }
+            var colT = source as ICollection<TSource>;
+            if (colT != null) {
+                return colT.Count > 0;
+            }
+            using (var en = source.GetEnumerator()) {
+                return en.MoveNext();
+            }
+        }
+
+        #endregion
+
         #region Concat
 
+        class ConcatEnumerator<T> : IEnumerable<T>, IEnumerator<T> {
+
+            internal ConcatEnumerator(IEnumerable<T> first, IEnumerable<T> second, bool isEnumerator) {
+                this.first = first;
+                this.second = second;
+                if (isEnumerator) {
+                    this.en1 = first.GetEnumerator();
+                }
+            }
+
+            private IEnumerable<T> first, second;
+            private IEnumerator<T> en1, en2;
+            private T current;
+
+            public IEnumerator<T> GetEnumerator() {
+                return new ConcatEnumerator<T>(this.first, this.second, true);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new ConcatEnumerator<T>(this.first, this.second, true);
+            }
+
+            public T Current {
+                get { return this.current; }
+            }
+
+            public void Dispose() {
+                if (this.en1 != null) {
+                    this.en1.Dispose();
+                    this.en1 = null;
+                }
+                if (this.en2 != null) {
+                    this.en2.Dispose();
+                    this.en2 = null;
+                }
+            }
+
+            object IEnumerator.Current {
+                get { return this.current; }
+            }
+
+            public bool MoveNext() {
+                if (this.en1 != null) {
+                    if (this.en1.MoveNext()) {
+                        this.current = this.en1.Current;
+                        return true;
+                    } else {
+                        this.en1.Dispose();
+                        this.en1 = null;
+                        this.en2 = this.second.GetEnumerator();
+                    }
+                }
+                if (this.en2 != null) {
+                    if (this.en2.MoveNext()) {
+                        this.current = this.en2.Current;
+                        return true;
+                    } else {
+                        this.en2.Dispose();
+                        this.en2 = null;
+                    }
+                }
+                return false;
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
+            }
+        }
+
         public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
-            foreach (var item in first) {
-                yield return item;
-            }
-            foreach (var item in second) {
-                yield return item;
-            }
+            return new ConcatEnumerator<TSource>(first, second, false);
+            //foreach (var item in first) {
+            //    yield return item;
+            //}
+            //foreach (var item in second) {
+            //    yield return item;
+            //}
         }
 
         #endregion
@@ -158,9 +246,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             if (sourceCollection != null) {
                 return sourceCollection.Count;
             }
+            var sourceCollectionT = source as ICollection<TSource>;
+            if (sourceCollectionT != null) {
+                return sourceCollectionT.Count;
+            }
             int count = 0;
-            foreach (var item in source) {
-                count++;
+            using (var en = source.GetEnumerator()) {
+                while (en.MoveNext()) {
+                    count++;
+                }
             }
             return count;
         }
@@ -342,18 +436,70 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #region Select
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector) {
-            foreach (var item in source) {
-                yield return selector(item);
+        class SelectEnumerator<TSource, TResult> : IEnumerable<TResult>, IEnumerator<TResult> {
+
+            internal SelectEnumerator(IEnumerable<TSource> source, Func<TSource, TResult> selector1, Func<TSource, int, TResult> selector2) {
+                this.source = source;
+                this.selector1 = selector1;
+                this.selector2 = selector2;
+            }
+
+            private IEnumerable<TSource> source;
+            private Func<TSource, TResult> selector1;
+            private Func<TSource, int, TResult> selector2;
+            private IEnumerator<TSource> en;
+            private TResult current;
+            private int count;
+
+            public IEnumerator<TResult> GetEnumerator() {
+                return new SelectEnumerator<TSource, TResult>(this.source, this.selector1, this.selector2);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return this.GetEnumerator();
+            }
+
+            public TResult Current {
+                get { return this.current; }
+            }
+
+            public void Dispose() {
+                if (this.en != null) {
+                    this.en.Dispose();
+                }
+            }
+
+            object IEnumerator.Current {
+                get { return this.current; }
+            }
+
+            public bool MoveNext() {
+                if (this.en == null) {
+                    this.en = this.source.GetEnumerator();
+                    this.count = -1;
+                }
+                var ret = this.en.MoveNext();
+                if (ret) {
+                    this.count++;
+                    var cur = this.en.Current;
+                    this.current = this.selector1 != null ?
+                        this.selector1(cur) :
+                        this.selector2(cur, this.count);
+                }
+                return ret;
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
             }
         }
 
+        public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector) {
+            return new SelectEnumerator<TSource, TResult>(source, selector, null);
+        }
+
         public static IEnumerable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, int, TResult> selector) {
-            int i = 0;
-            foreach (var item in source) {
-                yield return selector(item, i);
-                i++;
-            }
+            return new SelectEnumerator<TSource, TResult>(source, null, selector);
         }
 
         #endregion Select
@@ -404,12 +550,65 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #region Skip, SkipWhile
 
-        public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count) {
-            foreach (var item in source) {
-                if (--count < 0) {
-                    yield return item;
+        class SkipEnumerator<T> : IEnumerable<T>, IEnumerator<T> {
+
+            internal SkipEnumerator(IEnumerable<T> source, int count) {
+                this.source = source;
+                this.count = count;
+            }
+
+            private IEnumerable<T> source;
+            private int count;
+            private IEnumerator<T> en;
+
+            public IEnumerator<T> GetEnumerator() {
+                return new SkipEnumerator<T>(this.source, this.count);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new SkipEnumerator<T>(this.source, this.count);
+            }
+
+            public T Current {
+                get { return this.en.Current; }
+            }
+
+            public void Dispose() {
+                if (this.en != null) {
+                    this.en.Dispose();
+                    this.en = null;
                 }
             }
+
+            object IEnumerator.Current {
+                get { return this.en.Current; }
+            }
+
+            public bool MoveNext() {
+                if (this.en == null) {
+                    this.en = this.source.GetEnumerator();
+                }
+                do {
+                    if (!this.en.MoveNext()) {
+                        return false;
+                    }
+                    this.count--;
+                } while (this.count >= 0);
+                return true;
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
+            }
+        }
+
+        public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count) {
+            return new SkipEnumerator<TSource>(source, count);
+            //foreach (var item in source) {
+            //    if (--count < 0) {
+            //        yield return item;
+            //    }
+            //}
         }
 
         public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
@@ -462,14 +661,65 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #region Take, TakeWhile
 
-        public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count) {
-            foreach (var item in source) {
-                if (count <= 0) {
-                    break;
-                }
-                count--;
-                yield return item;
+        class TakeEnumerator<T> : IEnumerable<T>, IEnumerator<T> {
+
+            internal TakeEnumerator(IEnumerable<T> source, int count) {
+                this.source = source;
+                this.count = count;
             }
+
+            private IEnumerable<T> source;
+            private int count;
+            private IEnumerator<T> en;
+
+            public IEnumerator<T> GetEnumerator() {
+                return new TakeEnumerator<T>(this.source, this.count);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new TakeEnumerator<T>(this.source, this.count);
+            }
+
+            public T Current {
+                get { return this.en.Current; }
+            }
+
+            public void Dispose() {
+                if (this.en != null) {
+                    this.en.Dispose();
+                    this.en = null;
+                }
+            }
+
+            object IEnumerator.Current {
+                get { return this.en.Current; }
+            }
+
+            public bool MoveNext() {
+                count--;
+                if (count < 0) {
+                    return false;
+                }
+                if (this.en == null) {
+                    this.en = this.source.GetEnumerator();
+                }
+                return this.en.MoveNext();
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
+            }
+        }
+
+        public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count) {
+            return new TakeEnumerator<TSource>(source, count);
+            //foreach (var item in source) {
+            //    if (count <= 0) {
+            //        break;
+            //    }
+            //    count--;
+            //    yield return item;
+            //}
         }
 
         public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
@@ -508,22 +758,83 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #region Where
 
-        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
-            foreach (var item in source) {
-                if (predicate(item)) {
-                    yield return item;
+        class WhereEnumerator<T> : IEnumerable<T>, IEnumerator<T> {
+
+            internal WhereEnumerator(IEnumerable<T> source, Func<T, bool> predicate1, Func<T, int, bool> predicate2) {
+                this.source = source;
+                this.predicate1 = predicate1;
+                this.predicate2 = predicate2;
+            }
+
+            private IEnumerable<T> source;
+            private Func<T, bool> predicate1;
+            private Func<T, int, bool> predicate2;
+            private IEnumerator<T> en;
+            private int count;
+            private T current;
+
+            public IEnumerator<T> GetEnumerator() {
+                return new WhereEnumerator<T>(this.source, this.predicate1, this.predicate2);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new WhereEnumerator<T>(this.source, this.predicate1, this.predicate2);
+            }
+
+            public T Current {
+                get { return this.current; }
+            }
+
+            public void Dispose() {
+                if (this.en != null) {
+                    this.en.Dispose();
                 }
+            }
+
+            object IEnumerator.Current {
+                get { return this.current; }
+            }
+
+            public bool MoveNext() {
+                if (this.en == null) {
+                    this.en = this.source.GetEnumerator();
+                    this.count = -1;
+                }
+                for (; ; ) {
+                    if (!this.en.MoveNext()) {
+                        return false;
+                    }
+                    this.count++;
+                    this.current = this.en.Current;
+                    if ((predicate1 != null) ? (this.predicate1(this.current)) : (this.predicate2(this.current, this.count))) {
+                        return true;
+                    }
+                }
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
             }
         }
 
+        public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Func<T, bool> predicate) {
+            return new WhereEnumerator<T>(source, predicate, null);
+            //foreach (var item in source) {
+            //    if (predicate(item)) {
+            //        yield return item;
+            //    }
+            //}
+        }
+
         public static IEnumerable<T> Where<T>(this IEnumerable<T> source, Func<T, int, bool> predicate) {
-            int i = 0;
-            foreach (var item in source) {
-                if (predicate(item, i)) {
-                    yield return item;
-                }
-                i++;
-            }
+            return new WhereEnumerator<T>(source, null, predicate);
+            //int i = 0;
+            //foreach (var item in source) {
+            //    if (predicate(item, i)) {
+            //        yield return item;
+            //    }
+            //    i++;
+            //}
         }
 
         #endregion
@@ -605,16 +916,94 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new TResult[0];
         }
 
+        class RangeEnumerator : IEnumerable<int>, IEnumerator<int> {
+
+            internal RangeEnumerator(int start, int count) {
+                this.value = start - 1;
+                this.count = count;
+            }
+
+            private int value, count;
+
+            public IEnumerator<int> GetEnumerator() {
+                return new RangeEnumerator(this.value + 1, this.count);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new RangeEnumerator(this.value + 1, this.count);
+            }
+
+            public int Current {
+                get { return this.value; }
+            }
+
+            public void Dispose() {
+            }
+
+            object IEnumerator.Current {
+                get { return this.value; }
+            }
+
+            public bool MoveNext() {
+                this.value++;
+                return --this.count >= 0;
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
+            }
+        }
+
         public static IEnumerable<int> Range(int start, int count) {
-            for (int i = 0; i < count; i++) {
-                yield return start + i;
+            return new RangeEnumerator(start, count);
+            //for (int i = 0; i < count; i++) {
+            //    yield return start + i;
+            //}
+        }
+
+        class RepeatEnumerator<T> : IEnumerable<T>, IEnumerator<T> {
+
+            internal RepeatEnumerator(T element, int count) {
+                this.element = element;
+                this.count = count;
+            }
+
+            private T element;
+            private int count;
+
+            public IEnumerator<T> GetEnumerator() {
+                return new RepeatEnumerator<T>(this.element, this.count);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() {
+                return new RepeatEnumerator<T>(this.element, this.count);
+            }
+
+            public T Current {
+                get { return this.element; }
+            }
+
+            public void Dispose() {
+            }
+
+            object IEnumerator.Current {
+                get { return this.element; }
+            }
+
+            public bool MoveNext() {
+                return --this.count >= 0;
+            }
+
+            public void Reset() {
+                throw new NotImplementedException();
             }
         }
 
         public static IEnumerable<TResult> Repeat<TResult>(TResult element, int count) {
-            while (--count >= 0) {
-                yield return element;
-            }
+            return new RepeatEnumerator<TResult>(element, count);
+            //while (--count >= 0) {
+            //    yield return element;
+            //}
         }
 
         public static bool SequenceEqual<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {

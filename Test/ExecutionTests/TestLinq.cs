@@ -32,6 +32,46 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Any, All
+
+        [Test]
+        public void TestAnyCollectionYes() {
+            Func<bool> f = () => {
+                var a = new int[] { 1 };
+                return a.Any();
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestAnyCollectionNo() {
+            Func<bool> f = () => {
+                var a = new int[] { };
+                return a.Any();
+            };
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAnyNonCollectionYes() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2 };
+                return a.Take(2).Any();
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestAnyNonCollectionNo() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2 };
+                return a.Take(0).Any();
+            };
+            this.Test(f, false);
+        }
+
+        #endregion
+
         #region Concat
 
         [Test]
