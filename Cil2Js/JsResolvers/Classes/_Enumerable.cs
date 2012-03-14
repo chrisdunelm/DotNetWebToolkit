@@ -103,6 +103,77 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     #endregion
 
+    #region Lookup classes
+
+    class Lookup<TKey, TElement> : ILookup<TKey, TElement> {
+
+        internal Lookup(Dictionary<TKey, List<TElement>> data) {
+            this.data = data;
+        }
+
+        private Dictionary<TKey, List<TElement>> data;
+
+        public bool Contains(TKey key) {
+            return this.data.ContainsKey(key);
+        }
+
+        public int Count {
+            get { return this.data.Count; }
+        }
+
+        public IEnumerable<TElement> this[TKey key] {
+            get {
+                List<TElement> value;
+                if (this.data.TryGetValue(key, out value)) {
+                    return value;
+                } else {
+                    return Enumerable.Empty<TElement>();
+                }
+            }
+        }
+
+        public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() {
+            foreach (var item in this.data) {
+                yield return new Grouping<TKey, TElement>(item.Key, item.Value);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return this.GetEnumerator();
+        }
+
+    }
+
+    #endregion
+
+    #region Grouping classes
+
+    class Grouping<TKey, TElement> : IGrouping<TKey, TElement> {
+
+        internal Grouping(TKey key, IEnumerable<TElement> elements) {
+            this.key = key;
+            this.elements = elements;
+        }
+
+        private TKey key;
+        private IEnumerable<TElement> elements;
+
+        public TKey Key {
+            get { return this.key; }
+        }
+
+        public IEnumerator<TElement> GetEnumerator() {
+            return this.elements.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return this.elements.GetEnumerator();
+        }
+
+    }
+
+    #endregion
+
     static class _Enumerable {
 
         #region Aggregate
@@ -338,6 +409,50 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 }
             }
             return default(TSource);
+        }
+
+        #endregion
+
+        #region GroupBy
+
+        public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return source.ToLookup(keySelector, null);
+        }
+
+        public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer) {
+            return source.ToLookup(keySelector, comparer);
+        }
+
+        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) {
+            return source.ToLookup(keySelector, elementSelector, null);
+        }
+
+        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer) {
+            return source.ToLookup(keySelector, elementSelector, comparer);
+        }
+
+        public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector) {
+            return source.ToLookup(keySelector, null).Select(x => resultSelector(x.Key, x));
+        }
+
+        public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector, IEqualityComparer<TKey> comparer) {
+            return source.ToLookup(keySelector, comparer).Select(x => resultSelector(x.Key, x));
+        }
+
+        public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) {
+            return source.ToLookup(keySelector, elementSelector, null).Select(x => resultSelector(x.Key, x));
+        }
+
+        public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>
+            (this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, IEqualityComparer<TKey> comparer) {
+            return source.ToLookup(keySelector, elementSelector, comparer).Select(x => resultSelector(x.Key, x));
         }
 
         #endregion
@@ -880,7 +995,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
-        #region ToArray, ToList, ToDictionary
+        #region ToArray, ToList, ToDictionary, ToLookup
 
         public static T[] ToArray<T>(this IEnumerable<T> source) {
             return new List<T>(source).ToArray();
@@ -924,6 +1039,34 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 d.Add(keySelector(item), elementSelector(item));
             }
             return d;
+        }
+
+        public static ILookup<TKey, TSource> ToLookup<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
+            return source.ToLookup(keySelector, null);
+        }
+
+        public static ILookup<TKey, TSource> ToLookup<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer) {
+            return source.ToLookup(keySelector, x => x, comparer);
+        }
+
+        public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) {
+            return source.ToLookup(keySelector, elementSelector, null);
+        }
+
+        public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer) {
+            var d = new Dictionary<TKey, List<TElement>>(comparer);
+            foreach (var item in source) {
+                List<TElement> list;
+                var key = keySelector(item);
+                var element = elementSelector(item);
+                if (d.TryGetValue(key, out list)) {
+                    list.Add(element);
+                } else {
+                    list = new List<TElement> { element };
+                    d.Add(key, list);
+                }
+            }
+            return new Lookup<TKey, TElement>(d);
         }
 
         #endregion

@@ -220,6 +220,54 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region GroupBy
+
+        [Test]
+        public void TestGroupBy() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3, 5 };
+                var g = a.GroupBy(x => x & 1);
+                var g0 = g.First(x => x.Key == 0).ToArray();
+                var g1 = g.First(x => x.Key == 1).ToArray();
+                return g0.Length == 1 && g0[0] == 2 && g1.Length == 3;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestGroupByElement() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3, 5 };
+                var g = a.GroupBy(x => x & 1, x => x + 1);
+                var g0 = g.First(x => x.Key == 0).ToArray();
+                var g1 = g.First(x => x.Key == 1).ToArray();
+                return g0.Length == 1 && g0[0] == 3 && g1.Length == 3;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestGroupByResultSelector() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3, 5 };
+                var g = a.GroupBy(x => x & 1, (key, r) => key + r.Sum()).ToArray();
+                return g.Length == 2 && g[0] + g[1] == 12;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestGroupByElementResultSelector() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3, 5 };
+                var g = a.GroupBy(x => x & 1, x => x + 1, (key, r) => key + r.Sum()).ToArray();
+                return g.Length == 2 && g[0] + g[1] == 16;
+            };
+            this.Test(f, true);
+        }
+
+        #endregion
+
         #region Last, LastOrDefault
 
         [Test]
@@ -624,6 +672,30 @@ namespace Test.ExecutionTests {
                 return d[a];
             };
             this.Test(f);
+        }
+
+        [Test]
+        public void TestToLookup() {
+            Func<bool> f = () => {
+                var a = new[] { 1, 2, 3, 5 };
+                var l = a.ToLookup(x => x & 1);
+                var l0 = l[0].ToArray();
+                var l1 = l[1].ToArray();
+                return l0.Length == 1 && l0[0] == 2 && l1.Length == 3;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestToLookupElement() {
+            Func<bool> f = () => {
+                var a = new[] { 1, 2, 3, 5 };
+                var l = a.ToLookup(x => x & 1, x => x + 1);
+                var l0 = l[0].ToArray();
+                var l1 = l[1].ToArray();
+                return l0.Length == 1 && l0[0] == 3 && l1.Length == 3;
+            };
+            this.Test(f, true);
         }
 
         #endregion
