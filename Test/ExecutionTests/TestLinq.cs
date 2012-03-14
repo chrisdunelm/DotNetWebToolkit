@@ -268,6 +268,33 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Join
+
+        [Test]
+        public void TestJoin() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                var b = new int[] { 1, 2, 4 };
+                var r = a.Join(b, x => x, x => x, (x, y) => x * y).ToArray();
+                return r.Length == 2 && r[0] == 1 && r[1] == 4;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestJoinMoreComplex() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                var b = new int[] { 1, 2, 4 };
+                var r = a.Join(b, x => x & 1, x => x & 1, (x, y) => x * y).ToArray();
+                return r.Length == 4 && r[0] == 1 && r[1] == 4 && r[2] == 8 && r[3] == 3;
+            };
+            this.Test(f);
+        }
+
+
+        #endregion
+
         #region Last, LastOrDefault
 
         [Test]

@@ -457,6 +457,30 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Join
+
+        public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>
+            (this IEnumerable<TOuter> outer, IEnumerable<TInner> inner,
+            Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector,
+            Func<TOuter, TInner, TResult> resultSelector) {
+            return outer.Join(inner, outerKeySelector, innerKeySelector, resultSelector, null);
+        }
+
+        public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>
+            (this IEnumerable<TOuter> outer, IEnumerable<TInner> inner,
+            Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector,
+            Func<TOuter, TInner, TResult> resultSelector, IEqualityComparer<TKey> comparer) {
+            var innerLookup = inner.ToLookup(innerKeySelector, comparer);
+            foreach (var outerItem in outer) {
+                var outerKey = outerKeySelector(outerItem);
+                foreach (var innerItem in innerLookup[outerKey]) {
+                    yield return resultSelector(outerItem, innerItem);
+                }
+            }
+        }
+
+        #endregion
+
         #region Last, LastOrDefault
 
         public static TSource Last<TSource>(this IEnumerable<TSource> source) {
