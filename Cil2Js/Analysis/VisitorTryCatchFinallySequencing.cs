@@ -15,6 +15,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private VisitorTryCatchFinallySequencing() { }
 
         private Tuple<Stmt, Stmt> RemoveContinuation(Stmt s) {
+            // Return Item1 = Statement 's' with continuation removed
+            // Return Item2 = Block that only continuation in 's' points to, otherwise null
             // This must not return a null statement if empty, as then the 'try' statements won't know
             // if it is a 'catch' or 'finally' statement. Uses a StmtEmpty instead.
             var contCount = VisitorFindContinuations.Get(s).Count();
