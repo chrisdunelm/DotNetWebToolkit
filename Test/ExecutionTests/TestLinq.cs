@@ -70,6 +70,42 @@ namespace Test.ExecutionTests {
             this.Test(f, false);
         }
 
+        [Test]
+        public void TestAnyPredicateYes() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2 };
+                return a.Any(x => x == 2);
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestAnyPredicateNo() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2 };
+                return a.Any(x => x == 3);
+            };
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAllYes() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2 };
+                return a.All(x => x == 1 || x == 2);
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestAllNo() {
+            Func<bool> f = () => {
+                var a = new int[] { 1, 2, 3 };
+                return a.All(x => x == 1 || x == 2);
+            };
+            this.Test(f, false);
+        }
+
         #endregion
 
         #region Concat
