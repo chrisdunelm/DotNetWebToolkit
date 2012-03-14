@@ -100,7 +100,7 @@ namespace Test.ExecutionTests {
 
         #endregion
 
-        #region First
+        #region First, FirstOrDefault
 
         [Test]
         public void TestFirstOk() {
@@ -138,6 +138,90 @@ namespace Test.ExecutionTests {
             Func<int, int> f = a => {
                 var array = new int[0];
                 return array.FirstOrDefault();
+            };
+            this.Test(f);
+        }
+
+        #endregion
+
+        #region Last, LastOrDefault
+
+        [Test]
+        public void TestLastListOk() {
+            Func<int, int> f = a => {
+                var array = new int[] { a };
+                return array.Last();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastNonListOk() {
+            Func<int, int, int> f = (a, b) => {
+                var array = new int[] { a, b };
+                return array.Take(1).Last();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastListEmpty() {
+            Func<int> f = () => {
+                var array = new int[0];
+                try {
+                    return array.Last();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastNonListEmpty() {
+            Func<int> f = () => {
+                var array = new int[] { 1, 2 };
+                try {
+                    return array.Take(0).Last();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastOrDefaultListOk() {
+            Func<int, int> f = a => {
+                var array = new int[] { a };
+                return array.LastOrDefault();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastOrDefaultNonListOk() {
+            Func<int, int, int> f = (a, b) => {
+                var array = new int[] { a, b };
+                return array.Take(1).LastOrDefault();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastOrDefaultListEmpty() {
+            Func<int> f = () => {
+                var array = new int[0];
+                return array.LastOrDefault();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLastOrDefaultNonListEmpty() {
+            Func<int> f = () => {
+                var array = new int[] { 1, 2 };
+                return array.Take(0).LastOrDefault();
             };
             this.Test(f);
         }

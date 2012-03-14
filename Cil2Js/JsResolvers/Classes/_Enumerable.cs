@@ -230,6 +230,70 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Last, LastOrDefault
+
+        public static TSource Last<TSource>(this IEnumerable<TSource> source) {
+            var list = source as IList<TSource>;
+            if (list != null) {
+                if (list.Count > 0) {
+                    return list[list.Count - 1];
+                }
+            } else {
+                TSource last = default(TSource);
+                bool any = false;
+                foreach (var item in source) {
+                    last = item;
+                    any = true;
+                }
+                if (any) {
+                    return last;
+                }
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            TSource last = default(TSource);
+            bool any = false;
+            foreach (var item in source) {
+                if (predicate(item)) {
+                    last = item;
+                    any = true;
+                }
+            }
+            if (any) {
+                return last;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source) {
+            var list = source as IList<TSource>;
+            TSource last = default(TSource);
+            if (list != null) {
+                if (list.Count > 0) {
+                    last = list[list.Count - 1];
+                }
+            } else {
+                foreach (var item in source) {
+                    last = item;
+                }
+            }
+            return last;
+        }
+
+        public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            TSource last = default(TSource);
+            foreach (var item in source) {
+                if (predicate(item)) {
+                    last = item;
+                }
+            }
+            return last;
+        }
+
+        #endregion
+
         #region OrderBy, OrderByDescending, ThenBy, ThenByDescending
 
         public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {
