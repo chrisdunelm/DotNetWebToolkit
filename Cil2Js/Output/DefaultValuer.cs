@@ -20,15 +20,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 case MetadataType.UIntPtr:
                 case MetadataType.Int16:
                 case MetadataType.Int32:
-                case MetadataType.Int64:
                 case MetadataType.UInt16:
                 case MetadataType.UInt32:
-                case MetadataType.UInt64:
                 case MetadataType.Byte:
                 case MetadataType.SByte:
                 case MetadataType.Single:
                 case MetadataType.Double:
                 case MetadataType.Char: return "0";
+                case MetadataType.Int64:
+                case MetadataType.UInt64: return "[0, 0]";
                 default: throw new NotImplementedException("Cannot handle: " + mdt);
                 }
             }
