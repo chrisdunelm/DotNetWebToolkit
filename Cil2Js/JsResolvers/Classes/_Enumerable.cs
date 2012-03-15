@@ -245,6 +245,24 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Cast, OfType
+
+        public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source) {
+            foreach (var item in source) {
+                yield return (TResult)item;
+            }
+        }
+
+        public static IEnumerable<TResult> OfType<TResult>(this IEnumerable source) {
+            foreach (var item in source) {
+                if (item is TResult) {
+                    yield return (TResult)item;
+                }
+            }
+        }
+
+        #endregion
+
         #region Concat
 
         class ConcatEnumerator<T> : IEnumerable<T>, IEnumerator<T> {

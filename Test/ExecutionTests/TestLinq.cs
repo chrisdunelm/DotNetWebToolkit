@@ -108,6 +108,55 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Cast, OfType
+
+        class A { }
+        class B : A { }
+        class C : B { }
+        class D { }
+
+        [Test]
+        public void TestCastAllOk() {
+            Func<int> f = () => {
+                var a = new object[] { new A(), new B(), new C() };
+                return a.Cast<A>().Count();
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestCastNotOk() {
+            Func<int> f = () => {
+                var a = new object[] { new A(), new B(), new C(), new D() };
+                try {
+                    return a.Cast<A>().Count();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestOfTypeAllOk() {
+            Func<int> f = () => {
+                var a = new object[] { new A(), new B(), new C() };
+                return a.OfType<A>().Count();
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestOfTypeOneNotOk() {
+            Func<int> f = () => {
+                var a = new object[] { new A(), new B(), new C(), new D(), "", 42 };
+                return a.OfType<A>().Count();
+            };
+            this.Test(f, 3);
+        }
+
+        #endregion
+
         #region Concat
 
         [Test]
