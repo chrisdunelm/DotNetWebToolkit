@@ -173,6 +173,28 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Contains
+
+        [Test]
+        public void TestContainsCollection() {
+            Func<bool> f = () => {
+                var a = new[] { 1, 2, 3 };
+                return a.Contains(1) && !a.Contains(0);
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestContainsNonCollection() {
+            Func<bool> f = () => {
+                var a = new[] { 1, 2, 3 };
+                return a.Skip(1).Contains(2) && !a.Take(1).Contains(2);
+            };
+            this.Test(f, true);
+        }
+
+        #endregion
+
         #region Count
 
         [Test]
@@ -200,6 +222,26 @@ namespace Test.ExecutionTests {
                 return array.Count(x => x >= 50);
             };
             this.Test(f);
+        }
+
+        #endregion
+
+        #region DefaultIfEmpty
+
+        [Test]
+        public void TestDefaultIfEmptyEmpty() {
+            Func<int> f = () => {
+                return Enumerable.Empty<int>().DefaultIfEmpty().First();
+            };
+            this.Test(f, 0);
+        }
+
+        [Test]
+        public void TestDefaultIfEmptyNotEmpty() {
+            Func<int> f = () => {
+                return new[] { 1 }.DefaultIfEmpty().First();
+            };
+            this.Test(f, 1);
         }
 
         #endregion
@@ -306,6 +348,32 @@ namespace Test.ExecutionTests {
                 return a.Skip(1).ElementAtOrDefault(10);
             };
             this.Test(f, 0);
+        }
+
+        #endregion
+
+        #region Except, Intersect
+
+        [Test]
+        public void TestExcept() {
+            Func<bool> f = () => {
+                var a0 = new[] { 1, 2, 3, 3, 2, 1 };
+                var a1 = new[] { 2, 3, 3, 2 };
+                var r = a0.Except(a1).ToArray();
+                return r.Length == 1 && r[0] == 1;
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestIntersect() {
+            Func<bool> f = () => {
+                var a0 = new[] { 1, 2, 3, 3, 2, 1 };
+                var a1 = new[] { 2, 2 };
+                var r = a0.Intersect(a1).ToArray();
+                return r.Length == 1 && r[0] == 2;
+            };
+            this.Test(f, true);
         }
 
         #endregion
@@ -662,6 +730,208 @@ namespace Test.ExecutionTests {
                 return array.SelectMany((x, i) => x.Select(y => y * (i + 1)), (s, x) => s[0] * x).Sum();
             };
             this.Test(f);
+        }
+
+        #endregion
+
+        #region Single, SingleOrDefault
+
+        [Test]
+        public void TestSingleCollectionOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1 };
+                return a.Single();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestSingleCollectionNone() {
+            Func<int> f = () => {
+                var a = new int[0];
+                try {
+                    return a.Single();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleCollectionTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2 };
+                try {
+                    return a.Single();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleNonCollectionOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1 };
+                return a.Take(1).Single();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestSingleNonCollectionNone() {
+            Func<int> f = () => {
+                var a = new int[0];
+                try {
+                    return a.Take(1).Single();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleNonCollectionTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2 };
+                try {
+                    return a.Take(2).Single();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSinglePredicateOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                return a.Single(x => x == 2);
+            };
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestSinglePredicateNone() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                try {
+                    return a.Single(x => x == 4);
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSinglePredicateTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                try {
+                    return a.Single(x => x >= 0);
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultCollectionOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1 };
+                return a.SingleOrDefault();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultCollectionNone() {
+            Func<int> f = () => {
+                var a = new int[0];
+                return a.SingleOrDefault();
+            };
+            this.Test(f, 0);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultCollectionTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2 };
+                try {
+                    return a.SingleOrDefault();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultNonCollectionOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1 };
+                return a.Take(1).SingleOrDefault();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultNonCollectionNone() {
+            Func<int> f = () => {
+                var a = new int[0];
+                return a.Take(1).SingleOrDefault();
+            };
+            this.Test(f, 0);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultNonCollectionTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2 };
+                try {
+                    return a.Take(2).SingleOrDefault();
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultPredicateOnly1() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                return a.SingleOrDefault(x => x == 2);
+            };
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultPredicateNone() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                return a.SingleOrDefault(x => x == 4);
+            };
+            this.Test(f, 0);
+        }
+
+        [Test]
+        public void TestSingleOrDefaultPredicateTooMany() {
+            Func<int> f = () => {
+                var a = new[] { 1, 2, 3 };
+                try {
+                    return a.SingleOrDefault(x => x >= 0);
+                } catch {
+                    return -1;
+                }
+            };
+            this.Test(f, -1);
         }
 
         #endregion

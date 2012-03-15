@@ -346,6 +346,30 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Contains
+
+        public static bool Contains<TSource>(this IEnumerable<TSource> source, TSource value) {
+            var colT = source as ICollection<TSource>;
+            if (colT != null) {
+                return colT.Contains(value);
+            }
+            return source.Contains(value, null);
+        }
+
+        public static bool Contains<TSource>(this IEnumerable<TSource> source, TSource value, IEqualityComparer<TSource> comparer) {
+            if (comparer == null) {
+                comparer = EqualityComparer<TSource>.Default;
+            }
+            foreach (var item in source) {
+                if (comparer.Equals(item, value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        #endregion
+
         #region Count
 
         public static int Count<TSource>(this IEnumerable<TSource> source) {
@@ -374,6 +398,25 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 }
             }
             return count;
+        }
+
+        #endregion
+
+        #region DefaultIfEmpty
+
+        public static IEnumerable<TSource> DefaultIfEmpty<TSource>(this IEnumerable<TSource> source) {
+            return source.DefaultIfEmpty(default(TSource));
+        }
+
+        public static IEnumerable<TSource> DefaultIfEmpty<TSource>(this IEnumerable<TSource> source, TSource defaultValue) {
+            bool any = false;
+            foreach (var item in source) {
+                yield return item;
+                any = true;
+            }
+            if (!any) {
+                yield return defaultValue;
+            }
         }
 
         #endregion
@@ -445,6 +488,36 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 }
             }
             return result;
+        }
+
+        #endregion
+
+        #region Except, Intersect
+
+        public static IEnumerable<TSource> Except<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
+            return first.Except(second, null);
+        }
+
+        public static IEnumerable<TSource> Except<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer) {
+            var set = new HashSet<TSource>(second, comparer);
+            foreach (var item in first) {
+                if (set.Add(item)) {
+                    yield return item;
+                }
+            }
+        }
+
+        public static IEnumerable<TSource> Intersect<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second) {
+            return first.Intersect(second, null);
+        }
+
+        public static IEnumerable<TSource> Intersect<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second, IEqualityComparer<TSource> comparer) {
+            var set = new HashSet<TSource>(second, comparer);
+            foreach (var item in first) {
+                if (set.Remove(item)) {
+                    yield return item;
+                }
+            }
         }
 
         #endregion
@@ -795,6 +868,92 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 }
                 i++;
             }
+        }
+
+        #endregion
+
+        #region Single, SingleOrDefault
+
+        public static TSource Single<TSource>(this IEnumerable<TSource> source) {
+            var list = source as IList<TSource>;
+            if (list != null) {
+                var count = list.Count;
+                if (count == 1) {
+                    return list[0];
+                }
+                throw new InvalidOperationException();
+            } else {
+                using (var en = source.GetEnumerator()) {
+                    if (!en.MoveNext()) {
+                        throw new InvalidOperationException();
+                    }
+                    var item = en.Current;
+                    if (en.MoveNext()) {
+                        throw new InvalidOperationException();
+                    }
+                    return item;
+                }
+            }
+        }
+
+        public static TSource Single<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            bool any = false;
+            var ret = default(TSource);
+            foreach (var item in source) {
+                if (predicate(item)) {
+                    if (!any) {
+                        ret = item;
+                        any = true;
+                    } else {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+            if (!any) {
+                throw new InvalidOperationException();
+            }
+            return ret;
+        }
+
+        public static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source) {
+            var list = source as IList<TSource>;
+            if (list != null) {
+                var count = list.Count;
+                if (count == 1) {
+                    return list[0];
+                }
+                if (count > 1) {
+                    throw new InvalidOperationException();
+                }
+                return default(TSource);
+            } else {
+                using (var en = source.GetEnumerator()) {
+                    if (!en.MoveNext()) {
+                        return default(TSource);
+                    }
+                    var item = en.Current;
+                    if (en.MoveNext()) {
+                        throw new InvalidOperationException();
+                    }
+                    return item;
+                }
+            }
+        }
+
+        public static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) {
+            bool any = false;
+            var ret = default(TSource);
+            foreach (var item in source) {
+                if (predicate(item)) {
+                    if (!any) {
+                        ret = item;
+                        any = true;
+                    } else {
+                        throw new InvalidOperationException();
+                    }
+                }
+            }
+            return ret;
         }
 
         #endregion
