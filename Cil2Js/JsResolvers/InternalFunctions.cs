@@ -77,12 +77,12 @@ return a;
                 var i = new ExprVarLocal(ctx, ctx.Int32).Named("i");
                 var t = new ExprVarLocal(ctx, ctx.Type).Named("temp");
                 var js = @"
-if (!obj) return true;
+if (obj == null) return true;
 temp = getTypeCall;
 if (temp === toType) return true;
 canCastTo = temp.assignableTo;
 for (i = canCastTo.length - 1; i >= 0; i--)
-    if (canCastTo[i]===toType)
+    if (canCastTo[i] === toType)
         return true;
 return false;
 ";
