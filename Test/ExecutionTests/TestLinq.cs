@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using Test.Utils;
 
 namespace Test.ExecutionTests {
 
@@ -696,6 +697,34 @@ namespace Test.ExecutionTests {
                 return array.Sum();
             };
             this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt32Nullable() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                var array = new int?[] { null, a, null, b, c, null };
+                return array.Sum().Value;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt64() {
+            Func<long, long, long, long> f = (a, b, c) => {
+                var array = new[] { a / 10000, b / 1000000, c / 100000000 };
+                return array.Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumSingle() {
+            this.Test((Func<float, float, float, float>)TestSumSingleFunc);
+        }
+        [Within(0.01)]
+        private static float TestSumSingleFunc(float a, float b, float c) {
+            var array = new[] { a, b, c };
+            return array.Sum();
         }
 
         [Test]

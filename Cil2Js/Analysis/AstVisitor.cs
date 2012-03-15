@@ -65,8 +65,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitBreak((StmtBreak)s);
             case Stmt.NodeType.Empty:
                 return this.VisitEmpty((StmtEmpty)s);
-            //case Stmt.NodeType.StoreObj:
-            //    return this.VisitStoreObj((StmtStoreObj)s);
+            case Stmt.NodeType.StoreObj:
+                return this.VisitStoreObj((StmtStoreObj)s);
             default:
                 if ((int)s.StmtType >= (int)Stmt.NodeType.Max) {
                     return s;
@@ -260,16 +260,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return s;
         }
 
-        //protected virtual ICode VisitStoreObj(StmtStoreObj s) {
-        //    this.ThrowOnNoOverride();
-        //    var source = (Expr)this.Visit(s.Source);
-        //    var destination = (Expr)this.Visit(s.Destination);
-        //    if (source != s.Source || destination != s.Destination) {
-        //        return new StmtStoreObj(s.Ctx, destination, source);
-        //    } else {
-        //        return s;
-        //    }
-        //}
+        protected virtual ICode VisitStoreObj(StmtStoreObj s) {
+            this.ThrowOnNoOverride();
+            var source = (Expr)this.Visit(s.Source);
+            var destination = (Expr)this.Visit(s.Destination);
+            if (source != s.Source || destination != s.Destination) {
+                return new StmtStoreObj(s.Ctx, destination, source);
+            } else {
+                return s;
+            }
+        }
 
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {

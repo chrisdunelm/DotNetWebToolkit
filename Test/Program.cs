@@ -21,6 +21,7 @@ using Test.BrowserTests;
 using Test.BrowserTests.Canvas;
 using Test.BrowserTests.TypedArrays;
 using Test.BrowserTests.Window_;
+using DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
 
 namespace Test {
 
@@ -79,7 +80,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestLinq() { Verbose = true };
-            t.TestDistinctOverlaps();
+            t.TestToLookup();
 
             return;
 

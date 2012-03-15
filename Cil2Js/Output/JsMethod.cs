@@ -81,13 +81,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return sbStr;
         }
 
-        private JsMethod(Resolver resolver)//MethodDefinition method, Resolver resolver)
+        private JsMethod(Resolver resolver)
             : base(true) {
-            //this.method = method;
             this.resolver = resolver;
         }
 
-        //private MethodDefinition method;
         private Resolver resolver;
 
         private Dictionary<ParameterDefinition, ExprVar> parameters = new Dictionary<ParameterDefinition, ExprVar>();
@@ -109,6 +107,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitAssignment(StmtAssignment s) {
+            // TODO: The special processing for ByRef vars shouldn't be needed - it should be handled elsewhere
             this.NewLine();
             this.Visit(s.Target);
             if (s.Target.Type.IsByReference && !s.Expr.Type.IsByReference) {
@@ -289,14 +288,25 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return s;
         }
 
-        //protected override ICode VisitStoreObj(StmtStoreObj s) {
-        //    this.NewLine();
-        //    this.Visit(s.Destination);
-        //    this.js.Append("[0] = ");
-        //    this.Visit(s.Source);
-        //    this.js.Append(";");
-        //    return s;
-        //}
+        protected override ICode VisitStoreObj(StmtStoreObj s) {
+            this.NewLine();
+            switch (s.Destination.ExprType) {
+            case Expr.NodeType.ElementAddress:
+                this.Visit(s.Destination);
+                break;
+            case Expr.NodeType.VarLocal:
+            case Expr.NodeType.VarParameter:
+                this.Visit(s.Destination);
+                this.js.Append("[0]");
+                break;
+            default:
+                throw new NotImplementedException("Cannot handle expr-type: " + s.Destination.ExprType);
+            }
+            this.js.Append(" = ");
+            this.Visit(s.Source);
+            this.js.Append(";");
+            return s;
+        }
 
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Value == null) {

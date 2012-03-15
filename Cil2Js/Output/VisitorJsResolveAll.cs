@@ -121,10 +121,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var exprIsVar = e.Expr.IsVar();
                 var innerType = e.Type.GetNullableInnerType();
                 var temp = exprIsVar ? null : new ExprVarLocal(ctx, e.Type);
-                var fHasValue = new ExprJsFieldVarName(ctx, e.Type.GetField("hasValue")).Named("hasValue");
-                var box = new ExprBox(ctx, new ExprFieldAccess(ctx, temp ?? e.Expr, e.Type.GetField("value")), innerType).Named("box");
-                var nullableJs = exprIsVar ? "(expr.hasValue?box:null)" : "((temp=expr).hasValue?box:null)";
-                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp.Named("temp"), e.Expr.Named("expr"), fHasValue, box);
+                var box = new ExprBox(ctx, temp ?? e.Expr, innerType).Named("box");
+                var nullableJs = exprIsVar ? "(expr !== null ? box : null)" : "((temp = expr) !== null ? box : null)";
+                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp.Named("temp"), e.Expr.Named("expr"), box);
                 return nullableExpr;
             } else {
                 var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));

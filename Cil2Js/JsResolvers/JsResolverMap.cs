@@ -13,14 +13,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         private static Dictionary<Type, Type> map = new Dictionary<Type, Type>() {
+            { typeof(object), typeof(Cls._Object) },
             { typeof(bool), typeof(Cls._Boolean) },
             { typeof(char), typeof(Cls._Char) },
             { typeof(string), typeof(Cls._String) },
             { typeof(Int64), typeof(Cls._Int64) },
             { typeof(UInt64), typeof(Cls._UInt64) },
             { typeof(double), typeof(Cls._Double) },
+            { typeof(Nullable<>), typeof(Cls._Nullable<>) },
             { typeof(StringBuilder), typeof(Cls._StringBuilder) },
-            { typeof(object), typeof(Cls._Object) },
             { typeof(Type), typeof(Cls._Type) },
             { T("System.RuntimeType"), typeof(Cls._RuntimeType) },
             { typeof(NumberFormatInfo), typeof(Cls._NumberFormatInfo) },

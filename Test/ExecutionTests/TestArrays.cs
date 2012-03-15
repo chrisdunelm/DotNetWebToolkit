@@ -269,6 +269,15 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestArrayInitialisationNullable() {
+            Func<bool> f = () => {
+                var a = new int?[] { null, 1, null, 2 };
+                return a[0] == null && a[1] == 1 && a[2] == null && a[3] == 2;
+            };
+            this.Test(f, true);
+        }
+
         private static object ForceObject(object o) {
             return o;
         }

@@ -477,14 +477,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return e;
         }
 
-        //protected override ICode VisitStoreObj(StmtStoreObj s) {
-        //    this.NewLine();
-        //    this.code.Append("*");
-        //    this.Visit(s.Destination);
-        //    this.code.Append(" = ");
-        //    this.Visit(s.Source);
-        //    return s;
-        //}
+        protected override ICode VisitStoreObj(StmtStoreObj s) {
+            this.NewLine();
+            this.code.Append("*");
+            this.Visit(s.Destination);
+            this.code.Append(" = ");
+            this.Visit(s.Source);
+            return s;
+        }
 
     }
 }

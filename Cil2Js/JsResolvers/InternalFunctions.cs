@@ -196,18 +196,18 @@ throw callCtorEx
                 var obj = ctx.MethodParameter(0, "obj");
                 var type = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
                 var nType = type.MakeNullable();
-                var nameHasValue = new ExprJsFieldVarName(ctx, nType.GetField("hasValue")).Named("hasValue");
-                var nameValue = new ExprJsFieldVarName(ctx, nType.GetField("value")).Named("value");
-                var defaultValue = new ExprDefaultValue(ctx, type).Named("defaultValue");
-                var canAssign = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
+                //var nameHasValue = new ExprJsFieldVarName(ctx, nType.GetField("hasValue")).Named("hasValue");
+                //var nameValue = new ExprJsFieldVarName(ctx, nType.GetField("value")).Named("value");
+                //var defaultValue = new ExprDefaultValue(ctx, type).Named("defaultValue");
+                var canAssignCall = new ExprCall(ctx, ((Func<object, Type, bool>)CanAssignTo).Method, null, obj.Expr, new ExprJsTypeVarName(ctx, type)).Named("canAssignCall");
                 var invCastExCtor = ctx.Module.Import(typeof(InvalidCastException).GetConstructor(new[] { typeof(string) }));
                 var invCastEx = new ExprNewObj(ctx, invCastExCtor, new ExprLiteral(ctx, "Specified cast is not valid.", ctx.String)).Named("invCastEx");
                 var js = @"
-if (!obj) return { hasValue:false, value:defaultValue };
+if (obj == null) return null;
 if (!canAssignCall) throw invCastEx;
-return { hasValue:true, value:obj.v };
+return obj.v;
 ";
-                var stmt = new StmtJsExplicit(ctx, js, obj, nameHasValue, nameValue, defaultValue, canAssign, invCastEx);
+                var stmt = new StmtJsExplicit(ctx, js, obj, canAssignCall, invCastEx);
                 return stmt;
             }
         }

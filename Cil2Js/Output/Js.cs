@@ -256,15 +256,15 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 typesSeen[runtimeTypeInc] += 2;
             }
 
-            // Make sure fields of nullable types are named
-            var nullables = typesSeen.Keys.Where(x => x.IsNullable()).ToArray();
-            foreach (var nullable in nullables) {
-                foreach (var field in nullable.EnumResolvedFields()) {
-                    if (!fieldAccesses.ContainsKey(field)) {
-                        fieldAccesses.Add(field, 1);
-                    }
-                }
-            }
+            //// Make sure fields of nullable types are named
+            //var nullables = typesSeen.Keys.Where(x => x.IsNullable()).ToArray();
+            //foreach (var nullable in nullables) {
+            //    foreach (var field in nullable.EnumResolvedFields()) {
+            //        if (!fieldAccesses.ContainsKey(field)) {
+            //            fieldAccesses.Add(field, 1);
+            //        }
+            //    }
+            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
