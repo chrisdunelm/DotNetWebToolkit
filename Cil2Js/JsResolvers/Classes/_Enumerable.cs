@@ -712,6 +712,166 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #endregion
 
+        #region Max
+
+        public static int Max(IEnumerable<int> source) {
+            int max = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    max = item;
+                    any = true;
+                } else {
+                    if (item > max) {
+                        max = item;
+                    }
+                }
+            }
+            if (any) {
+                return max;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static long Max(IEnumerable<long> source) {
+            long max = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    max = item;
+                    any = true;
+                } else {
+                    if (item > max) {
+                        max = item;
+                    }
+                }
+            }
+            if (any) {
+                return max;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static float Max(IEnumerable<float> source) {
+            float max = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    max = item;
+                    any = true;
+                } else {
+                    if (item > max || float.IsNaN(max)) {
+                        max = item;
+                    }
+                }
+            }
+            if (any) {
+                return max;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static double Max(IEnumerable<double> source) {
+            double max = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    max = item;
+                    any = true;
+                } else {
+                    if (item > max || double.IsNaN(max)) {
+                        max = item;
+                    }
+                }
+            }
+            if (any) {
+                return max;
+            }
+            throw new InvalidOperationException();
+        }
+
+        #endregion
+
+        #region Min
+
+        public static int Min(IEnumerable<int> source) {
+            int min = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    min = item;
+                    any = true;
+                } else {
+                    if (item < min) {
+                        min = item;
+                    }
+                }
+            }
+            if (any) {
+                return min;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static long Min(IEnumerable<long> source) {
+            long min = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    min = item;
+                    any = true;
+                } else {
+                    if (item < min) {
+                        min = item;
+                    }
+                }
+            }
+            if (any) {
+                return min;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static float Min(IEnumerable<float> source) {
+            float min = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    min = item;
+                    any = true;
+                } else {
+                    if (item < min || float.IsNaN(min)) {
+                        min = item;
+                    }
+                }
+            }
+            if (any) {
+                return min;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public static double Min(IEnumerable<double> source) {
+            double min = 0;
+            bool any = false;
+            foreach (var item in source) {
+                if (!any) {
+                    min = item;
+                    any = true;
+                } else {
+                    if (item < min || double.IsNaN(min)) {
+                        min = item;
+                    }
+                }
+            }
+            if (any) {
+                return min;
+            }
+            throw new InvalidOperationException();
+        }
+
+        #endregion
+
         #region OrderBy, OrderByDescending, ThenBy, ThenByDescending
 
         public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) {

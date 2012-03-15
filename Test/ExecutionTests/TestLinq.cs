@@ -606,6 +606,86 @@ namespace Test.ExecutionTests {
 
         #endregion
 
+        #region Max
+
+        [Test]
+        public void TestMaxInt32() {
+            Func<int> f = () => {
+                var a = new[] { 1, 3, 2 };
+                return a.Max();
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxInt64() {
+            Func<long> f = () => {
+                var a = new long[] { 1, 3, 2 };
+                return a.Max();
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxFloat() {
+            Func<float> f = () => {
+                var a = new float[] { 1, 3, 2 };
+                return a.Max();
+            };
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxDouble() {
+            Func<double> f = () => {
+                var a = new double[] { 1, 3, 2 };
+                return a.Max();
+            };
+            this.Test(f, 3);
+        }
+
+        #endregion
+
+        #region Min
+
+        [Test]
+        public void TestMinInt32() {
+            Func<int> f = () => {
+                var a = new[] { 3, 1, 2 };
+                return a.Min();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinInt64() {
+            Func<long> f = () => {
+                var a = new long[] { 3, 1, 2 };
+                return a.Min();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinSingle() {
+            Func<float> f = () => {
+                var a = new float[] { 3, 1, 2 };
+                return a.Min();
+            };
+            this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinDouble() {
+            Func<double> f = () => {
+                var a = new double[] { 3, 1, 2 };
+                return a.Min();
+            };
+            this.Test(f, 1);
+        }
+
+        #endregion
+
         #region OrderBy, OrderByDescending, ThenBy, ThenByDescending
 
         [Test]
