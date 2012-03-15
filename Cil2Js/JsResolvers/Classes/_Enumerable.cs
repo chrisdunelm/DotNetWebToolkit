@@ -903,9 +903,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public static int? Sum(this IEnumerable<int?> source) {
             int sum = 0;
             foreach (var item in source) {
-                if (item.HasValue) {
-                    sum += item.GetValueOrDefault();
-                }
+                sum += item.GetValueOrDefault();
             }
             return sum;
         }
@@ -918,6 +916,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return sum;
         }
 
+        public static long? Sum(this IEnumerable<long?> source) {
+            long sum = 0;
+            foreach (var item in source) {
+                sum += item.GetValueOrDefault();
+            }
+            return sum;
+        }
+
         public static float Sum(this IEnumerable<float> source) {
             float sum = 0;
             foreach (var item in source) {
@@ -926,10 +932,90 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return sum;
         }
 
+        public static float? Sum(this IEnumerable<float?> source) {
+            float sum = 0;
+            foreach (var item in source) {
+                sum += item.GetValueOrDefault();
+            }
+            return sum;
+        }
+
         public static double Sum(this IEnumerable<double> source) {
             double sum = 0;
             foreach (var item in source) {
                 sum += item;
+            }
+            return sum;
+        }
+
+        public static double? Sum(this IEnumerable<double?> source) {
+            double sum = 0;
+            foreach (var item in source) {
+                sum += item.GetValueOrDefault();
+            }
+            return sum;
+        }
+
+        public static int Sum<TSource>(IEnumerable<TSource> source, Func<TSource, int> selector) {
+            int sum = 0;
+            foreach (var item in source) {
+                sum += selector(item);
+            }
+            return sum;
+        }
+
+        public static int? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, int?> selector) {
+            int sum = 0;
+            foreach (var item in source) {
+                sum += selector(item).GetValueOrDefault();
+            }
+            return sum;
+        }
+
+        public static long Sum<TSource>(IEnumerable<TSource> source, Func<TSource, long> selector) {
+            long sum = 0;
+            foreach (var item in source) {
+                sum += selector(item);
+            }
+            return sum;
+        }
+
+        public static long? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, long?> selector) {
+            long sum = 0;
+            foreach (var item in source) {
+                sum += selector(item).GetValueOrDefault();
+            }
+            return sum;
+        }
+
+        public static float Sum<TSource>(IEnumerable<TSource> source, Func<TSource, float> selector) {
+            float sum = 0;
+            foreach (var item in source) {
+                sum += selector(item);
+            }
+            return sum;
+        }
+
+        public static float? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, float?> selector) {
+            float sum = 0;
+            foreach (var item in source) {
+                sum += selector(item).GetValueOrDefault();
+            }
+            return sum;
+        }
+
+        public static double Sum<TSource>(IEnumerable<TSource> source, Func<TSource, double> selector) {
+            double sum = 0;
+            foreach (var item in source) {
+                sum += selector(item);
+            }
+            return sum;
+        }
+
+        public static double? Sum<TSource>(IEnumerable<TSource> source, Func<TSource, double?> selector) {
+            double sum = 0;
+            foreach (var item in source) {
+                sum += selector(item).GetValueOrDefault();
             }
             return sum;
         }

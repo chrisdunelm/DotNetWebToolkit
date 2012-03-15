@@ -718,6 +718,15 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestSumInt64Nullable() {
+            Func<long, long, long, long> f = (a, b, c) => {
+                var array = new long?[] { null, a / 100, null, b / 100, c / 100, null };
+                return array.Sum().Value;
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestSumSingle() {
             this.Test((Func<float, float, float, float>)TestSumSingleFunc);
         }
@@ -728,10 +737,103 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestSumSingleNullable() {
+            this.Test((Func<float, float, float, float>)TestSumSingleNullableFunc);
+        }
+        [Within(0.01)]
+        private static float TestSumSingleNullableFunc(float a, float b, float c) {
+            var array = new float?[] { null, a, b, c, null };
+            return array.Sum().Value;
+        }
+
+        [Test]
         public void TestSumDouble() {
             Func<double, double, double, double> f = (a, b, c) => {
                 var array = new[] { a, b, c };
                 return array.Sum();
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumDoubleNullable() {
+            Func<double, double, double, double> f = (a, b, c) => {
+                var array = new double?[] { a, b, c, null, null, null };
+                return array.Sum().Value;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt32Selector() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                var array = new int[] { a, b, c };
+                return array.Sum(x => x * 2);
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt32NullableSelector() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                var array = new int[] { -1, -1, -1, a, b, c };
+                return array.Sum(x => x >= 0 ? x * 2 : (int?)null).Value;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt64Selector() {
+            Func<long, long, long, long> f = (a, b, c) => {
+                var array = new long[] { a / 10, b / 10, c / 10 };
+                return array.Sum(x => x * 2);
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumInt64NullableSelector() {
+            Func<long, long, long, long> f = (a, b, c) => {
+                var array = new long[] { -1, -1, -1, a / 10, b / 10, c / 10 };
+                return array.Sum(x => x >= 0 ? x * 2 : (long?)null).Value;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumSingleSelector() {
+            this.Test((Func<float, float, float, float>)TestSumSingleSelectorFunc);
+        }
+        [Within(0.01)]
+        private static float TestSumSingleSelectorFunc(float a, float b, float c) {
+            var array = new[] { a, b, c };
+            return array.Sum(x => x * 2);
+        }
+
+        [Test]
+        public void TestSumSingleNullableSelector() {
+            this.Test((Func<float, float, float, float>)TestSumSingleNullableSelectorFunc);
+        }
+        [Within(0.01)]
+        private static float TestSumSingleNullableSelectorFunc(float a, float b, float c) {
+            var array = new float[] { a, b, c, -1, -1, -1 };
+            return array.Sum(x => x >= 0 ? x * 2 : (float?)null).Value;
+        }
+
+        [Test]
+        public void TestSumDoubleSelector() {
+            Func<double, double, double, double> f = (a, b, c) => {
+                var array = new double[] { a, b, c };
+                return array.Sum(x => x * 2);
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSumDoubleNullableSelector() {
+            Func<double, double, double, double> f = (a, b, c) => {
+                var array = new double[] { -1, -1, -1, a, b, c };
+                return array.Sum(x => x >= 0 ? x * 2 : (double?)null).Value;
             };
             this.Test(f);
         }
