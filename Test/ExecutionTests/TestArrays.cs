@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,7 +55,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Array.GetValue() does not yet work")]
+        [Test]
         public void TestIndexOfArray() {
             Func<int, int> f = a => {
                 var array = (Array)new int[] { 1, 2, 3, 4, 5, 6 };
@@ -64,11 +65,24 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestEnumerable() {
+        public void TestEnumerableT() {
             Func<int, int, int, int> f = (a, b, c) => {
                 IEnumerable<int> array = new[] { a, b, c };
                 var ret = 0;
                 foreach (var i in array) {
+                    ret += i;
+                }
+                return ret;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestEnumerable() {
+            Func<int, int, int, int> f = (a, b, c) => {
+                IEnumerable array = new[] { a, b, c };
+                int ret = 0;
+                foreach (int i in array) {
                     ret += i;
                 }
                 return ret;
@@ -81,7 +95,7 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestIEnumerableWithTwoTypes() {
+        public void TestIEnumerableTWithTwoTypes() {
             Func<int, int, int, int, int, int, int> f = (a, b, c, x, y, z) => {
                 IEnumerable<int> array1 = new[] { a, b, c };
                 IEnumerable<CTestIEnumerableWithTwoTypes> array2 = new[]{
@@ -101,7 +115,7 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestICollection() {
+        public void TestICollectionT() {
             Func<int, int, int, int> f = (a, b, c) => {
                 ICollection<int> collection = new[] { a, b, c };
                 var ret = 0;
@@ -118,7 +132,7 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestIList() {
+        public void TestIListT() {
             Func<int, int, int, int> f = (a, b, c) => {
                 IList<int> list = new[] { a, b, c };
                 int ret = 0;
@@ -296,7 +310,7 @@ namespace Test.ExecutionTests {
             Func<int, int, int, int, int, int> f = (a, b, c, d, e) => {
                 var array = new int[] { a, b, c, d, e };
                 Array.Sort(array);
-                for (int i=0; i<4; i++) {
+                for (int i = 0; i < 4; i++) {
                     if (array[i] == array[i + 1]) {
                         array[i] = 200 + i;
                     }
