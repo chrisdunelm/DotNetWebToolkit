@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
-    class GenericArrayMethods<T> : IList<T>, ICollection<T>, IEnumerable<T> {
+    class GenericArrayMethods<T> /*: IList<T>, ICollection<T>, IEnumerable<T>*/ {
 
         class GenericEnumerator : IEnumerator<T> {
             public GenericEnumerator(T[] array) {
@@ -41,10 +41,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return new GenericEnumerator((T[])(object)this);
         }
 
-        IEnumerator IEnumerable.GetEnumerator() {
-            return this.GetEnumerator();
-        }
-
         public virtual int Count {
             get {
                 return ((T[])(object)this).Length;
@@ -60,7 +56,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         public virtual bool Contains(T item) {
             return ((IList<T>)this).IndexOf(item) >= 0;
         }
-
 
         public virtual int IndexOf(T item) {
             var array = (T[])(object)this;
