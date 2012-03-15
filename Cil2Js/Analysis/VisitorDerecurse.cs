@@ -27,7 +27,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         protected override ICode VisitContinuation(StmtContinuation s) {
-            // Why is this de-recursing blocks in contuations? Why doesn't it just derecurse itself (if possible)???
+            // TODO: Why is this de-recursing blocks in continuations? Why doesn't it just derecurse itself (if possible)???
             if (s.To.StmtType != Stmt.NodeType.Block) {
                 return base.VisitContinuation(s);
             }
@@ -60,6 +60,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                             var body = new StmtBlock(s.Ctx, bodyStmts);
                             var loop = new StmtDoLoop(s.Ctx, body, condition);
                             var afterLoop = block.Statements.SkipWhile(x => x != stmt).Skip(1).ToArray();
+                            if (VisitorFindContinuations.Get(new StmtBlock(s.Ctx, afterLoop)).Any(x => x.To == block)) {
+                                // Cannot de-recurse yet, must wait for continuations to be merged
+                                return base.VisitContinuation(s);
+                            }
                             Stmt replaceWith;
                             if (afterLoop.Any()) {
                                 var loopAndAfter = new[] { loop }.Concat(afterLoop).ToArray();
