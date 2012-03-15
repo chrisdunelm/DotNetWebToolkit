@@ -165,6 +165,7 @@
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
     <Compile Include="JsResolvers\Classes\_Nullable.cs" />
+    <Compile Include="JsResolvers\Classes\_Single.cs" />
     <Compile Include="JsResolvers\GenericParamPlaceholders.cs" />
     <Compile Include="JsResolvers\JsImplException.cs" />
     <Compile Include="JsResolvers\Classes\_Comparer.cs" />
