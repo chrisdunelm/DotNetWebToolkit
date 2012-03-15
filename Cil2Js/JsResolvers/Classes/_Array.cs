@@ -52,16 +52,31 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsExplicit(ctx, "array.length", ctx.Int32, call.Obj.Named("array"));
         }
 
-        // Not yet supported - problem with how to box value-types in arrays
-        //[Js(typeof(object), typeof(int))]
-        //public static Stmt GetValue(Ctx ctx) {
-        //    var arrayType = new ExprCall(ctx, (Func<Type>)(new object().GetType), ctx.This).Named("arrayType");
-        //    var elTypeData = new ExprJsTypeData(ctx, TypeData.ElementType).Named("elTypeData");
-        //    var elType = new ExprJsExplicit(ctx, "arrayType[elTypeData]", ctx.Type, arrayType, elTypeData);
-        //    var getValue = new ExprJsExplicit(ctx, "this[index]", ctx.Object, ctx.ThisNamed, ctx.MethodParameter(0, "index"));
-        //    var box = new ExprBox(ctx, getValue, ctx.Object);
-        //    return new StmtReturn(ctx, box);
-        //}
+        [JsRedirect(typeof(Array))]
+        public object GetValue(int index) {
+            throw new JsImplException();
+        }
+        [Js(typeof(object), typeof(int))]
+        public static Stmt GetValue(Ctx ctx) {
+            // if array.ElementType.IsValueType {
+            //   return box(array[index])
+            // } else {
+            //   return array[index];
+            // }
+            var value = ctx.Local(ctx.Object, "value");
+            var index = ctx.MethodParameter(0, "index");
+            var thisType = ctx.Local(ctx.Type, "thisType");
+            var thisGetTypeCall = new ExprCall(ctx, (Func<Type>)(new object().GetType), ctx.This).Named("thisGetTypeCall");
+            var eElementType = new ExprJsTypeData(ctx, TypeData.ElementType).Named("eElementType");
+            var eIsValueType = new ExprJsTypeData(ctx, TypeData.IsValueType).Named("eIsValueType");
+            var js = @"
+value = this[index];
+thisType = thisGetTypeCall;
+return thisType.eElementType.eIsValueType ? {v:value, _:thisType.eElementType} : value;
+";
+            var stmt = new StmtJsExplicit(ctx, js, ctx.ThisNamed, value, index, thisType, thisGetTypeCall, eElementType, eIsValueType);
+            return stmt;
+        }
 
         public static int IndexOf<T>(T[] array, T value) {
             return Array.IndexOf<T>(array, value, 0, array.Length);
@@ -274,7 +289,10 @@ copyPartCall;
         }
 
         public IEnumerator GetEnumerator() {
-            throw new NotImplementedException();
+            // TODO: Hand-write enumerator, will result in smaller code
+            for (int i = 0; i < this.get_Length(); i++) {
+                yield return this.GetValue(i);
+            }
         }
     }
 }
