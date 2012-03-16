@@ -27,5 +27,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return base.VisitFieldAddress(e);
         }
 
+        protected override ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
+            this.fieldAccesses.Add(e.FieldRef);
+            return base.VisitJsFieldVarName(e);
+        }
+
     }
 }

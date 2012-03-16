@@ -183,6 +183,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
             }
+            if (expr.Type.IsNonPrimitiveValueType() && expr.IsVar()) {
+                expr = InternalFunctions.ValueTypeDeepCopyIfRequired(expr.Type, () => expr) ?? expr;
+            }
             if (expr != s.Expr || target != s.Target) {
                 return new StmtAssignment(ctx, target, expr);
             } else {

@@ -25,7 +25,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
                         ast2 = VisitorReplace.V(ast2, a.assignment, null);
                     }
-                } else if (a.count == 2 || IsSimple(alreadyReplaced.ValueOrDefault(a.assignment.Expr, a.assignment.Expr))) {
+                } else if (a.count == 2 || 
+                    (IsSimple(alreadyReplaced.ValueOrDefault(a.assignment.Expr, a.assignment.Expr)) && !a.assignment.Expr.Type.IsNonPrimitiveValueType())) {
                     var updater = new Updater(a.assignment.Target);
                     ast2 = updater.Visit(ast2);
                     foreach (var replaced in updater.Replaced) {
