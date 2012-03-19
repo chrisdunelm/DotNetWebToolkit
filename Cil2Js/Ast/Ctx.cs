@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
 using DotNetWebToolkit.Cil2Js.Output;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
+using DotNetWebToolkit.Cil2Js.JsResolvers;
 
 namespace DotNetWebToolkit.Cil2Js.Ast {
+
+    using Cls = DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
+
     public class Ctx {
 
         public Ctx(TypeReference tRef, MethodReference mRef, Ctx fromCtx = null) {
@@ -15,13 +18,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this.TDef = tRef.Resolve();
             this.MRef = mRef;
             this.MDef = mRef.Resolve();
+            this.HasFakeThis = mRef.Parameters.FirstOrDefault().NullThru(x => x.GetCustomAttribute<JsFakeThisAttribute>() != null);
             this.Module = mRef.Module;
             this.TypeSystem = mRef.Module.TypeSystem;
             this.ExprGen = Expr.CreateExprGen(this);
             this.This = fromCtx == null ? (this.MDef.IsStatic ? null : new ExprVarThis(this, tRef)) : fromCtx.This;
             this.type = new Lazy<TypeReference>(() => this.Module.Import(typeof(Type)));
-            this._int64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_Int64)));
-            this._uint64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(_UInt64)));
+            this._int64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(Cls._Int64)));
+            this._uint64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(Cls._UInt64)));
         }
 
         public TypeReference TRef { get; private set; }
@@ -29,6 +33,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public MethodReference MRef { get; private set; }
         public MethodDefinition MDef { get; private set; }
 
+        public bool HasFakeThis { get; private set; }
         public ExprVarThis This { get; private set; }
         public NamedExpr ThisNamed { get { return this.This.NullThru(x => x.Named("this")); } }
 

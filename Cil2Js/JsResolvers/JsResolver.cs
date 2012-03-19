@@ -50,6 +50,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         private static bool DoesMatchMethod(MethodReference mInternal, MethodReference m) {
+            // Look for methods with custom signatures
             var detailsAttr = mInternal.Resolve().GetCustomAttribute<JsDetailAttribute>(true);
             if (detailsAttr != null) {
                 var signature = detailsAttr.Properties.FirstOrDefault(x => x.Name == "Signature");
@@ -73,6 +74,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     return true;
                 }
             }
+            // Look for C# method that matches with custom 'this'
+            return mInternal.Name == m.Name;
+            // Look for C# method that match signature
             return mInternal.MatchMethodOnly(m);
         }
 

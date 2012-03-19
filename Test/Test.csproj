@@ -94,6 +94,7 @@
     <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
     <Compile Include="ExecutionTests\TestEqualityComparer.cs" />
     <Compile Include="ExecutionTests\TestHashSet.cs" />
+    <Compile Include="ExecutionTests\TestIComparable.cs" />
     <Compile Include="ExecutionTests\TestInt64UInt64.cs" />
     <Compile Include="BrowserTests\TestJsTypes.cs" />
     <Compile Include="ExecutionTests\TestInterfaces.cs" />

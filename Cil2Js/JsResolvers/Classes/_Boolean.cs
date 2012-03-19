@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWebToolkit.Attributes;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
 
@@ -40,6 +41,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var trueString = ctx.Literal(bool.TrueString, "trueString");
             var falseString = ctx.Literal(bool.FalseString, "falseString");
             return new StmtJsExplicit(ctx, "return this ? trueString : falseString;", ctx.ThisNamed, trueString, falseString);
+        }
+
+        public static int CompareTo([JsFakeThis]bool _this, bool other) {
+            return _this == other ? 0 : (_this ? 1 : -1);
         }
 
     }
