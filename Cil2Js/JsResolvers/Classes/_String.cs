@@ -9,9 +9,6 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    //[Js("ToString", typeof(string))]
-    //[Js("Concat", typeof(string), typeof(object), typeof(object))]
-    //[Js("Concat", typeof(string), typeof(object), typeof(object), typeof(object))]
     class _String : IEnumerable<char>, IEnumerable {
 
         [Js(typeof(bool), typeof(object))]
@@ -166,6 +163,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         IEnumerator IEnumerable.GetEnumerator() {
             return new CharEnum((string)(object)this);
+        }
+
+        [Js(typeof(int), typeof(string))]
+        public static Stmt CompareTo(Ctx ctx) {
+            return new StmtJsExplicit(ctx, "return this === a ? 0 : (this < a ? -1 : 1);", ctx.ThisNamed, ctx.MethodParameter(0, "a"));
         }
 
     }

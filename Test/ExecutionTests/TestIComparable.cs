@@ -11,14 +11,26 @@ namespace Test.ExecutionTests {
     public class TestIComparable : ExecutionTestBase {
 
         [Test]
-        public void TestInt8() {
+        public void TestInt8T() {
             Func<sbyte, sbyte, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestInt16() {
+        public void TestInt8() {
+            Func<sbyte, sbyte, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt16T() {
             Func<Int16, Int16, int> f = (a, b) => a.CompareTo(b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt16() {
+            Func<Int16, Int16, int> f = (a, b) => a.CompareTo((object)b);
             this.Test(f);
         }
 

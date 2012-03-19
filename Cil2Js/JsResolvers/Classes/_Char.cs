@@ -30,5 +30,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new StmtJsExplicit(ctx, "return this | this << 16;", ctx.ThisNamed);
         }
 
+        public static int CompareTo([JsFakeThis]char _this, char other) {
+            return (int)(_this - other);
+        }
+
     }
 }
