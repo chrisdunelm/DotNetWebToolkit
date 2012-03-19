@@ -391,6 +391,10 @@ return neg ? rNegate : r;
             throw new JsImplException();
         }
 
+        public static int CompareTo([JsFakeThis]Int64 _this, Int64 other) {
+            return _this < other ? -1 : (_this > other ? 1 : 0);
+        }
+
     }
 
     class _UInt64 {
@@ -488,6 +492,10 @@ return neg ? rNegate : r;
         [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
         public static bool GreaterThanOrEqual(UInt64 a, UInt64 b) {
             throw new JsImplException();
+        }
+
+        public static int CompareTo([JsFakeThis]UInt64 _this, UInt64 other) {
+            return _this < other ? -1 : (_this > other ? 1 : 0);
         }
 
     }

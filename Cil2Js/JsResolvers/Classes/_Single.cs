@@ -22,6 +22,25 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "isNaN", call.Args);
         }
-    
+
+        public static int CompareTo([JsFakeThis]float _this, float other) {
+            if (_this < other) {
+                return -1;
+            }
+            if (_this > other) {
+                return 1;
+            }
+            if (_this == other) {
+                return 0;
+            }
+            if (double.IsNaN(_this)) {
+                return 1;
+            }
+            if (double.IsNaN(other)) {
+                return -1;
+            }
+            return 0;
+        }
+
     }
 }

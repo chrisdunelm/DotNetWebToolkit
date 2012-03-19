@@ -146,6 +146,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
                 return new ExprBinary(this.ctx, BinaryOp.NotEqual, this.ctx.Boolean, left, right);
             }
 
+            public Expr LessThan(Expr left, Expr right) {
+                return new ExprBinary(this.ctx, BinaryOp.LessThan, this.ctx.Boolean, left, right);
+            }
+
+            public Expr GreaterThan(Expr left, Expr right) {
+                return new ExprBinary(this.ctx, BinaryOp.GreaterThan, this.ctx.Boolean, left, right);
+            }
+
         }
 
         public static Gen CreateExprGen(Ctx ctx) {

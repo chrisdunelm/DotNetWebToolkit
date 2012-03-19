@@ -50,6 +50,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         private static bool DoesMatchMethod(MethodReference mInternal, MethodReference m) {
+            // Look for methods with custom signatures
             var detailsAttr = mInternal.Resolve().GetCustomAttribute<JsDetailAttribute>(true);
             if (detailsAttr != null) {
                 var signature = detailsAttr.Properties.FirstOrDefault(x => x.Name == "Signature");
@@ -73,6 +74,34 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     return true;
                 }
             }
+            // Look for C# method that matches with custom 'this'
+            Func<bool> isFakeThis = () => {
+                if (mInternal.HasThis) {
+                    return false;
+                }
+                if (mInternal.Name != m.Name) {
+                    return false;
+                }
+                if (mInternal.Parameters.Count != m.Parameters.Count + 1) {
+                    return false;
+                }
+                if (mInternal.Parameters[0].GetCustomAttribute<JsFakeThisAttribute>() == null) {
+                    return false;
+                }
+                if (!mInternal.ReturnType.IsSame(m.ReturnType)) {
+                    return false;
+                }
+                for (int i = 1; i < mInternal.Parameters.Count; i++) {
+                    if (!mInternal.Parameters[i].ParameterType.IsSame(m.Parameters[i - 1].ParameterType)) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+            if (isFakeThis()) {
+                return true;
+            }
+            // Look for C# method that match signature
             return mInternal.MatchMethodOnly(m);
         }
 
