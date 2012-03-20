@@ -486,5 +486,133 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return s;
         }
 
+        protected override ICode VisitJsExplicit(ExprJsExplicit e) {
+            this.code.Append(e.JavaScript);
+            return e;
+        }
+
+        protected override ICode VisitJsExplicit(StmtJsExplicit s) {
+            this.code.Append(s.JavaScript);
+            return s;
+        }
+
+        protected override ICode VisitJsResolvedCtor(ExprJsResolvedCtor e) {
+            this.code.Append(e.TypeName);
+            this.code.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsResolvedMethod(ExprJsResolvedMethod e) {
+            if (e.Obj != null) {
+                this.code.Append(e.Obj);
+                this.code.Append(".");
+            }
+            this.code.Append(e.MethodName);
+            this.code.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsResolvedProperty(ExprJsResolvedProperty e) {
+            this.code.Append(e.PropertyName);
+            return e;
+        }
+
+        protected override ICode VisitJsTypeVarName(ExprJsTypeVarName e) {
+            this.code.AppendFormat("typeof({0})", e.TypeRef.Name);
+            return e;
+        }
+
+        protected override ICode VisitJsArrayLiteral(ExprJsArrayLiteral e) {
+            this.code.Append("[");
+            if (e.Elements.Any()) {
+                foreach (var element in e.Elements) {
+                    this.Visit(element);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
+            this.code.Append("]");
+            return e;
+        }
+
+        protected override ICode VisitJsByRefWrapper(ExprJsByRefWrapper e) {
+            this.code.Append("byref-wrapper(");
+            this.Visit(e.Expr);
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsDelegateCtor(ExprJsDelegateCtor e) {
+            this.code.Append(e.Method.Name);
+            return e;
+        }
+
+        protected override ICode VisitJsDelegateInvoke(ExprJsDelegateInvoke e) {
+            this.Visit(e.MethodToInvoke);
+            this.code.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitJsEmptyFunction(ExprJsEmptyFunction e) {
+            this.code.Append("function() { }");
+            return e;
+        }
+
+        protected override ICode VisitJsFieldVarName(ExprJsFieldVarName e) {
+            this.code.Append(e.FieldRef.Name);
+            return e;
+        }
+
+        protected override ICode VisitJsTypeData(ExprJsTypeData e) {
+            this.code.Append(e.TypeData);
+            return e;
+        }
+
+        protected override ICode VisitJsVarMethodReference(ExprJsVarMethodReference e) {
+            this.code.Append("ref:");
+            this.code.Append(e.MRef.Name);
+            return e;
+        }
+
+        protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
+            this.code.Append("vCall:");
+            this.Visit(e.Obj);
+            this.code.Append(e.CallMethod.Name);
+            this.code.Append("(");
+            if (e.Args.Any()) {
+                foreach (var arg in e.Args) {
+                    this.Visit(arg);
+                    this.code.Append(", ");
+                }
+                this.code.Length -= 2;
+            }
+            this.code.Append(")");
+            return e;
+        }
+
     }
 }

@@ -19,62 +19,91 @@ namespace DotNetWebToolkit.Cil2Js {
             return ToAst(ctx, verbose);
         }
 
+        internal static void Print(Stmt stmt, string name, bool verbose) {
+            if (verbose) {
+                if (name != null && name.StartsWith("Visitor")) {
+                    name = name.Substring(7);
+                }
+                Console.WriteLine(" --- AST Transform Step {0}{1} ---", stmt.Ctx.step++, name == null ? "" : (" '" + name + "'"));
+                Console.WriteLine(ShowVisitor.V(stmt));
+                Console.WriteLine();
+            }
+        }
+
+        internal static Stmt DoStep(Func<Stmt, Stmt> fnStep, Stmt stmt, string name, bool verbose) {
+            var s1 = fnStep(stmt);
+            if (s1 != stmt) {
+                Print(s1, name, verbose);
+                var dupStmts = VisitorFindDuplicateStmts.Find(s1);
+                if (dupStmts.Any()) {
+                    Console.WriteLine("*** ERROR *** {0} DUPLICATE STMT(S) ***", dupStmts.Count());
+                    foreach (var dup in dupStmts) {
+                        Console.WriteLine();
+                        Console.WriteLine(ShowVisitor.V(dup));
+                    }
+                    throw new InvalidOperationException("Duplicate stmt(s) found");
+                }
+            }
+            return s1;
+        }
+
         public static ICode ToAst(Ctx ctx, bool verbose = false) {
             var ast = AstGenerator.CreateBlockedCilAst(ctx);
             int step = 0;
-            Action<Stmt, string> print = (s, name) => {
-                if (verbose) {
-                    if (name != null && name.StartsWith("Visitor")) {
-                        name = name.Substring(7);
-                    }
-                    Console.WriteLine(" --- AST Transform Step {0}{1} ---", step++, name == null ? "" : (" '" + name + "'"));
-                    Console.WriteLine(ShowVisitor.V(s));
-                    Console.WriteLine();
-                }
-            };
-            Func<Func<Stmt, Stmt>, Stmt, string, Stmt> doStep = (fn, s0, name) => {
-                var s1 = fn(s0);
-                if (s1 != s0) {
-                    print(s1, name);
-                    var dupStmts = VisitorFindDuplicateStmts.Find(s1);
-                    if (dupStmts.Any()) {
-                        Console.WriteLine("*** ERROR *** {0} DUPLICATE STMT(S) ***", dupStmts.Count());
-                        foreach (var dup in dupStmts) {
-                            Console.WriteLine();
-                            Console.WriteLine(ShowVisitor.V(dup));
-                        }
-                        throw new InvalidOperationException("Duplicate stmt(s) found");
-                    }
-                }
-                return s1;
-            };
-            print(ast, null);
-            ast = doStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa");
+            //Action<Stmt, string> print = (s, name) => {
+            //    if (verbose) {
+            //        if (name != null && name.StartsWith("Visitor")) {
+            //            name = name.Substring(7);
+            //        }
+            //        Console.WriteLine(" --- AST Transform Step {0}{1} ---", step++, name == null ? "" : (" '" + name + "'"));
+            //        Console.WriteLine(ShowVisitor.V(s));
+            //        Console.WriteLine();
+            //    }
+            //};
+            //Func<Func<Stmt, Stmt>, Stmt, string, Stmt> doStep = (fn, s0, name) => {
+            //    var s1 = fn(s0);
+            //    if (s1 != s0) {
+            //        print(s1, name);
+            //        var dupStmts = VisitorFindDuplicateStmts.Find(s1);
+            //        if (dupStmts.Any()) {
+            //            Console.WriteLine("*** ERROR *** {0} DUPLICATE STMT(S) ***", dupStmts.Count());
+            //            foreach (var dup in dupStmts) {
+            //                Console.WriteLine();
+            //                Console.WriteLine(ShowVisitor.V(dup));
+            //            }
+            //            throw new InvalidOperationException("Duplicate stmt(s) found");
+            //        }
+            //    }
+            //    return s1;
+            //};
+            //print(ast, null);
+            Print(ast, null, verbose);
+            ast = DoStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa", verbose);
             // Reduce to AST with no continuations
             for (int i = 0; ; i++) {
                 var astOrg = ast;
-                ast = doStep(s => (Stmt)VisitorSubstitute.V(s), ast, "VisitorSubstitute");
-                ast = doStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), ast, "VisitorTryCatchFinallySequencing");
-                ast = doStep(s => (Stmt)VisitorIfDistribution.V(s), ast, "VisitorIfDistribution");
-                ast = doStep(s => (Stmt)VisitorDerecurse.V(s), ast, "VisitorDerecurse");
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
-                ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
-                ast = doStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder");
-                ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
-                ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, false), ast, "VisitorSwitchSequencing");
+                ast = DoStep(s => (Stmt)VisitorSubstitute.V(s), ast, "VisitorSubstitute", verbose);
+                ast = DoStep(s => (Stmt)VisitorTryCatchFinallySequencing.V(s), ast, "VisitorTryCatchFinallySequencing", verbose);
+                ast = DoStep(s => (Stmt)VisitorIfDistribution.V(s), ast, "VisitorIfDistribution", verbose);
+                ast = DoStep(s => (Stmt)VisitorDerecurse.V(s), ast, "VisitorDerecurse", verbose);
+                ast = DoStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification", verbose);
+                ast = DoStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification", verbose);
+                ast = DoStep(s => (Stmt)VisitorIfReorder.V(s), ast, "VisitorIfReorder", verbose);
+                ast = DoStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval", verbose);
+                ast = DoStep(s => (Stmt)VisitorSwitchSequencing.V(s, false), ast, "VisitorSwitchSequencing", verbose);
                 if (ast == astOrg) {
                     if (!VisitorFindContinuations.Any(ast)) {
                         break;
                     } else {
-                        ast = doStep(s => (Stmt)VisitorSwitchSequencing.V(s, true), ast, "VisitorSwitchSequencing-LastChance");
+                        ast = DoStep(s => (Stmt)VisitorSwitchSequencing.V(s, true), ast, "VisitorSwitchSequencing-LastChance", verbose);
                         if (ast != astOrg) {
                             continue;
                         }
-                        ast = doStep(s => (Stmt)VisitorSubstituteIrreducable.V(s), ast, "VisitorSubstituteIrreducable");
+                        ast = DoStep(s => (Stmt)VisitorSubstituteIrreducable.V(s), ast, "VisitorSubstituteIrreducable", verbose);
                         if (ast != astOrg) {
                             continue;
                         }
-                        ast = doStep(s => (Stmt)VisitorDuplicateCode.V(s), ast, "VisitorDuplicateCode");
+                        ast = DoStep(s => (Stmt)VisitorDuplicateCode.V(s), ast, "VisitorDuplicateCode", verbose);
                         if (ast != astOrg) {
                             continue;
                         }
@@ -87,20 +116,20 @@ namespace DotNetWebToolkit.Cil2Js {
                 }
             }
             // PhiSimplifier must be done before DefiniteAssignment
-            ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
+            ast = DoStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier", verbose);
             // DefiniteAssignment must be done before SsaCopyPropagation
-            ast = doStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment");
+            ast = DoStep(s => (Stmt)VisitorDefiniteAssignment.V(s), ast, "VisitorDefiniteAssignment", verbose);
             // Simplify AST
             for (int i = 0; ; i++) {
                 var astOrg = ast;
                 // TODO: VisitorBooleanSimplification may re-order logic, which should not be done at this stage
-                ast = doStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification");
-                ast = doStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification");
-                ast = doStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop");
-                ast = doStep(s => (Stmt)VisitorSsaCopyPropagation.V(s), ast, "VisitorSsaCopyPropagation");
-                ast = doStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier");
-                ast = doStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier");
-                ast = doStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval");
+                ast = DoStep(s => (Stmt)VisitorBooleanSimplification.V(s), ast, "VisitorBooleanSimplification", verbose);
+                ast = DoStep(s => (Stmt)VisitorIfSimplification.V(s), ast, "VisitorIfSimplification", verbose);
+                ast = DoStep(s => (Stmt)VisitorMoveOutOfLoop.V(s), ast, "VisitorMoveOutOfLoop", verbose);
+                ast = DoStep(s => (Stmt)VisitorSsaCopyPropagation.V(s), ast, "VisitorSsaCopyPropagation", verbose);
+                ast = DoStep(s => (Stmt)VisitorPhiSimplifier.V(s), ast, "VisitorPhiSimplifier", verbose);
+                ast = DoStep(s => (Stmt)VisitorExpressionSimplifier.V(s), ast, "VisitorExpressionSimplifier", verbose);
+                ast = DoStep(s => (Stmt)VisitorEmptyBlockRemoval.V(s), ast, "VisitorEmptyBlockRemoval", verbose);
                 if (ast == astOrg) {
                     break;
                 }
@@ -109,9 +138,9 @@ namespace DotNetWebToolkit.Cil2Js {
                     throw new InvalidOperationException("Error: Stuck in loop trying to simplify AST");
                 }
             }
-            ast = doStep(s => (Stmt)VisitorRemoveCasts.V(s), ast, "VisitorRemoveCasts");
-            ast = doStep(s => (Stmt)VisitorRemoveFinalReturn.V(s), ast, "VisitorRemoveFinalReturn");
-            ast = doStep(s => (Stmt)VisitorTypeCorrector.V(s), ast, "VisitorTypeCorrector");
+            ast = DoStep(s => (Stmt)VisitorRemoveCasts.V(s), ast, "VisitorRemoveCasts", verbose);
+            ast = DoStep(s => (Stmt)VisitorRemoveFinalReturn.V(s), ast, "VisitorRemoveFinalReturn", verbose);
+            ast = DoStep(s => (Stmt)VisitorTypeCorrector.V(s), ast, "VisitorTypeCorrector", verbose);
             return ast;
 
         }
