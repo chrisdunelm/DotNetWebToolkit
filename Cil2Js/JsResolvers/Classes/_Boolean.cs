@@ -47,5 +47,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return _this == other ? 0 : (_this ? 1 : -1);
         }
 
+        public static int CompareTo([JsFakeThis]bool _this, object other) {
+            if (other == null) {
+                return 1;
+            }
+            if (!(other is bool)) {
+                throw new ArgumentException();
+            }
+            return _this == (bool)other ? 0 : (_this ? 1 : -1);
+        }
+
     }
 }

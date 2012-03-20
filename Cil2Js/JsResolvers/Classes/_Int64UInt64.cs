@@ -395,6 +395,16 @@ return neg ? rNegate : r;
             return _this < other ? -1 : (_this > other ? 1 : 0);
         }
 
+        public static int CompareTo([JsFakeThis]Int64 _this, object other) {
+            if (other == null) {
+                return 1;
+            }
+            if (!(other is Int64)) {
+                throw new ArgumentException();
+            }
+            return _this.CompareTo((Int64)other);
+        }
+
     }
 
     class _UInt64 {
@@ -496,6 +506,16 @@ return neg ? rNegate : r;
 
         public static int CompareTo([JsFakeThis]UInt64 _this, UInt64 other) {
             return _this < other ? -1 : (_this > other ? 1 : 0);
+        }
+
+        public static int CompareTo([JsFakeThis]UInt64 _this, object other) {
+            if (other == null) {
+                return 1;
+            }
+            if (!(other is UInt64)) {
+                throw new ArgumentException();
+            }
+            return _this.CompareTo((UInt64)other);
         }
 
     }

@@ -77,33 +77,33 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             // Special cases for == and != needed as an empty string is false, not true
             if (e.Op == BinaryOp.Equal) {
                 if (e.Left.IsLiteralNull()) {
-                    if (e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
+                    if (e.Right.IsVar() && e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
                         return ctx.Literal(false); // Non-nullable Value-type can never be null
                     } else {
-                        return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Right.Named("e"));
+                        return new ExprJsExplicit(ctx, "(e == null)", ctx.Boolean, e.Right.Named("e"));
                     }
                 }
                 if (e.Right.IsLiteralNull()) {
-                    if (e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
+                    if (e.Left.IsVar() && e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
                         return ctx.Literal(false); // Non-nullable Value-type can never be null
                     } else {
-                        return new ExprJsExplicit(ctx, "(e==null)", ctx.Boolean, e.Left.Named("e"));
+                        return new ExprJsExplicit(ctx, "(e == null)", ctx.Boolean, e.Left.Named("e"));
                     }
                 }
             }
             if (e.Op == BinaryOp.NotEqual || e.Op == BinaryOp.GreaterThan_Un) {
                 if (e.Left.IsLiteralNull()) {
-                    if (e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
+                    if (e.Right.IsVar() && e.Right.Type.IsValueType && !e.Right.Type.IsNullable()) {
                         return ctx.Literal(true); // Non-nullable Value-type can never be null
                     } else {
-                        return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Right.Named("e"));
+                        return new ExprJsExplicit(ctx, "(e != null)", ctx.Boolean, e.Right.Named("e"));
                     }
                 }
                 if (e.Right.IsLiteralNull()) {
-                    if (e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
+                    if (e.Left.IsVar() && e.Left.Type.IsValueType && !e.Left.Type.IsNullable()) {
                         return ctx.Literal(true); // Non-nullable Value-type can never be null
                     } else {
-                        return new ExprJsExplicit(ctx, "(e!=null)", ctx.Boolean, e.Left.Named("e"));
+                        return new ExprJsExplicit(ctx, "(e != null)", ctx.Boolean, e.Left.Named("e"));
                     }
                 }
             }

@@ -35,68 +35,134 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestInt32() {
+        public void TestInt32T() {
             Func<Int32, Int32, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestInt64() {
+        public void TestInt32() {
+            Func<Int32, Int32, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestInt64T() {
             Func<Int64, Int64, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestUInt8() {
+        public void TestInt64() {
+            Func<Int64, Int64, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt8T() {
             Func<byte, byte, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestUInt16() {
+        public void TestUInt8() {
+            Func<byte, byte, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt16T() {
             Func<UInt16, UInt16, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestUInt32() {
+        public void TestUInt16() {
+            Func<UInt16, UInt16, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt32T() {
             Func<UInt32, UInt32, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestUInt64() {
+        public void TestUInt32() {
+            Func<UInt32, UInt32, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestUInt64T() {
             Func<UInt64, UInt64, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestSingle() {
+        public void TestUInt64() {
+            Func<UInt64, UInt64, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestSingleT() {
             Func<Single, Single, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestDouble() {
+        public void TestSingle() {
+            Func<Single, Single, int> f = (a, b) => a.CompareTo((object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestDoubleT() {
             Func<Double, Double, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
-        public void TestBoolean() {
-            Func<bool, bool, int> f = (a, b) => a.CompareTo(b);
+        public void TestDouble() {
+            Func<Double, Double, int> f = (a, b) => a.CompareTo((object)b);
             this.Test(f);
         }
 
         [Test]
-        public void TestChar() {
+        public void TestBooleanT() {
+            Func<bool, bool, int> f = (a, b) => a.CompareTo(b);
+            this.Test(f);
+        }
+
+        [Test, Ignore("Value-types not handled correctly yet")]
+        public void TestBoolean() {
+            Func<bool, bool, bool, int> f = (a, b, c) => a.CompareTo(c ? null : (object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestCharT() {
             Func<char, char, int> f = (a, b) => a.CompareTo(b);
+            this.Test(f);
+        }
+
+        [Test, Ignore("Value-types not handled correctly yet")]
+        public void TestChar() {
+            Func<char, char, bool, int> f = (a, b, c) => a.CompareTo(c ? null : (object)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestStringT() {
+            Func<string, string, int> f = (a, b) => a.CompareTo(b);
             this.Test(f);
         }
 
         [Test]
         public void TestString() {
-            Func<string, string, int> f = (a, b) => a.CompareTo(b);
+            Func<string, string, bool, int> f = (a, b, c) => a.CompareTo(c ? null : (object)b);
             this.Test(f);
         }
 

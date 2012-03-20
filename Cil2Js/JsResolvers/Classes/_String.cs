@@ -170,5 +170,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new StmtJsExplicit(ctx, "return this === a ? 0 : (this < a ? -1 : 1);", ctx.ThisNamed, ctx.MethodParameter(0, "a"));
         }
 
+        public static int CompareTo([JsFakeThis]string _this, object other) {
+            if (other == null) {
+                return 1;
+            }
+            if (!(other is string)) {
+                throw new ArgumentException();
+            }
+            return _this.CompareTo((string)other);
+        }
+
     }
 }
