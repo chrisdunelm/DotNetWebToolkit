@@ -344,13 +344,7 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         private Stmt LdArg(int idx, bool adjust) {
             Expr expr;
-            if (this.ctx.HasFakeThis) {
-                if (idx == 0) {
-                    expr = this.ctx.This;
-                } else {
-                    expr = this.args[idx];
-                }
-            } else if (((this.ctx.MRef.HasThis || this.ctx.MDef.IsConstructor) && adjust)) {
+            if ((this.ctx.MRef.HasThis || this.ctx.MDef.IsConstructor) && adjust) {
                 if (idx == 0) {
                     expr = this.ctx.This;
                 } else {

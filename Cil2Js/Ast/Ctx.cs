@@ -28,6 +28,8 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             this._uint64 = new Lazy<TypeReference>(() => this.Module.Import(typeof(Cls._UInt64)));
         }
 
+        internal int step = 0;
+
         public TypeReference TRef { get; private set; }
         public TypeDefinition TDef { get; private set; }
         public MethodReference MRef { get; private set; }

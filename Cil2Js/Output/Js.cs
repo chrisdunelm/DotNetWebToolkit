@@ -95,12 +95,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
                 for (int i = 0; ; i++) {
                     var astOrg = ast;
-                    ast = VisitorJsResolve64Bit.V(ast);
-                    ast = VisitorJsRewriteSealedVCalls.V(ast);
-                    ast = VisitorJsResolveAll.V(ast);
-                    ast = VisitorJsResolveConv.V(ast);
-                    ast = VisitorJsResolveSpecialTypes.V(ast);
-                    ast = VisitorJsResolveDelegates.V(ast);
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsRewriteSealedVCalls.V(s), (Stmt)ast, "VisitorJsRewriteSealedVCalls", verbose);
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveAll.V(s), (Stmt)ast, "VisitorJsResolveAll", verbose);
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveConv.V(s), (Stmt)ast, "VisitorJsResolveConv", verbose);
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveSpecialTypes.V(s), (Stmt)ast, "VisitorJsResolveSpecialTypes", verbose);
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveDelegates.V(s), (Stmt)ast, "VisitorJsResolveDelegates", verbose);
+                    // 64bit must be after all
+                    ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolve64Bit.V(s), (Stmt)ast, "VisitorJsResolve64Bit", verbose);
                     if (ast == astOrg) {
                         break;
                     }
@@ -109,8 +110,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
                 }
-                ast = VisitorIfSimplification.V(ast);
-                ast = VisitorJsResolveByRefParameters.V(ast);
+                ast = Transcoder.DoStep(s => (Stmt)VisitorIfSimplification.V(s), (Stmt)ast, "VisitorIfSimplification", verbose);
+                ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveByRefParameters.V(s), (Stmt)ast, "VisitorJsResolveByRefParameters", verbose);
 
                 if (mDef.IsVirtual && mRef.DeclaringType.IsValueType) {
                     // 'this' may be boxed or unboxed. Must be unboxed if boxed
@@ -118,6 +119,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     // available at the this reference; this is not the case in the JS emulation of boxing
                     var unbox = new StmtJsExplicit(ctx, "if (this._) this = this.v;", ctx.ThisNamed);
                     ast = new StmtBlock(ctx, unbox, (Stmt)ast);
+                    Transcoder.Print((Stmt)ast, "Unbox-this", verbose);
                 }
 
                 if (mDef.IsConstructor && !mDef.IsStatic) {
@@ -135,12 +137,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var cctorCalls = cctors
                         .Select(x => new StmtWrapExpr(ctx, new ExprCall(ctx, x, null, Enumerable.Empty<Expr>(), false))).ToArray();
                     ast = new StmtBlock(ctx, cctorCalls.Concat((Stmt)ast));
+                    Transcoder.Print((Stmt)ast, "Call-cctors", verbose);
                 }
 
                 if (mDef.IsConstructor && mDef.IsStatic) {
                     // At the beginning of the static constructor, it rewrites itself as an empty function, so it is only called once.
                     var rewrite = new StmtAssignment(ctx, new ExprJsVarMethodReference(ctx, mRef), new ExprJsEmptyFunction(ctx));
                     ast = new StmtBlock(ctx, rewrite, (Stmt)ast);
+                    Transcoder.Print((Stmt)ast, "cctor-once-only", verbose);
                 }
 
                 methodAsts.Add(mRef, ast);
@@ -255,16 +259,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (runtimeTypeInc != null) {
                 typesSeen[runtimeTypeInc] += 2;
             }
-
-            //// Make sure fields of nullable types are named
-            //var nullables = typesSeen.Keys.Where(x => x.IsNullable()).ToArray();
-            //foreach (var nullable in nullables) {
-            //    foreach (var field in nullable.EnumResolvedFields()) {
-            //        if (!fieldAccesses.ContainsKey(field)) {
-            //            fieldAccesses.Add(field, 1);
-            //        }
-            //    }
-            //}
 
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
