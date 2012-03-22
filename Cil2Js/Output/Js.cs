@@ -110,6 +110,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         throw new InvalidOperationException("Error: Stuck in loop trying to resolve AST");
                     }
                 }
+                ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveValueTypes.V(s), (Stmt)ast, "VisitorJsResolveValueTypes", verbose);
                 ast = Transcoder.DoStep(s => (Stmt)VisitorIfSimplification.V(s), (Stmt)ast, "VisitorIfSimplification", verbose);
                 ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveByRefParameters.V(s), (Stmt)ast, "VisitorJsResolveByRefParameters", verbose);
 

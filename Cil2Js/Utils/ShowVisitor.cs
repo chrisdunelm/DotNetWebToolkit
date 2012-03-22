@@ -438,13 +438,22 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
-            this.code.AppendFormat("@[local:{0}]", e.Index);
-            //this.Visit(e.Variable);
+            //this.code.AppendFormat("@[local:{0}]", e.Index);
+            this.code.AppendFormat("@(<{0}>", e.Type);
+            this.Visit(e.Variable);
+            this.code.Append(")");
+            return e;
+        }
+
+        protected override ICode VisitArgAddress(ExprArgAddress e) {
+            this.code.AppendFormat("@(<{0}>", e.Type);
+            this.Visit(e.Arg);
+            this.code.Append(")");
             return e;
         }
 
         protected override ICode VisitFieldAddress(ExprFieldAddress e) {
-            this.code.Append("@");
+            this.code.Append("@(");
             if (e.IsStatic) {
                 this.code.Append(e.Field.DeclaringType.FullName);
             } else {
@@ -452,6 +461,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             this.code.Append(".");
             this.code.Append(e.Field.Name);
+            this.code.Append(")");
             return e;
         }
 
@@ -492,6 +502,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         protected override ICode VisitJsExplicit(StmtJsExplicit s) {
+            this.NewLine();
             this.code.Append(s.JavaScript);
             return s;
         }
@@ -612,6 +623,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             }
             this.code.Append(")");
             return e;
+        }
+
+        protected override ICode VisitInitObj(StmtInitObj s) {
+            this.NewLine();
+            this.code.AppendFormat("init-object<{0}>(", s.Type.Name);
+            this.Visit(s.Destination);
+            this.code.Append(")");
+            return s;
         }
 
     }

@@ -25,8 +25,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                     if (!VisitorFindSpecials.Any(a.assignment, Expr.Special.PossibleSideEffects)) {
                         ast2 = VisitorReplace.V(ast2, a.assignment, null);
                     }
-                } else if (a.count == 2 || 
-                    (IsSimple(alreadyReplaced.ValueOrDefault(a.assignment.Expr, a.assignment.Expr)) && !a.assignment.Expr.Type.IsNonPrimitiveValueType())) {
+                } else if (a.count == 2 /*|| 
+                    (IsSimple(alreadyReplaced.ValueOrDefault(a.assignment.Expr, a.assignment.Expr)) && !a.assignment.Expr.Type.IsNonPrimitiveValueType())*/) {
                     var updater = new Updater(a.assignment.Target);
                     ast2 = updater.Visit(ast2);
                     foreach (var replaced in updater.Replaced) {
@@ -112,14 +112,23 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             return ret;
         }
 
-        protected override ICode VisitVarLocal(ExprVarLocal e) {
+        protected override ICode VisitVar(ExprVar e) {
             var aInfo = this.GetAInfo(e);
             aInfo.count++;
             if (this.inPhiCount > 0) {
                 aInfo.mustKeep = true;
             }
-            return base.VisitVarLocal(e);
+            return base.VisitVar(e);
         }
+
+        //protected override ICode VisitVarLocal(ExprVarLocal e) {
+        //    var aInfo = this.GetAInfo(e);
+        //    aInfo.count++;
+        //    if (this.inPhiCount > 0) {
+        //        aInfo.mustKeep = true;
+        //    }
+        //    return base.VisitVarLocal(e);
+        //}
 
     }
 }

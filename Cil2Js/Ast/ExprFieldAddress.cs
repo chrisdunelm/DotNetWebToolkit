@@ -13,12 +13,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             : base(ctx) {
             this.Obj = obj;
             this.Field = field;
-            this.type = field.FieldType.FullResolve(field);
+            this.ElementType = field.FieldType.FullResolve(field);
+            this.type = this.ElementType.MakePointer();
         }
 
         private TypeReference type;
         public Expr Obj { get; private set; }
         public FieldReference Field { get; private set; }
+        public TypeReference ElementType { get; private set; }
 
         public bool IsStatic {
             get { return this.Obj == null; }

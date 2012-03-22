@@ -23,6 +23,7 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             Return,
             Break,
             StoreObj,
+            InitObj,
 
             Max = 1000,
         }

@@ -79,8 +79,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestDictionary() { Verbose = true };
-            t.TestKeys();
+            var t = new TestArrays() { Verbose = true };
+            t.TestArrayInitialisationNullable();
 
             return;
 

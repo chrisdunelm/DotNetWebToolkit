@@ -161,6 +161,8 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return self.FullResolve(scope.DeclaringType, null);
         }
 
+        //private static Type
+
         public static TypeReference FullResolve(this TypeReference self, TypeReference scopeType, MethodReference scopeMethod, bool allowFailure = false) {
             var selfDef = self.Resolve();
             if (selfDef != null) {
@@ -195,7 +197,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 if (self.HasGenericParameters) {
                     var ret = new GenericInstanceType(self);
                     foreach (var arg in self.GenericParameters) {
-                        var argResolved = arg.FullResolve(scopeType, scopeMethod);
+                        var argResolved = arg.FullResolve(scopeType, scopeMethod, allowFailure);
                         ret.GenericArguments.Add(argResolved);
                     }
                     return ret;

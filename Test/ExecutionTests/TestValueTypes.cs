@@ -95,6 +95,22 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        private static int CopyMutateS1Ret(S1 s, int i) {
+            s.x = i;
+            var a = s;
+            a.x = i - 1;
+            return s.x - a.x;
+        }
+
+        [Test]
+        public void TestStructCopyFromArg() {
+            Func<int, int, int> f = (a, b) => {
+                var s1 = new S1 { x = a };
+                return CopyMutateS1Ret(s1, b) + s1.x;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

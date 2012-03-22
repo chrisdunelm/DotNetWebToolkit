@@ -21,6 +21,10 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return null;
             }
             var eType = e.Type.FullResolve(e.Ctx);
+            if (eType.IsPointer) {
+                // HACK: ?? This is probably a hack, not quite sure yet
+                eType = ((PointerType)eType).ElementType;
+            }
             if (eType.IsAssignableTo(toType)) {
                 return e;
             }
