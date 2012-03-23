@@ -201,6 +201,14 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return s;
         }
 
+        protected override ICode VisitAssignment(ExprAssignment e) {
+            this.NewLine();
+            this.Visit(e.Target);
+            this.code.Append(" = ");
+            this.Visit(e.Expr);
+            return e;
+        }
+
         protected override ICode VisitVarLocal(ExprVarLocal e) {
             this.code.Append(e.ToString());
             return e;
