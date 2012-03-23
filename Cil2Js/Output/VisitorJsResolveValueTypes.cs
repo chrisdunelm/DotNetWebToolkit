@@ -27,7 +27,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     return argInfo;
                 }
                 var arg = argInfo.arg;
-                if (arg.Type.IsNonPrimitiveValueType()) {
+                var type = arg.Type;
+                if (type.IsNonPrimitiveValueType() && !type.IsRuntimeHandle() && !type.IsEnum()) {
                     return new { arg = InternalFunctions.ValueTypeDeepCopyIfRequired(arg.Type, () => arg) ?? arg, parameterType = argInfo.parameterType };
                 } else {
                     return argInfo;
@@ -56,9 +57,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var expr = (Expr)this.Visit(s.Expr);
             var type = expr.Type;
             if (type.IsNonPrimitiveValueType()) {
-                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle()) {
+                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle() && !type.IsEnum()) {
                     // This will not copy pointers to value-types, which is correct.
-                    // It will only copy actual value-types, except 'this' and runtime handles
+                    // It will only copy actual value-types, except 'this' and runtime handles and enums
                     expr = InternalFunctions.ValueTypeDeepCopyIfRequired(type, () => expr) ?? expr;
                 }
             }
@@ -73,9 +74,9 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var expr = (Expr)this.Visit(e.Expr);
             var type = expr.Type;
             if (type.IsNonPrimitiveValueType()) {
-                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle()) {
+                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle() && !type.IsEnum()) {
                     // This will not copy pointers to value-types, which is correct.
-                    // It will only copy actual value-types, except 'this' and runtime handles
+                    // It will only copy actual value-types, except 'this' and runtime handles and enums
                     expr = InternalFunctions.ValueTypeDeepCopyIfRequired(expr.Type, () => expr) ?? expr;
                 }
             }

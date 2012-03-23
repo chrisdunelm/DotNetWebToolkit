@@ -203,6 +203,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 type.FullName == "System.RuntimeFieldHandle";
         }
 
+        public static bool IsEnum(this TypeReference type) {
+            return type.Resolve().IsEnum;
+        }
+
         public static bool IsBaseOfOrEqual(this TypeReference less, TypeReference more) {
             var t = more;
             do {
