@@ -197,6 +197,12 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.IsValueType && !type.IsPrimitive;
         }
 
+        public static bool IsRuntimeHandle(this TypeReference type) {
+            return type.FullName == "System.RuntimeTypeHandle" ||
+                type.FullName == "System.RuntimeMethodHandle" ||
+                type.FullName == "System.RuntimeFieldHandle";
+        }
+
         public static bool IsBaseOfOrEqual(this TypeReference less, TypeReference more) {
             var t = more;
             do {
