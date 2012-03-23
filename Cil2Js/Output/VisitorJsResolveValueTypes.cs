@@ -54,11 +54,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitAssignment(StmtAssignment s) {
             var expr = (Expr)this.Visit(s.Expr);
-            if (expr.Type.IsNonPrimitiveValueType()) {
-                if (expr.ExprType != Expr.NodeType.VarThis) {
+            var type = expr.Type;
+            if (type.IsNonPrimitiveValueType()) {
+                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle()) {
                     // This will not copy pointers to value-types, which is correct.
-                    // It will only copy actual value-types, except 'this'
-                    expr = InternalFunctions.ValueTypeDeepCopyIfRequired(expr.Type, () => expr) ?? expr;
+                    // It will only copy actual value-types, except 'this' and runtime handles
+                    expr = InternalFunctions.ValueTypeDeepCopyIfRequired(type, () => expr) ?? expr;
                 }
             }
             if (expr != s.Expr) {
@@ -70,10 +71,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitAssignment(ExprAssignment e) {
             var expr = (Expr)this.Visit(e.Expr);
-            if (expr.Type.IsNonPrimitiveValueType()) {
-                if (expr.ExprType != Expr.NodeType.VarThis) {
+            var type = expr.Type;
+            if (type.IsNonPrimitiveValueType()) {
+                if (expr.ExprType != Expr.NodeType.VarThis && !type.IsRuntimeHandle()) {
                     // This will not copy pointers to value-types, which is correct.
-                    // It will only copy actual value-types, except 'this'
+                    // It will only copy actual value-types, except 'this' and runtime handles
                     expr = InternalFunctions.ValueTypeDeepCopyIfRequired(expr.Type, () => expr) ?? expr;
                 }
             }

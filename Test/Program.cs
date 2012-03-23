@@ -79,8 +79,12 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestArrays() { Verbose = true };
-            t.TestArrayInitialisationNullable();
+            // TestEnums.TestCast
+            // TestHashSet.TestEnumerator
+            // TestLinq.TestGroupBy * 4
+
+            var t = new TestBoxing() { Verbose = true };
+            t.TestSimpleBox();
 
             return;
 

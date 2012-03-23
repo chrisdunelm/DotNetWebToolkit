@@ -15,9 +15,24 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public static Expr ctor(ICall call) {
             // Value-type ctors can be called as ctors or as methods. Handle both types
             if (call.Obj == null) {
+                // Called as ctor
                 return call.Arg(0);
             } else {
-                return new ExprAssignment(call.Ctx, (ExprVar)call.Obj, call.Arg(0));
+                // Called as method
+                ExprVar var;
+                // Pointers need de-referencing
+                switch (call.Obj.ExprType) {
+                case Expr.NodeType.VariableAddress:
+                    var = (ExprVar)((ExprVariableAddress)call.Obj).Variable;
+                    break;
+                case Expr.NodeType.ArgAddress:
+                    var = (ExprVar)((ExprArgAddress)call.Obj).Arg;
+                    break;
+                default:
+                    var = (ExprVar)call.Obj;
+                    break;
+                }
+                return new ExprAssignment(call.Ctx, var, call.Arg(0));
             }
         }
 
