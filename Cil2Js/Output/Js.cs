@@ -42,6 +42,12 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             foreach (var method in rootMethods) {
                 todo.Enqueue(method);
             }
+            Action<MethodReference> addTodo = m => {
+                if (m.ContainsGenericParameters()) {
+                    throw new Exception("Cannot add todo method with generic parameters");
+                }
+                todo.Enqueue(m);
+            };
             // Each method, with the count of how often it is referenced.
             var methodsSeen = new Dictionary<MethodReference, int>(rootMethods.ToDictionary(x => x, x => 1), TypeExtensions.MethodRefEqComparerInstance);
             // Each type, with the count of how often it is referenced directly (newobj only at the moment).
@@ -195,7 +201,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         methodsSeen[call.CallMethod]++;
                     } else {
                         methodsSeen.Add(call.CallMethod, 1);
-                        todo.Enqueue(call.CallMethod);
+                        //todo.Enqueue(call.CallMethod);
+                        addTodo(call.CallMethod);
                     }
                 }
 
@@ -229,7 +236,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var requireMethodsArray = requireMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in requireMethodsArray) {
                         methodsSeen.Add(method, 1); // TODO: How to properly handle count?
-                        todo.Enqueue(method);
+                        //todo.Enqueue(method);
+                        addTodo(method);
                     }
                     // Scan all interface calls and add any required methods
                     var iFaceMethods =
@@ -250,7 +258,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var iFaceMethodsArray = iFaceMethods.Distinct(TypeExtensions.MethodRefEqComparerInstance).ToArray();
                     foreach (var method in iFaceMethodsArray) {
                         methodsSeen.Add(method, 1);
-                        todo.Enqueue(method);
+                        addTodo(method);
+                        //todo.Enqueue(method);
                     }
                 }
             }

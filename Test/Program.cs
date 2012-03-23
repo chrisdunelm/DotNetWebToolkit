@@ -79,12 +79,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            // TestEnums.TestCast
-            // TestHashSet.TestEnumerator
-            // TestLinq.TestGroupBy * 4
-
-            var t = new TestBoxing() { Verbose = true };
-            t.TestSimpleBox();
+            var t = new TestIComparable() { Verbose = true };
+            t.TestBoolean();
 
             return;
 

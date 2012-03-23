@@ -237,7 +237,7 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                     return ret;
                 }
             case MetadataType.Var: {
-                    var scope = scopeType as GenericInstanceType;
+                    var scope = scopeType.ElementType() as GenericInstanceType;
                     var param = self as GenericParameter;
                     if (scope == null || param == null) {
                         if (allowFailure) {
@@ -716,6 +716,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
         }
 
         public static bool ContainsGenericParameters(this MethodReference mRef) {
+            if (mRef.DeclaringType.ContainsGenericParameters(mRef)) {
+                return true;
+            }
             if (mRef.HasGenericParameters) {
                 return true;
             }
@@ -732,6 +735,22 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
                 return true;
             }
             return false;
+        }
+
+        public static TypeReference ElementType(this TypeReference self) {
+            var asPointer = self as PointerType;
+            if (asPointer != null) {
+                return asPointer.ElementType;
+            }
+            var asArray = self as ArrayType;
+            if (asArray != null) {
+                return asArray.ElementType;
+            }
+            var asByRef = self as ByReferenceType;
+            if (asByRef != null) {
+                return asByRef.ElementType;
+            }
+            return self;
         }
 
     }
