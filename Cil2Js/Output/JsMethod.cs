@@ -308,6 +308,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return s;
         }
 
+        protected override ICode VisitInitObj(StmtInitObj s) {
+            this.NewLine();
+            this.Visit(s.Destination);
+            this.js.Append(" = ");
+            var defaultValue = DefaultValuer.Get(s.Type, this.resolver.FieldNames);
+            this.js.Append(defaultValue);
+            this.js.Append(";");
+            return s;
+        }
+
         protected override ICode VisitLiteral(ExprLiteral e) {
             if (e.Value == null) {
                 this.js.Append("null");
@@ -390,11 +400,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             this.CallAppendArgs(e);
             return e;
         }
-
-        //protected override ICode VisitMethodReference(ExprMethodReference e) {
-        //    this.js.Append(e.Method.Name);
-        //    return e;
-        //}
 
         protected override ICode VisitJsVirtualCall(ExprJsVirtualCall e) {
             var isIFaceCall = e.CallMethod.DeclaringType.Resolve().IsInterface;
@@ -570,7 +575,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitVariableAddress(ExprVariableAddress e) {
-            throw new InvalidOperationException("Should never get here");
+            this.Visit(e.Variable);
+            return e;
+            //throw new InvalidOperationException("Should never get here");
+        }
+
+        protected override ICode VisitArgAddress(ExprArgAddress e) {
+            this.Visit(e.Arg);
+            return e;
         }
 
         protected override ICode VisitLoadIndirect(ExprLoadIndirect e) {

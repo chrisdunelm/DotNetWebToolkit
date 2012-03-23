@@ -80,7 +80,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestIComparable() { Verbose = true };
-            t.TestInt16();
+            t.TestBoolean();
 
             return;
 

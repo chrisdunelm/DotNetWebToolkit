@@ -136,7 +136,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Value-types not handled correctly yet")]
+        [Test]
         public void TestBoolean() {
             Func<bool, bool, bool, int> f = (a, b, c) => a.CompareTo(c ? null : (object)b);
             this.Test(f);
@@ -148,7 +148,7 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
-        [Test, Ignore("Value-types not handled correctly yet")]
+        [Test]
         public void TestChar() {
             Func<char, char, bool, int> f = (a, b, c) => a.CompareTo(c ? null : (object)b);
             this.Test(f);

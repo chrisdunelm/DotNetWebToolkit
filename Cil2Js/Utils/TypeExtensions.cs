@@ -193,6 +193,20 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.IsByte() || type.IsUInt16() || type.IsUInt32() || type.IsUInt64();
         }
 
+        public static bool IsNonPrimitiveValueType(this TypeReference type) {
+            return type.IsValueType && !type.IsPrimitive;
+        }
+
+        public static bool IsRuntimeHandle(this TypeReference type) {
+            return type.FullName == "System.RuntimeTypeHandle" ||
+                type.FullName == "System.RuntimeMethodHandle" ||
+                type.FullName == "System.RuntimeFieldHandle";
+        }
+
+        public static bool IsEnum(this TypeReference type) {
+            return type.Resolve().IsEnum;
+        }
+
         public static bool IsBaseOfOrEqual(this TypeReference less, TypeReference more) {
             var t = more;
             do {

@@ -149,19 +149,32 @@ throw callCtorEx
             public Stmt GetImpl(Ctx ctx) {
                 // Recursively deep-copy a value-type
                 var unmappedType = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
-                var type = JsResolver.TypeMap(unmappedType) ?? unmappedType;
-                var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
-                var o = ctx.MethodParameter(0, "o");
-                var copy = string.Join(",", fields.Select((x, i) => string.Format("f{0}:v{0}", i)));
-                var fieldNames = fields.Select((x, i) => new ExprJsFieldVarName(ctx, x).Named("f" + i)).ToArray();
-                var fieldValues = fields.Select((x, i) => {
-                    var fieldAccess = new ExprJsExplicit(ctx, "o.field", x.FieldType, o, new ExprJsFieldVarName(ctx, x).Named("field"));
-                    var fieldType = x.FieldType.FullResolve(x);
-                    var dc = ValueTypeDeepCopyIfRequired(fieldType, () => fieldAccess);
-                    return (dc ?? fieldAccess).Named("v" + i);
-                }).ToArray();
-                var js = "return {" + copy + "}";
-                return new StmtJsExplicit(ctx, js, fieldNames.Concat(fieldValues));
+                if (unmappedType.IsNullable()) {
+                    var innerType = unmappedType.GetNullableInnerType();
+                    var dc = ValueTypeDeepCopyIfRequired(innerType, () => ctx.MethodParameter(0));
+                    var a = ctx.MethodParameter(0, "a");
+                    if (dc == null) {
+                        return new StmtJsExplicit(ctx, "return a;", a);
+                    } else {
+                        var copy = dc.Named("copy");
+                        var js = "return a ? copy : a;";
+                        return new StmtJsExplicit(ctx, js, a, copy);
+                    }
+                } else {
+                    var type = JsResolver.TypeMap(unmappedType) ?? unmappedType;
+                    var fields = type.EnumResolvedFields().Where(x => !x.Resolve().IsStatic).ToArray();
+                    var o = ctx.MethodParameter(0, "o");
+                    var copy = string.Join(",", fields.Select((x, i) => string.Format("f{0}:v{0}", i)));
+                    var fieldNames = fields.Select((x, i) => new ExprJsFieldVarName(ctx, x).Named("f" + i)).ToArray();
+                    var fieldValues = fields.Select((x, i) => {
+                        var fieldType = x.FieldType.FullResolve(x);
+                        var fieldAccess = new ExprJsExplicit(ctx, "o.field", fieldType, o, new ExprJsFieldVarName(ctx, x).Named("field"));
+                        var dc = ValueTypeDeepCopyIfRequired(fieldType, () => fieldAccess);
+                        return (dc ?? fieldAccess).Named("v" + i);
+                    }).ToArray();
+                    var js = "return {" + copy + "}";
+                    return new StmtJsExplicit(ctx, js, fieldNames.Concat(fieldValues));
+                }
             }
         }
 
@@ -171,7 +184,7 @@ throw callCtorEx
             if (type.ContainsGenericParameters()) {
                 throw new ArgumentException("Cannot have open generic parameters in type");
             }
-            if (type.IsValueType && !type.IsPrimitive) {
+            if (type.IsNonPrimitiveValueType()) {
                 var expr = fnExpr();
                 var ctx = expr.Ctx;
                 var dcGenDef = ((Func<object, object>)DeepCopyValueType).Method.GetGenericMethodDefinition();

@@ -135,6 +135,7 @@
     <Compile Include="Ast\ExprNewArray.cs" />
     <Compile Include="Ast\ExprNewObj.cs" />
     <Compile Include="Ast\ExprRuntimeHandle.cs" />
+    <Compile Include="Ast\StmtInitObj.cs" />
     <Compile Include="Ast\StmtStoreObj.cs" />
     <Compile Include="Ast\ExprTernary.cs" />
     <Compile Include="Ast\ExprUnboxAny.cs" />
@@ -241,6 +242,7 @@
     <Compile Include="Output\VisitorJsResolve64Bit.cs" />
     <Compile Include="Output\VisitorJsResolveDelegates.cs" />
     <Compile Include="Output\VisitorJsResolveSpecialTypes.cs" />
+    <Compile Include="Output\VisitorJsResolveValueTypes.cs" />
     <Compile Include="Output\VisitorJsRewriteSealedVCalls.cs" />
     <Compile Include="Output\VisitorJsReplace.cs" />
     <Compile Include="Output\VisitorJsResolveAll.cs" />

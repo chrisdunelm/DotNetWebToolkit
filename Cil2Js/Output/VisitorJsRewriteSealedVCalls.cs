@@ -19,7 +19,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 var objType = e.Obj.Type.FullResolve(e.Ctx);
                 if (objType.Resolve().IsSealed) {
                     // Virtual calls to sealed classes can be rewritten as instance calls
-                    var instMethod = objType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(e.CallMethod));
+                    var methods = objType.EnumResolvedMethods().ToArray();
+                    var instMethod = methods.FirstOrDefault(x => x.MatchMethodOnly(e.CallMethod));
                     if (instMethod != null) {
                         var expr = new ExprCall(e.Ctx, instMethod, e.Obj, e.Args, false);
                         return expr;

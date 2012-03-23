@@ -17,7 +17,7 @@ namespace Test.ExecutionTests {
                 object o = i;
                 return o.GetType() == typeof(int);
             };
-            this.Test(f);
+            this.Test(f, true);
         }
 
         [Test]

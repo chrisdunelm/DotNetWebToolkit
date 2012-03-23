@@ -67,6 +67,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitEmpty((StmtEmpty)s);
             case Stmt.NodeType.StoreObj:
                 return this.VisitStoreObj((StmtStoreObj)s);
+            case Stmt.NodeType.InitObj:
+                return this.VisitInitObj((StmtInitObj)s);
             default:
                 if ((int)s.StmtType >= (int)Stmt.NodeType.Max) {
                     return s;
@@ -271,6 +273,16 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
         }
 
+        protected virtual ICode VisitInitObj(StmtInitObj s) {
+            this.ThrowOnNoOverride();
+            var destination = (Expr)this.Visit(s.Destination);
+            if (destination != s.Destination) {
+                return new StmtInitObj(s.Ctx, destination, s.Type);
+            } else {
+                return s;
+            }
+        }
+
         protected virtual ICode VisitExpr(Expr e) {
             switch (e.ExprType) {
             case Expr.NodeType.DefaultValue:
@@ -321,6 +333,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.VisitRuntimeHandle((ExprRuntimeHandle)e);
             case Expr.NodeType.VariableAddress:
                 return this.VisitVariableAddress((ExprVariableAddress)e);
+            case Expr.NodeType.ArgAddress:
+                return this.VisitArgAddress((ExprArgAddress)e);
             case Expr.NodeType.FieldAddress:
                 return this.VisitFieldAddress((ExprFieldAddress)e);
             case Expr.NodeType.LoadIndirect:
@@ -568,7 +582,22 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
 
         protected virtual ICode VisitVariableAddress(ExprVariableAddress e) {
             this.ThrowOnNoOverride();
-            return e;
+            var variable = (Expr)this.Visit(e.Variable);
+            if (variable != e.Variable) {
+                return new ExprVariableAddress(e.Ctx, variable, e.ElementType);
+            } else {
+                return e;
+            }
+        }
+
+        protected virtual ICode VisitArgAddress(ExprArgAddress e) {
+            this.ThrowOnNoOverride();
+            var arg = (Expr)this.Visit(e.Arg);
+            if (arg != e.Arg) {
+                return new ExprArgAddress(e.Ctx, arg, e.ElementType);
+            } else {
+                return e;
+            }
         }
 
         protected virtual ICode VisitFieldAddress(ExprFieldAddress e) {
