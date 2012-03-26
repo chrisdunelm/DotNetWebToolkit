@@ -16,6 +16,13 @@ namespace DotNetWebToolkit.Web {
         public extern WebSocket(string url, string protocols);
         public extern WebSocket(string url, string[] protocols);
 
+        public extern void Close();
+        public extern void Close(ushort code);
+        public extern void Close(ushort code, string reason);
+        public extern void Send(string data);
+        //public extern void Send(ArrayBuffer data);
+        //public extern void Send(Blob data);
+
         public extern string Url { get; }
 
         public extern WebSocketState ReadyState { get; }
@@ -23,16 +30,15 @@ namespace DotNetWebToolkit.Web {
 
         public extern string Extensions { get; }
         public extern string Protocol { get; }
-        public extern void Close();
-        public extern void Close(ushort code);
-        public extern void Close(ushort code, string reason);
         public extern string BinaryType { get; set; }
-        public extern void Send(string data);
-        public extern void Send(ArrayBuffer data);
-        //public extern void Send(Blob data);
 
-        [JsDetailAttribute(Name = "onmessage")]
+        //[JsDetail(Name = "onmessage")]
+        [JsDetail(IsDomEvent = true)]
         public extern Action<MessageEvent> OnMessage { set; }
+        [JsDetail(IsDomEvent = true)]
+        public extern Action OnOpen { set; }
+        [JsDetail(IsDomEvent = true)]
+        public extern Action OnClose { set; }
 
     }
 
