@@ -21,6 +21,8 @@ namespace DotNetWebToolkit.Web {
 
         [JsDetail(IsDomEvent = true)]
         public extern Action OnLoad { set; }
+        [JsDetail(IsDomEvent = true)]
+        public extern Action OnClick { set; }
 
     }
 

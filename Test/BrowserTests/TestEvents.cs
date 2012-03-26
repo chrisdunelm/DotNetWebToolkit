@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DotNetWebToolkit.Web;
 using NUnit.Framework;
+using OpenQA.Selenium;
 
 namespace Test.BrowserTests {
 
@@ -24,6 +25,18 @@ namespace Test.BrowserTests {
                 img.Src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
             };
             this.Start(f);
+        }
+
+        [Test]
+        public void TestButtonOnClick() {
+            Action f = () => {
+                Document.GetElementById("b").OnClick = () => Pass();
+            };
+            this.HtmlBody = "<button id=\"b\"></button>";
+            this.Start(f, wd => {
+                wd.FindElement(By.Id("b")).Click();
+                return true;
+            });
         }
 
     }
