@@ -71,6 +71,7 @@
     <Compile Include="BrowserTests\TypedArrays\TestUInt16Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestUInt32Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestUInt8Array.cs" />
+    <Compile Include="BrowserTests\Window_\TestPopups.cs" />
     <Compile Include="BrowserTests\Window_\TestRequestAnimationFrame.cs" />
     <Compile Include="BrowserTests\Window_\TestTimers.cs" />
     <Compile Include="Categories\BrowserTestAttribute.cs" />

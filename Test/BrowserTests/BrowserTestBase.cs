@@ -44,7 +44,7 @@ window.onload = function() {
             return html;
         }
 
-        protected void Start(Action action, TimeSpan? timeout = null) {
+        protected void Start(Action action, Func<IWebDriver, bool> extraTest = null, TimeSpan? timeout = null) {
             if (timeout == null) {
                 timeout = TimeSpan.FromSeconds(1);
             }
@@ -77,20 +77,25 @@ window.onload = function() {
                     try {
                         chrome.Manage().Timeouts().ImplicitlyWait(timeout.Value);
                         chrome.Url = "http://localhost:7890/";
-                        bool isPass;
-                        try {
-                            var done = chrome.FindElementById("__done__");
-                            isPass = done.Text == "pass";
-                        } catch (NoSuchElementException) {
-                            isPass = false;
-                        } catch {
-                            isPass = false;
+                        bool isPass = true;
+                        if (extraTest != null) {
+                            isPass = extraTest(chrome);
+                        }
+                        if (isPass) {
+                            try {
+                                var done = chrome.FindElementById("__done__");
+                                isPass = done.Text == "pass";
+                            } catch (NoSuchElementException) {
+                                isPass = false;
+                            } catch {
+                                isPass = false;
+                            }
                         }
                         Assert.That(isPass, Is.True);
                     } finally {
                         //if (!usingNamespace) {
-                            chrome.Quit();
-                            chrome.Dispose();
+                        chrome.Quit();
+                        chrome.Dispose();
                         //}
                     }
                 }

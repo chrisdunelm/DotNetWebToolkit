@@ -24,6 +24,10 @@ namespace DotNetWebToolkit.Web {
                 mozRequestAnimationFrame;
         }
 
+        public static extern void Alert(string message);
+        public static extern bool Confirm(string message);
+        public static extern string Prompt(string text, string value = null);
+
         public static extern int InnerWidth { get; }
         public static extern int InnerHeight { get; }
 

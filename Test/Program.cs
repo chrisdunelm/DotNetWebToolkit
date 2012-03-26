@@ -79,8 +79,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestIComparable() { Verbose = true };
-            t.TestBoolean();
+            var t = new TestPopups() { Verbose = true };
+            t.TestAlert();
 
             return;
 
