@@ -15,7 +15,7 @@ namespace Test.BrowserTests.Canvas {
         public void TestGetCanvas() {
             this.HtmlBody = "<canvas id='x'></canvas>";
             Action f = () => {
-                var canvas = (HtmlCanvasElement)Document.GetElementById("x");
+                var canvas = (CanvasElement)Window.Document.GetElementById("x");
                 Done(canvas != null);
             };
             this.Start(f);

@@ -65,16 +65,18 @@
     <Compile Include="WebGL\TextureWrapMode.cs" />
     <Compile Include="Web\CanvasRenderingContext.cs" />
     <Compile Include="Web\CanvasRenderingContext2D.cs" />
-    <Compile Include="Web\HtmlBodyElement.cs" />
-    <Compile Include="Web\HtmlImageElement.cs" />
-    <Compile Include="Web\HtmlMediaElement.cs" />
-    <Compile Include="Web\HtmlVideoElement.cs" />
+    <Compile Include="Web\Element.cs" />
+    <Compile Include="Web\BodyElement.cs" />
+    <Compile Include="Web\Event.cs" />
+    <Compile Include="Web\ImageElement.cs" />
+    <Compile Include="Web\MediaElement.cs" />
+    <Compile Include="Web\VideoElement.cs" />
     <Compile Include="Web\MessageEvent.cs" />
+    <Compile Include="Web\Node.cs" />
     <Compile Include="Web\TypedArray.cs" />
     <Compile Include="WebGL\WebGLRenderingContext.cs" />
     <Compile Include="Web\Document.cs" />
-    <Compile Include="Web\HtmlCanvasElement.cs" />
-    <Compile Include="Web\HtmlElement.cs" />
+    <Compile Include="Web\CanvasElement.cs" />
     <Compile Include="Web\WebSocket.cs" />
     <Compile Include="Web\Window.cs" />
   </ItemGroup>

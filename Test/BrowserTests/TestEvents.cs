@@ -15,11 +15,11 @@ namespace Test.BrowserTests {
         [Test]
         public void TestImageOnLoad() {
             Action f = () => {
-                var img = new HtmlImageElement();
-                img.OnLoad = () => {
+                var img = new ImageElement();
+                img.OnLoad = e => {
                     Fail();
                 };
-                img.OnLoad = () => {
+                img.OnLoad = e => {
                     Window.SetTimeout(() => Pass(), 50);
                 };
                 img.Src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
@@ -30,7 +30,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestButtonOnClick() {
             Action f = () => {
-                Document.GetElementById("b").OnClick = () => Pass();
+                Window.Document.GetElementById("b").OnClick = e => Pass();
             };
             this.HtmlBody = "<button id=\"b\"></button>";
             this.Start(f, wd => {

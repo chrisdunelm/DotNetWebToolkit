@@ -15,7 +15,7 @@ namespace Test.BrowserTests.Canvas {
         public void TestFillStyle() {
             this.HtmlBody = "<canvas id='x'></canvas>";
             Action f = () => {
-                var canvas = (HtmlCanvasElement)Document.GetElementById("x");
+                var canvas = (CanvasElement)Window.Document.GetElementById("x");
                 var ctx2 = canvas.GetContext2D();
                 ctx2.FillStyle = "#ffeedd";
                 Done((string)ctx2.FillStyle == "#ffeedd");
@@ -29,7 +29,7 @@ namespace Test.BrowserTests.Canvas {
         public void TestTextAlign() {
             this.HtmlBody = "<canvas id='x'></canvas>";
             Action f = () => {
-                var canvas = (HtmlCanvasElement)Document.GetElementById("x");
+                var canvas = (CanvasElement)Window.Document.GetElementById("x");
                 var ctx2 = canvas.GetContext2D();
                 ctx2.TextAlign = TextAlign.Center;
                 if (ctx2.TextAlign != TextAlign.Center) {

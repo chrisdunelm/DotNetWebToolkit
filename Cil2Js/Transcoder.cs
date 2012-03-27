@@ -49,7 +49,7 @@ namespace DotNetWebToolkit.Cil2Js {
 
         public static ICode ToAst(Ctx ctx, bool verbose = false) {
             var ast = AstGenerator.CreateBlockedCilAst(ctx);
-            int step = 0;
+            //int step = 0;
             //Action<Stmt, string> print = (s, name) => {
             //    if (verbose) {
             //        if (name != null && name.StartsWith("Visitor")) {

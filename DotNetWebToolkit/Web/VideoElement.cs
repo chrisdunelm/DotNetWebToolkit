@@ -10,9 +10,9 @@ using DotNetWebToolkit.Attributes;
 namespace DotNetWebToolkit.Web {
 
     [JsClass("VIDEO")]
-    public class HtmlVideoElement : HtmlMediaElement {
+    public class VideoElement : MediaElement {
 
-        private HtmlVideoElement() { }
+        private VideoElement() { }
 
         /// <summary>
         /// Reflects the poster HTML attribute, which specifies an image to show while no video data is available.

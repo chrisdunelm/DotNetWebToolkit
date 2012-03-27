@@ -4,16 +4,18 @@ using System.Linq;
 using System.Text;
 using DotNetWebToolkit.Attributes;
 
-#pragma warning disable 0626
+#pragma warning disable 0626, 0824
 
 namespace DotNetWebToolkit.Web {
 
     [JsClass("HTMLDocument")]
-    public static class Document {
+    public class Document {
 
-        public static extern HtmlBodyElement Body { get; }
-        public static extern HtmlElement CreateElement(string tagName);
-        public static extern HtmlElement GetElementById(string id);
+        private Document() { }
+
+        public extern BodyElement Body { get; }
+        public extern Element CreateElement(string tagName);
+        public extern Element GetElementById(string id);
 
     }
 

@@ -15,7 +15,7 @@ namespace DotNetWebToolkit.WebGL {
 
         private WebGLRenderingContext() { }
 
-        public extern HtmlCanvasElement Canvas { get; }
+        public extern CanvasElement Canvas { get; }
 
         public extern void ActiveTexture(TextureUnit texture);
         public extern void AttachShader(WebGLProgram program, WebGLShader shader);
@@ -41,9 +41,9 @@ namespace DotNetWebToolkit.WebGL {
         public extern void LinkProgram(WebGLProgram program);
         public extern void PixelStorei(PixelStoreParameter pname, int param);
         public extern void ShaderSource(WebGLShader shader, string source);
-        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlImageElement image);
-        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlCanvasElement image);
-        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, HtmlVideoElement image);
+        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, ImageElement image);
+        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, CanvasElement image);
+        public extern void TexImage2D(TextureTarget target, int level, PixelFormat internalFormat, PixelFormat format, DataType type, VideoElement image);
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, int param);
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMagFilter param);
         public extern void TexParameteri(TextureTarget target, TextureParameterName pname, TextureMinFilter param);
@@ -120,15 +120,15 @@ namespace DotNetWebToolkit.WebGL {
 
     public static class WebGLRenderingContextExtensions {
 
-        public static void TexImage2D(this WebGLRenderingContext gl, HtmlImageElement image) {
+        public static void TexImage2D(this WebGLRenderingContext gl, ImageElement image) {
             gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
         }
 
-        public static void TexImage2D(this WebGLRenderingContext gl, HtmlCanvasElement image) {
+        public static void TexImage2D(this WebGLRenderingContext gl, CanvasElement image) {
             gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
         }
 
-        public static void TexImage2D(this WebGLRenderingContext gl, HtmlVideoElement image) {
+        public static void TexImage2D(this WebGLRenderingContext gl, VideoElement image) {
             gl.TexImage2D(TextureTarget.Texture2D, 0, PixelFormat.Rgba, PixelFormat.Rgba, DataType.UnsignedByte, image);
         }
 

@@ -13,7 +13,7 @@ namespace DotNetWebToolkit.Web {
 
         private CanvasRenderingContext2D() { }
 
-        public extern HtmlCanvasElement Canvas { get; }
+        public extern CanvasElement Canvas { get; }
 
         public extern void Save();
         public extern void Restore();
@@ -30,9 +30,9 @@ namespace DotNetWebToolkit.Web {
         public extern object FillStyle { get; set; }
         public extern CanvasGradient CreateLinearGradient(double x0, double y0, double x1, double y1);
         public extern CanvasGradient CreateRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
-        public extern CanvasPattern CreatePattern(HtmlImageElement image, string repetition);
-        public extern CanvasPattern CreatePattern(HtmlCanvasElement image, string repetition);
-        public extern CanvasPattern CreatePattern(HtmlVideoElement image, string repetition);
+        public extern CanvasPattern CreatePattern(ImageElement image, string repetition);
+        public extern CanvasPattern CreatePattern(CanvasElement image, string repetition);
+        public extern CanvasPattern CreatePattern(VideoElement image, string repetition);
 
         public extern double LineWidth { get; set; }
         public extern LineCap LineCap { get; set; }
@@ -60,8 +60,8 @@ namespace DotNetWebToolkit.Web {
         public extern void Arc(double x, double y, double radius, double startAngle, double EndAngle, bool anticlockwise);
         public extern void Fill();
         public extern void Stroke();
-        public extern void DrawSystemFocusRing(HtmlElement element);
-        public extern bool DrawCustomFocusRing(HtmlElement element);
+        public extern void DrawSystemFocusRing(Element element);
+        public extern bool DrawCustomFocusRing(Element element);
         public extern void ScrollPathIntoView();
         public extern void Clip();
         public extern bool IsPointInPath(double x, double y);
@@ -75,15 +75,15 @@ namespace DotNetWebToolkit.Web {
         public extern void StrokeText(string text, double x, double y, double maxWidth);
         public extern TextMetrics MeasureText(string text);
 
-        public extern void DrawImage(HtmlImageElement image, double dx, double dy);
-        public extern void DrawImage(HtmlImageElement image, double dx, double dy, double dw, double dh);
-        public extern void DrawImage(HtmlImageElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
-        public extern void DrawImage(HtmlCanvasElement image, double dx, double dy);
-        public extern void DrawImage(HtmlCanvasElement image, double dx, double dy, double dw, double dh);
-        public extern void DrawImage(HtmlCanvasElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
-        public extern void DrawImage(HtmlVideoElement image, double dx, double dy);
-        public extern void DrawImage(HtmlVideoElement image, double dx, double dy, double dw, double dh);
-        public extern void DrawImage(HtmlVideoElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(ImageElement image, double dx, double dy);
+        public extern void DrawImage(ImageElement image, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(ImageElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(CanvasElement image, double dx, double dy);
+        public extern void DrawImage(CanvasElement image, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(CanvasElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(VideoElement image, double dx, double dy);
+        public extern void DrawImage(VideoElement image, double dx, double dy, double dw, double dh);
+        public extern void DrawImage(VideoElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
 
         public extern ImageData CreateImageData(double sw, double sh);
         public extern ImageData CreateImageData(ImageData image);

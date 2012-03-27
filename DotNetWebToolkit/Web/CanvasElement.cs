@@ -10,22 +10,25 @@ using DotNetWebToolkit.WebGL;
 namespace DotNetWebToolkit.Web {
 
     [JsClass("CANVAS")]
-    public class HtmlCanvasElement : HtmlElement {
+    public class CanvasElement : Element {
 
-        private HtmlCanvasElement() { }
+        private CanvasElement() { }
+
+        public extern int Height { get; set; }
+        public extern int Width { get; set; }
 
         public extern CanvasRenderingContext GetContext(string contextId);
         public extern CanvasRenderingContext GetContext(string contextId, object attrs);
 
     }
 
-    public static class HtmlCanvasExtensions {
+    public static class CanvasExtensions {
 
-        public static CanvasRenderingContext2D GetContext2D(this HtmlCanvasElement canvas) {
+        public static CanvasRenderingContext2D GetContext2D(this CanvasElement canvas) {
             return (CanvasRenderingContext2D)canvas.GetContext("2d");
         }
 
-        public static WebGLRenderingContext GetContextWebGL(this HtmlCanvasElement canvas, WebGLContextAttributes attrs = null) {
+        public static WebGLRenderingContext GetContextWebGL(this CanvasElement canvas, WebGLContextAttributes attrs = null) {
             return (WebGLRenderingContext)
                 (canvas.GetContext("webgl", attrs) ??
                 canvas.GetContext("experimental-webgl", attrs) ??

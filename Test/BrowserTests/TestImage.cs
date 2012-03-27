@@ -14,7 +14,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestNewImage() {
             Action f = () => {
-                var i = new HtmlImageElement();
+                var i = new ImageElement();
                 Done(i != null);
             };
             this.Start(f);

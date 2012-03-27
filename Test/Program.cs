@@ -43,7 +43,7 @@ namespace Test {
         }
 
         public static void Canvas2DDemo() {
-            var canvas = (HtmlCanvasElement)Document.GetElementById("canvasId");
+            var canvas = (CanvasElement)Window.Document.GetElementById("canvasId");
             var ctx = canvas.GetContext2D();
             string fill1 = "#ff0000";
             string fill2 = "#0000ff";
@@ -71,13 +71,27 @@ namespace Test {
             }
         }
 
+        public static void WS() {
+            bool open = false;
+            var ws = new WebSocket("testing");
+            ws.OnOpen = () => {
+                open = true;
+            };
+            ws.OnMessage = m => {
+                if (open) {
+                    Window.Alert(m.Data);
+                    ws.Send("Testing ws");
+                }
+            };
+        }
+
         static void Main(string[] args) {
             //var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
             //Console.WriteLine(js);
 
-            //var mi = typeof(Program).GetMethod("FactorialOrFibonacci");
-            //var js = Transcoder.ToJs(mi, true);
-            //Console.WriteLine(js);
+            var mi = typeof(Program).GetMethod("WS");
+            var js = Transcoder.ToJs(mi, true);
+            Console.WriteLine(js);
 
             var t = new TestPopups() { Verbose = true };
             t.TestAlert();

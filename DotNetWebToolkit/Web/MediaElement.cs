@@ -10,7 +10,7 @@ using DotNetWebToolkit.Attributes;
 namespace DotNetWebToolkit.Web {
 
     [JsAbstractClass]
-    public abstract class HtmlMediaElement : HtmlElement {
+    public abstract class MediaElement : Element {
 
         public extern bool AutoPlay { get; set; }
         public extern TimeRanges Buffered { get; }
