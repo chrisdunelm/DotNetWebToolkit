@@ -20,6 +20,14 @@ namespace DotNetWebToolkit.Web {
         [JsDetail(IsDomEvent = true)]
         public extern Action<Event> OnClick { set; }
         [JsDetail(IsDomEvent = true)]
+        public extern Action<Event> OnChange { set; }
+        [JsDetail(IsDomEvent = true, Name = "keydown")]
+        public extern Action<Event> OnKeyDown { set; }
+        [JsDetail(IsDomEvent = true, Name = "keypress")]
+        public extern Action<Event> OnKeyPress { set; }
+        [JsDetail(IsDomEvent = true, Name = "keyup")]
+        public extern Action<Event> OnKeyUp { set; }
+        [JsDetail(IsDomEvent = true)]
         public extern Action<Event> OnLoad { set; }
 
     }

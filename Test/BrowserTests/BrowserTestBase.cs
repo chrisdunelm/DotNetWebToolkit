@@ -44,6 +44,13 @@ window.onload = function() {
             return html;
         }
 
+        protected void Start(Action action, Action<IWebDriver> extraTest, TimeSpan? timeout = null) {
+            this.Start(action, wd => {
+                extraTest(wd);
+                return true;
+            }, timeout);
+        }
+
         protected void Start(Action action, Func<IWebDriver, bool> extraTest = null, TimeSpan? timeout = null) {
             if (timeout == null) {
                 timeout = TimeSpan.FromSeconds(1);

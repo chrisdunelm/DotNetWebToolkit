@@ -14,8 +14,23 @@ namespace DotNetWebToolkit.Web {
 
         private Event() { }
 
+        public extern string Type { get; }
+        //public extern EventTarget Target { get; }
+        //public extern EventTarget CurrentTarget { get; }
+        public extern EventPhase EventPhase { get; }
         public extern bool Bubbles { get; }
+        public extern bool Cancelable { get; }
+        //public extern DateTime TimeStamp { get; }
 
+        public extern void StopPropagation();
+        public extern void PreventDefault();
 
     }
+
+    public enum EventPhase {
+        CapturingPhase = 1,
+        AtTarget = 2,
+        BubblingPhase = 3,
+    }
+
 }

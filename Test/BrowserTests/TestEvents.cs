@@ -35,7 +35,50 @@ namespace Test.BrowserTests {
             this.HtmlBody = "<button id=\"b\"></button>";
             this.Start(f, wd => {
                 wd.FindElement(By.Id("b")).Click();
-                return true;
+            });
+        }
+
+        [Test]
+        public void TestTextInputOnChange() {
+            Action f = () => {
+                Window.Document.GetElementById("i").OnChange = e => Pass();
+            };
+            this.HtmlBody = "<input id=\"i\" type=\"text\" />";
+            this.Start(f, wd => {
+                wd.FindElement(By.Id("i")).SendKeys("Testing\n");
+            });
+        }
+
+        [Test]
+        public void TestTextInputOnKeyDown() {
+            Action f = () => {
+                Window.Document.GetElementById("i").OnKeyDown = e => Pass();
+            };
+            this.HtmlBody = "<input id=\"i\" type=\"text\" />";
+            this.Start(f, wd => {
+                wd.FindElement(By.Id("i")).SendKeys("1");
+            });
+        }
+
+        [Test]
+        public void TestTextInputOnKeyPress() {
+            Action f = () => {
+                Window.Document.GetElementById("i").OnKeyPress = e => Pass();
+            };
+            this.HtmlBody = "<input id=\"i\" type=\"text\" />";
+            this.Start(f, wd => {
+                wd.FindElement(By.Id("i")).SendKeys("1");
+            });
+        }
+
+        [Test]
+        public void TestTextInputOnKeyUp() {
+            Action f = () => {
+                Window.Document.GetElementById("i").OnKeyUp = e => Pass();
+            };
+            this.HtmlBody = "<input id=\"i\" type=\"text\" />";
+            this.Start(f, wd => {
+                wd.FindElement(By.Id("i")).SendKeys("1");
             });
         }
 

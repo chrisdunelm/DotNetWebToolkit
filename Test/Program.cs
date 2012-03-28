@@ -89,12 +89,12 @@ namespace Test {
             //var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
             //Console.WriteLine(js);
 
-            var mi = typeof(Program).GetMethod("WS");
-            var js = Transcoder.ToJs(mi, true);
-            Console.WriteLine(js);
+            //var mi = typeof(Program).GetMethod("WS");
+            //var js = Transcoder.ToJs(mi, true);
+            //Console.WriteLine(js);
 
-            var t = new TestPopups() { Verbose = true };
-            t.TestAlert();
+            var t = new TestEvents() { Verbose = true };
+            t.TestTextInputOnKeyDown();
 
             return;
 
