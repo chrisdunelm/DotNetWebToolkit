@@ -7,6 +7,7 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil.Cil;
 using DotNetWebToolkit.Cil2Js.Utils;
 using System.Diagnostics;
+using System.IO;
 
 namespace DotNetWebToolkit.Cil2Js.Analysis {
     class CilProcessor {

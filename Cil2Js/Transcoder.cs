@@ -49,34 +49,6 @@ namespace DotNetWebToolkit.Cil2Js {
 
         public static ICode ToAst(Ctx ctx, bool verbose = false) {
             var ast = AstGenerator.CreateBlockedCilAst(ctx);
-            //int step = 0;
-            //Action<Stmt, string> print = (s, name) => {
-            //    if (verbose) {
-            //        if (name != null && name.StartsWith("Visitor")) {
-            //            name = name.Substring(7);
-            //        }
-            //        Console.WriteLine(" --- AST Transform Step {0}{1} ---", step++, name == null ? "" : (" '" + name + "'"));
-            //        Console.WriteLine(ShowVisitor.V(s));
-            //        Console.WriteLine();
-            //    }
-            //};
-            //Func<Func<Stmt, Stmt>, Stmt, string, Stmt> doStep = (fn, s0, name) => {
-            //    var s1 = fn(s0);
-            //    if (s1 != s0) {
-            //        print(s1, name);
-            //        var dupStmts = VisitorFindDuplicateStmts.Find(s1);
-            //        if (dupStmts.Any()) {
-            //            Console.WriteLine("*** ERROR *** {0} DUPLICATE STMT(S) ***", dupStmts.Count());
-            //            foreach (var dup in dupStmts) {
-            //                Console.WriteLine();
-            //                Console.WriteLine(ShowVisitor.V(dup));
-            //            }
-            //            throw new InvalidOperationException("Duplicate stmt(s) found");
-            //        }
-            //    }
-            //    return s1;
-            //};
-            //print(ast, null);
             Print(ast, null, verbose);
             ast = DoStep(s => (Stmt)VisitorConvertCilToSsa.V(s), ast, "VisitorConvertCilToSsa", verbose);
             // Reduce to AST with no continuations
@@ -162,7 +134,10 @@ namespace DotNetWebToolkit.Cil2Js {
 
         public static string ToJs(string filename, bool verbose = false) {
             CecilExtensions.SourceDirectory = Path.GetDirectoryName(filename);
-            var module = ModuleDefinition.ReadModule(filename);
+            var rp = new ReaderParameters {
+                ReadSymbols = true,
+            };
+            var module = ModuleDefinition.ReadModule(filename, rp);
             return ToJs(module, verbose);
         }
 

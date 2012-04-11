@@ -6,6 +6,7 @@ using DotNetWebToolkit.Cil2Js.Ast;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
 using DotNetWebToolkit.Cil2Js.Utils;
+using System.IO;
 
 namespace DotNetWebToolkit.Cil2Js.Analysis {
     public class AstGenerator {
@@ -123,12 +124,36 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         private Dictionary<Instruction, List<Stmt>> blockMap = new Dictionary<Instruction, List<Stmt>>();
         private List<IInstructionMappable> mappable = new List<IInstructionMappable>();
 
+        private static void ShowInst(Instruction inst) {
+            Console.Write(inst);
+            Console.Write(" : ");
+            if (inst.SequencePoint != null) {
+                var f = File.ReadAllLines(inst.SequencePoint.Document.Url);
+                var seq = inst.SequencePoint;
+                if (seq.StartColumn == 0 || seq.EndColumn == 0) {
+                    Console.Write("col == 0");
+                } else if (seq.StartLine == seq.EndLine) {
+                    var s = f[seq.StartLine - 1];
+                    var code = s.Substring(seq.StartColumn - 1, seq.EndColumn - seq.StartColumn);
+                    Console.Write(code);
+                } else {
+                    Console.Write(" <multi-line>");
+                }
+            }
+            Console.WriteLine();
+        }
+
         public Stmt Create() {
             var mDef = this.ctx.MRef.Resolve();
             if (!mDef.HasBody) {
                 throw new ArgumentException("Method has no body, cannot create AST");
             }
             var body = mDef.Body;
+
+            foreach (var inst in body.Instructions) {
+                ShowInst(inst);
+            }
+
             // Pre-calculate all method block starts
             this.methodBlockStarts = body.Instructions
                 .SelectMany(x => {

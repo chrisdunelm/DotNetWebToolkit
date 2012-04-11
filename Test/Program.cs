@@ -86,15 +86,15 @@ namespace Test {
         }
 
         static void Main(string[] args) {
-            //var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
-            //Console.WriteLine(js);
+            var js = Transcoder.ToJs(typeof(Program).Assembly.Location, true);
+            Console.WriteLine(js);
 
             //var mi = typeof(Program).GetMethod("WS");
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestEvents() { Verbose = true };
-            t.TestTextInputOnKeyDown();
+            //var t = new TestArithmetic() { Verbose = true };
+            //t.TestAdd();
 
             return;
 
@@ -105,10 +105,18 @@ namespace Test {
     [JsExport]
     public class Exported {
         private Exported() { }
-        public static int Get1() {
-            var a = new int[1];
-            a[0] = 8;
-            return a.Length;
+        public static int Get1(int a, int b) {
+            //if (a > b) {
+            //    return a;
+            //} else if (a == b) {
+            //    return 0;
+            //} else {
+            //    return b;
+            //}
+            for (int i = 0; i < a; i++) {
+                b++;
+            }
+            return b;
         }
     }
 

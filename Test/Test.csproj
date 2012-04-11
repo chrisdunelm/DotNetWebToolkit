@@ -136,6 +136,10 @@
       <Project>{D68133BD-1E63-496E-9EDE-4FBDBF77B486}</Project>
       <Name>Mono.Cecil</Name>
     </ProjectReference>
+    <ProjectReference Include="..\cecil\symbols\pdb\Mono.Cecil.Pdb.csproj">
+      <Project>{63e6915c-7ea4-4d76-ab28-0d7191eea626}</Project>
+      <Name>Mono.Cecil.Pdb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Cil2Js\Cil2Js.csproj">
       <Project>{1bc431ab-58c6-4d60-95c2-885fdd784ce0}</Project>
       <Name>Cil2Js</Name>
