@@ -157,6 +157,33 @@ return this.split(new RegExp(regex, ''), limit);
             return new StmtJsExplicit(ctx, js, ctx.ThisNamed, separators, limit, regex, i, c);
         }
 
+        [Js("Join", typeof(string), typeof(string), typeof(string[]))]
+        public static Expr Join(ICall call) {
+            var ctx = call.Ctx;
+            var separator = call.Arg(0, "separator");
+            var values = call.Arg(1);
+            var sepExpr = new ExprJsExplicit(ctx, "separator || \"\"", ctx.String, separator);
+            var expr = new ExprJsResolvedMethod(ctx, ctx.String, values, "join", sepExpr);
+            return expr;
+        }
+
+        public static string Join(string separator, object[] values) {
+            var s = new string[values.Length];
+            for (int i = 0; i < values.Length; i++) {
+                var o = values[i];
+                s[i] = o == null ? null : o.ToString();
+            }
+            return string.Join(separator, s);
+        }
+
+        public static string Join(string separator, IEnumerable<string> values) {
+            return string.Join(separator, values.ToArray());
+        }
+
+        public static string Join<T>(string separator, IEnumerable<T> values) {
+            return string.Join(separator, values.Select(x => x.ToString()).ToArray());
+        }
+
         [Js]
         public static Expr op_Equality(ICall call) {
             var left = call.Args.ElementAt(0);

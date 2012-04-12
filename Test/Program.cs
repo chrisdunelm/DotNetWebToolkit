@@ -94,7 +94,7 @@ namespace Test {
             //Console.WriteLine(js);
 
             var t = new TestString() { Verbose = true };
-            t.TestSplitNoArgs();
+            t.TestJoinObjectArray();
 
             return;
 

@@ -188,6 +188,30 @@ namespace Test.ExecutionTests {
             this.Test(f, true);
         }
 
+        [Test]
+        public void TestJoinStringArray() {
+            Func<string, string, string, string> f = (a, b, c) => string.Join(", ", new string[]{a, b, c});
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestJoinObjectArray() {
+            Func<string, string, string, string> f = (a, b, c) => string.Join(", ", new object[] { a, b, c });
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestJoinStringEnumerable() {
+            Func<string, string, string, string> f = (a, b, c) => string.Join(", ", (IEnumerable<string>)new[] { a, b, c });
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestJoinIntEnumerable() {
+            Func<int, int, int, string> f = (a, b, c) => string.Join(", ", (IEnumerable<int>)new int[] { a, b, c });
+            this.Test(f);
+        }
+
         class CNullCheck<T> {
             public static bool IsNull(T v) { return v == null; }
         }
