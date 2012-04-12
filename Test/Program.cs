@@ -93,8 +93,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            var t = new TestEvents() { Verbose = true };
-            t.TestTextInputOnKeyDown();
+            var t = new TestString() { Verbose = true };
+            t.TestSplitNoArgs();
 
             return;
 

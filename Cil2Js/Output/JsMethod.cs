@@ -327,8 +327,24 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 switch (mdt) {
                 case MetadataType.String:
                     var s = (string)e.Value;
-                    s = s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\"", "\\\"");
-                    value = "\"" + s + "\"";
+                    var sb = new StringBuilder(s.Length + 2);
+                    sb.Append("\"");
+                    for (int i = 0; i < s.Length; i++) {
+                        var c = s[i];
+                        if ((int)c >= 32 && c <= 126 && c != '\\' && c != '\'' && c != '"') {
+                            sb.Append(c);
+                        } else {
+                            if ((int)c <= 255) {
+                                sb.AppendFormat("\\x{0:x2}", (int)c);
+                            } else {
+                                sb.AppendFormat("\\u{0:x4}", (int)c);
+                            }
+                        }
+                    }
+                    sb.Append("\"");
+                    value = sb.ToString();
+                    //s = s.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\"", "\\\"");
+                    //value = "\"" + s + "\"";
                     break;
                 case MetadataType.Char:
                     value = (int)(char)e.Value;

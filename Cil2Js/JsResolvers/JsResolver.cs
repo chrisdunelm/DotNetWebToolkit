@@ -16,7 +16,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         static JsResolver() {
-            var thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
+            var thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location, AssemblyResolvers.ReaderParameters);
             Action<TypeDefinition, TypeDefinition> addWithNested = null;
             addWithNested = (bclType, customType) => {
                 cMap.Add(bclType, customType);
@@ -31,7 +31,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     }
                 }
             };
-            cMap = new Dictionary<TypeDefinition, TypeDefinition>();
+            cMap = new Dictionary<TypeDefinition, TypeDefinition>(TypeExtensions.TypeRefEqComparerInstance);
             foreach (var m in map) {
                 var bclType = thisModule.Import(m.Key).Resolve();
                 var customType = thisModule.Import(m.Value).Resolve();

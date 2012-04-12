@@ -136,6 +136,58 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestStartsWith() {
+            Func<bool> f = () => {
+                if ("abc".StartsWith("b")) {
+                    return false;
+                }
+                return "abc".StartsWith("a");
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestEndsWith() {
+            Func<bool> f = () => {
+                if ("abc".EndsWith("b")) {
+                    return false;
+                }
+                return "abc".EndsWith("c");
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSplit() {
+            Func<bool> f = () => {
+                var split = @"a.b[c\def4\a".Split('.', '[', '\\', '4');
+                if (split.Length != 6) {
+                    return false;
+                }
+                return split[0] == "a" && split[1] == "b" && split[2] == "c" && split[3] == "def" && split[4] == "" && split[5] == "a";
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSplitNullArg() {
+            Func<bool> f = () => {
+                var s = "a b\nc\u2004d".Split(null);
+                return s.Length == 4 && s[0] == "a" && s[1] == "b" && s[2] == "c" && s[3] == "d";
+            };
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestSplitNoArgs() {
+            Func<bool> f = () => {
+                var s = "a b\nc\u1680d".Split();
+                return s.Length == 4 && s[0] == "a" && s[1] == "b" && s[2] == "c" && s[3] == "d";
+            };
+            this.Test(f, true);
+        }
+
         class CNullCheck<T> {
             public static bool IsNull(T v) { return v == null; }
         }
