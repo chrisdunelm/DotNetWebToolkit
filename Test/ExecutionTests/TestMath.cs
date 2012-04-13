@@ -11,6 +11,18 @@ namespace Test.ExecutionTests {
     public class TestMath : ExecutionTestBase {
 
         [Test]
+        public void TestAbsInt32() {
+            Func<int, int> f = a => Math.Abs(a - 50);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAbsDouble() {
+            Func<double, double> f = a => Math.Abs(a);
+            this.Test(f);
+        }
+
+        [Test]
         public void TestSqrt() {
             Func<double> f = () => Math.Sqrt(4.0);
             this.Test(f);

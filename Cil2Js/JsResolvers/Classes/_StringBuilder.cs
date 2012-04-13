@@ -148,6 +148,19 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return this;
         }
 
+        public int Length {
+            get {
+                return this.s.Length;
+            }
+            set {
+                if (value <= this.s.Length) {
+                    this.s = this.s.Substring(0, value);
+                } else {
+                    this.Append('\u0000', value - this.s.Length);
+                }
+            }
+        }
+
         public override string ToString() {
             return this.s;
         }

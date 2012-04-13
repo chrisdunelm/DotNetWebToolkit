@@ -18,9 +18,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js("Equals", typeof(bool), typeof(object))]
         public static Stmt Equals(Ctx ctx) {
             var other = ctx.MethodParameter(0).Named("other");
-            var p0 = new ExprVarParameter(ctx, ctx.MDef.Parameters[0]);
-            var stmt = new StmtJsExplicit(ctx, "return this._ === other._ && this.v === other.v;", ctx.ThisNamed, other);
-            return stmt;
+            var type = new ExprJsTypeVarName(ctx, ctx.Boolean).Named("type");
+            return new StmtJsExplicit(ctx, "return other._ === type && this === other.v;", ctx.ThisNamed, other, type);
         }
 
         [JsRedirect(typeof(bool))]

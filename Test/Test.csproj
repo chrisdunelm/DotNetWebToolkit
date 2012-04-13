@@ -93,7 +93,7 @@
     <Compile Include="ExecutionTests\TestGenericInterfaces.cs" />
     <Compile Include="ExecutionTests\TestGenerics.cs" />
     <Compile Include="ExecutionTests\TestGenericVirtualCalls.cs" />
-    <Compile Include="ExecutionTests\TestEqualityComparer.cs" />
+    <Compile Include="ExecutionTests\TestNumericEquality.cs" />
     <Compile Include="ExecutionTests\TestHashSet.cs" />
     <Compile Include="ExecutionTests\TestIComparable.cs" />
     <Compile Include="ExecutionTests\TestInt64UInt64.cs" />

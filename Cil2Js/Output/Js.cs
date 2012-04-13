@@ -595,20 +595,22 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         js.AppendFormat("'{0}': ", subNs.NamespacePart);
                         treeToJs(subNs);
                     }
-                    foreach (var type in tree.Types) {
-                        jsNewLine();
-                        js.AppendFormat("'{0}': {{", type.Name);
-                        jsIndent++;
-                        foreach (var method in rootMethodsByType[type]) {
+                    if (tree.Types.Any()) {
+                        foreach (var type in tree.Types) {
                             jsNewLine();
-                            js.AppendFormat("'{0}': {1},", method.Name, methodNames[method]);
+                            js.AppendFormat("'{0}': {{", type.Name);
+                            jsIndent++;
+                            foreach (var method in rootMethodsByType[type]) {
+                                jsNewLine();
+                                js.AppendFormat("'{0}': {1},", method.Name, methodNames[method]);
+                            }
+                            js.Length--;
+                            jsIndent--;
+                            jsNewLine();
+                            js.Append("},");
                         }
                         js.Length--;
-                        jsIndent--;
-                        jsNewLine();
-                        js.Append("},");
                     }
-                    js.Length--;
                     jsIndent--;
                     jsNewLine();
                     js.Append("}");

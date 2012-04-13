@@ -16,7 +16,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     public static partial class JsResolver {
 
         static JsResolver() {
-            var thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
+            var thisModule = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location, AssemblyResolvers.ReaderParameters);
             Action<TypeDefinition, TypeDefinition> addWithNested = null;
             addWithNested = (bclType, customType) => {
                 cMap.Add(bclType, customType);
@@ -31,7 +31,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                     }
                 }
             };
-            cMap = new Dictionary<TypeDefinition, TypeDefinition>();
+            cMap = new Dictionary<TypeDefinition, TypeDefinition>(TypeExtensions.TypeRefEqComparerInstance);
             foreach (var m in map) {
                 var bclType = thisModule.Import(m.Key).Resolve();
                 var customType = thisModule.Import(m.Value).Resolve();
@@ -194,6 +194,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             }
             var jsRedirectAttr = mDef.GetCustomAttribute<JsRedirectAttribute>(true);
             if (jsRedirectAttr != null) {
+                if (jsRedirectAttr.ConstructorArguments[0].Value == null) {
+                    return FindExprReturn(call, call.CallMethod.DeclaringType);
+                }
                 var redirectToTRef = ((TypeReference)jsRedirectAttr.ConstructorArguments[0].Value).FullResolve(mRef);
                 var redirectToMRef = redirectToTRef.EnumResolvedMethods(mRef).First(x => x.MatchMethodOnly(mRef));
                 switch (call.ExprType) {
@@ -233,6 +236,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 return null;
             }
             var redirectType = (TypeReference)redirectAttr.ConstructorArguments[0].Value;
+            if (redirectType == null) {
+                return null;
+            }
             if (redirectType.HasGenericParameters) {
                 var genType = new GenericInstanceType(redirectType);
                 foreach (var genArg in ((GenericInstanceType)mRef.DeclaringType).GenericArguments) {
@@ -273,6 +279,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 }
             }
             var mappedType = TypeMap(ctx.TRef);
+            if (mappedType == null && mDef.GetCustomAttribute<JsRedirectAttribute>() != null) {
+                mappedType = ctx.TRef;
+            }
             if (mappedType != null) {
                 var mappedMRef = FindJsMember(mRef, mappedType);
                 if (mappedMRef != null) {
@@ -286,10 +295,9 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             return null;
         }
 
-        private static Expr FindExprReturn(ICall call) {
+        private static Expr FindExprReturn(ICall call, TypeReference forceMappedType = null) {
             var mRef = call.CallMethod;
-            var tRef = mRef.DeclaringType;
-            var mappedType = TypeMap(tRef);
+            var mappedType = forceMappedType ?? TypeMap(mRef.DeclaringType);
             if (mappedType != null) {
                 var mappedMRef = FindJsMember(mRef, mappedType);
                 if (mappedMRef != null) {

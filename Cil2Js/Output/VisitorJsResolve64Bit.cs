@@ -77,7 +77,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     d = signed ? (Delegate)(Func<Int64, Int64, Int64>)_Int64.BitwiseXor : (Func<UInt64, UInt64, UInt64>)_UInt64.BitwiseXor;
                     break;
                 case BinaryOp.Equal:
-                    d = signed ? (Delegate)(Func<Int64, Int64, bool>)_Int64.Equals : (Func<UInt64, UInt64, bool>)_UInt64.Equals;
+                    d = signed ? (Delegate)(Func<Int64, Int64, bool>)_Int64.Equals_ : (Func<UInt64, UInt64, bool>)_UInt64.Equals_;
                     break;
                 case BinaryOp.NotEqual:
                     d = signed ? (Delegate)(Func<Int64, Int64, bool>)_Int64.NotEquals : (Func<UInt64, UInt64, bool>)_UInt64.NotEquals;

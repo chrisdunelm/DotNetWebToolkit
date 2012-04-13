@@ -639,21 +639,21 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return fullName + ", " + tDef.Module.Assembly.FullName;
         }
 
-        static CecilExtensions() {
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-        }
+        //static CecilExtensions() {
+        //    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+        //}
 
-        public static string SourceDirectory = null;
+        //public static string SourceDirectory = null;
 
-        static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            if (SourceDirectory == null) {
-                return null;
-            }
-            var assemblyName = args.Name.Split(',')[0];
-            var fn = Path.Combine(SourceDirectory, assemblyName + ".dll");
-            var assembly = Assembly.LoadFrom(fn);
-            return assembly;
-        }
+        //static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+        //    if (SourceDirectory == null) {
+        //        return null;
+        //    }
+        //    var assemblyName = args.Name.Split(',')[0];
+        //    var fn = Path.Combine(SourceDirectory, assemblyName + ".dll");
+        //    var assembly = Assembly.LoadFrom(fn);
+        //    return assembly;
+        //}
 
         public static Type LoadType(this TypeReference tRef) {
             // TODO: Must rework to remove exception

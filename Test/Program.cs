@@ -93,8 +93,8 @@ namespace Test {
             //var js = Transcoder.ToJs(mi, true);
             //Console.WriteLine(js);
 
-            //var t = new TestArithmetic() { Verbose = true };
-            //t.TestAdd();
+            //var t = new TestConv() { Verbose = true };
+            //t.TestDoubleToUInt16();
 
             return;
 

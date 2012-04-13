@@ -35,5 +35,15 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return call.Ctx.Literal(0);
         }
 
+        [Js]
+        public static Expr get_NewLine(ICall call) {
+            return call.Ctx.Literal("\n");
+        }
+
+        [Js]
+        public static Expr GetStackTrace(ICall call) {
+            return call.Ctx.Literal((string)null);
+        }
+
     }
 }

@@ -17,6 +17,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(bool), typeof(Cls._Boolean) },
             { typeof(char), typeof(Cls._Char) },
             { typeof(string), typeof(Cls._String) },
+            { typeof(Int32), typeof(Cls._Int32) },
+            { typeof(UInt32), typeof(Cls._UInt32) },
             { typeof(Int64), typeof(Cls._Int64) },
             { typeof(UInt64), typeof(Cls._UInt64) },
             { typeof(Double), typeof(Cls._Double) },
@@ -26,7 +28,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(Type), typeof(Cls._Type) },
             { T("System.RuntimeType"), typeof(Cls._RuntimeType) },
             { typeof(NumberFormatInfo), typeof(Cls._NumberFormatInfo) },
-            { T("System.Number"), typeof(Cls._Number) },
             { T("System.Runtime.CompilerServices.RuntimeHelpers"), typeof(Cls._RuntimeHelpers) },
             { T("System.ThrowHelper"), typeof(Cls._ThrowHelper) },
             { typeof(Environment), typeof(Cls._Environment) },
@@ -40,6 +41,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(Thread), typeof(Cls._Thread) },
             { typeof(Enumerable), typeof(Cls._Enumerable) },
             { typeof(Console), typeof(Cls._Console) },
+            { typeof(CultureInfo), typeof(Cls._CultureInfo) },
         };
 
     }

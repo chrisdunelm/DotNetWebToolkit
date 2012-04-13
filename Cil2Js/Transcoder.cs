@@ -119,7 +119,7 @@ namespace DotNetWebToolkit.Cil2Js {
 
         public static MethodReference GetMethod(MethodInfo mi) {
             var filename = mi.DeclaringType.Assembly.Location;
-            var module = ModuleDefinition.ReadModule(filename);
+            var module = ModuleDefinition.ReadModule(filename, AssemblyResolvers.ReaderParameters);
             var method = module.Import(mi);
             return method;
         }
@@ -133,11 +133,11 @@ namespace DotNetWebToolkit.Cil2Js {
         }
 
         public static string ToJs(string filename, bool verbose = false) {
-            CecilExtensions.SourceDirectory = Path.GetDirectoryName(filename);
-            var rp = new ReaderParameters {
-                ReadSymbols = true,
-            };
-            var module = ModuleDefinition.ReadModule(filename, rp);
+            //CecilExtensions.SourceDirectory = Path.GetDirectoryName(filename);
+            AssemblyResolvers.AddDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            AssemblyResolvers.AddDirectory(Path.GetDirectoryName(filename));
+            AssemblyResolvers.ReaderParameters.ReadSymbols = true;
+            var module = ModuleDefinition.ReadModule(filename, AssemblyResolvers.ReaderParameters);
             return ToJs(module, verbose);
         }
 

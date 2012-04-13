@@ -124,7 +124,7 @@ namespace Test.Utils {
         private object min, max;
 
         public override int? MinIterations {
-            get { return 25; }
+            get { return 30; }
         }
 
         private T Gen<T>(T[] template, int iteration, Func<T> fnRnd) where T : IComparable<T> {
@@ -161,12 +161,18 @@ namespace Test.Utils {
         private static Single[] SingleValues = {
                                                    Single.NaN, Single.NegativeInfinity, Single.PositiveInfinity,
                                                    Single.MaxValue, -Single.MaxValue, Single.MinValue, -Single.MinValue,
-                                                   0.0f, -1.0f, 1.0f
+                                                   0.0f, -1.0f, 1.0f,
+                                                   1e-2f, 1e-3f, 1e-10f, 1e-30f,
+                                                   1e2f, 1e3f, 1e6f, 1e7f, 1e8f, 1e13f, 1e14f, 1e15f, 1e20f, 1e30f,
+                                                   4.99999f, 9.9999f,
                                                };
         private static Double[] DoubleValues = {
                                                    Double.NaN, Double.NegativeInfinity, Double.PositiveInfinity,
                                                    Double.MaxValue, -Double.MaxValue, Double.MinValue, -Double.MinValue,
-                                                   0.0, -1.0, 1.0
+                                                   0.0, -1.0, 1.0,
+                                                   1e-2, 1e-3, 1e-10, 1e-30,
+                                                   1e2, 1e3, 1e6, 1e7, 1e8, 1e13, 1e14, 1e15, 1e20, 1e30,
+                                                   4.99999, 9.9999,
                                                };
 
         private static byte[] Bc(Random rnd, int size) {

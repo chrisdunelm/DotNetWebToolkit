@@ -10,6 +10,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Math {
 
         [Js]
+        public static Expr Abs(ICall call) {
+            var ctx = call.Ctx;
+            var arg = call.Arg(0);
+            return new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg);
+        }
+
+        [Js]
         public static Expr Sqrt(ICall call) {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.sqrt", call.Args);
