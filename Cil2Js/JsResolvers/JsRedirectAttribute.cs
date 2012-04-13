@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
     class JsRedirectAttribute : Attribute {
 
-        public JsRedirectAttribute(Type redirectToType) {
+        public JsRedirectAttribute(Type redirectToType = null) {
             this.RedirectToType = redirectToType;
         }
 
