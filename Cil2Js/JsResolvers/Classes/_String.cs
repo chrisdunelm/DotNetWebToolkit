@@ -11,6 +11,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     class _String : IEnumerable<char>, IEnumerable {
 
+        public _String(char c, int repeatCount) {
+
+        }
+
+        [Js(".ctor", typeof(void), typeof(char), typeof(int))]
+        public static Stmt ctorCharRepeatCount(Ctx ctx) {
+            // TODO: This works, but the JS ctor has an extra 'return' statement at the end, which is never executed
+            var @char = ctx.MethodParameter(0, "char");
+            var count = ctx.MethodParameter(1, "count");
+            return new StmtJsExplicit(ctx, "return Array(count + 1).join(String.fromCharCode(char));", @char, count);
+        }
+
         [Js(typeof(bool), typeof(object))]
         [Js(typeof(bool), typeof(string))]
         public static Stmt Equals(Ctx ctx) {
@@ -182,6 +194,94 @@ return this.split(new RegExp(regex, ''), limit);
 
         public static string Join<T>(string separator, IEnumerable<T> values) {
             return string.Join(separator, values.Select(x => x.ToString()).ToArray());
+        }
+
+        public static string Format(string format, object arg0) {
+            return string.Format(format, new[] { arg0 });
+        }
+
+        public static string Format(string format, object arg0, object arg1) {
+            return string.Format(format, new[] { arg0, arg1 });
+        }
+
+        public static string Format(string format, object arg0, object arg1, object arg2) {
+            return string.Format(format, new[] { arg0, arg1, arg2 });
+        }
+
+        public static string Format(string format, object[] args) {
+            var result = new StringBuilder(format.Length);
+            var fmtLength = format.Length;
+            bool inFmtItem = false, inCloseBrace = false;
+            var fmtItem = new StringBuilder(20);
+            for (int i = 0; i < fmtLength; i++) {
+                var c = format[i];
+                if (inCloseBrace) {
+                    if (c != '}') {
+                        throw new FormatException();
+                    }
+                    result.Append('}');
+                    inCloseBrace = false;
+                } else if (inFmtItem) {
+                    if (fmtItem.Length == 0 && c == '{') {
+                        result.Append('{');
+                        inFmtItem = false;
+                    } else {
+                        if (c == '{') {
+                            throw new FormatException();
+                        }
+                        if (c == '}') {
+                            // FmtItem complete - process it
+                            var fmtItemStr = fmtItem.ToString();
+                            var fmtItemLen = fmtItemStr.Length;
+                            int commaPos = fmtItemStr.IndexOf(',');
+                            int colonPos = fmtItemStr.IndexOf(':');
+                            string indexStr, alignStr, fmtStr;
+                            indexStr = fmtItemStr.Substring(0, commaPos >= 0 ? commaPos : (colonPos >= 0 ? colonPos : fmtItemLen));
+                            alignStr = commaPos == -1 ? null : fmtItemStr.Substring(commaPos + 1, (colonPos >= 0 ? colonPos : fmtItemLen) - commaPos - 1);
+                            fmtStr = colonPos == -1 ? null : fmtItemStr.Substring(colonPos + 1, fmtItemLen - colonPos - 1);
+                            int index = int.Parse(indexStr);
+                            if (index < 0 || index > args.Length) {
+                                throw new FormatException();
+                            }
+                            string s;
+                            var arg = args[index];
+                            if (arg == null) {
+                                s = "";
+                            } else {
+                                var argFormattable = arg as IFormattable;
+                                if (argFormattable != null) {
+                                    s = argFormattable.ToString(fmtStr, null);
+                                } else {
+                                    s = arg.ToString();
+                                }
+                            }
+                            if (alignStr != null) {
+                                var align = int.Parse(alignStr);
+                                var padLen = Math.Abs(align) - s.Length;
+                                if (padLen > 0) {
+                                    var padStr = new string(' ', padLen);
+                                    s = align >= 0 ? padStr + s : s + padStr;
+                                }
+                            }
+                            result.Append(s);
+                            // Continue with format-string parsing
+                            fmtItem.Length = 0;
+                            inFmtItem = false;
+                        } else {
+                            fmtItem.Append(c);
+                        }
+                    }
+                } else {
+                    if (c == '{') {
+                        inFmtItem = true;
+                    } else if (c == '}') {
+                        inCloseBrace = true;
+                    } else {
+                        result.Append(c);
+                    }
+                }
+            }
+            return result.ToString();
         }
 
         [Js]

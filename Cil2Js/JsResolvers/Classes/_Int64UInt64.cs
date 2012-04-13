@@ -362,7 +362,7 @@ return neg ? rNegate : r;
         }
 
         [Js(typeof(_Int64UInt64.Equals))]
-        public static bool Equals(Int64 a, Int64 b) {
+        public static bool Equals_(Int64 a, Int64 b) {
             throw new JsImplException();
         }
 
@@ -389,6 +389,21 @@ return neg ? rNegate : r;
         [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] >= ~~b[1]);")]
         public static bool GreaterThanOrEqual(Int64 a, Int64 b) {
             throw new JsImplException();
+        }
+
+        [JsRedirect(typeof(Int64))]
+        public override bool Equals(object obj) {
+            throw new JsImplException();
+        }
+        [Js(typeof(bool), typeof(object))]
+        public static Stmt Equals(Ctx ctx) {
+            var other = ctx.MethodParameter(0).Named("other");
+            var type = new ExprJsTypeVarName(ctx, ctx.Int64).Named("type");
+            return new StmtJsExplicit(ctx, "return other._ === type && this[0] === other.v[0] && this[1] === other.v[1];", ctx.ThisNamed, other, type);
+        }
+
+        public static bool Equals([JsFakeThis]Int64 _this, Int64 other) {
+            return _this == other;
         }
 
         public static int CompareTo([JsFakeThis]Int64 _this, Int64 other) {
@@ -475,7 +490,7 @@ return neg ? rNegate : r;
         }
 
         [Js(typeof(_Int64UInt64.Equals))]
-        public static bool Equals(UInt64 a, UInt64 b) {
+        public static bool Equals_(UInt64 a, UInt64 b) {
             throw new JsImplException();
         }
 
@@ -502,6 +517,21 @@ return neg ? rNegate : r;
         [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
         public static bool GreaterThanOrEqual(UInt64 a, UInt64 b) {
             throw new JsImplException();
+        }
+
+        [JsRedirect(typeof(Int64))]
+        public override bool Equals(object obj) {
+            throw new JsImplException();
+        }
+        [Js(typeof(bool), typeof(object))]
+        public static Stmt Equals(Ctx ctx) {
+            var other = ctx.MethodParameter(0).Named("other");
+            var type = new ExprJsTypeVarName(ctx, ctx.UInt64).Named("type");
+            return new StmtJsExplicit(ctx, "return other._ === type && this[0] === other.v[0] && this[1] === other.v[1];", ctx.ThisNamed, other, type);
+        }
+
+        public static bool Equals([JsFakeThis]UInt64 _this, UInt64 other) {
+            return _this == other;
         }
 
         public static int CompareTo([JsFakeThis]UInt64 _this, UInt64 other) {

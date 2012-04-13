@@ -23,7 +23,22 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "isNaN", call.Args);
         }
 
-        public static int CompareTo([JsFakeThis]float _this, float other) {
+        [JsRedirect(typeof(Single))]
+        public override bool Equals(object obj) {
+            throw new JsImplException();
+        }
+        [Js(typeof(bool), typeof(object))]
+        public static Stmt Equals(Ctx ctx) {
+            var other = ctx.MethodParameter(0).Named("other");
+            var type = new ExprJsTypeVarName(ctx, ctx.Single).Named("type");
+            return new StmtJsExplicit(ctx, "return other._ === type && this === other.v;", ctx.ThisNamed, other, type);
+        }
+
+        public static bool Equals([JsFakeThis]Single _this, Single other) {
+            return _this == other;
+        }
+
+        public static int CompareTo([JsFakeThis]Single _this, Single other) {
             if (_this < other) {
                 return -1;
             }
@@ -42,14 +57,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return 0;
         }
 
-        public static int CompareTo([JsFakeThis]float _this, object other) {
+        public static int CompareTo([JsFakeThis]Single _this, object other) {
             if (other == null) {
                 return 1;
             }
-            if (!(other is float)) {
+            if (!(other is Single)) {
                 throw new ArgumentException();
             }
-            return _this.CompareTo((float)other);
+            return _this.CompareTo((Single)other);
         }
 
     }

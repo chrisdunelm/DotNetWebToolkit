@@ -165,6 +165,8 @@
     <Compile Include="Ast\StmtWrapExpr.cs" />
     <Compile Include="Ast\VisitorSameExpr.cs" />
     <Compile Include="Ast\VisitorSameStmt.cs" />
+    <Compile Include="JsResolvers\Classes\_CultureInfo.cs" />
+    <Compile Include="JsResolvers\Classes\_Int32UInt32.cs" />
     <Compile Include="JsResolvers\Classes\_Nullable.cs" />
     <Compile Include="JsResolvers\Classes\_Single.cs" />
     <Compile Include="JsResolvers\GenericParamPlaceholders.cs" />
@@ -184,7 +186,7 @@
     <Compile Include="JsResolvers\Classes\_Int64UInt64.cs" />
     <Compile Include="JsResolvers\Classes\_List.cs" />
     <Compile Include="JsResolvers\Classes\_Math.cs" />
-    <Compile Include="JsResolvers\Classes\_Number.cs" />
+    <Compile Include="JsResolvers\Classes\Helpers\Number.cs" />
     <Compile Include="JsResolvers\Classes\_NumberFormatInfo.cs" />
     <Compile Include="JsResolvers\Classes\_Object.cs" />
     <Compile Include="JsResolvers\Classes\_RuntimeHelpers.cs" />

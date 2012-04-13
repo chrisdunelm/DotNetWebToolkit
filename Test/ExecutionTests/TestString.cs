@@ -212,6 +212,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestFormatSimple() {
+            Func<string, int, char, string> f = (a, b, c) => string.Format("{{{0}{1}{2}}}", a, b, c);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestFormatAlignment() {
+            Func<string, string> f = a => string.Format("{0}:{0,5}:{0,-5}:{0,20}:{0,-20}", a);
+            this.Test(f);
+        }
+
         class CNullCheck<T> {
             public static bool IsNull(T v) { return v == null; }
         }
