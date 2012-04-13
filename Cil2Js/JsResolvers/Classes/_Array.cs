@@ -58,11 +58,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
         [Js(typeof(object), typeof(int))]
         public static Stmt GetValue(Ctx ctx) {
-            // if array.ElementType.IsValueType {
-            //   return box(array[index])
-            // } else {
-            //   return array[index];
-            // }
             var value = ctx.Local(ctx.Object, "value");
             var index = ctx.MethodParameter(0, "index");
             var thisType = ctx.Local(ctx.Type, "thisType");
@@ -195,30 +190,20 @@ copyPartCall;
             if (comparer == null) {
                 comparer = Comparer<T>.Default;
             }
-            for (; ; ) {
-                var mid = index + length / 2;
-                var comp = comparer.Compare(value, array[mid]);
-                if (comp == 0) {
-                    return mid;
-                }
-                if (length <= 1) {
-                    while (comparer.Compare(value, array[mid]) > 0) { // value > array[mid]
-                        mid++;
-                        if (mid >= array.Length) {
-                            break;
-                        }
-                    }
-                    return ~mid;
-                }
-                if (comp < 0) {
-                    // value < array[mid]
-                    length = mid - index;
+            int iMin = index;
+            int iMax = index + length - 1;
+            while (iMin <= iMax) {
+                int iMid = iMin + (iMax - iMin) / 2;
+                var iCmp = comparer.Compare(value, array[iMid]);
+                if (iCmp == 0) {
+                    return iMid;
+                } else if (iCmp < 0) {
+                    iMax = iMid - 1;
                 } else {
-                    // value > array[mid]
-                    length -= mid + 1 - index;
-                    index = mid + 1;
+                    iMin = iMid + 1;
                 }
             }
+            return ~iMin;
         }
 
 
