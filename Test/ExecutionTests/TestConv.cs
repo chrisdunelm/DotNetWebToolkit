@@ -14,6 +14,9 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestConv : ExecutionTestBase {
 
+        // Note: The result of a conversions of floats (Single/Double) to integers that are outside of the range
+        // of the integer type is undefined - so they are explicitly excluded from each relevant test
+
         private const Int32 Int32Min = Int32.MinValue + 100;
         private const Int32 Int32Max = Int32.MaxValue - 100;
         private const UInt32 UInt32Min = 0;
@@ -608,7 +611,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Single, Int8>)TestSingleToInt8Func);
         }
         private static Int8 TestSingleToInt8Func([ParamFullRange]Single v) {
-            return (Int8)v;
+            return v >= Int8.MinValue && v <= Int8.MaxValue ? (Int8)v : (Int8)0;
         }
 
         [Test]
@@ -616,7 +619,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Single, Int16>)TestSingleToInt16Func);
         }
         private static Int16 TestSingleToInt16Func([ParamFullRange]Single v) {
-            return (Int16)v;
+            return v >= Int16.MinValue && v <= Int16.MaxValue ? (Int16)v : (Int16)0;
         }
 
         [Test]
@@ -625,7 +628,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static Int32 TestSingleToInt32Func([ParamFullRange(Int32Min, Int32Max)]Single v) {
-            return (Int32)v;
+            return v >= Int32.MinValue && v <= Int32.MaxValue ? (Int32)v : (Int32)0;
         }
 
         [Test]
@@ -634,7 +637,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static Int64 TestSingleToInt64Func([ParamFullRange(Int64Min, Int64Max)]Single v) {
-            return (Int64)v;
+            return v >= Int64.MinValue && v <= Int64.MaxValue ? (Int64)v : (Int64)0;
         }
 
         [Test]
@@ -642,7 +645,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Single, UInt8>)TestSingleToUInt8Func);
         }
         private static UInt8 TestSingleToUInt8Func([ParamFullRange]Single v) {
-            return (UInt8)v;
+            return v >= UInt8.MinValue && v <= UInt8.MaxValue ? (UInt8)v : (UInt8)0;
         }
 
         [Test]
@@ -650,7 +653,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Single, UInt16>)TestSingleToUInt16Func);
         }
         private static UInt16 TestSingleToUInt16Func([ParamFullRange]Single v) {
-            return (UInt16)v;
+            return v >= UInt8.MinValue && v <= UInt8.MaxValue ? (UInt16)v : (UInt16)0;
         }
 
         [Test]
@@ -659,7 +662,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static UInt32 TestSingleToUInt32Func([ParamFullRange(UInt32Min, UInt32Max)]Single v) {
-            return (UInt32)v;
+            return v >= UInt8.MinValue && v <= UInt8.MaxValue ? (UInt32)v : (UInt32)0;
         }
 
         [Test]
@@ -668,7 +671,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static UInt64 TestSingleToUInt64Func([ParamFullRange(UInt64Min, UInt64Max)]Single v) {
-            return (UInt64)v;
+            return v >= UInt8.MinValue && v <= UInt8.MaxValue ? (UInt64)v : (UInt64)0;
         }
 
         [Test]
@@ -685,7 +688,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Double, Int8>)TestDoubleToInt8Func);
         }
         private static Int8 TestDoubleToInt8Func([ParamFullRange]Double v) {
-            return (Int8)v;
+            return v >= Int8.MinValue && v <= Int8.MaxValue ? (Int8)v : (Int8)0;
         }
 
         [Test]
@@ -693,7 +696,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Double, Int16>)TestDoubleToInt16Func);
         }
         private static Int16 TestDoubleToInt16Func([ParamFullRange]Double v) {
-            return (Int16)v;
+            return v >= Int16.MinValue && v <= Int16.MaxValue ? (Int16)v : (Int16)0;
         }
 
         [Test]
@@ -702,7 +705,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static Int32 TestDoubleToInt32Func([ParamFullRange(Int32Min, Int32Max)]Double v) {
-            return (Int32)v;
+            return v >= Int32.MinValue && v <= Int32.MaxValue ? (Int32)v : (Int32)0;
         }
 
         [Test]
@@ -711,7 +714,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static Int64 TestDoubleToInt64Func([ParamFullRange(Int64Min, Int64Max)]Double v) {
-            return (Int64)v;
+            return v >= Int64.MinValue && v <= Int64.MaxValue ? (Int64)v : (Int64)0;
         }
 
         [Test]
@@ -719,7 +722,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Double, UInt8>)TestDoubleToUInt8Func);
         }
         private static UInt8 TestDoubleToUInt8Func([ParamFullRange]Double v) {
-            return (UInt8)v;
+            return v >= UInt8.MinValue && v <= UInt8.MaxValue ? (UInt8)v : (UInt8)0;
         }
 
         [Test]
@@ -727,7 +730,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Double, UInt16>)TestDoubleToUInt16Func);
         }
         private static UInt16 TestDoubleToUInt16Func([ParamFullRange]Double v) {
-            return (UInt16)v;
+            return v >= UInt16.MinValue && v <= UInt16.MaxValue ? (UInt16)v : (UInt16)0;
         }
 
         [Test]
@@ -735,7 +738,7 @@ namespace Test.ExecutionTests {
             this.Test((Func<Double, UInt32>)TestDoubleToUInt32Func);
         }
         private static UInt32 TestDoubleToUInt32Func([ParamFullRange]Double v) {
-            return (UInt32)v;
+            return v >= UInt32.MinValue && v <= UInt32.MaxValue ? (UInt32)v : (UInt32)0;
         }
 
         [Test]
@@ -744,7 +747,7 @@ namespace Test.ExecutionTests {
         }
         [WithinPercent(0.00001)]
         private static UInt64 TestDoubleToUInt64Func([ParamFullRange(UInt64Min, UInt64Max)]Double v) {
-            return (UInt64)v;
+            return v >= UInt64.MinValue && v <= UInt64.MaxValue ? (UInt64)v : (UInt64)0;
         }
 
         [Test]
