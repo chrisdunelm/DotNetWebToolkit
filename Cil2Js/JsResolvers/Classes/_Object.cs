@@ -10,7 +10,6 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     
-    //[Js("ToString", typeof(string))]
     class _Object {
 
         private _Object() { }

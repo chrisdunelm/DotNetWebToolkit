@@ -20,16 +20,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         protected override ICode VisitCall(ExprCall e) {
             var expr = this.HandleCall(e, (obj, args) => new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
-            //var argDeepCopies = this.HandleList(expr.Args, arg => {
-            //    if (arg.IsVar() && arg.Type.IsNonPrimitiveValueType()) {
-            //        return InternalFunctions.ValueTypeDeepCopyIfRequired(arg.Type, () => arg);
-            //    } else {
-            //        return arg;
-            //    }
-            //});
-            //if (argDeepCopies != null) {
-            //    expr = new ExprCall(expr.Ctx, expr.CallMethod, expr.Obj, argDeepCopies, expr.IsVirtualCall, expr.ConstrainedType, expr.Type);
-            //}
             var res = JsResolver.ResolveCallSite(expr);
             if (res != null) {
                 return this.Visit(res);
@@ -37,7 +27,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (expr.ConstrainedType != null) {
                 if (expr.ConstrainedType.IsValueType) {
                     // Map constrained virtual call to a method on a value-type, to a non-virtual call.
-                    // This is important as it prevents having to box the value-type, which is very expensive
+                    // This is important as it prevents having to box the value-type, which is expensive
                     var impl = expr.ConstrainedType.EnumResolvedMethods().FirstOrDefault(x => x.MatchMethodOnly(expr.CallMethod));
                     if (impl != null) {
                         var constrainedCall = new ExprCall(expr.Ctx, impl, expr.Obj, expr.Args, false, null, expr.Type);
@@ -193,9 +183,6 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
             }
-            //if (expr.Type.IsNonPrimitiveValueType() && expr.IsVar()) {
-            //    expr = InternalFunctions.ValueTypeDeepCopyIfRequired(expr.Type, () => expr) ?? expr;
-            //}
             if (expr != s.Expr || target != s.Target) {
                 return new StmtAssignment(ctx, target, expr);
             } else {
