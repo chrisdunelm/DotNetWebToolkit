@@ -50,8 +50,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
         }
 
         private static bool DoesMatchMethod(MethodReference mInternal, MethodReference m) {
+            var mInternalDef = mInternal.Resolve();
+            if (mInternalDef.GetCustomAttribute<JsRedirectAttribute>() != null) {
+                // Can never return a redirected method
+                return false;
+            }
             // Look for methods with custom signatures
-            var detailsAttr = mInternal.Resolve().GetCustomAttribute<JsDetailAttribute>(true);
+            var detailsAttr = mInternalDef.GetCustomAttribute<JsDetailAttribute>(true);
             if (detailsAttr != null) {
                 var signature = detailsAttr.Properties.FirstOrDefault(x => x.Name == "Signature");
                 if (signature.Name != null) {

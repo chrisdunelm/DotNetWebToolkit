@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Test.ExecutionTests {
 
     [TestFixture]
-    public class TestNumericEquality : ExecutionTestBase {
+    public class TestEqualityIEquatable : ExecutionTestBase {
 
         [Test]
         public void TestInt8EqualsObject() {
@@ -126,6 +126,18 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestDoubleEqualsSingle() {
             Func<bool> f = () => (32d).Equals(32d) && !(32d).Equals(33d);
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestBooleanEqualsObject() {
+            Func<bool> f = () => false.Equals((object)false) && true.Equals((object)true) && !false.Equals((object)true) && !false.Equals(0);
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestBooleanEqualsBoolean() {
+            Func<bool> f = () => true.Equals(true) && false.Equals(false) && !true.Equals(false) && !false.Equals(true);
             this.Test(f, true);
         }
 

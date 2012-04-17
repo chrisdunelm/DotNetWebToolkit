@@ -9,7 +9,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    class _Boolean {
+    class _Boolean : IEquatable<Boolean>, IComparable, IComparable<Boolean> {
 
         [JsRedirect(typeof(bool))]
         public override bool Equals(object obj) {
@@ -42,10 +42,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new StmtJsExplicit(ctx, "return this ? trueString : falseString;", ctx.ThisNamed, trueString, falseString);
         }
 
+        [JsRedirect(typeof(Boolean))]
+        public int CompareTo(bool other) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]bool _this, bool other) {
             return _this == other ? 0 : (_this ? 1 : -1);
         }
 
+        [JsRedirect(typeof(Boolean))]
+        public int CompareTo(object obj) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]bool _this, object other) {
             if (other == null) {
                 return 1;
@@ -54,6 +62,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 throw new ArgumentException();
             }
             return _this == (bool)other ? 0 : (_this ? 1 : -1);
+        }
+
+        [JsRedirect(typeof(Boolean))]
+        public bool Equals(bool other) {
+            throw new JsImplException();
+        }
+        public static bool Equals([JsFakeThis]bool _this, bool other) {
+            return _this == other;
         }
 
     }

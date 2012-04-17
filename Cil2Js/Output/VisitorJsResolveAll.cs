@@ -18,6 +18,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             return v.Visit(ast);
         }
 
+
         protected override ICode VisitCall(ExprCall e) {
             var expr = this.HandleCall(e, (obj, args) => new ExprCall(e.Ctx, e.CallMethod, obj, args, e.IsVirtualCall, e.ConstrainedType, e.Type));
             var res = JsResolver.ResolveCallSite(expr);
@@ -127,7 +128,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 return nullableExpr;
             } else {
                 var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
-                var js = "{v:expr,_:type}";
+                var int2bool = e.Type.IsBoolean() && e.Expr.Type.IsInteger() ? "!!" : "";
+                var js = "{v:" + int2bool + "expr,_:type}";
                 var expr = new ExprJsExplicit(ctx, js, e.Type, (deepCopyExpr ?? e.Expr).Named("expr"), eType.Named("type"));
                 return expr;
             }
@@ -215,6 +217,14 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             } else {
                 return s;
             }
+        }
+
+        protected override ICode VisitVariableAddress(ExprVariableAddress e) {
+            if (e.Type.IsBoolean(true) && !e.Variable.Type.IsBoolean()) {
+                var ctx = e.Ctx;
+                return new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, e.Variable.Named("expr")); // HACK
+            }
+            return base.VisitVariableAddress(e);
         }
 
     }

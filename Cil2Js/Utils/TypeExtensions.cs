@@ -105,7 +105,10 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.MetadataType == MetadataType.Object;
         }
 
-        public static bool IsBoolean(this TypeReference type) {
+        public static bool IsBoolean(this TypeReference type, bool orPtrTo = false) {
+            if (orPtrTo && type.IsPointer) {
+                return ((PointerType)type).ElementType.IsBoolean();
+            }
             return type.MetadataType == MetadataType.Boolean;
         }
 

@@ -9,7 +9,7 @@ using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    class _Int32 : IFormattable {
+    class _Int32 : IFormattable, IEquatable<Int32>, IComparable, IComparable<Int32> {
 
         [JsRedirect(typeof(Int32))]
         public static int Parse(string s) {
@@ -67,14 +67,26 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new StmtReturn(ctx, expr);
         }
 
+        [JsRedirect(typeof(Int32))]
+        public bool Equals(int other) {
+            throw new JsImplException();
+        }
         public static bool Equals([JsFakeThis]Int32 _this, Int32 other) {
             return _this == other;
         }
 
+        [JsRedirect(typeof(Int32))]
+        public int CompareTo(object obj) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]Int32 _this, Int32 other) {
             return _this < other ? -1 : (_this > other ? 1 : 0);
         }
 
+        [JsRedirect(typeof(Int32))]
+        public int CompareTo(int other) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]Int32 _this, object other) {
             if (other == null) {
                 return 1;
@@ -87,7 +99,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     }
 
-    class _UInt32 : IFormattable {
+    class _UInt32 : IFormattable, IEquatable<Int32>, IComparable, IComparable<Int32> {
 
         [JsRedirect(typeof(Int32))]
         public override int GetHashCode() {
@@ -125,14 +137,26 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new NotImplementedException();
         }
 
+        [JsRedirect(typeof(Int32))]
+        public bool Equals(int other) {
+            throw new JsImplException();
+        }
         public static bool Equals([JsFakeThis]UInt32 _this, UInt32 other) {
             return _this == other;
         }
 
+        [JsRedirect(typeof(Int32))]
+        public int CompareTo(int other) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]UInt32 _this, UInt32 other) {
             return _this < other ? -1 : (_this > other ? 1 : 0);
         }
 
+        [JsRedirect(typeof(Int32))]
+        public int CompareTo(object obj) {
+            throw new JsImplException();
+        }
         public static int CompareTo([JsFakeThis]UInt32 _this, object other) {
             if (other == null) {
                 return 1;
