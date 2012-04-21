@@ -269,7 +269,7 @@ return obj.v;
                 if ((mtFrom == MDT.SByte || mtFrom == MDT.Int16 || mtFrom == MDT.Int32) && (mtTo == MDT.Int64 || mtTo == MDT.UInt64)) {
                     var u32max = ctx.Literal(0xffffffff, ctx.UInt32, "u32max");
                     var u32limit = ctx.Literal(0x100000000, ctx._UInt64, "u32limit");
-                    var js = "return e < 0 ? [u32max, u32limit + e] : [0, e]";
+                    var js = "return e < 0 ? [u32max, u32limit + e] : [0, e];";
                     stmt = new StmtJsExplicit(ctx, js, e, u32max, u32limit);
                 } else if (mtFrom == MDT.Int64 && (mtTo == MDT.Single || mtTo == MDT.Double)) {
                     var v = ctx.Local(ctx.Double, "v");

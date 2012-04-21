@@ -75,7 +75,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             // Method body
             sb.AppendLine(js);
             // Method ending
-            sb.AppendLine("}");
+            sb.AppendLine("};");
 
             var sbStr = sb.ToString();
             return sbStr;
