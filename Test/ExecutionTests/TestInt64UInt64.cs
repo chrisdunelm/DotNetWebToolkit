@@ -271,6 +271,19 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        private static Int64 ReturnInt64Inc(Int64 a) {
+            a++;
+            return a;
+        }
+        [Test]
+        public void TestInt64ValueType() {
+            Func<Int64, Int64> f = a => {
+                var b = ReturnInt64Inc(a);
+                return a + b;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

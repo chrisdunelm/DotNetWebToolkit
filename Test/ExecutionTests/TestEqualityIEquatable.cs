@@ -141,6 +141,30 @@ namespace Test.ExecutionTests {
             this.Test(f, true);
         }
 
+        [Test]
+        public void TestCharEqualsObject() {
+            Func<bool> f = () => 'a'.Equals((object)'a') && !'a'.Equals((object)"a") && !'a'.Equals((object)'A');
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestCharEqualsChar() {
+            Func<bool> f = () => 'a'.Equals('a') && !'a'.Equals('A');
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestStringEqualsObject() {
+            Func<bool> f = () => "abc".Equals((object)"abc") && !"a".Equals((object)'a') && !"abc".Equals((object)"ab");
+            this.Test(f, true);
+        }
+
+        [Test]
+        public void TestStringEqualsString() {
+            Func<bool> f = () => "abc".Equals("abc") && !"abc".Equals("ABC");
+            this.Test(f, true);
+        }
+
     }
 
 }

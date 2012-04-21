@@ -30,6 +30,21 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new StmtJsExplicit(ctx, "return this | this << 16;", ctx.ThisNamed);
         }
 
+        [JsRedirect(typeof(Char))]
+        public override bool Equals(object obj) {
+            throw new JsImplException();
+        }
+        [Js(typeof(bool), typeof(object))]
+        public static Stmt Equals(Ctx ctx) {
+            var other = ctx.MethodParameter(0).Named("other");
+            var type = new ExprJsTypeVarName(ctx, ctx.Char).Named("type");
+            return new StmtJsExplicit(ctx, "return other._ === type && this === other.v;", ctx.ThisNamed, other, type);
+        }
+
+        public static bool Equals([JsFakeThis]Char _this, Char other) {
+            return _this == other;
+        }
+
         public static int CompareTo([JsFakeThis]char _this, char other) {
             return (int)(_this - other);
         }
