@@ -192,7 +192,7 @@ namespace Test.ExecutionTests {
             var mi = d.Method;
             var stackTrace = new StackTrace();
             var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
-            Console.WriteLine("Test++ {0}", testMethod);
+            //Console.WriteLine("Test++ {0}", testMethod);
             var method = CecilHelper.GetMethod(d);
             var js = Js.CreateFrom(method, this.Verbose, true);
             if (this.Verbose) {
@@ -281,7 +281,7 @@ namespace Test.ExecutionTests {
                 }
             }
 
-            Console.WriteLine("Test-- {0}", testMethod);
+            //Console.WriteLine("Test-- {0}", testMethod);
         }
 
     }
