@@ -80,6 +80,116 @@ return value < 0 ? '-' + s : s;
         }
 
         [JsRedirect]
+        public static string FormatInt64(Int64 value, string format, NumberFormatInfo info) {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Stmt FormatInt64(Ctx ctx) {
+                        var value = ctx.MethodParameter(0, "value");
+            var format = ctx.MethodParameter(1, "format");
+            var neg = ctx.Local(ctx.Boolean, "neg");
+            var precision = ctx.Local(ctx.Int32.MakeNullable(), "precision");
+            var fmt0 = ctx.Local(ctx.String, "fmt0");
+            var i = ctx.Local(ctx.Int32, "i");
+            var s = ctx.Local(ctx.String, "s");
+            var ss = ctx.Local(ctx.String, "ss");
+            var c = ctx.Local(ctx.String, "c");
+            var inc = ctx.Local(ctx.Boolean, "inc");
+            var divMod10 = ctx.Local(ctx.Int64.MakeArray(), "divMod10");
+            var valueDivMod10 = new ExprCall(ctx, (Func<UInt64, UInt64, object>)_Int64UInt64.UInt64DivRem, null, value.Expr, ctx.Literal(10L)).Named("valueDivMod10");
+            var valueNeg = new ExprCall(ctx, (Func<Int64, Int64, Int64>)_Int64.Subtract, null, ctx.Literal(0L), value.Expr).Named("valueNeg");
+            var sLen = ctx.Local(ctx.Int32, "sLen");
+            var newFmtEx = new ExprNewObj(ctx, ctx.Module.Import(typeof(FormatException).GetConstructor(Type.EmptyTypes))).Named("newFmtEx");
+            var js = @"
+format = format || 'G';
+precision = format.length > 1 ? +format.substr(1) : null;
+fmt0 = format.charAt(0);
+if (fmt0 === 'x' || fmt0 === 'X') {
+    s = value[1].toString(16);
+    if (value[0] !== 0) {
+        s = value[0].toString(16) + Array(9 - s.length).join('0') + s;
+    }
+    if (fmt0 === 'X') {
+        s = s.toUpperCase();
+    }
+    if (precision !== null && precision > s.length) {
+        s = Array(precision - s.length + 1).join('0') + s;
+    }
+    return s;
+}
+if (value[0] === 0 && value[1] === 0) {
+    s = '0';
+} else if (value[0] === 0x80000000 && value[1] === 0) {
+    s = '9223372036854775808';
+    neg = true;
+} else {
+    if (value[0] >= 0x80000000) {
+        value = valueNeg;
+        neg = true;
+    }
+    s = '';
+    while (value[0] !== 0 || value[1] !== 0) {
+        divMod10 = valueDivMod10;
+        value = divMod10[0];
+        s = String.fromCharCode(48 + divMod10[1][1]) + s;
+    }
+}
+switch (fmt0) {
+case 'g':
+case 'G':
+    if (precision !== null && precision < s.length && precision > 0) {
+        sLen = s.length;
+        inc = +(s.charAt(precision)) >= 5;
+        s = s.substr(0, precision);
+        ss = '';
+        for (i = precision - 1; i >= 0; i--) {
+            c = s.charAt(i);
+            if (inc) {
+                c = (+c) + 1;
+                if (c > 9) {
+                    c = 0;
+                } else {
+                    inc = false;
+                }
+                ss = String.fromCharCode(48 + c) + ss;
+            } else {
+                ss = c + ss;
+            }
+        }
+        if (inc) {
+            sLen++;
+            ss = '1' + ss.substr(0, ss.length - 1);
+        }
+        if (ss.length > 1) {
+            ss = ss.charAt(0) + '.' + ss.substr(1);
+        }
+        s = ss.replace(/(\d)\.?0+$/, '$1');
+        s += (fmt0 === 'g' ? 'e' : 'E') + '+' + (sLen - 1).toFixed().replace(/^(\d)$/, '0$1');;
+    }
+    break;
+case 'd':
+case 'D':
+    if (precision !== null && precision > s.length) {
+        s = Array(precision - s.length + 1).join('0') + s;
+    }
+    break;
+case 'n':
+case 'N':
+    if (precision === null) precision = 2;
+    s = s.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+    if (precision > 0) {
+        s += '.' + Array(precision + 1).join('0');
+    }
+    break;
+default:
+    throw newFmtEx;
+}
+return neg ? '-' + s : s;
+";
+            return new StmtJsExplicit(ctx, js, value, format, neg, precision, fmt0, i, s, ss, c, inc, divMod10, valueDivMod10, valueNeg, sLen, newFmtEx);
+        }
+
+        [JsRedirect]
         public static string FormatDouble(double value, string format, NumberFormatInfo info) {
             throw new JsImplException();
         }

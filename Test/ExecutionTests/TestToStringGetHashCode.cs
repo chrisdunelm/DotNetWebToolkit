@@ -99,6 +99,54 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestInt64GetHashCode() {
+            this.Test((Func<Int64, int>)TestInt64GetHashCodeFunc);
+        }
+        private static int TestInt64GetHashCodeFunc([ParamFullRange]Int64 a) {
+            return a.GetHashCode();
+        }
+
+        [Test]
+        public void TestInt64ToString() {
+            this.Test((Func<Int64, string>)TestInt64ToStringFunc);
+        }
+        private static string TestInt64ToStringFunc([ParamFullRange]Int64 a) {
+            return a.ToString();
+        }
+
+        [Test]
+        public void TestInt64ToStringFormatGeneral() {
+            this.Test((Func<Int64, string>)TestInt64ToStringFormatGeneralFunc);
+        }
+        private static string TestInt64ToStringFormatGeneralFunc([ParamFullRange]Int64 a) {
+            return string.Format("{0:g}:{0:G}:{0:g0}:{0:g1}:{0:G2}:{0:g3}:{0:G4}:{0:g5}:{0:G6}:{0:g7}:{0:G8}:{0:g9}:{0:G10}:{0:g11}:{0:G12}:{0:g13}:{0:G14}:{0:g15}:{0:G16}:{0:g17}:{0:G18}:{0:g19}:{0:G20}:{0:g21}:{0:G22}:{0:g23}:{0:G24}", a);
+        }
+
+        [Test]
+        public void TestInt64ToStringFormatDecimal() {
+            this.Test((Func<Int64, string>)TestInt64ToStringFormatDecimalFunc);
+        }
+        private static string TestInt64ToStringFormatDecimalFunc([ParamFullRange]Int64 a) {
+            return string.Format("{0:d}:{0:D}:{0:d0}:{0:d1}:{0:D2}:{0:d3}:{0:D4}:{0:d5}:{0:D6}:{0:d7}:{0:D8}:{0:d9}:{0:D10}:{0:d11}:{0:D12}:{0:d13}:{0:D14}:{0:d15}:{0:D16}:{0:d17}:{0:D18}:{0:d19}:{0:D20}:{0:d21}:{0:D22}:{0:d23}:{0:D24}", a);
+        }
+
+        [Test]
+        public void TestInt64ToStringFormatHex() {
+            this.Test((Func<Int64, string>)TestInt64ToStringFormatHexFunc);
+        }
+        private static string TestInt64ToStringFormatHexFunc([ParamFullRange]Int64 a) {
+            return string.Format("{0:x}:{0:X}:{0:x0}:{0:x1}:{0:X2}:{0:x3}:{0:X4}:{0:x5}:{0:X6}:{0:x7}:{0:X8}:{0:x9}:{0:X10}:{0:x11}:{0:X12}:{0:x13}:{0:X14}:{0:x15}:{0:X16}:{0:x17}:{0:X18}:{0:x19}:{0:X20}:{0:x21}:{0:X22}:{0:x23}:{0:X24}", a);
+        }
+
+        [Test]
+        public void TestInt64ToStringFormatNumber() {
+            this.Test((Func<Int64, string>)TestInt64ToStringFormatNumberFunc);
+        }
+        private static string TestInt64ToStringFormatNumberFunc([ParamFullRange]Int64 a) {
+            return string.Format("{0:n}:{0:N}:{0:n0}:{0:n1}:{0:N2}:{0:n3}:{0:N4}:{0:n5}:{0:N6}:{0:n7}:{0:N8}:{0:n9}:{0:N10}:{0:n11}:{0:N12}:{0:n13}:{0:N14}:{0:n15}:{0:N16}:{0:n17}:{0:N18}:{0:n19}:{0:N20}:{0:n21}:{0:N22}:{0:n23}:{0:N24}", a);
+        }
+
+        [Test]
         public void TestDoubleGetHashCode() {
             this.Test((Func<double, double, bool>)TestDoubleGetHashCode);
         }

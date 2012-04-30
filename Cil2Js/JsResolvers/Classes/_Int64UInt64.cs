@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -259,7 +260,7 @@ return [[q[2] + q[3] * limit, q[0] + q[1] * limit], [r[2] + r[3] * limit, r[0] +
 
     }
 
-    class _Int64 {
+    class _Int64 : IFormattable {
 
         [Js(typeof(_Int64UInt64.AddImpl))]
         public static Int64 Add(Int64 a, Int64 b) {
@@ -371,22 +372,22 @@ return neg ? rNegate : r;
             throw new JsImplException();
         }
 
-        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] < ~~b[1]);")]
+        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && a[1] < b[1]);")]
         public static bool LessThan(Int64 a, Int64 b) {
             throw new JsImplException();
         }
 
-        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && ~~a[1] <= ~~b[1]);")]
+        [Js("return ~~a[0] < ~~b[0] || (a[0] == b[0] && a[1] <= b[1]);")]
         public static bool LessThanOrEqual(Int64 a, Int64 b) {
             throw new JsImplException();
         }
 
-        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] > ~~b[1]);")]
+        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && a[1] > b[1]);")]
         public static bool GreaterThan(Int64 a, Int64 b) {
             throw new JsImplException();
         }
 
-        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && ~~a[1] >= ~~b[1]);")]
+        [Js("return ~~a[0] > ~~b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
         public static bool GreaterThanOrEqual(Int64 a, Int64 b) {
             throw new JsImplException();
         }
@@ -402,8 +403,43 @@ return neg ? rNegate : r;
             return new StmtJsExplicit(ctx, "return other._ === type && this[0] === other.v[0] && this[1] === other.v[1];", ctx.ThisNamed, other, type);
         }
 
+        [JsRedirect(typeof(Int64))]
+        public override int GetHashCode() {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Stmt GetHashCode(Ctx ctx) {
+            return new StmtJsExplicit(ctx, "return this[0] ^ this[1];", ctx.ThisNamed);
+        }
+
         public static bool Equals([JsFakeThis]Int64 _this, Int64 other) {
             return _this == other;
+        }
+
+        public override string ToString() {
+            return this.ToString(null, null);
+        }
+
+        public string ToString(string format) {
+            return this.ToString(format, null);
+        }
+
+        public string ToString(IFormatProvider provider) {
+            return this.ToString(null, provider);
+        }
+
+        [JsRedirect(typeof(Int64))]
+        public string ToString(string format, IFormatProvider formatProvider) {
+            throw new JsImplException();
+        }
+        [Js(typeof(string), typeof(string), typeof(IFormatProvider))]
+        public static Stmt ToString(Ctx ctx) {
+            var value = ctx.This;
+            var format = ctx.MethodParameter(0);
+            var provider = ctx.MethodParameter(1);
+            var nfi = ctx.Literal(null, ctx.Module.Import(typeof(NumberFormatInfo)));
+            var expr = new ExprCall(ctx, (Func<Int64, string, NumberFormatInfo, string>)Cil2Js.JsResolvers.Classes.Helpers.Number.FormatInt64, null, value, format, nfi);
+            return new StmtReturn(ctx, expr);
         }
 
         public static int CompareTo([JsFakeThis]Int64 _this, Int64 other) {
