@@ -115,6 +115,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return this.Literal(value).Named(name);
         }
 
+        public ExprLiteral Literal(long value) {
+            return this.Literal(value, this.Int64);
+        }
+
+        public NamedExpr Literal(long value, string name) {
+            return this.Literal(value).Named(name);
+        }
+
         public ExprLiteral Literal(string value) {
             return this.Literal(value, this.String);
         }
