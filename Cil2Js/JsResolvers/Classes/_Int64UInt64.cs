@@ -392,6 +392,10 @@ return neg ? rNegate : r;
             throw new JsImplException();
         }
 
+        public static Int64 Abs(Int64 a) {
+            return a < 0 ? -a : a;
+        }
+
         [JsRedirect(typeof(Int64))]
         public override bool Equals(object obj) {
             throw new JsImplException();

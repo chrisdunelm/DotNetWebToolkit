@@ -33,7 +33,11 @@ namespace Test.ExecutionTests {
             }
 
             public override sbyte GenSByte(Random rnd, int iteration) {
-                return (sbyte)rnd.Next(0, 256);
+                var ret = (sbyte)rnd.Next(0, 255);
+                if (ret == sbyte.MinValue) {
+                    ret = sbyte.MinValue + 1;
+                }
+                return ret;
             }
 
             public override byte GenByte(Random rnd, int iteration) {
@@ -51,7 +55,11 @@ namespace Test.ExecutionTests {
             public override long GenInt64(Random rnd, int iteration) {
                 var b = new byte[8];
                 rnd.NextBytes(b);
-                return BitConverter.ToInt64(b, 0);
+                var ret = BitConverter.ToInt64(b, 0);
+                if (ret == Int64.MinValue) {
+                    ret = Int64.MinValue + 1;
+                }
+                return ret;
             }
 
             public override ushort GenUInt16(Random rnd, int iteration) {

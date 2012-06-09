@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
+using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Math {
@@ -13,7 +14,11 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         public static Expr Abs(ICall call) {
             var ctx = call.Ctx;
             var arg = call.Arg(0);
-            return new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg);
+            if (arg.Type.IsInt64()) {
+                return new ExprCall(ctx, (Func<Int64, Int64>)_Int64.Abs, null, arg);
+            } else {
+                return new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg);
+            }
         }
 
         [Js]
