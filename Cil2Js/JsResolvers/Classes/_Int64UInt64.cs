@@ -396,6 +396,14 @@ return neg ? rNegate : r;
             return a < 0 ? -a : a;
         }
 
+        public static Int64 Max(Int64 a, Int64 b) {
+            return a > b ? a : b;
+        }
+
+        public static Int64 Min(Int64 a, Int64 b) {
+            return a < b ? a : b;
+        }
+
         [JsRedirect(typeof(Int64))]
         public override bool Equals(object obj) {
             throw new JsImplException();
@@ -557,6 +565,14 @@ return neg ? rNegate : r;
         [Js("return a[0] > b[0] || (a[0] == b[0] && a[1] >= b[1]);")]
         public static bool GreaterThanOrEqual(UInt64 a, UInt64 b) {
             throw new JsImplException();
+        }
+
+        public static UInt64 Max(UInt64 a, UInt64 b) {
+            return a > b ? a : b;
+        }
+
+        public static UInt64 Min(UInt64 a, UInt64 b) {
+            return a < b ? a : b;
         }
 
         [JsRedirect(typeof(Int64))]
