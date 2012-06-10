@@ -247,8 +247,9 @@ namespace Test.ExecutionTests {
                     }
                     var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
                     var jsResult = chrome.ExecuteScript(js + jsCall);
-                    if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                        var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
+                    var jsResultType = jsResult == null ? null : jsResult.GetType();
+                    var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
+                    if (jsResult != null && jsResultType != d.Method.ReturnType) {
                         switch (returnTypeCode) {
                         case TypeCode.Int64: {
                                 var array = (IList<object>)jsResult;
@@ -266,6 +267,15 @@ namespace Test.ExecutionTests {
                             break;
                         default:
                             jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                            break;
+                        }
+                    } else if (jsResult == null) {
+                        switch (returnTypeCode) {
+                        case TypeCode.Single:
+                            jsResult = Single.NaN;
+                            break;
+                        case TypeCode.Double:
+                            jsResult = Double.NaN;
                             break;
                         }
                     }
