@@ -245,11 +245,24 @@ namespace Test.ExecutionTests {
                     if (!mi.IsStatic) {
                         arg = arg.Prepend(null).ToArray();
                     }
-                    var jsCall = string.Format("return main({0});", string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))));
+                    var jsCall = @"
+var r = main(" + string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))) + @");
+if (typeof r === 'number') {
+    if (isNaN(r)) {
+        return 'NaN';
+    }
+    if (r === Number.POSITIVE_INFINITY) {
+        return '+Infinity';
+    }
+    if (r === Number.NEGATIVE_INFINITY) {
+        return '-Infinity';
+    }
+}
+return r;
+";
                     var jsResult = chrome.ExecuteScript(js + jsCall);
-                    var jsResultType = jsResult == null ? null : jsResult.GetType();
                     var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
-                    if (jsResult != null && jsResultType != d.Method.ReturnType) {
+                    if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
                         switch (returnTypeCode) {
                         case TypeCode.Int64: {
                                 var array = (IList<object>)jsResult;
@@ -265,17 +278,23 @@ namespace Test.ExecutionTests {
                                 jsResult = ((ulong)hi) << 32 | (ulong)lo;
                             }
                             break;
-                        default:
-                            jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
-                            break;
-                        }
-                    } else if (jsResult == null) {
-                        switch (returnTypeCode) {
                         case TypeCode.Single:
-                            jsResult = Single.NaN;
+                            switch (jsResult as string) {
+                            case "NaN": jsResult = Single.NaN; break;
+                            case "+Infinity": jsResult = Single.PositiveInfinity; break;
+                            case "-Infinity": jsResult = Single.NegativeInfinity; break;
+                            default: jsResult = Convert.ToSingle(jsResult); break;
+                            }
                             break;
                         case TypeCode.Double:
-                            jsResult = Double.NaN;
+                            switch (jsResult as string) {
+                            case "NaN": jsResult = Double.NaN; break;
+                            case "+Infinity": jsResult = Double.PositiveInfinity; break;
+                            case "-Infinity": jsResult = Double.NegativeInfinity; break;
+                            }
+                            break;
+                        default:
+                            jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
                             break;
                         }
                     }
@@ -283,12 +302,13 @@ namespace Test.ExecutionTests {
                     IResolveConstraint expected = equalTo;
                     if (withinAttr != null) {
                         expected = equalTo.Within(withinAttr.Delta);
-                    }
-                    if (withinUlpsAttr != null) {
+                    } else if (withinUlpsAttr != null) {
                         expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
-                    }
-                    if (withinPercentAttr != null) {
+                    } else if (withinPercentAttr != null) {
                         expected = equalTo.Within(withinPercentAttr.Percent).Percent;
+                    } else if (returnTypeCode == TypeCode.Single) {
+                        // Always allow a little inaccuracy with Singles
+                        expected = equalTo.Within(1).Ulps;
                     }
                     Assert.That(jsResult, expected);
                 }
