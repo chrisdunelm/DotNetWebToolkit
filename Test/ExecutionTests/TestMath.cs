@@ -54,6 +54,50 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestAcos() {
+            Func<double> f = () => Math.Acos(0.5);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAsin() {
+            Func<double> f = () => Math.Asin(0.5);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAtan() {
+            Func<double> f = () => Math.Atan(0.5);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAtan2() {
+            this.Test((Func<double>)(() => Math.Atan2(0.5, 0.5)));
+            this.Test((Func<double>)(() => Math.Atan2(0.5, -0.5)));
+            this.Test((Func<double>)(() => Math.Atan2(-0.5, -0.5)));
+            this.Test((Func<double>)(() => Math.Atan2(-0.5, 0.5)));
+            this.Test((Func<double>)(() => Math.Atan2(0, 1)));
+            this.Test((Func<double>)(() => Math.Atan2(0, -1)));
+            this.Test((Func<double>)(() => Math.Atan2(1, 0)));
+            this.Test((Func<double>)(() => Math.Atan2(-1, 0)));
+        }
+
+        [Test]
+        public void TestBigMul() {
+            Func<long, long, long> f = (a, b) => Math.BigMul((int)a, (int)b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestCeiling() {
+            this.Test((Func<double, double>)TestCeilingFunc);
+        }
+        private static double TestCeilingFunc([ParamFullRange]double a) {
+            return Math.Ceiling(a);
+        }
+
+        [Test]
         public void TestCos() {
             Func<double> f = () => Math.Cos(1.0);
             this.Test(f);

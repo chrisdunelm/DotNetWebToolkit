@@ -24,6 +24,44 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
+        public static Expr Acos(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.acos", call.Args);
+        }
+
+        [Js]
+        public static Expr Asin(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.asin", call.Args);
+        }
+
+        [Js]
+        public static Expr Atan(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.atan", call.Args);
+        }
+
+        [Js]
+        public static Expr Atan2(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.atan2", call.Args);
+        }
+
+        public static long BigMul(int a, int b) {
+            return (long)a * (long)b;
+        }
+
+        [Js]
+        public static Stmt Ceiling(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            var e = new ExprTernary(ctx,
+                new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg),
+                new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.ceil", arg),
+                arg);
+            return new StmtReturn(ctx, e);
+        }
+
+        [Js]
         public static Expr Cos(ICall call) {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.cos", call.Args);
