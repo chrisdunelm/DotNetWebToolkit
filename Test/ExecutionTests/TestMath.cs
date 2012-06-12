@@ -12,6 +12,7 @@ using UInt8 = System.Byte;
 namespace Test.ExecutionTests {
 
     [TestFixture]
+    [ParamFullRange]
     public class TestMath : ExecutionTestBase {
 
         [Test]
@@ -22,13 +23,19 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestAbsInt16() {
-            Func<Int16, Int16> f = a => Math.Abs((Int16)(a - 50));
+            Func<Int16, Int16> f = a => Math.Abs(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestAbsInt8and16() {
+            Func<Int16, Int32> f = a => Math.Abs((Int8)a) + Math.Abs((Int16)a);
             this.Test(f);
         }
 
         [Test]
         public void TestAbsInt32() {
-            Func<int, int> f = a => Math.Abs(a - 50);
+            Func<int, int> f = a => Math.Abs(a);
             this.Test(f);
         }
 
@@ -42,37 +49,39 @@ namespace Test.ExecutionTests {
         public void TestAbsSingle() {
             this.Test((Func<float, float>)TestAbsSingleFunc);
         }
-        [Within(0.0001)]
+        [WithinPercent(0.01)]
         private static float TestAbsSingleFunc(float a) {
-            return Math.Abs(a - 50);
+            return Math.Abs(a);
         }
 
         [Test]
         public void TestAbsDouble() {
-            Func<double, double> f = a => Math.Abs(a - 50);
+            Func<double, double> f = a => Math.Abs(a);
             this.Test(f);
         }
 
         [Test]
         public void TestAcos() {
-            Func<double> f = () => Math.Acos(0.5);
+            Func<double, double> f = a => Math.Acos(a);
             this.Test(f);
         }
 
         [Test]
         public void TestAsin() {
-            Func<double> f = () => Math.Asin(0.5);
+            Func<double, double> f = a => Math.Asin(a);
             this.Test(f);
         }
 
         [Test]
         public void TestAtan() {
-            Func<double> f = () => Math.Atan(0.5);
+            Func<double, double> f = a => Math.Atan(a);
             this.Test(f);
         }
 
         [Test]
         public void TestAtan2() {
+            Func<double, double, double> f = (a, b) => Math.Atan2(a, b);
+            this.Test(f);
             this.Test((Func<double>)(() => Math.Atan2(0.5, 0.5)));
             this.Test((Func<double>)(() => Math.Atan2(0.5, -0.5)));
             this.Test((Func<double>)(() => Math.Atan2(-0.5, -0.5)));
@@ -91,15 +100,13 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestCeiling() {
-            this.Test((Func<double, double>)TestCeilingFunc);
-        }
-        private static double TestCeilingFunc([ParamFullRange]double a) {
-            return Math.Ceiling(a);
+            Func<double, double> f = a => Math.Ceiling(a);
+            this.Test(f);
         }
 
         [Test]
         public void TestCos() {
-            Func<double> f = () => Math.Cos(1.0);
+            Func<double, double> f = a => Math.Cos(a);
             this.Test(f);
         }
 
@@ -225,8 +232,11 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestPow() {
-            Func<double, double, double> f = (a, b) => Math.Pow(a - 50, b - 50);
-            this.Test(f);
+            this.Test((Func<double, double, double>)TestPowFunc);
+        }
+        [WithinPercent(0.01)]
+        private static double TestPowFunc(double a, double b) {
+            return Math.Pow(a, b);
         }
 
         [Test]
@@ -237,13 +247,13 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestSignInt16() {
-            Func<Int16, int> f = a => Math.Sign(a - 50);
+            Func<Int16, int> f = a => Math.Sign(a);
             this.Test(f);
         }
 
         [Test]
         public void TestSignInt32() {
-            Func<Int32, int> f = a => Math.Sign(a - 50);
+            Func<Int32, int> f = a => Math.Sign(a);
             this.Test(f);
         }
 
@@ -255,31 +265,31 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestSignIntSingle() {
-            Func<Single, int> f = a => Math.Sign(a - 50);
+            Func<Single, int> f = a => Math.Sign(a);
             this.Test(f);
         }
 
         [Test]
         public void TestSignDouble() {
-            Func<Double, int> f = a => Math.Sign(a - 50);
+            Func<Double, int> f = a => Math.Sign(a);
             this.Test(f);
         }
 
         [Test]
         public void TestSin() {
-            Func<double> f = () => Math.Sin(1.0);
+            Func<double, double> f = a => Math.Sin(a);
             this.Test(f);
         }
 
         [Test]
         public void TestSqrt() {
-            Func<double> f = () => Math.Sqrt(4.0);
+            Func<double, double> f = a => Math.Sqrt(a);
             this.Test(f);
         }
 
         [Test]
         public void TestTan() {
-            Func<double> f = () => Math.Tan(1.0);
+            Func<double, double> f = a => Math.Tan(a);
             this.Test(f);
         }
 

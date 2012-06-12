@@ -6,20 +6,35 @@ using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.Output;
 using DotNetWebToolkit.Cil2Js.Utils;
-
+using Mono.Cecil;
 using Int8 = System.SByte;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Math {
 
         [Js]
-        public static Expr Abs(ICall call) {
-            var ctx = call.Ctx;
-            var arg = call.Arg(0);
-            if (arg.Type.IsInt64()) {
-                return new ExprCall(ctx, (Func<Int64, Int64>)_Int64.Abs, null, arg);
+        public static Stmt Abs(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            ExprLiteral minVal;
+            switch (arg.Type.MetadataType) {
+            case MetadataType.SByte: minVal = ctx.Literal(Int8.MinValue); break;
+            case MetadataType.Int16: minVal = ctx.Literal(Int16.MinValue); break;
+            case MetadataType.Int32: minVal = ctx.Literal(Int32.MinValue); break;
+            case MetadataType.Int64: minVal = ctx.Literal(Int64.MinValue); break;
+            default: minVal = null; break;
+            }
+            if (minVal != null) {
+                var exCtor = ctx.Module.Import(typeof(OverflowException).GetConstructor(Type.EmptyTypes));
+                return new StmtIf(ctx,
+                    ctx.ExprGen.Equal(arg, minVal),
+                    new StmtThrow(ctx, new ExprNewObj(ctx, exCtor)),
+                    new StmtReturn(ctx,
+                        arg.Type.IsInt64() ?
+                        (Expr)new ExprCall(ctx, (Func<Int64, Int64>)_Int64.Abs, null, arg) :
+                        (Expr)new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg))
+                    );
             } else {
-                return new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg);
+                return new StmtReturn(ctx, new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg));
             }
         }
 
@@ -42,9 +57,20 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
-        public static Expr Atan2(ICall call) {
-            var ctx = call.Ctx;
-            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.atan2", call.Args);
+        public static Stmt Atan2(Ctx ctx) {
+            var arg0 = ctx.MethodParameter(0);
+            var arg1 = ctx.MethodParameter(1);
+            var eg = ctx.ExprGen;
+            return new StmtReturn(ctx,
+                new ExprTernary(ctx,
+                    eg.And(
+                        eg.Not(new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg0)),
+                        eg.Not(new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg1))
+                    ),
+                    ctx.Literal(Double.NaN),
+                    new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.atan2", arg0, arg1)
+                )
+            );
         }
 
         public static long BigMul(int a, int b) {
@@ -62,9 +88,23 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
-        public static Expr Cos(ICall call) {
-            var ctx = call.Ctx;
-            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.cos", call.Args);
+        public static Stmt Cos(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            var eg = ctx.ExprGen;
+            return new StmtReturn(ctx,
+                new ExprTernary(ctx,
+                    new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg),
+                    new ExprTernary(ctx,
+                        eg.And(
+                            eg.GreaterThan(arg, new ExprJsExplicit(ctx, long.MinValue.ToString(), ctx.Int64)),
+                            eg.LessThan(arg, new ExprJsExplicit(ctx, long.MaxValue.ToString(), ctx.Int64))
+                        ),
+                        new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.cos", arg),
+                        arg
+                    ),
+                    ctx.Literal(Double.NaN)
+                )
+            );
         }
 
         [Js]
@@ -120,17 +160,37 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public static int Sign(Single a) {
+            if (Single.IsNaN(a)) {
+                throw new ArithmeticException();
+            }
             return a > 0 ? 1 : (a < 0 ? -1 : 0);
         }
 
         public static int Sign(Double a) {
+            if (Double.IsNaN(a)) {
+                throw new ArithmeticException();
+            }
             return a > 0 ? 1 : (a < 0 ? -1 : 0);
         }
 
         [Js]
-        public static Expr Sin(ICall call) {
-            var ctx = call.Ctx;
-            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.sin", call.Args);
+        public static Stmt Sin(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            var eg = ctx.ExprGen;
+            return new StmtReturn(ctx,
+                new ExprTernary(ctx,
+                    new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg),
+                    new ExprTernary(ctx,
+                        eg.And(
+                            eg.GreaterThan(arg, new ExprJsExplicit(ctx, long.MinValue.ToString(), ctx.Int64)),
+                            eg.LessThan(arg, new ExprJsExplicit(ctx, long.MaxValue.ToString(), ctx.Int64))
+                        ),
+                        new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.sin", arg),
+                        arg
+                    ),
+                    ctx.Literal(Double.NaN)
+                )
+            );
         }
 
         [Js]
@@ -140,9 +200,22 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
-        public static Expr Tan(ICall call) {
-            var ctx = call.Ctx;
-            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.tan", call.Args);
+        public static Stmt Tan(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            var eg = ctx.ExprGen;
+            return new StmtReturn(ctx,
+                new ExprTernary(ctx,
+                    eg.And(
+                        new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg),
+                        eg.And(
+                            eg.GreaterThan(arg, new ExprJsExplicit(ctx, long.MinValue.ToString(), ctx.Int64)),
+                            eg.LessThan(arg, new ExprJsExplicit(ctx, long.MaxValue.ToString(), ctx.Int64))
+                        )
+                    ),
+                    new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.tan", arg),
+                    ctx.Literal(Double.NaN)
+                )
+            );
         }
 
     }
