@@ -360,11 +360,19 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             // Create map of all method names
             var methodNames = methodsSeen.Keys.ToDictionary(x => x, x => globalNames[x], TypeExtensions.MethodRefEqComparerInstance);
-            //methodNames[rootMethods.First()] = "main"; // HACK
 
             // Create list of all static field names
             var staticFieldNames = staticFields.Select(x => new { f = x.Key, name = globalNames[x.Key] });
             // Create map of all fields
+            if (testing) {
+                instanceFieldNames = instanceFieldNames.Select(x => {
+                    switch (x.f.FullName) {
+                    case "System.String System.Exception::_message":
+                        return new { x.f, name = "$$_message" };
+                    }
+                    return x;
+                }).ToArray();
+            }
             var fieldNames = instanceFieldNames.Concat(staticFieldNames).ToDictionary(x => x.f, x => x.name, TypeExtensions.FieldReqEqComparerInstance);
             // Create map of type names
             var typeNames = typesSeen
@@ -409,6 +417,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 .ToArray();
             var typeInformationNameGen = new NameGenerator();
             var typeInformationNames = needTypeInformationNaming.ToDictionary(x => x.item, x => typeInformationNameGen.GetNewName());
+            if (testing) {
+                typeInformationNames[TypeData.Name] = "$$TypeName";
+                typeInformationNames[TypeData.Namespace] = "$$TypeNamespace";
+            }
 
             // Create map of interfaces to their names
             var interfaceNames = interfaceCalls.Keys.ToDictionary(x => x, x => typeInformationNames[x], TypeExtensions.TypeRefEqComparerInstance);
