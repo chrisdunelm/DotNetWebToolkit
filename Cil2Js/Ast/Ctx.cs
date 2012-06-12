@@ -123,6 +123,14 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             return this.Literal(value).Named(name);
         }
 
+        public ExprLiteral Literal(Double value) {
+            return this.Literal(value, this.Double);
+        }
+
+        public NamedExpr Literal(Double value, string name) {
+            return this.Literal(value).Named(name);
+        }
+
         public ExprLiteral Literal(string value) {
             return this.Literal(value, this.String);
         }
