@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Test.Utils {
 
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Class, AllowMultiple = false)]
     abstract class ParamAttribute : Attribute {
 
         public virtual int? MinIterations {
