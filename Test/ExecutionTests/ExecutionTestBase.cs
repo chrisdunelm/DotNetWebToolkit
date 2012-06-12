@@ -102,12 +102,12 @@ namespace Test.ExecutionTests {
 
         private readonly DefaultParamGen defaultParamGen = new DefaultParamGen();
 
-        private object[] CreateArgs(MethodInfo methodInfo, int iteration) {
+        private object[] CreateArgs(MethodInfo methodInfo, int iteration, ParamAttribute testDefaultParamGen) {
             List<object> args = new List<object>();
             var parameters = methodInfo.GetParameters();
             foreach (var arg in parameters) {
                 object v;
-                var paramGen = (ParamAttribute)arg.GetCustomAttributes(typeof(ParamAttribute), false).FirstOrDefault() ?? defaultParamGen;
+                var paramGen = (ParamAttribute)arg.GetCustomAttributes(typeof(ParamAttribute), false).FirstOrDefault() ?? testDefaultParamGen;
                 var typeCode = Type.GetTypeCode(arg.ParameterType);
                 switch (typeCode) {
                 case TypeCode.Boolean:
@@ -198,19 +198,23 @@ namespace Test.ExecutionTests {
 
         protected void Test(Delegate d, object knownResult = null, bool knownResultNull = false) {
             var mi = d.Method;
-            var stackTrace = new StackTrace();
-            var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
+            //var stackTrace = new StackTrace();
+            //var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
             //Console.WriteLine("Test++ {0}", testMethod);
             var method = CecilHelper.GetMethod(d);
             var js = Js.CreateFrom(method, this.Verbose, true);
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
+            var testDefaultParamGen = mi.GetCustomAttribute<ParamAttribute>()
+                ?? mi.DeclaringType.GetCustomAttribute<ParamAttribute>()
+                ?? defaultParamGen;
             var withinAttr = mi.GetCustomAttribute<WithinAttribute>();
             var withinUlpsAttr = mi.GetCustomAttribute<WithinUlpsAttribute>();
             var withinPercentAttr = mi.GetCustomAttribute<WithinPercentAttribute>();
             var icAttr = mi.GetCustomAttribute<IterationCountAttribute>();
-            var minIterations = mi.GetParameters().Max(x => x.GetCustomAttribute<ParamAttribute>().NullThru(y => y.MinIterations));
+            var minIterations = mi.GetParameters().Max(x =>
+                (x.GetCustomAttribute<ParamAttribute>() ?? testDefaultParamGen).MinIterations);
             int iterationCount;
             if (icAttr != null) {
                 iterationCount = icAttr.IterationCount;
@@ -221,7 +225,7 @@ namespace Test.ExecutionTests {
                 iterationCount = minIterations.Value;
             }
             var range = Enumerable.Range(0, iterationCount);
-            var args = range.Select(i => this.CreateArgs(mi, i)).ToArray();
+            var args = range.Select(i => this.CreateArgs(mi, i, testDefaultParamGen)).ToArray();
 
             var runResults = range.Select(i => {
                 object r = null;
@@ -246,7 +250,12 @@ namespace Test.ExecutionTests {
                         arg = arg.Prepend(null).ToArray();
                     }
                     var jsCall = @"
-var r = main(" + string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))) + @");
+var r;
+try {
+    r = main(" + string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))) + @");
+} catch (e) {
+    return {exception:[e._.$$TypeNamespace, e._.$$TypeName, e.$$_message]};
+}
 if (typeof r === 'number') {
     if (isNaN(r)) {
         return 'NaN';
@@ -261,56 +270,66 @@ if (typeof r === 'number') {
 return r;
 ";
                     var jsResult = chrome.ExecuteScript(js + jsCall);
-                    var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
-                    if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
-                        switch (returnTypeCode) {
-                        case TypeCode.Int64: {
-                                var array = (IList<object>)jsResult;
-                                var hi = Convert.ToUInt64(array[0]);
-                                var lo = Convert.ToUInt64(array[1]);
-                                jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
+                    if (jsResult is Dictionary<string, object>) {
+                        // Exception
+                        Assert.That(runResults[i].Item1, Is.Null, "JS threw exception, but exception not expected");
+                        var jsExInfo = ((ICollection<object>)((Dictionary<string, object>)jsResult)["exception"]).Cast<string>().ToArray();
+                        var jsExType = jsExInfo[0] + "." + jsExInfo[1];
+                        var expectedExType = runResults[i].Item2.GetType().FullName;
+                        Assert.That(jsExType, Is.EqualTo(expectedExType));
+                    } else {
+                        var returnTypeCode = Type.GetTypeCode(d.Method.ReturnType);
+                        if (jsResult != null && jsResult.GetType() != d.Method.ReturnType) {
+                            switch (returnTypeCode) {
+                            case TypeCode.Int64: {
+                                    var array = (IList<object>)jsResult;
+                                    var hi = Convert.ToUInt64(array[0]);
+                                    var lo = Convert.ToUInt64(array[1]);
+                                    jsResult = (long)(((ulong)hi) << 32 | (ulong)lo);
+                                }
+                                break;
+                            case TypeCode.UInt64: {
+                                    var array = (IList<object>)jsResult;
+                                    var hi = Convert.ToUInt64(array[0]);
+                                    var lo = Convert.ToUInt64(array[1]);
+                                    jsResult = ((ulong)hi) << 32 | (ulong)lo;
+                                }
+                                break;
+                            case TypeCode.Single:
+                                switch (jsResult as string) {
+                                case "NaN": jsResult = Single.NaN; break;
+                                case "+Infinity": jsResult = Single.PositiveInfinity; break;
+                                case "-Infinity": jsResult = Single.NegativeInfinity; break;
+                                default: jsResult = Convert.ToSingle(jsResult); break;
+                                }
+                                break;
+                            case TypeCode.Double:
+                                switch (jsResult as string) {
+                                case "NaN": jsResult = Double.NaN; break;
+                                case "+Infinity": jsResult = Double.PositiveInfinity; break;
+                                case "-Infinity": jsResult = Double.NegativeInfinity; break;
+                                }
+                                break;
+                            default:
+                                jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
+                                break;
                             }
-                            break;
-                        case TypeCode.UInt64: {
-                                var array = (IList<object>)jsResult;
-                                var hi = Convert.ToUInt64(array[0]);
-                                var lo = Convert.ToUInt64(array[1]);
-                                jsResult = ((ulong)hi) << 32 | (ulong)lo;
-                            }
-                            break;
-                        case TypeCode.Single:
-                            switch (jsResult as string) {
-                            case "NaN": jsResult = Single.NaN; break;
-                            case "+Infinity": jsResult = Single.PositiveInfinity; break;
-                            case "-Infinity": jsResult = Single.NegativeInfinity; break;
-                            default: jsResult = Convert.ToSingle(jsResult); break;
-                            }
-                            break;
-                        case TypeCode.Double:
-                            switch (jsResult as string) {
-                            case "NaN": jsResult = Double.NaN; break;
-                            case "+Infinity": jsResult = Double.PositiveInfinity; break;
-                            case "-Infinity": jsResult = Double.NegativeInfinity; break;
-                            }
-                            break;
-                        default:
-                            jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
-                            break;
                         }
+                        Assert.That(runResults[i].Item2, Is.Null, "Exception expected in JS, but not thrown");
+                        EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
+                        IResolveConstraint expected = equalTo;
+                        if (withinAttr != null) {
+                            expected = equalTo.Within(withinAttr.Delta);
+                        } else if (withinUlpsAttr != null) {
+                            expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
+                        } else if (withinPercentAttr != null) {
+                            expected = equalTo.Within(withinPercentAttr.Percent).Percent;
+                        } else if (returnTypeCode == TypeCode.Single) {
+                            // Always allow a little inaccuracy with Singles
+                            expected = equalTo.Within(1).Ulps;
+                        }
+                        Assert.That(jsResult, expected);
                     }
-                    EqualConstraint equalTo = Is.EqualTo(runResults[i].Item1);
-                    IResolveConstraint expected = equalTo;
-                    if (withinAttr != null) {
-                        expected = equalTo.Within(withinAttr.Delta);
-                    } else if (withinUlpsAttr != null) {
-                        expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
-                    } else if (withinPercentAttr != null) {
-                        expected = equalTo.Within(withinPercentAttr.Percent).Percent;
-                    } else if (returnTypeCode == TypeCode.Single) {
-                        // Always allow a little inaccuracy with Singles
-                        expected = equalTo.Within(1).Ulps;
-                    }
-                    Assert.That(jsResult, expected);
                 }
             } finally {
                 if (!usingNamespace) {
