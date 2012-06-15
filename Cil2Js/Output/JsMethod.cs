@@ -358,6 +358,16 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var u64 = (UInt64)e.Value;
                     value = string.Format("[{0}, {1}]", (u64 >> 32) & 0xffffffffUL, u64 & 0xffffffffUL);
                     break;
+                case MetadataType.Single:
+                    var f = (Single)e.Value;
+                    if (Single.IsNegativeInfinity(f)) {
+                        value = "Number.NEGATIVE_INFINITY";
+                    } else if (Single.IsPositiveInfinity(f)) {
+                        value = "Number.POSITIVE_INFINITY";
+                    } else {
+                        value = f;
+                    }
+                    break;
                 case MetadataType.Double:
                     var d = (Double)e.Value;
                     if (Double.IsNegativeInfinity(d)) {
