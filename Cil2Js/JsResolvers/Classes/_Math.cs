@@ -107,6 +107,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             );
         }
 
+        public static double Cosh(double value) {
+            return (Math.Exp(value) + Math.Exp(-value)) / 2.0;
+        }
+
+        [Js]
+        public static Expr Exp(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.exp", call.Args);
+        }
+
         [Js]
         public static Expr Max(ICall call) {
             var ctx = call.Ctx;

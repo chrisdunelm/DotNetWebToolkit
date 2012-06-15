@@ -111,6 +111,18 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestCosh() {
+            Func<double, double> f = a => Math.Cosh(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestExp() {
+            Func<double, double> f = a => Math.Exp(a);
+            this.Test(f);
+        }
+
+        [Test]
         public void TestMaxInt8() {
             Func<Int8, Int8, Int8> f = (a, b) => Math.Max(a, b);
             this.Test(f);
