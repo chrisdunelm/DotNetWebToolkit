@@ -328,10 +328,10 @@ return r;
                             switch (returnTypeCode) {
                             case TypeCode.Single:
                                 // Always allow a little inaccuracy with Singles
-                                expected = equalTo.Within(1).Ulps;
+                                expected = equalTo.Within(0.0001).Percent;
                                 break;
                             case TypeCode.Double:
-                                expected = equalTo.Within(1).Ulps;
+                                expected = equalTo.Within(0.0001).Percent;
                                 break;
                             }
                         }
