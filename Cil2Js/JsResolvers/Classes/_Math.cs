@@ -203,6 +203,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             );
         }
 
+        public static double Sinh(double value) {
+            return (Math.Exp(value) - Math.Exp(-value)) / 2.0;
+        }
+
         [Js]
         public static Expr Sqrt(ICall call) {
             var ctx = call.Ctx;
@@ -226,6 +230,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                     ctx.Literal(Double.NaN)
                 )
             );
+        }
+
+        public static double Tanh(double value) {
+            var e2 = Math.Exp(2.0 * value);
+            if (double.IsPositiveInfinity(e2)) {
+                return 1.0;
+            }
+            return (e2 - 1.0) / (e2 + 1.0);
         }
 
     }

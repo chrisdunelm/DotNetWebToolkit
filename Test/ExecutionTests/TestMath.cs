@@ -294,6 +294,15 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestSinh() {
+            this.Test((Func<double, double>)TestSinhFunc);
+        }
+        [Within(0.000001)]
+        private static double TestSinhFunc(double a) {
+            return Math.Sinh(a);
+        }
+
+        [Test]
         public void TestSqrt() {
             Func<double, double> f = a => Math.Sqrt(a);
             this.Test(f);
@@ -303,6 +312,15 @@ namespace Test.ExecutionTests {
         public void TestTan() {
             Func<double, double> f = a => Math.Tan(a);
             this.Test(f);
+        }
+
+        [Test]
+        public void TestTanh() {
+            this.Test((Func<double, double>)TestTanhFunc);
+        }
+        [Within(0.000001)]
+        private static double TestTanhFunc(double a) {
+            return Math.Tanh(a);
         }
 
     }
