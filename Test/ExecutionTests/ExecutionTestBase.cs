@@ -324,9 +324,16 @@ return r;
                             expected = equalTo.Within(withinUlpsAttr.Ulps).Ulps;
                         } else if (withinPercentAttr != null) {
                             expected = equalTo.Within(withinPercentAttr.Percent).Percent;
-                        } else if (returnTypeCode == TypeCode.Single) {
-                            // Always allow a little inaccuracy with Singles
-                            expected = equalTo.Within(1).Ulps;
+                        } else {
+                            switch (returnTypeCode) {
+                            case TypeCode.Single:
+                                // Always allow a little inaccuracy with Singles
+                                expected = equalTo.Within(1).Ulps;
+                                break;
+                            case TypeCode.Double:
+                                expected = equalTo.Within(1).Ulps;
+                                break;
+                            }
                         }
                         Assert.That(jsResult, expected);
                     }
