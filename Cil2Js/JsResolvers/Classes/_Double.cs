@@ -19,6 +19,22 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         [Js]
+        public static Expr IsNegativeInfinity(ICall call) {
+            var ctx = call.Ctx;
+            return ctx.ExprGen.Equal(call.Arg(0), ctx.Literal(Double.NegativeInfinity));
+        }
+
+        [Js]
+        public static Expr IsPositiveInfinity(ICall call) {
+            var ctx = call.Ctx;
+            return ctx.ExprGen.Equal(call.Arg(0), ctx.Literal(Double.PositiveInfinity));
+        }
+
+        public static bool IsInfinity(Double a) {
+            return Double.IsNegativeInfinity(a) || Double.IsPositiveInfinity(a);
+        }
+
+        [Js]
         public static Expr IsNaN(ICall call) {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "isNaN", call.Args);

@@ -87,11 +87,67 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
-        public void TestDoubleIsNan() {
-            Func<int> f = () => {
-                return (double.IsNaN(0) ? 1 : 2) + (double.IsNaN(double.NaN) ? 11 : 12);
-            };
-            this.Test(f);
+        public void TestSingleIsNaN() {
+            this.Test((Func<Single, bool>)TestSingleIsNaNFunc);
+        }
+        private static bool TestSingleIsNaNFunc([ParamFullRange]Single a) {
+            return Single.IsNaN(a);
+        }
+
+        [Test]
+        public void TestDoubleIsNaN() {
+            this.Test((Func<Double, bool>)TestDoubleIsNaNFunc);
+        }
+        private static bool TestDoubleIsNaNFunc([ParamFullRange]Double a) {
+            return Double.IsNaN(a);
+        }
+
+        [Test]
+        public void TestSingleIsNegativeInfinity() {
+            this.Test((Func<Single, bool>)TestSingleIsNegativeInfinityFunc);
+        }
+        public static bool TestSingleIsNegativeInfinityFunc([ParamFullRange]Single a) {
+            return Single.IsNegativeInfinity(a);
+        }
+
+        [Test]
+        public void TestSingleIsPositiveInfinity() {
+            this.Test((Func<Single, bool>)TestSingleIsPositiveInfinityFunc);
+        }
+        public static bool TestSingleIsPositiveInfinityFunc([ParamFullRange]Single a) {
+            return Single.IsNegativeInfinity(a);
+        }
+
+        [Test]
+        public void TestSingleIsInfinity() {
+            this.Test((Func<Single, bool>)TestSingleIsInfinityFunc);
+        }
+        private static bool TestSingleIsInfinityFunc([ParamFullRange]Single a) {
+            return Single.IsInfinity(a);
+        }
+
+        [Test]
+        public void TestDoubleIsNegativeInfinity() {
+            this.Test((Func<Double, bool>)TestDoubleIsNegativeInfinityFunc);
+        }
+        public static bool TestDoubleIsNegativeInfinityFunc([ParamFullRange]Double a) {
+            return Double.IsNegativeInfinity(a);
+        }
+
+        [Test]
+        public void TestDoubleIsPositiveInfinity() {
+            this.Test((Func<Double, bool>)TestDoubleIsPositiveInfinityFunc);
+        }
+        public static bool TestDoubleIsPositiveInfinityFunc([ParamFullRange]Double a) {
+            return Double.IsNegativeInfinity(a);
+        }
+
+        [Test]
+        public void TestDoubleIsInfinity() {
+            this.Test((Func<Double, bool>)TestDoubleIsInfinityFunc);
+        }
+        private static bool TestDoubleIsInfinityFunc([ParamFullRange]Double a) {
+            return Double.IsInfinity(a);
         }
 
     }
