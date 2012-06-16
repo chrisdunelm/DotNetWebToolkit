@@ -12,7 +12,10 @@ using Int8 = System.SByte;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Math {
 
-        [Js]
+        [Js(typeof(Int8), typeof(Int8))]
+        [Js(typeof(Int16), typeof(Int16))]
+        [Js(typeof(Int32), typeof(Int32))]
+        [Js(typeof(Int64), typeof(Int64))]
         public static Stmt Abs(Ctx ctx) {
             var arg = ctx.MethodParameter(0);
             ExprLiteral minVal;
@@ -21,21 +24,25 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             case MetadataType.Int16: minVal = ctx.Literal(Int16.MinValue); break;
             case MetadataType.Int32: minVal = ctx.Literal(Int32.MinValue); break;
             case MetadataType.Int64: minVal = ctx.Literal(Int64.MinValue); break;
-            default: minVal = null; break;
+            default: throw new InvalidOperationException("Cannot handle: " + arg.Type);
             }
-            if (minVal != null) {
-                var exCtor = ctx.Module.Import(typeof(OverflowException).GetConstructor(Type.EmptyTypes));
-                return new StmtIf(ctx,
-                    ctx.ExprGen.Equal(arg, minVal),
-                    new StmtThrow(ctx, new ExprNewObj(ctx, exCtor)),
-                    new StmtReturn(ctx,
-                        arg.Type.IsInt64() ?
-                        (Expr)new ExprCall(ctx, (Func<Int64, Int64>)_Int64.Abs, null, arg) :
-                        (Expr)new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg))
-                    );
-            } else {
-                return new StmtReturn(ctx, new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg));
-            }
+            var exCtor = ctx.Module.Import(typeof(OverflowException).GetConstructor(Type.EmptyTypes));
+            return new StmtIf(ctx,
+                ctx.ExprGen.Equal(arg, minVal),
+                new StmtThrow(ctx, new ExprNewObj(ctx, exCtor)),
+                new StmtReturn(ctx,
+                    arg.Type.IsInt64() ?
+                    (Expr)new ExprCall(ctx, (Func<Int64, Int64>)_Int64.Abs, null, arg) :
+                    (Expr)new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg))
+                );
+        }
+
+        [Js(typeof(Single), typeof(Single))]
+        [Js(typeof(Double), typeof(Double))]
+        public static Expr Abs(ICall call) {
+            var ctx = call.Ctx;
+            var arg = call.Arg(0);
+            return new ExprJsResolvedMethod(ctx, arg.Type, null, "Math.abs", arg);
         }
 
         [Js]
@@ -185,10 +192,18 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.pow", call.Args);
         }
 
-        [Js]
+        [Js(typeof(double), typeof(double))]
         public static Expr Round(ICall call) {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.round", call.Args);
+        }
+
+        public static double Round(double value, int digits) {
+            if (digits < 0 || digits > 15) {
+                throw new ArgumentOutOfRangeException();
+            }
+            double scale = Math.Pow(10, digits);
+            return Math.Round(value * scale) / scale;
         }
 
         public static int Sign(Int8 a) {
@@ -276,6 +291,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 return 1.0;
             }
             return (e2 - 1.0) / (e2 + 1.0);
+        }
+
+        public static double Truncate(double d) {
+            return d > 0 ? Math.Floor(d) : Math.Ceiling(d);
         }
 
     }

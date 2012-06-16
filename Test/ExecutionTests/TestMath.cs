@@ -302,6 +302,18 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestRoundDigits() {
+            Func<double, int, double> f = (a, b) => {
+                if (double.IsInfinity(a) || Math.Abs(a) < double.MaxValue / 1e20) {
+                    return Math.Round(a, b & 0xf);
+                } else {
+                    return 0;
+                }
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestSignInt8() {
             Func<Int8, int> f = a => Math.Sign(a);
             this.Test(f);
@@ -371,6 +383,12 @@ namespace Test.ExecutionTests {
         [Within(0.000001)]
         private static double TestTanhFunc(double a) {
             return Math.Tanh(a);
+        }
+
+        [Test]
+        public void TestTruncate() {
+            Func<double, double> f = a => Math.Truncate(a);
+            this.Test(f);
         }
 
     }
