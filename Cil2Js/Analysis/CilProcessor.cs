@@ -305,6 +305,14 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 return this.UnboxAny(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Ldobj:
                 return this.LoadIndirect(((TypeReference)inst.Operand).FullResolve(this.ctx));
+            case Code.Stind_I1:
+                return this.StObj(this.ctx.SByte);
+            case Code.Stind_I2:
+                return this.StObj(this.ctx.Int16);
+            case Code.Stind_I4:
+                return this.StObj(this.ctx.Int32);
+            case Code.Stind_I8:
+                return this.StObj(this.ctx.Int64);
             case Code.Stobj:
                 return this.StObj(((TypeReference)inst.Operand).FullResolve(this.ctx));
             case Code.Constrained:
