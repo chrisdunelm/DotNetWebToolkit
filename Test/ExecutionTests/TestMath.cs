@@ -117,8 +117,52 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestDivRemInt32() {
+            Func<int, int, int> f = (a, b) => {
+                int r;
+                int q = Math.DivRem(a, b == 0 ? 1 : b, out r);
+                return q + r;
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestDivRemInt64() {
+            Func<long,long,long> f = (a, b) => {
+                long r;
+                long q = Math.DivRem(a, b == 0 ? 1 : b, out r);
+                return q + r;
+            };
+            this.Test(f);
+        }
+
+        [Test]
         public void TestExp() {
             Func<double, double> f = a => Math.Exp(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestFloor() {
+            Func<double, double> f = a => Math.Floor(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLogE() {
+            Func<double, double> f = a => Math.Log(a);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLogAnyBase() {
+            Func<double, double, double> f = (a,b) => Math.Log(a, b);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestLog10() {
+            Func<double, double> f = a => Math.Log10(a);
             this.Test(f);
         }
 
@@ -249,6 +293,12 @@ namespace Test.ExecutionTests {
         [WithinPercent(0.01)]
         private static double TestPowFunc(double a, double b) {
             return Math.Pow(a, b);
+        }
+
+        [Test]
+        public void TestRound() {
+            Func<double, double> f = a => Math.Round(a);
+            this.Test(f);
         }
 
         [Test]

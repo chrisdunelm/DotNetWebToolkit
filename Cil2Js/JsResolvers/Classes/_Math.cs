@@ -111,10 +111,44 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return (Math.Exp(value) + Math.Exp(-value)) / 2.0;
         }
 
+        public static int DivRem(int a, int b, out int result) {
+            result = a % b;
+            return a / b;
+        }
+
+        public static long DivRem(long a, long b, out long result) {
+            result = a % b;
+            return a / b;
+        }
+
         [Js]
         public static Expr Exp(ICall call) {
             var ctx = call.Ctx;
             return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.exp", call.Args);
+        }
+
+        [Js]
+        public static Stmt Floor(Ctx ctx) {
+            var arg = ctx.MethodParameter(0);
+            var e = new ExprTernary(ctx,
+                new ExprJsResolvedMethod(ctx, ctx.Boolean, null, "Number.isFinite", arg),
+                new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.floor", arg),
+                arg);
+            return new StmtReturn(ctx, e);
+        }
+
+        [Js(typeof(double), typeof(double))]
+        public static Expr Log(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.log", call.Args);
+        }
+
+        public static double Log(double a, double newBase) {
+            return Math.Log(a) / Math.Log(newBase);
+        }
+
+        public static double Log10(double d) {
+            return Math.Log(d, 10.0);
         }
 
         [Js]
@@ -148,9 +182,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js]
         public static Expr Pow(ICall call) {
             var ctx = call.Ctx;
-            var arg0 = call.Arg(0);
-            var arg1 = call.Arg(1);
-            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.pow", arg0, arg1);
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.pow", call.Args);
+        }
+
+        [Js]
+        public static Expr Round(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsResolvedMethod(ctx, ctx.Double, null, "Math.round", call.Args);
         }
 
         public static int Sign(Int8 a) {
