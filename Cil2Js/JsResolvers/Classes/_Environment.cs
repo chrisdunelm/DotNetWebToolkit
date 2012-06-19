@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DotNetWebToolkit.Cil2Js.Ast;
+using DotNetWebToolkit.Cil2Js.Output;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
     class _Environment {
@@ -43,6 +44,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js]
         public static Expr GetStackTrace(ICall call) {
             return call.Ctx.Literal((string)null);
+        }
+
+        [Js]
+        public static Expr get_TickCount(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsExplicit(ctx, "(~~(new Date))", ctx.Int32);
         }
 
     }
