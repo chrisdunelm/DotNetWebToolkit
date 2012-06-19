@@ -15,8 +15,8 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestRandomInt32WithSeed() {
             Func<int, int> f = a => {
-                var rnd = new Random(0);
-                return rnd.Next(0, Math.Abs(a & 0xf));
+                var rnd = new Random(a);
+                return rnd.Next(0, 100);
             };
             this.Test(f);
         }
@@ -37,6 +37,15 @@ namespace Test.ExecutionTests {
                 return buckets.All(x => x >= low && x <= high);
             };
             this.Test(f, true);
+        }
+
+        [Test]
+        public void TestRandomDoubleWithSeed() {
+            Func<int, double> f = a => {
+                var rnd = new Random(a);
+                return rnd.NextDouble();
+            };
+            this.Test(f);
         }
 
     }
