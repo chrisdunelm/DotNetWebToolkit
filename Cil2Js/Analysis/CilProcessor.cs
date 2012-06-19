@@ -474,7 +474,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             }
             if (!requiredType.IsNumeric() || !expr.Type.IsNumeric()) {
                 return expr;
-                //throw new InvalidOperationException("Only numeric types can be converted");
             }
             var conv = new ExprConv(this.ctx, expr, requiredType, false);
             return conv;
@@ -493,10 +492,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
                 if (argType.IsGenericParameter) {
                     throw new InvalidOperationException();
                 }
-                //argExprs[i] = this.InsertConvIfRequired(this.DerefIfPointer(argExprs[i]), argType);
                 argExprs[i] = this.InsertConvIfRequired(argExprs[i], argType);
             }
-            //var obj = callingRef.HasThis ? this.DerefIfPointer(this.stack.Pop()) : null;
             var obj = callingRef.HasThis ? this.stack.Pop() : null;
             var exprCall = new ExprCall(this.ctx, callingRef, obj, argExprs, isVirtualCall, this.ConstrainedType);
             if (callingRef.ReturnType.IsVoid()) {
@@ -511,38 +508,19 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var numArgs = ctorRef.Parameters.Count;
             var argExprs = new Expr[numArgs];
             for (int i = numArgs - 1; i >= 0; i--) {
-                //argExprs[i] = this.DerefIfPointer(this.stack.Pop());
                 argExprs[i] = this.stack.Pop();
             }
             var expr = new ExprNewObj(this.ctx, ctorRef, argExprs);
             return this.SsaLocalAssignment(expr);
         }
 
-        //private Expr DerefIfPointer(Expr e) {
-        //    if (e.ExprType == Expr.NodeType.VariableAddress) {
-        //        var eVAddr = (ExprVariableAddress)e;
-        //        var l = this.locals[eVAddr.Index];
-        //        return l;
-        //    }
-        //    if (e.ExprType == Expr.NodeType.ArgAddress) {
-        //        var eAAddr = (ExprArgAddress)e;
-        //        var a = this.args[eAAddr.Index];
-        //        return a;
-        //    }
-        //    return e;
-        //}
-
         private Stmt InitObj(TypeReference type) {
-            //var defaultValue = new ExprDefaultValue(this.ctx, type);
-            //var v = (ExprVar)this.DerefIfPointer(this.stack.Pop());
-            //var stmt = new StmtAssignment(this.ctx, v, defaultValue);
             var expr = this.stack.Pop();
             var stmt = new StmtInitObj(this.ctx, expr, type);
             return stmt;
         }
 
         private Stmt LoadField(Instruction inst) {
-            //var obj = this.DerefIfPointer(this.stack.Pop());
             var obj = this.stack.Pop();
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAccess(this.ctx, obj, fRef);
@@ -550,16 +528,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
         }
 
         private Stmt LoadFieldAddress(Instruction inst) {
-            //var obj = this.DerefIfPointer(this.stack.Pop());
             var obj = this.stack.Pop();
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAddress(this.ctx, obj, fRef);
-            return this.SsaLocalAssignment(expr);
+            this.stack.Push(expr);
+            return null;
         }
 
         private Stmt StoreField(Instruction inst) {
             var value = this.stack.Pop();
-            //var obj = this.DerefIfPointer(this.stack.Pop());
             var obj = this.stack.Pop();
             var fRef = ((FieldReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprFieldAccess(this.ctx, obj, fRef);
@@ -598,7 +575,8 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var array = this.stack.Pop();
             var elementType = ((TypeReference)inst.Operand).FullResolve(this.ctx);
             var expr = new ExprElementAddress(this.ctx, array, index, elementType);
-            return this.SsaLocalAssignment(expr);
+            this.stack.Push(expr);
+            return null;
         }
 
         private Stmt StoreElem(Instruction inst) {
@@ -644,7 +622,6 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             var source = this.stack.Pop();
             var destination = this.stack.Pop();
             return new StmtStoreObj(ctx, destination, source);
-            //return new StmtAssignment(ctx, (ExprVar)destination, source);
         }
 
     }
