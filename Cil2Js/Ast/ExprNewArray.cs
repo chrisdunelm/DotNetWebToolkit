@@ -26,5 +26,10 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
         public override TypeReference Type {
             get { return this.type; }
         }
+
+        public override Special Specials {
+            get { return Special.PossibleSideEffects; }
+        }
+
     }
 }

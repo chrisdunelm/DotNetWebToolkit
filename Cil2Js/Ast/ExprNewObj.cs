@@ -34,5 +34,9 @@ namespace DotNetWebToolkit.Cil2Js.Ast {
             get { return false; }
         }
 
+        public override Special Specials {
+            get { return Special.PossibleSideEffects; }
+        }
+
     }
 }
