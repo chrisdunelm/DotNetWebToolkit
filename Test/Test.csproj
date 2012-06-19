@@ -107,6 +107,7 @@
     <Compile Include="ExecutionTests\TestMethodCalls.cs" />
     <Compile Include="ExecutionTests\TestNullables.cs" />
     <Compile Include="ExecutionTests\TestObjectBasics.cs" />
+    <Compile Include="ExecutionTests\TestRandom.cs" />
     <Compile Include="ExecutionTests\TestSimpleClasses.cs" />
     <Compile Include="ExecutionTests\TestSimpleInterfaces.cs" />
     <Compile Include="ExecutionTests\TestString.cs" />

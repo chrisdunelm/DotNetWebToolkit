@@ -64,7 +64,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             // Each interface type records which interface methods are called
             var interfaceCalls = new Dictionary<TypeReference, HashSet<MethodReference>>(TypeExtensions.TypeRefEqComparerInstance);
             // All instance constructors must be updated after all methods have been processed, to initialise all referenced
-            // instance fields in the type. This has to be done later, so the list of referenced fields in complete
+            // instance fields in the type, and to sort out 'return' statements.
+            // This has to be done later, so the list of referenced fields in complete
             var instanceConstructors = new List<Ctx>();
 
             while (todo.Any()) {
@@ -273,7 +274,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var instanceFieldsByType = fieldAccesses
                 .Where(x => !x.Key.Resolve().IsStatic)
                 .ToLookup(x => x.Key.DeclaringType.FullResolve(x.Key), TypeExtensions.TypeRefEqComparerInstance);
-            // Update all instance constructors to initialise instance fields, and add final 'return' statement
+            // Update all instance constructors to initialise instance fields, add final 'return' statement,
+            // and update any early returns to return 'this'
             foreach (var ctx in instanceConstructors) {
                 var fields = instanceFieldsByType[ctx.TRef].Select(x => x.Key);
                 var initStmts = fields.Select(x => {
@@ -282,11 +284,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         new ExprFieldAccess(ctx, ctx.This, f),
                         new ExprDefaultValue(ctx, f.FieldType));
                     return assign;
-                })
-                    .ToArray();
+                }).ToArray();
                 var returnStmt = new StmtReturn(ctx, ctx.This);
                 var ast = methodAsts[ctx.MRef];
                 ast = new StmtBlock(ctx, initStmts.Concat((Stmt)ast).Concat(returnStmt));
+                ast = VisitorJsReturnThis.V(ast, ctx.This);
                 methodAsts[ctx.MRef] = ast;
             }
 
