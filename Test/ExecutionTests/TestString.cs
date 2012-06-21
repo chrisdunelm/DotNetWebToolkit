@@ -268,6 +268,22 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestIsNullOrEmpty() {
+            this.Test((Func<string, bool>)TestIsNullOrEmptyFunc);
+        }
+        private static bool TestIsNullOrEmptyFunc([ParamFullRange]string s) {
+            return string.IsNullOrEmpty(s);
+        }
+
+        [Test]
+        public void TestIsNullOrWhiteSpace() {
+            this.Test((Func<string, bool>)TestIsNullOrWhiteSpaceFunc);
+        }
+        private static bool TestIsNullOrWhiteSpaceFunc([ParamFullRange]string s) {
+            return string.IsNullOrWhiteSpace(s);
+        }
+
     }
 
 }

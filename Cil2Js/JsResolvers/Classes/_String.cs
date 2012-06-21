@@ -354,5 +354,15 @@ return this.split(new RegExp(regex, ''), limit);
             return _this.CompareTo((string)other);
         }
 
+        [Js]
+        public static Expr IsNullOrEmpty(ICall call) {
+            var ctx = call.Ctx;
+            return new ExprJsExplicit(ctx, "(!a)", ctx.Boolean, ctx.MethodParameter(0, "a"));
+        }
+
+        public static bool IsNullOrWhiteSpace(string s) {
+            return s == null || s.All(char.IsWhiteSpace);
+        }
+
     }
 }
