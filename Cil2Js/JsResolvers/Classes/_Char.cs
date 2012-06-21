@@ -59,5 +59,16 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return (int)(_this - (char)other);
         }
 
+        [Js]
+        public static Stmt IsWhiteSpace(Ctx ctx) {
+            // See http://msdn.microsoft.com/en-us/library/t809ektx.aspx for list
+            var whiteSpace = " \u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u202f\u205f\u3000\u2028\u2029\u0009\u000a\u000b\u000c\u000d\u0085\u00a0";
+            var arg0 = ctx.MethodParameter(0);
+            var c = new ExprJsResolvedMethod(ctx, ctx.String, null, "String.fromCharCode", arg0);
+            var indexOf = new ExprJsResolvedMethod(ctx, ctx.Boolean, ctx.Literal(whiteSpace), "indexOf", c);
+            return new StmtReturn(ctx,
+                new ExprBinary(ctx, BinaryOp.GreaterThanOrEqual, ctx.Boolean, indexOf, ctx.Literal(0)));
+        }
+
     }
 }
