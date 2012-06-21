@@ -175,6 +175,10 @@ namespace Test.Utils {
                                                    4.99999, 9.9999,
                                                };
 
+        private static string[] StringValues = {
+                                                   null, "", " ", "\0", "abc", "ab\0cd", "\"", "\"\"", "'", "''", "\\", "\\\\"
+                                               };
+
         private static byte[] Bc(Random rnd, int size) {
             var b = new byte[size];
             rnd.NextBytes(b);
@@ -219,6 +223,14 @@ namespace Test.Utils {
 
         public override double GenDouble(Random rnd, int iteration) {
             return this.Gen(DoubleValues, iteration, () => (rnd.NextDouble() - 0.5) * double.MaxValue);
+        }
+
+        public override string GenString(Random rnd, int iteration) {
+            return this.Gen(StringValues, iteration, () => {
+                var len = rnd.Next(0, 100);
+                var s = new string(Enumerable.Range(0, len).Select(x => (char)rnd.Next(0, 5000)).ToArray());
+                return s;
+            });
         }
 
     }
