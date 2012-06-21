@@ -182,7 +182,7 @@ namespace Test.ExecutionTests {
                 var uint64 = (UInt64)arg;
                 return string.Format("[{0},{1}]", uint64 >> 32, uint64 & 0xffffffff);
             case TypeCode.String:
-                return "\"" + arg.ToString() + "\"";
+                return "\"" + string.Join("", arg.ToString().Select(x => x >= ' ' && x <= 126 && x != '"' && x != '\\' ? x.ToString() : string.Format("\\u{0:x4}", (int)x))) + "\"";
             case TypeCode.Char:
                 return ((int)(char)arg).ToString();
             default:
@@ -249,10 +249,12 @@ namespace Test.ExecutionTests {
                     if (!mi.IsStatic) {
                         arg = arg.Prepend(null).ToArray();
                     }
+                    var jsArgs = string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x)));
+                    //Console.WriteLine("JS args: '{0}'", jsArgs);
                     var jsCall = @"
 var r;
 try {
-    r = main(" + string.Join(", ", arg.Select(x => this.ConvertArgToJavascript(x))) + @");
+    r = main(" +  jsArgs + @");
 } catch (e) {
     return {exception:[e._.$$TypeNamespace, e._.$$TypeName, e.$$_message]};
 }
