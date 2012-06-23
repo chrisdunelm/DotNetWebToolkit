@@ -364,5 +364,36 @@ return this.split(new RegExp(regex, ''), limit);
             return s == null || s.All(char.IsWhiteSpace);
         }
 
+        [Js("Replace", typeof(string), typeof(char), typeof(char))]
+        public static Expr ReplaceChar(ICall call) {
+            var ctx = call.Ctx;
+            var args = call.Args.Select(x => new ExprJsResolvedMethod(ctx, ctx.Char, null, "String.fromCharCode", x)).ToArray();
+            return new ExprJsResolvedMethod(ctx, ctx.String, call.Obj, "replace", args);
+        }
+
+        public static string Replace([JsFakeThis]string _this, string oldValue, string newValue) {
+            if (oldValue == null) {
+                throw new ArgumentNullException();
+            }
+            if (oldValue == "") {
+                throw new ArgumentException();
+            }
+            return InternalReplaceString(_this, oldValue, newValue);
+        }
+
+        [JsRedirect]
+        private static string InternalReplaceString(string s, string oldValue, string newValue) {
+            throw new JsImplException();
+        }
+        [Js]
+        public static Expr InternalReplaceString(ICall call) {
+            var ctx = call.Ctx;
+            var args = new[] {
+                call.Arg(1),
+                new ExprJsResolvedMethod(ctx, ctx.String, call.Arg(2), "replace", ctx.Literal("$"), ctx.Literal("$$$$"))
+            };
+            return new ExprJsResolvedMethod(ctx, ctx.String, call.Arg(0), "replace", args);
+        }
+
     }
 }

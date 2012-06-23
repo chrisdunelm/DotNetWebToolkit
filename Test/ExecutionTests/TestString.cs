@@ -284,6 +284,22 @@ namespace Test.ExecutionTests {
             return string.IsNullOrWhiteSpace(s);
         }
 
+        [Test]
+        public void TestReplaceChar() {
+            Func<string, char, string> f = (s, c) => {
+                return s.Replace(c, 'X');
+            };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestReplaceString() {
+            Func<string, string, string> f = (a, b) => {
+                return a.Replace(b, "$");
+            };
+            this.Test(f);
+        }
+
     }
 
 }
