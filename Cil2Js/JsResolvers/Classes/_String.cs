@@ -395,5 +395,46 @@ return this.split(new RegExp(regex, ''), limit);
             return new ExprJsResolvedMethod(ctx, ctx.String, call.Arg(0), "replace", args);
         }
 
+        public static string Trim([JsFakeThis]string _this) {
+            return Trim(_this, null, true, true);
+        }
+
+        public static string Trim([JsFakeThis]string _this, params char[] trimChars) {
+            return Trim(_this, trimChars, true, true);
+        }
+
+        public static string TrimStart([JsFakeThis]string _this, params char[] trimChars) {
+            return Trim(_this, trimChars, true, false);
+        }
+
+        public static string TrimEnd([JsFakeThis]string _this, params char[] trimChars) {
+            return Trim(_this, trimChars, false, true);
+        }
+
+        private static string Trim(string s, char[] trimChars, bool trimStart, bool trimEnd) {
+            Func<char, bool> trimIt = trimChars == null || trimChars.Length == 0 ?
+                (Func<char, bool>)char.IsWhiteSpace : (c => Array.IndexOf(trimChars, c) >= 0);
+            int i;
+            if (trimStart) {
+                i = 0;
+                while (i < s.Length && trimIt(s[i])) {
+                    i++;
+                }
+                if (i > 0) {
+                    s = s.Substring(i);
+                }
+            }
+            if (trimEnd) {
+                i = s.Length;
+                while (i > 0 && trimIt(s[i - 1])) {
+                    i--;
+                }
+                if (i < s.Length) {
+                    s = s.Substring(0, i);
+                }
+            }
+            return s;
+        }
+
     }
 }

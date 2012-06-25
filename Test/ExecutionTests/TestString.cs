@@ -190,7 +190,7 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestJoinStringArray() {
-            Func<string, string, string, string> f = (a, b, c) => string.Join(", ", new string[]{a, b, c});
+            Func<string, string, string, string> f = (a, b, c) => string.Join(", ", new string[] { a, b, c });
             this.Test(f);
         }
 
@@ -297,6 +297,66 @@ namespace Test.ExecutionTests {
             Func<string, string, string> f = (a, b) => {
                 return a.Replace(b, "$");
             };
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrim() {
+            Func<string, string> f = a => ("  " + a + "\n\r\t").Trim();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimChars() {
+            Func<string, string> f = a => ("A" + a + "BCDE").Trim('A', 'B', 'C', 'D', 'E');
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimCharsNull() {
+            Func<string, string> f = a => (" " + a + "\n").Trim(null);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimCharsEmpty() {
+            Func<string, string> f = a => (" " + a + "\n").Trim(new char[0]);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimStartChars() {
+            Func<string, string> f = a => ("ABC" + a).TrimStart('A', 'B', 'C', 'D');
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimStartCharsNull() {
+            Func<string, string> f = a => (" " + a).TrimStart(null);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimStartCharsEmpty() {
+            Func<string, string> f = a => (" " + a).TrimStart(new char[0]);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimEndChars() {
+            Func<string, string> f = a => (a + "ABC").TrimEnd('A', 'B', 'C', 'D');
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimEndCharsNull() {
+            Func<string, string> f = a => (a + "      ").TrimEnd(null);
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestTrimEndCharsEmpty() {
+            Func<string, string> f = a => (a + " ").TrimEnd(new char[0]);
             this.Test(f);
         }
 
