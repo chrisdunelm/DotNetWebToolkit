@@ -24,6 +24,12 @@ namespace Test.BrowserTests {
 
         protected string HtmlBody { get; set; }
 
+        private Dictionary<string, Func<string>> urls = new Dictionary<string, Func<string>>();
+
+        protected void SetUrl(string url, Func<string> response) {
+            this.urls[url] = response;
+        }
+
         private string MakeHtml(string js) {
             string html = @"
 <!doctype html>
@@ -67,13 +73,25 @@ window.onload = function() {
                 IAsyncResult getContextAsync = null;
                 AsyncCallback cb = null;
                 cb = state => {
+                    if (!http.IsListening) {
+                        return;
+                    }
                     var context = http.EndGetContext(getContextAsync);
                     var response = context.Response;
                     var output = response.OutputStream;
-                    var bHtml = Encoding.UTF8.GetBytes(completeHtml);
+                    var path = context.Request.Url.AbsolutePath;
+                    string responseString;
+                    if (path == "/") {
+                        responseString = completeHtml;
+                    } else {
+                        Func<string> fn;
+                        urls.TryGetValue(path, out fn);
+                        responseString = fn != null ? fn() : "";
+                    }
+                    var bHtml = Encoding.UTF8.GetBytes(responseString);
                     output.Write(bHtml, 0, bHtml.Length);
                     output.Close();
-                    //getContextAsync = http.BeginGetContext(cb, null);
+                    getContextAsync = http.BeginGetContext(cb, null);
                 };
                 getContextAsync = http.BeginGetContext(cb, null);
                 //var usingNamespace = NamespaceSetup.Chrome != null;
