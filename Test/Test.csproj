@@ -62,6 +62,7 @@
     <Compile Include="BrowserTests\Canvas\TestCanvasElement.cs" />
     <Compile Include="BrowserTests\TestEvents.cs" />
     <Compile Include="BrowserTests\TestImage.cs" />
+    <Compile Include="BrowserTests\TestXmlHttpRequest.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestDataView.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestFloat32Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestFloat64Array.cs" />

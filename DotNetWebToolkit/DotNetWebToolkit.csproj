@@ -79,6 +79,7 @@
     <Compile Include="Web\CanvasElement.cs" />
     <Compile Include="Web\WebSocket.cs" />
     <Compile Include="Web\Window.cs" />
+    <Compile Include="Web\XMLHttpRequest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
