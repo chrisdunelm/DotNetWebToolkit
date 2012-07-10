@@ -161,15 +161,15 @@ namespace DotNetWebToolkit.Cil2Js.Analysis {
             case Code.Xor:
                 return this.SsaLocalAssignment(this.Binary(BinaryOp.BitwiseXor));
             case Code.Ceq:
-                return this.SsaLocalAssignment(this.Binary(BinaryOp.Equal, this.ctx.TypeSystem.Boolean));
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.Equal, this.ctx.Boolean));
             case Code.Clt:
-                return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan, this.ctx.TypeSystem.Boolean));
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan, this.ctx.Boolean));
             case Code.Clt_Un:
-                return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan_Un, this.ctx.TypeSystem.Boolean));
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.LessThan_Un, this.ctx.Boolean));
             case Code.Cgt:
-                return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan, this.ctx.TypeSystem.Boolean));
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan, this.ctx.Boolean));
             case Code.Cgt_Un:
-                return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan_Un, this.ctx.TypeSystem.Boolean));
+                return this.SsaLocalAssignment(this.Binary(BinaryOp.GreaterThan_Un, this.ctx.Boolean));
             case Code.Br_S:
             case Code.Br:
             case Code.Leave_S:

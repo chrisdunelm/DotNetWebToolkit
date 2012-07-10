@@ -107,7 +107,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveConv.V(s), (Stmt)ast, "VisitorJsResolveConv", verbose);
                     ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveSpecialTypes.V(s), (Stmt)ast, "VisitorJsResolveSpecialTypes", verbose);
                     ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolveDelegates.V(s), (Stmt)ast, "VisitorJsResolveDelegates", verbose);
-                    // 64bit must be after all
+                    // 64bit must be after everything else
                     ast = Transcoder.DoStep(s => (Stmt)VisitorJsResolve64Bit.V(s), (Stmt)ast, "VisitorJsResolve64Bit", verbose);
                     if (ast == astOrg) {
                         break;
