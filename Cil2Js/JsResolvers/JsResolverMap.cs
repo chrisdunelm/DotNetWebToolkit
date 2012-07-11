@@ -9,6 +9,7 @@ using System.Threading;
 namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
     using Cls = DotNetWebToolkit.Cil2Js.JsResolvers.Classes;
+using DotNetWebToolkit.Web;
 
     public static partial class JsResolver {
 
@@ -42,6 +43,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
             { typeof(Enumerable), typeof(Cls._Enumerable) },
             { typeof(Console), typeof(Cls._Console) },
             { typeof(CultureInfo), typeof(Cls._CultureInfo) },
+            { typeof(Json.Helper), typeof(Cls._Json) },
         };
 
     }
