@@ -673,9 +673,9 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
 
         public static MethodBase LoadMethod(this MethodReference mRef) {
             var type = mRef.DeclaringType.LoadType();
-            type.Module.ResolveMethod(mRef.MetadataToken.ToInt32());
+            var mRefMDToken = mRef.Resolve().MetadataToken.ToInt32();
+            type.Module.ResolveMethod(mRefMDToken);
             var methods = type.GetMethods();
-            var mRefMDToken = mRef.MetadataToken.ToInt32();
             var ret = methods.First(x => x.MetadataToken == mRefMDToken);
             return ret;
         }
