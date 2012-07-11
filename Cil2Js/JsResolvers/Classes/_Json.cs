@@ -32,7 +32,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 var paramType = s.Parameters[0].ParameterType;
                 Expr value = new ExprJsExplicit(ctx, "arg." + fieldName, paramType, arg);
                 if (paramType.IsChar()) {
-                    value = new ExprJsExplicit(ctx, "(value ? value.charCodeAt(0) : 0)", ctx.Char, value.Named("value"));
+                    // Handle '\0' chars being encoded as null in JSON
+                    value = new ExprJsExplicit(ctx, "value ? value.charCodeAt(0) : 0", ctx.Char, value.Named("value"));
                 } else if (!paramType.IsPrimitive && !paramType.IsString() && !(paramType.IsNullable() && paramType.GetNullableInnerType().IsPrimitive)) {
                     var mNested = ctx.MRef.GetElementMethod().MakeGeneric(paramType);
                     var nestedCall = new ExprCall(ctx, mNested, null, value);
