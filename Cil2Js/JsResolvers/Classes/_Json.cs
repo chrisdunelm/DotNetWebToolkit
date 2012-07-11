@@ -36,7 +36,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 } else if (!paramType.IsPrimitive && !paramType.IsString() && !(paramType.IsNullable() && paramType.GetNullableInnerType().IsPrimitive)) {
                     var mNested = ctx.MRef.GetElementMethod().MakeGeneric(paramType);
                     var nestedCall = new ExprCall(ctx, mNested, null, value);
-                    //value = nestedCall;
                     value = new ExprJsExplicit(ctx, "value ? nestedCall : null", paramType, value.Named("value"), nestedCall.Named("nestedCall"));
                 }
                 var call = new ExprCall(ctx, s, obj, value);
