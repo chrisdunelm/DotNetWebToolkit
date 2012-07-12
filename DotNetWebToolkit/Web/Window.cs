@@ -54,6 +54,9 @@ namespace DotNetWebToolkit.Web {
         private static extern Action<Action> requestAnimationFrame { get; }
         public static Action<Action> RequestAnimationFrame { get; private set; }
 
+        [JsDetail(Name = "JSON")]
+        public static extern Json Json { get; }
+
     }
 
 }

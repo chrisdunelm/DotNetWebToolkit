@@ -43,7 +43,7 @@ using DotNetWebToolkit.Web;
             { typeof(Enumerable), typeof(Cls._Enumerable) },
             { typeof(Console), typeof(Cls._Console) },
             { typeof(CultureInfo), typeof(Cls._CultureInfo) },
-            { typeof(Json.Helper), typeof(Cls._Json) },
+            { typeof(JsonHelper), typeof(Cls._JsonHelper) },
         };
 
     }

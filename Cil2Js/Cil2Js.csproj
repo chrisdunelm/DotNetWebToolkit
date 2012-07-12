@@ -167,7 +167,7 @@
     <Compile Include="Ast\VisitorSameStmt.cs" />
     <Compile Include="JsResolvers\Classes\_CultureInfo.cs" />
     <Compile Include="JsResolvers\Classes\_Int32UInt32.cs" />
-    <Compile Include="JsResolvers\Classes\_Json.cs" />
+    <Compile Include="JsResolvers\Classes\_JsonHelper.cs" />
     <Compile Include="JsResolvers\Classes\_Nullable.cs" />
     <Compile Include="JsResolvers\Classes\_Single.cs" />
     <Compile Include="JsResolvers\GenericParamPlaceholders.cs" />

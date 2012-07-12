@@ -71,8 +71,12 @@ namespace DotNetWebToolkit.Web {
 
     public static class XMLHttpRequestExtensions {
 
-        public static T Recv<T>(this XMLHttpRequest xmlHttpRequest) {
-            return Json.Decode<T>(xmlHttpRequest.ResponseText);
+        public static void SendJson<T>(this XMLHttpRequest xmlHttpRequest, T obj) {
+            xmlHttpRequest.Send(Window.Json.Stringify(JsonHelper.EncodeObj<T>(obj)));
+        }
+
+        public static T RecvJson<T>(this XMLHttpRequest xmlHttpRequest) {
+            return JsonHelper.DecodeObj<T>(Window.Json.Parse(xmlHttpRequest.ResponseText));
         }
 
         public static void SetTimeout(this XMLHttpRequest xmlHttpRequest, TimeSpan timeout) {
@@ -85,27 +89,15 @@ namespace DotNetWebToolkit.Web {
 
     }
 
-    public static class Json {
+    public static class JsonHelper {
 
-        public static T Decode<T>(string json) {
-            return Helper.DecodeObj<T>(Helper.Parse(json));
+        public static T DecodeObj<T>(object json) {
+            // Implemented by _JsonHelper override class
+            throw new Exception();
         }
 
-        public class Helper {
-
-            public static object Parse(string json) {
-                // Implemented by _Json override class
-                throw new Exception();
-            }
-
-            public static T DecodeObj<T>(object json) {
-                // Implemented by _Json override class
-                throw new Exception();
-            }
-        }
-
-        public static string Encode<T>(T obj) {
-            // Implemented by _Json override class
+        public static object EncodeObj<T>(T obj) {
+            // Implemented by _JsonHelper override class
             throw new Exception();
         }
 

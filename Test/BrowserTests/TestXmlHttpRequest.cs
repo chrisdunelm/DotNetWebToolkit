@@ -28,11 +28,11 @@ namespace Test.BrowserTests {
             this.Start(f);
         }
 
-        class SendRecvCustomObject {
+        class RecvCustomObject {
             public class Inner {
                 public string S { get; set; }
             }
-            public SendRecvCustomObject(int i, string s, char c, bool b) {
+            public RecvCustomObject(int i, string s, char c, bool b) {
                 this.I = i;
                 this.S = s;
                 this.C = c;
@@ -55,7 +55,7 @@ namespace Test.BrowserTests {
 
         [Test]
         public void TestRecvCustomObject() {
-            var toSend = new SendRecvCustomObject(1, "abc", 'x', true);
+            var toSend = new RecvCustomObject(1, "abc", 'x', true);
             var jsoner = new JavaScriptSerializer();
             var toSendJson = jsoner.Serialize(toSend);
             this.SetUrl("/xhr", () => toSendJson);
@@ -64,11 +64,21 @@ namespace Test.BrowserTests {
                 xhr.Open("GET", "xhr");
                 xhr.OnReadyStateChange = () => {
                     if (xhr.ReadyState == XMLHttpRequestReadyState.Done) {
-                        var r = xhr.Recv<SendRecvCustomObject>();
+                        var r = xhr.RecvJson<RecvCustomObject>();
                         Done(r.I == 1 && r.S == "abc" && r.C == 'x' && r.Cnull == '\0' && r.B == true && r.Inull == null && r.In.S == "inner" && r.InNull == null);
                     }
                 };
                 xhr.Send();
+            };
+            this.Start(f);
+        }
+
+        [Test]
+        public void TestSendCustomObject() {
+            Action f = () => {
+                var xhr = new XMLHttpRequest();
+                xhr.Open("GET", "xhr");
+                //xhr.Send
             };
             this.Start(f);
         }

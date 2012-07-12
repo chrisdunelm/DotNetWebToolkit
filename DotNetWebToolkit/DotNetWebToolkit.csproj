@@ -69,6 +69,7 @@
     <Compile Include="Web\BodyElement.cs" />
     <Compile Include="Web\Event.cs" />
     <Compile Include="Web\ImageElement.cs" />
+    <Compile Include="Web\Json.cs" />
     <Compile Include="Web\MediaElement.cs" />
     <Compile Include="Web\VideoElement.cs" />
     <Compile Include="Web\MessageEvent.cs" />
