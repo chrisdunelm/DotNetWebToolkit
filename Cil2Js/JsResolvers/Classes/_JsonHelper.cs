@@ -12,12 +12,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     class _JsonHelper {
 
-        //[Js]
-        //public static Expr Parse(ICall call) {
-        //    var ctx = call.Ctx;
-        //    return new ExprJsExplicit(ctx, "window.JSON.parse(arg)", ctx.Object, call.Arg(0, "arg"));
-        //}
-
         [Js]
         public static Stmt DecodeObj(Ctx ctx) {
             var tRef = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
