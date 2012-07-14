@@ -87,7 +87,6 @@ namespace Test.BrowserTests {
                 };
                 var obj = new RecvCustomObject(2, "two", '2', false);
                 xhr.SendJson(obj);
-                //xhr.Send();
             };
             this.Start(f);
         }
