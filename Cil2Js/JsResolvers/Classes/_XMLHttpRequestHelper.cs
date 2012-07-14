@@ -10,7 +10,7 @@ using DotNetWebToolkit.Cil2Js.Utils;
 
 namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
-    class _XMLHttpRequestsHelper {
+    class _XMLHttpRequestHelper {
 
         [Js]
         public static Stmt Encode(Ctx ctx) {
