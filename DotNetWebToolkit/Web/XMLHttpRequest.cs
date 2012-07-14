@@ -72,11 +72,13 @@ namespace DotNetWebToolkit.Web {
     public static class XMLHttpRequestExtensions {
 
         public static void SendJson<T>(this XMLHttpRequest xmlHttpRequest, T obj) {
-            xmlHttpRequest.Send(Window.Json.Stringify(JsonHelper.EncodeObj<T>(obj)));
+            var data = "data=" + Window.Json.Stringify(XMLHttpRequestHelper.Encode<T>(obj));
+            xmlHttpRequest.SetRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlHttpRequest.Send(data);
         }
 
         public static T RecvJson<T>(this XMLHttpRequest xmlHttpRequest) {
-            return JsonHelper.DecodeObj<T>(Window.Json.Parse(xmlHttpRequest.ResponseText));
+            return XMLHttpRequestHelper.Decode<T>(Window.Json.Parse(xmlHttpRequest.ResponseText));
         }
 
         public static void SetTimeout(this XMLHttpRequest xmlHttpRequest, TimeSpan timeout) {
@@ -89,14 +91,14 @@ namespace DotNetWebToolkit.Web {
 
     }
 
-    public static class JsonHelper {
+    public static class XMLHttpRequestHelper {
 
-        public static T DecodeObj<T>(object json) {
+        public static T Decode<T>(object json) {
             // Implemented by _JsonHelper override class
             throw new Exception();
         }
 
-        public static object EncodeObj<T>(T obj) {
+        public static object Encode<T>(T obj) {
             // Implemented by _JsonHelper override class
             throw new Exception();
         }

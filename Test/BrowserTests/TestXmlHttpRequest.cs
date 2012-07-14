@@ -75,10 +75,19 @@ namespace Test.BrowserTests {
 
         [Test]
         public void TestSendCustomObject() {
+            this.SetUrl("/xhr", () => "true");
             Action f = () => {
                 var xhr = new XMLHttpRequest();
-                xhr.Open("GET", "xhr");
-                //xhr.Send
+                xhr.Open("POST", "xhr");
+                xhr.OnReadyStateChange = () => {
+                    if (xhr.ReadyState == XMLHttpRequestReadyState.Done) {
+                        var r = xhr.RecvJson<bool>();
+                        Done(r);
+                    }
+                };
+                var obj = new RecvCustomObject(2, "two", '2', false);
+                xhr.SendJson(obj);
+                //xhr.Send();
             };
             this.Start(f);
         }
