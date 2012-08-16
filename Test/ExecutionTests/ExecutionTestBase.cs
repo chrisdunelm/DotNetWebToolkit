@@ -15,6 +15,7 @@ using System.Threading;
 using NUnit.Framework.Constraints;
 using System.Diagnostics;
 using Test.Categories;
+using OpenQA.Selenium;
 
 namespace Test.ExecutionTests {
 
@@ -202,7 +203,7 @@ namespace Test.ExecutionTests {
             //var testMethod = stackTrace.GetFrame(1).GetMethod().Name;
             //Console.WriteLine("Test++ {0}", testMethod);
             var method = CecilHelper.GetMethod(d);
-            var js = Js.CreateFrom(method, this.Verbose, true);
+            var js = Js.CreateFrom(method, this.Verbose, true).Js;
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
@@ -254,7 +255,7 @@ namespace Test.ExecutionTests {
                     var jsCall = @"
 var r;
 try {
-    r = main(" +  jsArgs + @");
+    r = main(" + jsArgs + @");
 } catch (e) {
     return {exception:[e._.$$TypeNamespace, e._.$$TypeName, e.$$_message]};
 }
@@ -271,8 +272,18 @@ if (typeof r === 'number') {
 }
 return r;
 ";
-                    var jsResult = chrome.ExecuteScript(js + jsCall);
-                    if (jsResult is Dictionary<string, object>) {
+                    object jsResult = null;
+                    //for (int j = 0; j < 5; j++) {
+                    //    try {
+                            jsResult = chrome.ExecuteScript(js + jsCall);
+                    //        break;
+                    //    } catch (WebDriverException) {
+                    //        if (i == 4) {
+                    //            throw;
+                    //        }
+                    //    }
+                    //}
+                    if (jsResult != null && jsResult is Dictionary<string, object>) {
                         // Exception
                         Assert.That(runResults[i].Item1, Is.Null, "JS threw exception, but exception not expected");
                         var jsExInfo = ((ICollection<object>)((Dictionary<string, object>)jsResult)["exception"]).Cast<string>().ToArray();

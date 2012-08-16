@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using DotNetWebToolkit.Cil2Js.Ast;
 using DotNetWebToolkit.Cil2Js.JsResolvers;
 using DotNetWebToolkit.Cil2Js.Output;
+using DotNetWebToolkit.Server;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -24,10 +27,34 @@ namespace Test.BrowserTests {
 
         protected string HtmlBody { get; set; }
 
-        private Dictionary<string, Func<string>> urls = new Dictionary<string, Func<string>>();
+        private Dictionary<string, Func<byte[], string>> urls = new Dictionary<string, Func<byte[], string>>();
+        private JsonTypeMap jsonTypeMap = null;
 
-        protected void SetUrl(string url, Func<string> response) {
+        protected Json GetJson() {
+            return new Json(this.jsonTypeMap);
+        }
+
+        protected void SetUrl(string url, Func<byte[], string> response) {
             this.urls[url] = response;
+        }
+
+        protected void SetUrlJson(string url, Func<byte[], object> jsonResponse) {
+            this.urls[url] = data => {
+                if (this.jsonTypeMap == null) {
+                    throw new InvalidOperationException("Cannot use JSON, jsonTypeMap not set");
+                }
+                var toJson = jsonResponse(data);
+                var jsonCoder = this.GetJson();
+                var ret = jsonCoder.Encode(toJson);
+                return ret;
+            };
+        }
+
+        protected void SetUrlJson(string url, Action<byte[]> jsonResponse) {
+            this.SetUrlJson(url, data => {
+                jsonResponse(data);
+                return null;
+            });
         }
 
         private string MakeHtml(string js) {
@@ -50,19 +77,20 @@ window.onload = function() {
             return html;
         }
 
-        protected void Start(Action action, Action<IWebDriver> extraTest, TimeSpan? timeout = null) {
+        protected void Start(Action action, Action<IWebDriver> preExtraTest, TimeSpan? timeout = null) {
             this.Start(action, wd => {
-                extraTest(wd);
+                preExtraTest(wd);
                 return true;
-            }, timeout);
+            }, null, timeout);
         }
 
-        protected void Start(Action action, Func<IWebDriver, bool> extraTest = null, TimeSpan? timeout = null) {
+        protected void Start(Action action, Func<IWebDriver, bool> preExtraTest = null, Func<IWebDriver, bool> postExtraTest = null, TimeSpan? timeout = null) {
             if (timeout == null) {
-                timeout = TimeSpan.FromSeconds(1);
+                timeout = TimeSpan.FromSeconds(1000);
             }
             var method = CecilHelper.GetMethod(action.Method);
-            var js = Js.CreateFrom(method, this.Verbose, true);
+            var jsResult = Js.CreateFrom(method, this.Verbose, true);
+            var js = jsResult.Js;
             if (this.Verbose) {
                 Console.WriteLine(js);
             }
@@ -70,46 +98,59 @@ window.onload = function() {
             using (var http = new HttpListener()) {
                 http.Prefixes.Add("http://localhost:7890/");
                 http.Start();
-                IAsyncResult getContextAsync = null;
                 AsyncCallback cb = null;
-                cb = state => {
+                cb = asyncState => {
                     if (!http.IsListening) {
                         return;
                     }
-                    var context = http.EndGetContext(getContextAsync);
-                    var response = context.Response;
-                    var output = response.OutputStream;
-                    var path = context.Request.Url.AbsolutePath;
-                    string responseString;
-                    if (path == "/") {
-                        responseString = completeHtml;
-                    } else {
-                        Func<string> fn;
-                        urls.TryGetValue(path, out fn);
-                        responseString = fn != null ? fn() : "";
+                    HttpListenerContext context;
+                    try {
+                        context = http.EndGetContext(asyncState);
+                    } catch (HttpListenerException) {
+                        return;
                     }
-                    var bHtml = Encoding.UTF8.GetBytes(responseString);
-                    output.Write(bHtml, 0, bHtml.Length);
-                    output.Close();
-                    getContextAsync = http.BeginGetContext(cb, null);
+                    using (var response = context.Response) {
+                        var output = response.OutputStream;
+                        var path = context.Request.Url.AbsolutePath;
+                        string responseString;
+                        if (path == "/") {
+                            responseString = completeHtml;
+                        } else {
+                            var request = context.Request;
+                            using (var ms = new MemoryStream()) {
+                                request.InputStream.CopyTo(ms);
+                                var bytes = ms.ToArray();
+                                Func<byte[], string> fn;
+                                urls.TryGetValue(path, out fn);
+                                responseString = fn != null ? fn(bytes) : "";
+                            }
+                        }
+                        var bHtml = Encoding.UTF8.GetBytes(responseString);
+                        output.Write(bHtml, 0, bHtml.Length);
+                    }
+                    http.BeginGetContext(cb, null);
                 };
-                getContextAsync = http.BeginGetContext(cb, null);
+                http.BeginGetContext(cb, null);
                 //var usingNamespace = NamespaceSetup.Chrome != null;
                 //var chrome = usingNamespace ? NamespaceSetup.Chrome : new ChromeDriver();
                 using (var chrome = NamespaceSetup.ChromeService != null ?
                     new RemoteWebDriver(NamespaceSetup.ChromeService.ServiceUrl, DesiredCapabilities.Chrome()) :
                     new ChromeDriver()) {
                     try {
+                        this.jsonTypeMap = jsResult.TypeMap;
                         chrome.Manage().Timeouts().ImplicitlyWait(timeout.Value);
                         chrome.Url = "http://localhost:7890/";
                         bool isPass = true;
-                        if (extraTest != null) {
-                            isPass = extraTest(chrome);
+                        if (preExtraTest != null) {
+                            isPass = preExtraTest(chrome);
                         }
                         if (isPass) {
                             try {
                                 var done = chrome.FindElementById("__done__");
                                 isPass = done.Text == "pass";
+                                if (isPass && postExtraTest != null) {
+                                    isPass = postExtraTest(chrome);
+                                }
                             } catch (NoSuchElementException) {
                                 isPass = false;
                             } catch {
@@ -122,9 +163,10 @@ window.onload = function() {
                         chrome.Quit();
                         chrome.Dispose();
                         //}
+                        this.jsonTypeMap = null;
                     }
                 }
-                http.Stop();
+                http.Abort();
             }
         }
 
