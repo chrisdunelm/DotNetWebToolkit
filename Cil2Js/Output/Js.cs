@@ -10,6 +10,7 @@ using DotNetWebToolkit.Cil2Js.Utils;
 using System.Reflection;
 using System.Diagnostics;
 using DotNetWebToolkit.Attributes;
+using DotNetWebToolkit.Server;
 
 namespace DotNetWebToolkit.Cil2Js.Output {
     public class Js {
@@ -33,11 +34,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
         }
 
-        public static string CreateFrom(MethodReference method, bool verbose = false, bool testing = false) {
+        public static JsResult CreateFrom(MethodReference method, bool verbose = false, bool testing = false) {
             return CreateFrom(new[] { method }, verbose, testing);
         }
 
-        public static string CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false, bool testing = false) {
+        public static JsResult CreateFrom(IEnumerable<MethodReference> rootMethods, bool verbose = false, bool testing = false) {
             var todo = new Queue<MethodReference>();
             foreach (var method in rootMethods) {
                 todo.Enqueue(method);
@@ -486,7 +487,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 .ToArray();
             var domTypes = new Dictionary<string, TypeReference>();
             foreach (var type in typesSeenOrdered) {
-                var unmappedType = type; // JsResolver.ReverseTypeMap(type);
+                var unmappedType = type;
                 var tDef = unmappedType.Resolve();
                 // Check for DOM types
                 var jsClassAttr = tDef.GetCustomAttribute<JsClassAttribute>();
@@ -503,9 +504,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 jsNewLine();
                 js.AppendFormat("var {0}={{", typeNames[type]);
                 // Type information
-                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.Name], unmappedType.Name());
+                js.AppendFormat("{0}:\"{1}\"", typeDataNames[TypeData.JsName], typeNames[type]);
+                js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Name], unmappedType.Name());
                 js.AppendFormat(", {0}:\"{1}\"", typeDataNames[TypeData.Namespace], unmappedType.Namespace);
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsValueType], unmappedType.IsValueType ? "true" : "false");
+                js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsPrimitive], unmappedType.IsPrimitive ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsArray], unmappedType.IsArray ? "true" : "false");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.ElementType], unmappedType.IsArray ? typeNames.ValueOrDefault(((ArrayType)unmappedType).ElementType, "null") : "null");
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
@@ -594,6 +597,18 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 jsNewLine();
                 js.Append("};");
             }
+            if (typesSeenOrdered.Any()) {
+                jsNewLine();
+                js.Append("// json type mapping");
+                jsNewLine();
+                // TODO: Auto-name this
+                js.Append("var $$ = {");
+                foreach (var type in typesSeenOrdered) {
+                    js.AppendFormat("'{0}':{0},", typeNames[type]);
+                }
+                js.Length--;
+                js.Append("};");
+            }
 
             jsNewLine();
             jsNewLine();
@@ -648,7 +663,20 @@ namespace DotNetWebToolkit.Cil2Js.Output {
 
             var jsStr = js.ToString();
             //Console.WriteLine(jsStr);
-            return jsStr;
+            var qFieldMap =
+                from fieldName in fieldNames
+                let declType = fieldName.Key.DeclaringType.LoadType()
+                where declType != null
+                group fieldName by declType;
+            var fieldMap = qFieldMap.ToDictionary(x => x.Key, x => x.ToDictionary(y => y.Key.Name, y => y.Value));
+            var qTypeMap =
+                from typeName in typeNames
+                let type = typeName.Key.LoadType()
+                where type != null
+                select new { type, typeName.Value };
+            var typeMap = qTypeMap.ToDictionary(x => x.type, x => x.Value);
+            var jsTypeMap = new JsonTypeMap(typeMap, fieldMap);
+            return new JsResult(jsStr, jsTypeMap);
         }
 
     }

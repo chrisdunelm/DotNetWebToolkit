@@ -230,6 +230,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Output\JsMethod.cs" />
+    <Compile Include="Output\JsResult.cs" />
     <Compile Include="Output\NamedExpr.cs" />
     <Compile Include="Output\NameGenerator.cs" />
     <Compile Include="Output\NamespaceTree.cs" />
