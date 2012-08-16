@@ -108,6 +108,8 @@ window.onload = function() {
                         context = http.EndGetContext(asyncState);
                     } catch (HttpListenerException) {
                         return;
+                    } catch (ObjectDisposedException) {
+                        return;
                     }
                     using (var response = context.Response) {
                         var output = response.OutputStream;
