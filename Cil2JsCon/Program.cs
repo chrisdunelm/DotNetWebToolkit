@@ -43,7 +43,8 @@ namespace Cil2JsCon {
                 return 1;
             }
 
-            var js = Transcoder.ToJs(inFilename, verbose);
+            var jsResult = Transcoder.ToJs(inFilename, verbose);
+            var js = jsResult.Js;
             try {
                 File.WriteAllText(outFilename, js, Encoding.UTF8);
             } catch (Exception e) {
