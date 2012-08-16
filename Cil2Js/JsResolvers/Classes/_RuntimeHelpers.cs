@@ -66,6 +66,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 inc = 8;
                 getValue = i => BitConverter.ToDouble(initData, i);
                 break;
+            case MetadataType.Char:
+                inc = 2;
+                getValue = i => (char)BitConverter.ToUInt16(initData, i);
+                break;
             default:
                 throw new NotImplementedException("Cannot handle: " + arrayElType.MetadataType);
             }
