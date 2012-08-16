@@ -152,23 +152,22 @@ namespace DotNetWebToolkit.Cil2Js {
             return method;
         }
 
-        public static string ToJs(MethodReference method, bool verbose = false) {
+        public static JsResult ToJs(MethodReference method, bool verbose = false) {
             return Js.CreateFrom(method, verbose);
         }
 
-        public static string ToJs(MethodInfo methodInfo, bool verbose = false) {
+        public static JsResult ToJs(MethodInfo methodInfo, bool verbose = false) {
             return Js.CreateFrom(GetMethod(methodInfo), verbose);
         }
 
-        public static string ToJs(string filename, bool verbose = false) {
-            //CecilExtensions.SourceDirectory = Path.GetDirectoryName(filename);
+        public static JsResult ToJs(string filename, bool verbose = false) {
             AssemblyResolvers.AddDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             AssemblyResolvers.AddDirectory(Path.GetDirectoryName(filename));
             var module = ModuleDefinition.ReadModule(filename, AssemblyResolvers.ReaderParameters);
             return ToJs(module, verbose);
         }
 
-        public static string ToJs(ModuleDefinition module, bool verbose = false) {
+        public static JsResult ToJs(ModuleDefinition module, bool verbose = false) {
             Func<TypeDefinition, IEnumerable<TypeDefinition>> getSelfAndNestedTypes = null;
             getSelfAndNestedTypes = type => type.NestedTypes.SelectMany(x => getSelfAndNestedTypes(x)).Concat(type);
             var exportedTypes = module.Types

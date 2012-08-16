@@ -71,14 +71,15 @@ namespace DotNetWebToolkit.Web {
 
     public static class XMLHttpRequestExtensions {
 
-        public static void SendJson<T>(this XMLHttpRequest xmlHttpRequest, T obj) {
-            var data = "data=" + Window.Json.Stringify(XMLHttpRequestHelper.Encode<T>(obj));
+        public static void SendJson(this XMLHttpRequest xmlHttpRequest, object obj) {
+            var data = Window.Json.Stringify(XMLHttpRequestHelper.Encode(obj));
             xmlHttpRequest.SetRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xmlHttpRequest.Send(data);
         }
 
         public static T RecvJson<T>(this XMLHttpRequest xmlHttpRequest) {
-            return XMLHttpRequestHelper.Decode<T>(Window.Json.Parse(xmlHttpRequest.ResponseText));
+            //return (T)XMLHttpRequestHelper.Decode(Window.Json.Parse(xmlHttpRequest.ResponseText));
+            return default(T);
         }
 
         public static void SetTimeout(this XMLHttpRequest xmlHttpRequest, TimeSpan timeout) {
@@ -93,14 +94,38 @@ namespace DotNetWebToolkit.Web {
 
     public static class XMLHttpRequestHelper {
 
-        public static T Decode<T>(object json) {
+        public static object Decode(object json) {
             // Implemented by _JsonHelper override class
             throw new Exception();
         }
 
-        public static object Encode<T>(T obj) {
+        public static object Encode(object obj) {
             // Implemented by _JsonHelper override class
             throw new Exception();
+        }
+
+    }
+
+    public class XmlHttpRequest2<TSend, TRecv> {
+
+        public XmlHttpRequest2(string url, Action<TRecv> onRecv) {
+            this.url = url;
+            this.onRecv = onRecv;
+        }
+
+        private string url;
+        private Action<TRecv> onRecv;
+
+        public void Send(TSend obj) {
+            var xhr = new XMLHttpRequest();
+            xhr.Open("POST", this.url);
+            xhr.OnReadyStateChange = () => {
+                if (xhr.ReadyState == XMLHttpRequestReadyState.Done) {
+                    var data = xhr.RecvJson<TRecv>();
+                    this.onRecv(data);
+                }
+            };
+            xhr.SendJson(obj);
         }
 
     }

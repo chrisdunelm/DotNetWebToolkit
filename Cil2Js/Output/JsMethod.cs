@@ -630,9 +630,24 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             int ofs = 0;
             Func<char> getC = () => ofs < js.Length ? js[ofs++] : '\0';
             var cur = new StringBuilder();
+            char inStr = '\0';
+            bool inStrEsc = false;
             for (; ; ) {
                 var c = getC();
-                var isName = char.IsLetter(c) || (char.IsDigit(c) && cur.Length > 0);
+                if (inStr != '\0' && c != '\0') {
+                    this.js.Append(c);
+                    if (inStrEsc) {
+                        inStrEsc = false;
+                    } else {
+                        if (c == '\\') {
+                            inStrEsc = true;
+                        } else if (c == inStr) {
+                            inStr = '\0';
+                        }
+                    }
+                    continue;
+                }
+                var isName = c == '_' || char.IsLetter(c) || (char.IsDigit(c) && cur.Length > 0);
                 if (isName) {
                     cur.Append(c);
                 } else {
@@ -652,6 +667,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                         } else {
                             this.js.Append(c);
                         }
+                    }
+                    if (c == '"' || c == '\'') {
+                        inStr = c;
+                        inStrEsc = false;
                     }
                 }
                 if (c == '\0') {

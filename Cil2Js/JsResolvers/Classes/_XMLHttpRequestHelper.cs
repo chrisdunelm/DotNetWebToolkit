@@ -14,104 +14,158 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         [Js]
         public static Stmt Encode(Ctx ctx) {
-            var tRef = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
-            var methods = tRef.EnumResolvedMethods().ToArray();
-            var propertySetters = methods.Where(x => x.Name.StartsWith("set_")).ToArray();
-            var arg = ctx.MethodParameter(0);
-            var calls = propertySetters.Select((s, i) => {
-                var fieldName = s.Name.Substring(4);
-                var get = methods.First(x => x.Name == "get_" + fieldName);
-                var call = new ExprCall(ctx, get, arg);
-                var paramType = s.Parameters[0].ParameterType;
-                if (paramType.IsNullable()) {
-                    paramType = paramType.GetNullableInnerType();
+            var arg = ctx.MethodParameter(0, "arg");
+            var todo = ctx.Local(ctx.Object, "todo");
+            var todoOfs = ctx.Local(ctx.Int32, "todoOfs");
+            var id = ctx.Local(ctx.Int32, "id");
+            var json = ctx.Local(ctx.Object, "json");
+            var obj = ctx.Local(ctx.Object, "obj");
+            var type = ctx.Local(ctx.Type, "type");
+            var jsonObj = ctx.Local(ctx.Object, "jsonObj");
+            var field = ctx.Local(ctx.Object, "field");
+            var fieldKey = ctx.Local(ctx.String, "fieldKey");
+            var typeDataIsArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("typeDataIsArray");
+            var typeDataIsPrimitive = new ExprJsTypeData(ctx, TypeData.IsPrimitive).Named("typeDataIsPrimitive");
+            var typeDataIsValueType = new ExprJsTypeData(ctx, TypeData.IsValueType).Named("typeDataIsValueType");
+            var typeDataJsName = new ExprJsTypeData(ctx, TypeData.JsName).Named("typeDataJsName");
+            var stringType = new ExprJsTypeVarName(ctx, ctx.String).Named("stringType");
+            var isObjRef = ctx.Local(ctx.Object, "isObjRef");
+            var enc = ctx.Local(ctx.Object, "enc");
+            var o = ctx.Local(ctx.Object, "o");
+            var ret = ctx.Local(ctx.Object, "ret");
+            var i = ctx.Local(ctx.Int32, "i");
+            var key = ctx.Local(ctx.String, "key");
+            var oKey = ctx.Local(ctx.Object, "oKey");
+            var c = ctx.Local(ctx.Char, "c");
+            var js = @"
+try {
+console.log('++encode()');
+id = 0;
+if (arg && typeof(arg) == 'object') {
+    arg.$$ = '0';
+}
+todo = [arg];
+todoOfs = 0;
+json = [];
+isObjRef = function(o) {
+console.log('++isObRef()');
+    if (o === null || o === undefined) {
+        return false;
+    }
+    if (typeof(o) === 'object' && o._ && !o._.typeDataIsValueType) {
+        if (!o.$$) {
+            o.$$ = (++id).toString();
+console.log('assign id: '+o.$$);
+            todo.push(o);
+        }
+        return true;
+    }
+    return false;
+};
+enc = function(o) {
+console.log('++enc()');
+    if (o === null || o === undefined) {
+        return null;
+    }
+    var type = o._;
+    if (!type) {
+        if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
+        } else { // string or unboxed primitive
+            return o;
+        }
+    } else if (type.typeDataIsArray) { // array
+        var ret = new Array(o.length);
+        for (var i = 0; i < o.length; i++) {
+            ret[i] = enc(o[i]);
+        }
+        return [type.typeDataJsName, ret];
+    } else if (type.typeDataIsPrimitive) { // boxed primitive, supports 64-bit numbers without any special code
+        return [type.typeDataJsName, o.v];
+    //} else if (type.typeDataIsValueType) { // boxed value-type
+    } else { // object, boxed value-type
+        var ret = [];
+        for (var key in o) {
+            var c = key.charAt(0);
+            if (c !== '_' && c !== '$' && o.hasOwnProperty(key)) {
+                var oKey = o[key];
+                if (isObjRef(oKey)) {
+                    ret.push(key, oKey.$$);
+                } else {
+                    ret.push(key, enc(oKey));
                 }
-                Expr expr;
-                switch (paramType.MetadataType) {
-                case MetadataType.SByte:
-                case MetadataType.Byte:
-                case MetadataType.Int16:
-                case MetadataType.UInt16:
-                case MetadataType.Int32:
-                case MetadataType.UInt32:
-                case MetadataType.Int64:
-                case MetadataType.UInt64:
-                case MetadataType.Boolean:
-                case MetadataType.String:
-                    expr = call;
-                    break;
-                case MetadataType.Char:
-                    expr = new ExprJsExplicit(ctx, "String.fromCharCode(call)", ctx.Char, call.Named("call"));
-                    break;
-                case MetadataType.Class:
-                case MetadataType.ValueType:
-                    var mNested = ctx.MRef.GetElementMethod().MakeGeneric(paramType);
-                    expr = new ExprCall(ctx, mNested, null, call);
-                    break;
-                default:
-                    throw new InvalidOperationException("Cannot handle: " + paramType.MetadataType);
-                }
-                return new { js = "'" + fieldName + "': call" + i, expr = expr.Named("call" + i) };
-            }).ToArray();
-            var js = "";
-            var args = calls.Select(x => x.expr);
-            if (!tRef.IsValueType) {
-                js = "if (arg === null) return null;" + Environment.NewLine;
-                args = args.Concat(arg.Named("arg"));
             }
-            js += "return { " + string.Join(", ", calls.Select(x => x.js)) + " };";
-            return new StmtJsExplicit(ctx, js, args);
+        }
+        return [type.typeDataJsName, ret];
+    }
+};
+while (todo.length > todoOfs) {
+    obj = todo[todoOfs++];
+    json.push([(obj && typeof(obj) == 'object' && obj.$$) ? obj.$$ : '0', enc(obj)]);
+}
+for (todoOfs = 0; todoOfs < todo.length; todoOfs++) {
+    obj = todo[todoOfs];
+    if (obj && typeof(obj) == 'object') {
+        delete todo[todoOfs].$$;
+    }
+}
+return json;
+} catch (xx) {
+console.log('EX:'+xx);
+throw xx;
+}
+";
+            var stmt = new StmtJsExplicit(ctx, js, arg, todo, todoOfs, id, json, obj, type, jsonObj, field, fieldKey, typeDataIsArray, typeDataIsPrimitive, typeDataIsValueType, typeDataJsName, stringType, isObjRef, enc, o, ret, i, key, oKey, c);
+            return stmt;
         }
 
         [Js]
         public static Stmt Decode(Ctx ctx) {
-            var tRef = ((GenericInstanceMethod)ctx.MRef).GenericArguments[0];
-            var methods = tRef.EnumResolvedMethods().ToArray();
-            var propertySetters = methods.Where(x => x.Name.StartsWith("set_")).ToArray();
-            var obj = ctx.Local(tRef);
-            var objInit = new StmtJsExplicit(ctx, "obj = { _: objType };", obj.Named("obj"), new ExprJsTypeVarName(ctx, tRef).Named("objType"));
             var arg = ctx.MethodParameter(0, "arg");
-            var calls = propertySetters.Select(s => {
-                var fieldName = s.Name.Substring(4);
-                var paramType = s.Parameters[0].ParameterType;
-                var rawValue = new ExprJsExplicit(ctx, "arg." + fieldName, paramType, arg);
-                var rawValueNamed = rawValue.Named("rawValue");
-                if (paramType.IsNullable()) {
-                    paramType = paramType.GetNullableInnerType();
-                }
-                Expr value;
-                switch (paramType.MetadataType) {
-                case MetadataType.SByte:
-                case MetadataType.Byte:
-                case MetadataType.Int16:
-                case MetadataType.UInt16:
-                case MetadataType.Int32:
-                case MetadataType.UInt32:
-                case MetadataType.Int64:
-                case MetadataType.UInt64:
-                case MetadataType.Boolean:
-                case MetadataType.String:
-                    value = rawValue;
-                    break;
-                case MetadataType.Char:
-                    value = new ExprJsExplicit(ctx, "rawValue ? rawValue.charCodeAt(0) : 0", ctx.Char, rawValueNamed);
-                    break;
-                case MetadataType.Class:
-                case MetadataType.ValueType:
-                    var mNested = ctx.MRef.GetElementMethod().MakeGeneric(paramType);
-                    value = new ExprCall(ctx, mNested, null, rawValue);
-                    if (!paramType.IsValueType) {
-                        value = new ExprJsExplicit(ctx, "rawValue ? call : null", paramType, rawValueNamed, value.Named("call"));
-                    }
-                    break;
-                default:
-                    throw new InvalidOperationException("Cannot handle: " + paramType.MetadataType);
-                }
-                var call = new ExprCall(ctx, s, obj, value);
-                return call;
-            }).ToArray();
-            var ret = new StmtReturn(ctx, obj);
-            return new StmtBlock(ctx, calls.Select(x => (Stmt)new StmtWrapExpr(ctx, x)).Prepend(objInit).Concat(ret));
+            var i = ctx.Local(ctx.Int32, "i");
+            var j = ctx.Local(ctx.Int32, "j");
+            var objs = ctx.Local(ctx.Object, "objs");
+            var refs = ctx.Local(ctx.Object, "refs");
+            var o = ctx.Local(ctx.Object, "o");
+            var ret = ctx.Local(ctx.Object, "ret");
+            var idx = ctx.Local(ctx.String, "idx");
+            var value = ctx.Local(ctx.Object, "value");
+            var id = ctx.Local(ctx.String, "id");
+            var inst = ctx.Local(ctx.Object, "inst");
+            var js = @"
+return null;
+objs = {};
+refs = [];
+for (i = 0; i < arg.length; i++) {
+    id = arg[i][0];
+    inst = arg[i][1];
+    if (!inst) {
+        o = null;
+    } else {
+        o = {_:$$[inst[0]]};
+        for (j = 1; j < inst.length; j++) {
+            var idx = inst[j][0];
+            var value = inst[j][1];
+            if (!inst[j][2]) {
+                o[idx] = value;
+            } else {
+                (function(o, idx, value) {
+                    refs.push(function() { o[idx] = objs[value]; });
+                })(o, idx, value);
+            }
+        }
+    }
+    objs[id] = o;
+    if (!ret) {
+        ret = o;
+    }
+}
+for (i = 0; i < refs.length; i++) {
+    refs[i]();
+}
+return ret;
+";
+            var stmt = new StmtJsExplicit(ctx, js, arg, i, j, objs, refs, o, ret, idx, value, id, inst);
+            return stmt;
         }
 
     }

@@ -8,9 +8,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
     public enum TypeData {
 
         VTable,
+        JsName,
         Name,
         Namespace,
         IsValueType,
+        IsPrimitive,
         IsArray,
         ElementType,
         IsInterface,

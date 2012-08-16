@@ -660,6 +660,16 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             try {
                 var name = tRef.Resolve().AssemblyQualifiedName();
                 var type = Type.GetType(name);
+                if (tRef.IsArray) {
+                    tRef = tRef.ElementType();
+                    if (tRef.IsGenericInstance) {
+                        var tRefGen = (GenericInstanceType)tRef;
+                        var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
+                        type = type.MakeGenericType(tArgs);
+                    }
+                    type = type.MakeArrayType();
+                    return type;
+                }
                 if (tRef.IsGenericInstance) {
                     var tRefGen = (GenericInstanceType)tRef;
                     var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
