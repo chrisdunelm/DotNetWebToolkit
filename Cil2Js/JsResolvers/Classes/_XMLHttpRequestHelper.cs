@@ -31,6 +31,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var stringType = new ExprJsTypeVarName(ctx, ctx.String).Named("stringType");
             var isObjRef = ctx.Local(ctx.Object, "isObjRef");
             var enc = ctx.Local(ctx.Object, "enc");
+            var encObj = ctx.Local(ctx.Object, "encObj");
             var o = ctx.Local(ctx.Object, "o");
             var ret = ctx.Local(ctx.Object, "ret");
             var i = ctx.Local(ctx.Int32, "i");
@@ -62,6 +63,22 @@ console.log('assign id: '+o.$$);
     }
     return false;
 };
+encObj = function(o) {
+    var ret = [];
+    for (var key in o) {
+        var c = key.charAt(0);
+        if (c !== '_' && c !== '$' && o.hasOwnProperty(key)) {
+            var oKey = o[key];
+console.log('key:'+key+'; oKey:'+oKey);
+            if (isObjRef(oKey)) {
+                ret.push(key, [oKey.$$]);
+            } else {
+                ret.push(key, enc(oKey));
+            }
+        }
+    }
+    return ret;
+};
 enc = function(o) {
 console.log('++enc()');
     if (o === null || o === undefined) {
@@ -70,32 +87,30 @@ console.log('++enc()');
     var type = o._;
     if (!type) {
         if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
+            return encObj(o);
+            //return ret;
         } else { // string or unboxed primitive
             return o;
         }
     } else if (type.typeDataIsArray) { // array
         var ret = new Array(o.length);
         for (var i = 0; i < o.length; i++) {
-            ret[i] = enc(o[i]);
+            var oKey = o[i];
+            if (isObjRef(oKey)) {
+                ret[i] = [oKey.$$];
+            } else {
+                ret[i] = enc(o[i]);
+            }
         }
         return [type.typeDataJsName, ret];
     } else if (type.typeDataIsPrimitive) { // boxed primitive, supports 64-bit numbers without any special code
         return [type.typeDataJsName, o.v];
-    //} else if (type.typeDataIsValueType) { // boxed value-type
     } else { // object, boxed value-type
-        var ret = [];
-        for (var key in o) {
-            var c = key.charAt(0);
-            if (c !== '_' && c !== '$' && o.hasOwnProperty(key)) {
-                var oKey = o[key];
-                if (isObjRef(oKey)) {
-                    ret.push(key, oKey.$$);
-                } else {
-                    ret.push(key, enc(oKey));
-                }
-            }
+console.log('obj/bvt');
+        if (type.typeDataIsValueType) {
+            o = o.v;
         }
-        return [type.typeDataJsName, ret];
+        return [type.typeDataJsName, encObj(o)];
     }
 };
 while (todo.length > todoOfs) {
@@ -114,7 +129,7 @@ console.log('EX:'+xx);
 throw xx;
 }
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, todo, todoOfs, id, json, obj, type, jsonObj, field, fieldKey, typeDataIsArray, typeDataIsPrimitive, typeDataIsValueType, typeDataJsName, stringType, isObjRef, enc, o, ret, i, key, oKey, c);
+            var stmt = new StmtJsExplicit(ctx, js, arg, todo, todoOfs, id, json, obj, type, jsonObj, field, fieldKey, typeDataIsArray, typeDataIsPrimitive, typeDataIsValueType, typeDataJsName, stringType, isObjRef, enc, encObj, o, ret, i, key, oKey, c);
             return stmt;
         }
 

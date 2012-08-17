@@ -129,7 +129,32 @@ namespace DotNetWebToolkit.Server {
             var json = jsonSerializer.Deserialize<object[]>(s);
             var objs = new Dictionary<string, object>();
             var refs = new List<Tuple<object, FieldInfo, string>>();
+            var arrayRefs = new List<Tuple<Array, int, string>>();
             Func<Type, object, object> jDecodeAny = null;
+            Func<object, string> getIfObjRef = o => {
+                var oArray = o as object[];
+                if (oArray != null) {
+                    if (oArray.Length == 1) {
+                        return (string)oArray[0];
+                    }
+                }
+                return null;
+            };
+            Func<Type, object[], object> createObj = (type, fields) => {
+                var obj = Activator.CreateInstance(type, true);
+                for (int i = 0; i < fields.Length; i += 2) {
+                    var fieldInfo = this.typeMap.GetFieldByName(type, (string)fields[i]);
+                    var fieldType = fieldInfo.FieldType;
+                    var refId = getIfObjRef(fields[i + 1]);
+                    if (refId != null) {
+                        refs.Add(Tuple.Create(obj, fieldInfo, refId));
+                    } else {
+                        object v = jDecodeAny(fieldType, fields[i + 1]);
+                        fieldInfo.SetValue(obj, v);
+                    }
+                }
+                return obj;
+            };
             Func<Type, object, object> jDecodeValueType = (type, o) => {
                 bool isNullable = false;
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>)) {
@@ -150,7 +175,9 @@ namespace DotNetWebToolkit.Server {
                     var i64lo = Convert.ToUInt64(oi64Array[1]);
                     var i64 = (i64hi << 32) | i64lo;
                     return (Int64)i64;
-                default: throw new InvalidOperationException("Cannot handle: " + type);
+                default:
+                    var fields = (object[])o;
+                    return createObj(type, fields);
                 }
             };
             Func<object, object> jDecode = null;
@@ -165,42 +192,30 @@ namespace DotNetWebToolkit.Server {
                     var oArray = (object[])o;
                     var jsTypeName = (string)oArray[0];
                     var type = this.typeMap.GetTypeByName(jsTypeName);
-                    if (type.IsValueType) {
+                    if (type.IsValueType) { // value-type
                         return jDecodeValueType(type, oArray[1]);
-                    } else if (type.IsArray) {
+                    } else if (type.IsArray) { // array
                         var elementType = type.GetElementType();
                         var elements = (object[])oArray[1];
                         var array = (Array)Activator.CreateInstance(type, elements.Length);
                         for (int i = 0; i < elements.Length; i++) {
-                            object v = jDecodeAny(elementType, elements[i]);
-                            array.SetValue(v, i);
+                            var refId = getIfObjRef(elements[i]);
+                            if (refId != null) {
+                                arrayRefs.Add(Tuple.Create(array, i, refId));
+                            } else {
+                                object v = jDecodeAny(elementType, elements[i]);
+                                array.SetValue(v, i);
+                            }
                         }
                         return array;
                     } else { // object
                         var fields = (object[])oArray[1];
-                        var obj = Activator.CreateInstance(type, true);
-                        for (int i = 0; i < fields.Length; i += 2) {
-                            var fieldInfo = this.typeMap.GetFieldByName(type, (string)fields[i]);
-                            var fieldType = fieldInfo.FieldType;
-                            if (!fieldType.IsValueType && fieldType != typeof(string)) {
-                                // Object reference, stored as object id
-                                var refId = (string)fields[i + 1];
-                                if (refId != null) {
-                                    refs.Add(Tuple.Create(obj, fieldInfo, refId));
-                                } else {
-                                    fieldInfo.SetValue(obj, null);
-                                }
-                            } else {
-                                object v = jDecodeAny(fieldType, fields[i + 1]);
-                                fieldInfo.SetValue(obj, v);
-                            }
-                        }
-                        return obj;
+                        return createObj(type, fields);
                     }
                 }
             };
             jDecodeAny = (type, o) => {
-                if (type.IsValueType) {
+                if (type != null && type.IsValueType) {
                     return jDecodeValueType(type, o);
                 } else {
                     return jDecode(o);
@@ -213,7 +228,11 @@ namespace DotNetWebToolkit.Server {
             foreach (var r in refs) {
                 r.Item2.SetValue(r.Item1, objs[r.Item3]);
             }
-            return (T)objs["0"];
+            foreach (var r in arrayRefs) {
+                r.Item1.SetValue(objs[r.Item3], r.Item2);
+            }
+            var toRet = (T)objs["0"];
+            return toRet;
         }
 
     }

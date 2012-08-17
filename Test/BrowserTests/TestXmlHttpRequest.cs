@@ -291,6 +291,70 @@ namespace Test.BrowserTests {
             this.Start(f, null, wd => obj.self == obj && obj.other.other == obj && obj.other.self == obj.other);
         }
 
+        class SendObjectArrayWithVarious1 { public int i; }
+        class SendObjectArrayWithVarious2 { public string s; }
+        class SendObjectArrayWithVarious3 { public object o; }
+        [Test]
+        public void TestJsSendObjectArrayWithVarious() {
+            object[] obj = null;
+            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<object[]>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object[], object>("xhr", data => Pass());
+                var o = new object[] {
+                    null,
+                    new SendObjectArrayWithVarious1 { i = 5 },
+                    new SendObjectArrayWithVarious2 { s = "abc" },
+                    new SendObjectArrayWithVarious3 { o = null },
+                    new SendObjectArrayWithVarious3 { o = "xyz" },
+                    6,
+                    "123",
+                };
+                xhr.Send(o);
+            };
+            this.Start(f, null, wd => obj.Length == 7 && obj[0] == null
+                && ((SendObjectArrayWithVarious1)obj[1]).i == 5
+                && ((SendObjectArrayWithVarious2)obj[2]).s == "abc"
+                && ((SendObjectArrayWithVarious3)obj[3]).o == null
+                && (string)((SendObjectArrayWithVarious3)obj[4]).o == "xyz"
+                && (int)obj[5] == 6
+                && (string)obj[6] == "123");
+        }
+
+        struct SendValueType {
+            public int i;
+            public Int64 l;
+        }
+        [Test]
+        public void TestJsSendValueType() {
+            var vt = default(SendValueType);
+            this.SetUrlJson("/xhr", data => { vt = base.GetJson().Decode<SendValueType>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<SendValueType, object>("xhr", data => Pass());
+                var o = new SendValueType { i = -1, l = -2 };
+                xhr.Send(o);
+            };
+            this.Start(f, null, wd => vt.i == -1 && vt.l == -2);
+        }
+
+        class SendValueTypeInObj {
+            public struct Inner {
+                public string s;
+            }
+            public string s;
+            public Inner inner;
+        }
+        [Test]
+        public void TestJsSendValueTypeInObj() {
+            var vt = default(SendValueTypeInObj);
+            this.SetUrlJson("/xhr", data => { vt = base.GetJson().Decode<SendValueTypeInObj>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<SendValueTypeInObj, object>("xhr", data => Pass());
+                var o = new SendValueTypeInObj { s = "abc", inner = new SendValueTypeInObj.Inner { s = "xyz" } };
+                xhr.Send(o);
+            };
+            this.Start(f, null, wd => vt.s == "abc" && vt.inner.s == "xyz");
+        }
+
     }
 
 }
