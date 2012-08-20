@@ -10,7 +10,7 @@ using NUnit.Framework;
 namespace Test.BrowserTests {
 
     [TestFixture]
-    public class TestXmlHttpRequest : BrowserTestBase {
+    public class TestSendXmlHttpRequest : BrowserTestBase {
 
         private T Decode<T>(byte[] data) {
             return base.GetJson().Decode<T>(data);
@@ -417,6 +417,37 @@ namespace Test.BrowserTests {
                 xhr.Send(o);
             };
             this.Start(f, null, wd => vt.Length == 3 && vt[0].i == -1 && vt[1].i == 4 && vt[2].i == 100);
+        }
+
+        struct SendValueTypeAndClassInValueType {
+            public struct InnerStruct {
+                public string s;
+            }
+            public class InnerClass {
+                public string s2;
+                public InnerStruct innerStruct2;
+            }
+            public int i;
+            public InnerStruct innerStruct;
+            public InnerClass innerClass;
+        }
+        [Test]
+        public void TestJsSendValueTypeAndClassInValueType() {
+            var vt = default(SendValueTypeAndClassInValueType);
+            this.SetUrlJson("/xhr", data => { vt = this.Decode<SendValueTypeAndClassInValueType>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<SendValueTypeAndClassInValueType, object>("xhr", data => Pass());
+                var o = new SendValueTypeAndClassInValueType {
+                    i = 9,
+                    innerStruct = new SendValueTypeAndClassInValueType.InnerStruct { s = "abc" },
+                    innerClass = new SendValueTypeAndClassInValueType.InnerClass {
+                        s2 = "xyz",
+                        innerStruct2 = new SendValueTypeAndClassInValueType.InnerStruct { s = "HelloWorld" },
+                    },
+                };
+                xhr.Send(o);
+            };
+            this.Start(f, null, wd => vt.i == 9 && vt.innerStruct.s == "abc" && vt.innerClass.s2 == "xyz" && vt.innerClass.innerStruct2.s == "HelloWorld");
         }
 
     }

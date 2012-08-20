@@ -16,107 +16,53 @@ namespace DotNetWebToolkit.Server {
         private JsonTypeMap typeMap;
 
         public string Encode(object obj) {
-            return "";
             var todo = new Queue<object>();
-            var ids = new Dictionary<object, int>();
-            int id = 0;
-            var ret = new List<Tuple<int, string>>();
-
             todo.Enqueue(obj);
-            ids.Add(obj, id++);
-
-            var json = new StringBuilder();
-            while (todo.Any()) {
-                json.Clear();
+            var objIds = new Dictionary<object, string>();
+            objIds.Add(obj, "0");
+            int id = 0;
+            Func<object, object> enc = o => {
+                if (o == null) {
+                    return null;
+                }
+                var type = o.GetType();
+                var jsTypeName = this.typeMap.GetTypeName(type);
+                if (jsTypeName == null) {
+                    return new object[] { null, null };
+                }
+                var typeCode = Type.GetTypeCode(type);
+                object jsO;
+                switch (typeCode) {
+                case TypeCode.Boolean:
+                case TypeCode.SByte:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Byte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.String:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    jsO = o;
+                    break;
+                case TypeCode.Char:
+                    jsO = (int)(char)o;
+                    break;
+                default:
+                    throw new InvalidOperationException("Cannot handle: " + typeCode);
+                }
+                return new object[] { jsTypeName, jsO };
+            };
+            var res = new List<object>();
+            while (todo.Count > 0) {
                 var o = todo.Dequeue();
-                var oType = o.GetType();
-                var typeName = this.typeMap.GetTypeName(oType);
-                json.Append('[');
-                if (typeName != null) {
-                    json.Append('"');
-                    json.Append(typeName);
-                    json.Append('"');
-                } else {
-                    json.Append("null");
-                }
-                json.Append(", ");
-                var fields = oType.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                foreach (var field in fields) {
-                    var fieldName = this.typeMap.GetFieldName(oType, field);
-                    if (fieldName == null) {
-                        continue;
-                    }
-                    json.Append("[\"");
-                    json.Append(fieldName);
-                    json.Append("\", ");
-                    var value = field.GetValue(o);
-                    var fieldType = field.FieldType;
-                    bool isNullable = false;
-                    if (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-                        isNullable = true;
-                        fieldType = fieldType.GetGenericArguments()[0];
-                    }
-                    if (isNullable && value == null) {
-                        json.Append("null");
-                    } else {
-                        var fieldTypeCode = Type.GetTypeCode(fieldType);
-                        switch (fieldTypeCode) {
-                        case TypeCode.Boolean:
-                            json.Append((bool)value ? "true" : "false");
-                            break;
-                        case TypeCode.Char:
-                            json.Append((int)(char)value);
-                            break;
-                        case TypeCode.SByte:
-                        case TypeCode.Byte:
-                        case TypeCode.Int16:
-                        case TypeCode.UInt16:
-                        case TypeCode.Int32:
-                        case TypeCode.UInt32:
-                            json.Append(value);
-                            break;
-                        case TypeCode.String:
-                            json.Append('"');
-                            foreach (var c in (string)value) {
-                                if (c >= 32 && c < 128) {
-                                    json.Append(c);
-                                } else {
-                                    json.Append("\\u");
-                                    json.Append(((int)c).ToString("x4"));
-                                }
-                            }
-                            json.Append('"');
-                            break;
-                        case TypeCode.Object:
-                            if (value == null) {
-                                json.Append("null");
-                            } else {
-                                int objId;
-                                if (!ids.TryGetValue(value, out objId)) {
-                                    objId = id++;
-                                    ids.Add(value, objId);
-                                    todo.Enqueue(value);
-                                }
-                                json.Append('"');
-                                json.Append(objId);
-                                json.Append("\", true");
-                            }
-                            break;
-                        default:
-                            throw new InvalidOperationException("Cannot handle: " + fieldTypeCode);
-                        }
-                    }
-                    json.Append("], ");
-                }
-                json.Length -= 2;
-                json.Append(']');
-                var jsonId = ids[o];
-                ret.Add(Tuple.Create(jsonId, json.ToString()));
+                var encoded = enc(o);
+                var oId = objIds[o];
+                res.Add(new object[] { oId, encoded });
             }
-
-            var fullRet = string.Format("[{0}{1}{0}]", Environment.NewLine,
-                string.Join("," + Environment.NewLine, ret.Select(x => string.Format("[\"{0}\", {1}]", x.Item1, x.Item2))));
-            return fullRet;
+            JavaScriptSerializer jsonSerializer = new JavaScriptSerializer();
+            var json = jsonSerializer.Serialize(res);
+            return json;
         }
 
         public T Decode<T>(byte[] bytes) {
@@ -189,9 +135,12 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.Single:
                 case TypeCode.Double:
                     return Convert.ChangeType(o, type);
-                default:
+                case TypeCode.Object:
+                case TypeCode.DateTime:
                     var fields = (object[])o;
                     return createObj(type, fields);
+                default:
+                    throw new InvalidOperationException("Cannot handle: " + typeCode);
                 }
             };
             Func<object, object> jDecode = null;

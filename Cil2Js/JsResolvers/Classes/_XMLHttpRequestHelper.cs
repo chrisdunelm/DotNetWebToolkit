@@ -136,50 +136,18 @@ throw xx;
         [Js]
         public static Stmt Decode(Ctx ctx) {
             var arg = ctx.MethodParameter(0, "arg");
-            var i = ctx.Local(ctx.Int32, "i");
-            var j = ctx.Local(ctx.Int32, "j");
             var objs = ctx.Local(ctx.Object, "objs");
-            var refs = ctx.Local(ctx.Object, "refs");
-            var o = ctx.Local(ctx.Object, "o");
-            var ret = ctx.Local(ctx.Object, "ret");
-            var idx = ctx.Local(ctx.String, "idx");
-            var value = ctx.Local(ctx.Object, "value");
-            var id = ctx.Local(ctx.String, "id");
-            var inst = ctx.Local(ctx.Object, "inst");
+            var i = ctx.Local(ctx.Int32, "i");
             var js = @"
-return null;
 objs = {};
-refs = [];
+dec = function(o) {
+};
 for (i = 0; i < arg.length; i++) {
-    id = arg[i][0];
-    inst = arg[i][1];
-    if (!inst) {
-        o = null;
-    } else {
-        o = {_:$$[inst[0]]};
-        for (j = 1; j < inst.length; j++) {
-            var idx = inst[j][0];
-            var value = inst[j][1];
-            if (!inst[j][2]) {
-                o[idx] = value;
-            } else {
-                (function(o, idx, value) {
-                    refs.push(function() { o[idx] = objs[value]; });
-                })(o, idx, value);
-            }
-        }
-    }
-    objs[id] = o;
-    if (!ret) {
-        ret = o;
-    }
+    objs[arg[i][0]] = dec(arg[i][1]);
 }
-for (i = 0; i < refs.length; i++) {
-    refs[i]();
-}
-return ret;
+return null;
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, i, j, objs, refs, o, ret, idx, value, id, inst);
+            var stmt = new StmtJsExplicit(ctx, js, arg, i);
             return stmt;
         }
 
