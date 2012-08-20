@@ -22,20 +22,15 @@ namespace DotNetWebToolkit.Server {
 
         public Type GetTypeByName(string jsName) {
             return this.typesByName[jsName];
-            //var typeFullName = this.typesByName[jsName];
-            //var type = Type.GetType(typeFullName);
-            //return type;
         }
 
         public string GetTypeName(Type type) {
             string ret;
-            //this.typeNames.TryGetValue(type.AssemblyQualifiedName, out ret);
             this.typeNames.TryGetValue(type, out ret);
             return ret;
         }
 
         public FieldInfo GetFieldByName(Type type, string jsName) {
-            //var fields = this.fieldsByName[type.AssemblyQualifiedName];
             var fields = this.fieldsByName[type];
             var fieldName = fields[jsName];
             var f = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -44,7 +39,6 @@ namespace DotNetWebToolkit.Server {
 
         public string GetFieldName(Type type, FieldInfo field) {
             Dictionary<string, string> fields;
-            //if (!this.fieldNames.TryGetValue(type.AssemblyQualifiedName, out fields)) {
             if (!this.fieldNames.TryGetValue(type, out fields)) {
                 return null;
             }
