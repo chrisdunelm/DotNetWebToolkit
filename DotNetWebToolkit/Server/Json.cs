@@ -168,13 +168,27 @@ namespace DotNetWebToolkit.Server {
                 switch (typeCode) {
                 case TypeCode.Boolean: return (bool)o;
                 case TypeCode.Char: return (char)(int)o;
-                case TypeCode.Int32: return (int)o;
                 case TypeCode.Int64:
                     var oi64Array = (object[])o;
                     var i64hi = Convert.ToUInt64(oi64Array[0]);
                     var i64lo = Convert.ToUInt64(oi64Array[1]);
                     var i64 = (i64hi << 32) | i64lo;
                     return (Int64)i64;
+                case TypeCode.UInt64:
+                    var oui64Array = (object[])o;
+                    var ui64hi = Convert.ToUInt64(oui64Array[0]);
+                    var ui64lo = Convert.ToUInt64(oui64Array[1]);
+                    var ui64 = (ui64hi << 32) | ui64lo;
+                    return ui64;
+                case TypeCode.SByte:
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Byte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.Single:
+                case TypeCode.Double:
+                    return Convert.ChangeType(o, type);
                 default:
                     var fields = (object[])o;
                     return createObj(type, fields);

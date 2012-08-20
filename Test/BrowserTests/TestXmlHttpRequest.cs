@@ -12,11 +12,15 @@ namespace Test.BrowserTests {
     [TestFixture]
     public class TestXmlHttpRequest : BrowserTestBase {
 
+        private T Decode<T>(byte[] data) {
+            return base.GetJson().Decode<T>(data);
+        }
+
         [Test]
         public void TestJsSendBool() {
             bool okTrue = false, okFalse = false;
-            this.SetUrlJson("/xhrTrue", data => { okTrue = base.GetJson().Decode<bool>(data) == true; });
-            this.SetUrlJson("/xhrFalse", data => { okFalse = base.GetJson().Decode<bool>(data) == false; });
+            this.SetUrlJson("/xhrTrue", data => { okTrue = this.Decode<bool>(data) == true; });
+            this.SetUrlJson("/xhrFalse", data => { okFalse = this.Decode<bool>(data) == false; });
             Action f = () => {
                 int recvCount = 0;
                 Action<object> onRecv = data => {
@@ -35,7 +39,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendBoolNullable() {
             bool isNull = false;
-            this.SetUrlJson("/xhr", data => { isNull = base.GetJson().Decode<bool?>(data) == null; });
+            this.SetUrlJson("/xhr", data => { isNull = this.Decode<bool?>(data) == null; });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<bool?, object>("xhr", data => Pass());
                 xhr.Send(null);
@@ -46,7 +50,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt32() {
             int sum = 0;
-            this.SetUrlJson("/xhr", data => { sum += base.GetJson().Decode<int>(data); });
+            this.SetUrlJson("/xhr", data => { sum += this.Decode<int>(data); });
             Action f = () => {
                 int recvCount = 0;
                 var xhr = new XmlHttpRequest2<int, object>("xhr", data => {
@@ -64,7 +68,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt64() {
             Int64 sum = 0;
-            this.SetUrlJson("/xhr", data => { sum += base.GetJson().Decode<Int64>(data); });
+            this.SetUrlJson("/xhr", data => { sum += this.Decode<Int64>(data); });
             Action f = () => {
                 int recvCount = 0;
                 var xhr = new XmlHttpRequest2<Int64, object>("xhr", data => {
@@ -80,9 +84,50 @@ namespace Test.BrowserTests {
         }
 
         [Test]
+        public void TestJsSendUInt64() {
+            var r = new List<UInt64>();
+            this.SetUrlJson("/xhr", data => { r.Add(this.Decode<UInt64>(data)); });
+            Action f = () => {
+                int recvCount = 0;
+                var toSend = new[] { 0xfffffffffffffff0UL, 0UL, 1UL, 0x100000002UL };
+                var xhr = new XmlHttpRequest2<UInt64, object>("xhr", data => {
+                    if (++recvCount == toSend.Length) {
+                        Pass();
+                    }
+                });
+                for (var i = 0; i < toSend.Length; i++) {
+                    xhr.Send(toSend[i]);
+                }
+            };
+            this.Start(f, null, wd => r.Count == 4 && r[0] == 0xfffffffffffffff0UL && r[1] == 0 && r[2] == 1 && r[3] == 0x100000002UL);
+        }
+
+        [Test]
+        public void TestJsSendSingle() {
+            Single v = 0f;
+            this.SetUrlJson("/xhr", data => { v = this.Decode<Single>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<Single, object>("xhr", data => Pass());
+                xhr.Send(1f);
+            };
+            this.Start(f, null, wd => v == 1f);
+        }
+
+        [Test]
+        public void TestJsSendDouble() {
+            Double v = 0d;
+            this.SetUrlJson("/xhr", data => { v = this.Decode<Double>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<Double, object>("xhr", data => Pass());
+                xhr.Send(1d);
+            };
+            this.Start(f, null, wd => v == 1d);
+        }
+
+        [Test]
         public void TestJsSendChar() {
             string s = "";
-            this.SetUrlJson("/xhr", data => { s += base.GetJson().Decode<char>(data); });
+            this.SetUrlJson("/xhr", data => { s += this.Decode<char>(data); });
             Action f = () => {
                 var toSend = new[] { 'A', 'B', 'C' };
                 int recvCount = 0;
@@ -101,7 +146,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendString() {
             string s = "";
-            this.SetUrlJson("/xhr", data => { s += base.GetJson().Decode<string>(data); });
+            this.SetUrlJson("/xhr", data => { s += this.Decode<string>(data); });
             Action f = () => {
                 var toSend = new[] { "A", "B", "C" };
                 int recvCount = 0;
@@ -120,7 +165,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendStringNull() {
             string s = "";
-            this.SetUrlJson("/xhr", data => { s = base.GetJson().Decode<string>(data); });
+            this.SetUrlJson("/xhr", data => { s = this.Decode<string>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<string, object>("xhr", data => Pass());
                 xhr.Send(null);
@@ -131,7 +176,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendNullInt32Array() {
             int[] res = new int[1];
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<int[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<int[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<int[], object>("xhr", data => Pass());
                 xhr.Send(null);
@@ -142,7 +187,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt32Array() {
             int[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<int[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<int[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<int[], object>("xhr", data => Pass());
                 xhr.Send(new[] { 0, 1, 99 });
@@ -153,7 +198,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt64Array() {
             Int64[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<Int64[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<Int64[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<Int64[], object>("xhr", data => Pass());
                 xhr.Send(new Int64[] { 0x100000008L, -2, 99 });
@@ -164,7 +209,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt32NullableArray() {
             int?[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<int?[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<int?[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<int?[], object>("xhr", data => Pass());
                 xhr.Send(new int?[] { null, 1, null });
@@ -175,7 +220,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendInt64NullableArray() {
             Int64?[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<Int64?[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<Int64?[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<Int64?[], object>("xhr", data => Pass());
                 xhr.Send(new Int64?[] { null, 1, null });
@@ -186,7 +231,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendStringArray() {
             string[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<string[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<string[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<string[], object>("xhr", data => Pass());
                 xhr.Send(new[] { "ABC", "123", "" });
@@ -197,7 +242,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendStringNullArray() {
             string[] res = null;
-            this.SetUrlJson("/xhr", data => { res = base.GetJson().Decode<string[]>(data); });
+            this.SetUrlJson("/xhr", data => { res = this.Decode<string[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<string[], object>("xhr", data => {
                     Pass();
@@ -216,7 +261,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendObjectWithPrimitives() {
             SendObjectWithPrimitives obj = null;
-            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<SendObjectWithPrimitives>(data); });
+            this.SetUrlJson("/xhr", data => { obj = this.Decode<SendObjectWithPrimitives>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendObjectWithPrimitives, object>("xhr", data => Pass());
                 var o = new SendObjectWithPrimitives { i = -2, l = -4, s = "abc", c = 'Z' };
@@ -237,7 +282,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendObjectWithReferenceWithNull() {
             SendObjectWithReference obj = null;
-            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<SendObjectWithReference>(data); });
+            this.SetUrlJson("/xhr", data => { obj = this.Decode<SendObjectWithReference>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendObjectWithReference, object>("xhr", data => Pass());
                 var o = new SendObjectWithReference {
@@ -256,7 +301,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendObjectWithSelfReference() {
             SendObjectWithSelfReference obj = null;
-            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<SendObjectWithSelfReference>(data); });
+            this.SetUrlJson("/xhr", data => { obj = this.Decode<SendObjectWithSelfReference>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendObjectWithSelfReference, object>("xhr", data => Pass());
                 var o = new SendObjectWithSelfReference();
@@ -277,7 +322,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendObjectsWithMutalRefs() {
             SendObjectsWithMutalRefs1 obj = null;
-            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<SendObjectsWithMutalRefs1>(data); });
+            this.SetUrlJson("/xhr", data => { obj = this.Decode<SendObjectsWithMutalRefs1>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendObjectsWithMutalRefs1, object>("xhr", data => Pass());
                 var o1 = new SendObjectsWithMutalRefs1();
@@ -297,7 +342,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendObjectArrayWithVarious() {
             object[] obj = null;
-            this.SetUrlJson("/xhr", data => { obj = base.GetJson().Decode<object[]>(data); });
+            this.SetUrlJson("/xhr", data => { obj = this.Decode<object[]>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<object[], object>("xhr", data => Pass());
                 var o = new object[] {
@@ -327,7 +372,7 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendValueType() {
             var vt = default(SendValueType);
-            this.SetUrlJson("/xhr", data => { vt = base.GetJson().Decode<SendValueType>(data); });
+            this.SetUrlJson("/xhr", data => { vt = this.Decode<SendValueType>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendValueType, object>("xhr", data => Pass());
                 var o = new SendValueType { i = -1, l = -2 };
@@ -346,13 +391,32 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsSendValueTypeInObj() {
             var vt = default(SendValueTypeInObj);
-            this.SetUrlJson("/xhr", data => { vt = base.GetJson().Decode<SendValueTypeInObj>(data); });
+            this.SetUrlJson("/xhr", data => { vt = this.Decode<SendValueTypeInObj>(data); });
             Action f = () => {
                 var xhr = new XmlHttpRequest2<SendValueTypeInObj, object>("xhr", data => Pass());
                 var o = new SendValueTypeInObj { s = "abc", inner = new SendValueTypeInObj.Inner { s = "xyz" } };
                 xhr.Send(o);
             };
             this.Start(f, null, wd => vt.s == "abc" && vt.inner.s == "xyz");
+        }
+
+        struct SendValueTypeArray {
+            public int i;
+        }
+        [Test]
+        public void TestJsSendValueTypeArray() {
+            SendValueTypeArray[] vt = null;
+            this.SetUrlJson("/xhr", data => { vt = this.Decode<SendValueTypeArray[]>(data); });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<SendValueTypeArray[], object>("xhr", data => Pass());
+                var o = new[] {
+                    new SendValueTypeArray { i = -1 },
+                    new SendValueTypeArray { i = 4 },
+                    new SendValueTypeArray { i = 100 },
+                };
+                xhr.Send(o);
+            };
+            this.Start(f, null, wd => vt.Length == 3 && vt[0].i == -1 && vt[1].i == 4 && vt[2].i == 100);
         }
 
     }
