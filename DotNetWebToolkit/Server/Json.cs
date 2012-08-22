@@ -19,46 +19,59 @@ namespace DotNetWebToolkit.Server {
             var todo = new Queue<object>();
             todo.Enqueue(obj);
             var objIds = new Dictionary<object, string>();
-            objIds.Add(obj, "0");
+            if (obj != null) {
+                objIds.Add(obj, "0");
+            }
             int id = 0;
-            Func<object, object> enc = o => {
+            Func<object, bool, object> enc = (o, isBoxed) => {
                 if (o == null) {
                     return null;
                 }
                 var type = o.GetType();
-                var jsTypeName = this.typeMap.GetTypeName(type);
-                if (jsTypeName == null) {
-                    return new object[] { null, null };
-                }
-                var typeCode = Type.GetTypeCode(type);
-                object jsO;
+                var isNullable = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+                var typeCode = Type.GetTypeCode(isNullable ? type.GetGenericArguments()[0] : type);
+                object ret;
                 switch (typeCode) {
-                case TypeCode.Boolean:
-                case TypeCode.SByte:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Byte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
                 case TypeCode.String:
-                case TypeCode.Single:
-                case TypeCode.Double:
-                    jsO = o;
+                    return o;
+                case TypeCode.Object:
+                case TypeCode.DateTime:
+                    // objects + structs
+                    throw new NotImplementedException();
+                case TypeCode.Boolean:
+                case TypeCode.Int32:
+                    ret = o;
                     break;
                 case TypeCode.Char:
-                    jsO = (int)(char)o;
+                    ret = (int)(char)o;
+                    break;
+                case TypeCode.Int64:
+                    var i64 = (UInt64)(Int64)o;
+                    ret = new object[] {
+                        i64 >> 32,
+                        i64 & 0xffffffff
+                    };
                     break;
                 default:
                     throw new InvalidOperationException("Cannot handle: " + typeCode);
                 }
-                return new object[] { jsTypeName, jsO };
+                if (isBoxed) {
+                    return new Dictionary<string, object> {
+                        { "_", this.typeMap.GetTypeName(type) },
+                        { "v", ret }
+                    };
+                } else {
+                    return ret;
+                }
             };
             var res = new List<object>();
+            bool isFirst = true;
             while (todo.Count > 0) {
                 var o = todo.Dequeue();
-                var encoded = enc(o);
-                var oId = objIds[o];
+                var encoded = enc(o, true);
+                var oId = isFirst ? "0" : objIds[o];
                 res.Add(new object[] { oId, encoded });
+                isFirst = false;
             }
             JavaScriptSerializer jsonSerializer = new JavaScriptSerializer();
             var json = jsonSerializer.Serialize(res);

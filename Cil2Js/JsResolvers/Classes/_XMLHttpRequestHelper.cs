@@ -137,17 +137,53 @@ throw xx;
         public static Stmt Decode(Ctx ctx) {
             var arg = ctx.MethodParameter(0, "arg");
             var objs = ctx.Local(ctx.Object, "objs");
+            var refs = ctx.Local(ctx.Object, "refs");
+            var dec = ctx.Local(ctx.Object, "dec");
+            var type = ctx.Local(ctx.Type, "type");
+            var decTyped = ctx.Local(ctx.Object, "decTyped");
+            var ret = ctx.Local(ctx.Object, "ret");
+            var o = ctx.Local(ctx.Object, "o");
             var i = ctx.Local(ctx.Int32, "i");
+            var typeDataIsArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("typeDataIsPrimitive");
             var js = @"
 objs = {};
+refs = [];
 dec = function(o) {
+    var ret, i;
+    if (o !== null && o._ !== undefined) {
+        if (o._ && o._.typeDataIsArray) { // Array
+            ret = new Array(o.length);
+            ret._ = $$[o._];
+            // TODO: Set $
+            for (i = 0; i < o.length; i++) {
+                ret[i] = dec(o[i]);
+            }
+        } else { // Object or boxed struct
+            ret = { _: $$[o._] };
+            // TODO: Set $ = hash id
+            for (i in o) {
+                if (i !== '_') {
+                    if (o[i] && o[i].length === 1) {
+                        // obj ref
+                        refs.push(function() {
+                        });
+                    } else {
+                        ret[i] = dec(o[i]);
+                    }
+                }
+            }
+        }
+    } else { // unboxed primitive or null
+        ret = o;
+    }
+    return ret;
 };
 for (i = 0; i < arg.length; i++) {
     objs[arg[i][0]] = dec(arg[i][1]);
 }
-return null;
+return objs['0'];
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, i);
+            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, dec, type, decTyped, ret, o, i, typeDataIsArray);
             return stmt;
         }
 

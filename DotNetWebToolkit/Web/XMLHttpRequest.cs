@@ -78,8 +78,7 @@ namespace DotNetWebToolkit.Web {
         }
 
         public static T RecvJson<T>(this XMLHttpRequest xmlHttpRequest) {
-            //return (T)XMLHttpRequestHelper.Decode(Window.Json.Parse(xmlHttpRequest.ResponseText));
-            return default(T);
+            return (T)XMLHttpRequestHelper.Decode(Window.Json.Parse(xmlHttpRequest.ResponseText));
         }
 
         public static void SetTimeout(this XMLHttpRequest xmlHttpRequest, TimeSpan timeout) {
