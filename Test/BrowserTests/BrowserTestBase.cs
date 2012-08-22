@@ -66,13 +66,27 @@ namespace Test.BrowserTests {
         <script type=""text/javascript"">
 " + js + @"
 window.onload = function() {
+    window.onerror = function(msg, url, line) {
+        var _done = document.createElement('div');
+        _done.setAttribute('id', '__done__');
+        _done.innerText = 'onerror:' + msg;
+        document.body.appendChild(_done);
+        return true;
+    };
     try {
         main();
-    } catch (e) { }
+    } catch (e) {
+        var _done = document.createElement('div');
+        _done.setAttribute('id', '__done__');
+        _done.innerText = 'ex:' + e._.$$TypeNamespace + '.' + e._.$$TypeName + ': ' + e.$$_message;
+        document.body.appendChild(_done);
+    }
 };
         </script>
     </head>
-    <body>" + (this.HtmlBody ?? "") + @"</body>
+    <body>
+" + (this.HtmlBody ?? "") + @"
+    </body>
 </html>";
             return html;
         }
@@ -128,6 +142,7 @@ window.onload = function() {
                             }
                         }
                         var bHtml = Encoding.UTF8.GetBytes(responseString);
+                        response.ContentLength64 = bHtml.LongLength;
                         output.Write(bHtml, 0, bHtml.Length);
                     }
                     http.BeginGetContext(cb, null);
@@ -147,16 +162,27 @@ window.onload = function() {
                             isPass = preExtraTest(chrome);
                         }
                         if (isPass) {
+                            IWebElement done;
+                            string doneText = "";
                             try {
-                                var done = chrome.FindElementById("__done__");
-                                isPass = done.Text == "pass";
-                                if (isPass && postExtraTest != null) {
-                                    isPass = postExtraTest(chrome);
-                                }
+                                done = chrome.FindElementById("__done__");
+                                doneText = done.Text;
                             } catch (NoSuchElementException) {
                                 isPass = false;
                             } catch {
                                 isPass = false;
+                            }
+                            isPass = doneText == "pass";
+                            if (!isPass) {
+                                if (doneText.StartsWith("ex:")) {
+                                    throw new Exception(doneText.Substring(3));
+                                }
+                                if (doneText.StartsWith("onerror:")) {
+                                    throw new Exception(doneText.Substring(8));
+                                }
+                            }
+                            if (isPass && postExtraTest != null) {
+                                isPass = postExtraTest(chrome);
                             }
                         }
                         Assert.That(isPass, Is.True);
