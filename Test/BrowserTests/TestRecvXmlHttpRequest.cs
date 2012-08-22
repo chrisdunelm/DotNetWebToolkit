@@ -101,6 +101,24 @@ namespace Test.BrowserTests {
             this.Start(f);
         }
 
+        class RecvObjectWithNoRefs {
+            public int i;
+            public char c;
+            public Int64 l;
+            public string s;
+        }
+        [Test]
+        public void TestJsRecvObjectWithNoRefs() {
+            this.SetUrlJson("/xhr", data => new RecvObjectWithNoRefs { i = 9, c = 'A', l = -2L, s = "abc" });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvObjectWithNoRefs>("xhr", data => {
+                    Done(data.i == 9 && data.c == 'A' && data.l == -2L && data.s == "abc");
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
     }
 
 }

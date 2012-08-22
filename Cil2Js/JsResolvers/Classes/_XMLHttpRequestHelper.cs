@@ -40,7 +40,6 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var c = ctx.Local(ctx.Char, "c");
             var js = @"
 try {
-console.log('++encode()');
 id = 0;
 if (arg && typeof(arg) == 'object') {
     arg.$$ = '0';
@@ -49,14 +48,12 @@ todo = [arg];
 todoOfs = 0;
 json = [];
 isObjRef = function(o) {
-console.log('++isObRef()');
     if (o === null || o === undefined) {
         return false;
     }
     if (typeof(o) === 'object' && o._ && !o._.typeDataIsValueType) {
         if (!o.$$) {
             o.$$ = (++id).toString();
-console.log('assign id: '+o.$$);
             todo.push(o);
         }
         return true;
@@ -69,7 +66,6 @@ encObj = function(o) {
         var c = key.charAt(0);
         if (c !== '_' && c !== '$' && o.hasOwnProperty(key)) {
             var oKey = o[key];
-console.log('key:'+key+'; oKey:'+oKey);
             if (isObjRef(oKey)) {
                 ret.push(key, [oKey.$$]);
             } else {
@@ -80,7 +76,6 @@ console.log('key:'+key+'; oKey:'+oKey);
     return ret;
 };
 enc = function(o) {
-console.log('++enc()');
     if (o === null || o === undefined) {
         return null;
     }
@@ -106,7 +101,6 @@ console.log('++enc()');
     } else if (type.typeDataIsPrimitive) { // boxed primitive, supports 64-bit numbers without any special code
         return [type.typeDataJsName, o.v];
     } else { // object, boxed value-type
-console.log('obj/bvt');
         if (type.typeDataIsValueType) {
             o = o.v;
         }
@@ -150,38 +144,60 @@ objs = {};
 refs = [];
 dec = function(o) {
     var ret, i;
-    if (o !== null && o._ !== undefined) {
+    if (o == null) {
+        return null;
+    }
+    var isObject = false;
+    if (o._ !== undefined) {
         if (o._ && o._.typeDataIsArray) { // Array
-            ret = new Array(o.length);
+console.log('array');
+            var ret = new Array(o.length);
             ret._ = $$[o._];
             // TODO: Set $
-            for (i = 0; i < o.length; i++) {
+            for (var i = 0; i < o.length; i++) {
                 ret[i] = dec(o[i]);
             }
         } else { // Object or boxed struct
-            ret = { _: $$[o._] };
-            // TODO: Set $ = hash id
-            for (i in o) {
-                if (i !== '_') {
-                    if (o[i] && o[i].length === 1) {
-                        // obj ref
-                        refs.push(function() {
-                        });
-                    } else {
-                        ret[i] = dec(o[i]);
-                    }
+console.log('obj/bvt');
+            isObject = true;
+        }
+    } else if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
+console.log('unboxed vt');
+        isObject = true;
+    } else { // unboxed primitive or null
+console.log('primitive');
+        ret = o;
+    }
+    if (isObject) {
+//console.log('isObject = true');
+        var ret = { '_': o._ ? $$[o._] : null };
+        // TODO: Set $ = hash id
+        for (var i in o) {
+            if (i !== '_') {
+                if (o[i] && o[i].length === 1) {
+                    // obj ref
+                    refs.push(function() {
+                    });
+                } else {
+                    ret[i] = dec(o[i]);
                 }
             }
         }
-    } else { // unboxed primitive or null
-        ret = o;
     }
     return ret;
 };
 for (i = 0; i < arg.length; i++) {
     objs[arg[i][0]] = dec(arg[i][1]);
 }
-return objs['0'];
+ret = objs['0'];
+/*console.log('ret:'+ret);
+console.log('ret._:'+ret._);
+console.log('ret._.$$TypeName:'+ret._.$$TypeName);
+console.log('ret.v.a:'+ret.v.a);
+console.log('ret.v.b:'+ret.v.b);
+console.log('ret.v.c:'+ret.v.c);
+console.log('ret.v.d:'+ret.v.d);*/
+return ret;
 ";
             var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, dec, type, decTyped, ret, o, i, typeDataIsArray);
             return stmt;

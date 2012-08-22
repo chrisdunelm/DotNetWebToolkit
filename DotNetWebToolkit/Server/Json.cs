@@ -23,7 +23,8 @@ namespace DotNetWebToolkit.Server {
                 objIds.Add(obj, "0");
             }
             int id = 0;
-            Func<object, bool, object> enc = (o, isBoxed) => {
+            Func<object, bool, bool, object> enc = null;
+            enc = (o, inObject, isRoot) => {
                 if (o == null) {
                     return null;
                 }
@@ -37,7 +38,29 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.Object:
                 case TypeCode.DateTime:
                     // objects + structs
-                    throw new NotImplementedException();
+                    if (type.IsValueType) {
+                        ret = enc(o, false, false);
+                    } else {
+                        if (isRoot) {
+                            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                            var qFieldNamesValues =
+                                from field in fields
+                                let jsName = this.typeMap.GetFieldName(type, field)
+                                where jsName != null
+                                let value = field.GetValue(o)
+                                select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
+                            var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
+                            if (!type.IsValueType) {
+                                retDict.Add("_", this.typeMap.GetTypeName(type));
+                            }
+                            ret = retDict;
+                        } else {
+                            var objId = (++id).ToString();
+                            objIds.Add(o, objId);
+                            ret = objId;
+                        }
+                    }
+                    break;
                 case TypeCode.Boolean:
                 case TypeCode.Int32:
                     ret = o;
@@ -55,7 +78,7 @@ namespace DotNetWebToolkit.Server {
                 default:
                     throw new InvalidOperationException("Cannot handle: " + typeCode);
                 }
-                if (isBoxed) {
+                if (inObject && type.IsValueType) {
                     return new Dictionary<string, object> {
                         { "_", this.typeMap.GetTypeName(type) },
                         { "v", ret }
@@ -68,7 +91,7 @@ namespace DotNetWebToolkit.Server {
             bool isFirst = true;
             while (todo.Count > 0) {
                 var o = todo.Dequeue();
-                var encoded = enc(o, true);
+                var encoded = enc(o, true, true);
                 var oId = isFirst ? "0" : objIds[o];
                 res.Add(new object[] { oId, encoded });
                 isFirst = false;
