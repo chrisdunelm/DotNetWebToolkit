@@ -79,6 +79,7 @@ return a;
                 var js = @"
 if (obj == null) return true;
 temp = getTypeCall;
+if (!temp) return false; // Required because C# objects received via JSON may have null type when type is never refered to in JS
 if (temp === toType) return true;
 canCastTo = temp.assignableTo;
 for (i = canCastTo.length - 1; i >= 0; i--)
