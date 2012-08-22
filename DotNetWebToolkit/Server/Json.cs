@@ -38,27 +38,27 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.Object:
                 case TypeCode.DateTime:
                     // objects + structs
-                    if (type.IsValueType) {
-                        ret = enc(o, false, false);
-                    } else {
-                        if (isRoot) {
-                            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                            var qFieldNamesValues =
-                                from field in fields
-                                let jsName = this.typeMap.GetFieldName(type, field)
-                                where jsName != null
-                                let value = field.GetValue(o)
-                                select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
-                            var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
-                            if (!type.IsValueType) {
-                                retDict.Add("_", this.typeMap.GetTypeName(type));
-                            }
-                            ret = retDict;
-                        } else {
-                            var objId = (++id).ToString();
-                            objIds.Add(o, objId);
-                            ret = objId;
+                    if (isRoot || type.IsValueType) {
+                        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        var qFieldNamesValues =
+                            from field in fields
+                            let jsName = this.typeMap.GetFieldName(type, field)
+                            where jsName != null
+                            let value = field.GetValue(o)
+                            select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
+                        var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
+                        if (!type.IsValueType) {
+                            retDict.Add("_", this.typeMap.GetTypeName(type));
                         }
+                        ret = retDict;
+                    } else {
+                        string objId;
+                        if (!objIds.TryGetValue(o, out objId)) {
+                            todo.Enqueue(o);
+                            objId = (++id).ToString();
+                            objIds.Add(o, objId);
+                        }
+                        ret = objId;
                     }
                     break;
                 case TypeCode.Boolean:

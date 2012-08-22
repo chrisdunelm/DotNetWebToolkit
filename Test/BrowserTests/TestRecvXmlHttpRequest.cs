@@ -119,6 +119,137 @@ namespace Test.BrowserTests {
             this.Start(f);
         }
 
+        class RecvObjectWithRefs {
+            public class Inner {
+                public string s;
+            }
+            public Inner i1, i2;
+            public Inner iNull;
+        }
+        [Test]
+        public void TestJsRecvObjectWithRefs() {
+            this.SetUrlJson("/xhr", data => new RecvObjectWithRefs {
+                i1 = new RecvObjectWithRefs.Inner { s = "one" },
+                i2 = new RecvObjectWithRefs.Inner { s = "two" },
+                iNull = null,
+            });
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvObjectWithRefs>("xhr", data => {
+                    Done(data.i1.s == "one" && data.i2.s == "two" && data.iNull == null);
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
+        class RecvObjectSelfRef {
+            public RecvObjectSelfRef self;
+        }
+        [Test]
+        public void TestJsRecvObjectSelfRef() {
+            var obj = new RecvObjectSelfRef();
+            obj.self = obj;
+            this.SetUrlJson("/xhr", data => obj);
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvObjectSelfRef>("xhr", data => {
+                    Done(data.self == data);
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
+        class RecvObjectsMutualRefs1 {
+            public RecvObjectsMutualRefs1 self;
+            public RecvObjectsMutualRefs2 other;
+        }
+        class RecvObjectsMutualRefs2 {
+            public RecvObjectsMutualRefs2 self;
+            public RecvObjectsMutualRefs1 other;
+        }
+        [Test]
+        public void TestJsRecvObjectsMutualRefs() {
+            var obj1 = new RecvObjectsMutualRefs1();
+            var obj2 = new RecvObjectsMutualRefs2();
+            obj1.self = obj1;
+            obj1.other = obj2;
+            obj2.self = obj2;
+            obj2.other = obj1;
+            this.SetUrlJson("/xhr", data => obj1);
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvObjectsMutualRefs1>("xhr", data => {
+                    Done(data.self == data && data.other.self == data.other && data.other.other == data);
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
+        struct RecvNestedStructs {
+            public struct Nest3 {
+                public Int64 l;
+            }
+            public struct Nest2 {
+                public Nest3 n3;
+            }
+            public struct Nest1 {
+                public Nest2 n2;
+            }
+            public Nest1 n1;
+        }
+        [Test]
+        public void TestJsRecvNestedStructs() {
+            var obj = new RecvNestedStructs {
+                n1 = new RecvNestedStructs.Nest1 {
+                    n2 = new RecvNestedStructs.Nest2 {
+                        n3 = new RecvNestedStructs.Nest3 {
+                            l = -3
+                        }
+                    }
+                }
+            };
+            this.SetUrlJson("/xhr", data => obj);
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvNestedStructs>("xhr", data => {
+                    Done(data.n1.n2.n3.l == -3);
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
+        struct RecvAllInObject {
+            public object n;
+            public object x;
+        }
+        [Test]
+        public void TestJsRecvAllInObject() {
+            var obj = new RecvAllInObject {
+                x = 8,
+                n = new RecvAllInObject {
+                    x = -4L,
+                    n = new RecvAllInObject {
+                        x = "abc",
+                        n = new RecvAllInObject {
+                            x = null,
+                            n = null
+                        }
+                    }
+                }
+            };
+            this.SetUrlJson("/xhr", data => obj);
+            Action f = () => {
+                var xhr = new XmlHttpRequest2<object, RecvAllInObject>("xhr", data => {
+                    Done((int)data.x == 8 && (long)((RecvAllInObject)data.n).x == -4L &&
+                        (string)((RecvAllInObject)((RecvAllInObject)data.n).n).x == "abc" &&
+                        ((RecvAllInObject)((RecvAllInObject)((RecvAllInObject)data.n).n).n).x == null &&
+                        ((RecvAllInObject)((RecvAllInObject)((RecvAllInObject)data.n).n).n).n == null);
+                });
+                xhr.Send(null);
+            };
+            this.Start(f);
+        }
+
     }
 
 }

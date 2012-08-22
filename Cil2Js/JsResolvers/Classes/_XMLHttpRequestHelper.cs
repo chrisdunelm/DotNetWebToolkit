@@ -169,15 +169,17 @@ console.log('primitive');
         ret = o;
     }
     if (isObject) {
-//console.log('isObject = true');
         var ret = { '_': o._ ? $$[o._] : null };
         // TODO: Set $ = hash id
         for (var i in o) {
             if (i !== '_') {
                 if (o[i] && o[i].length === 1) {
                     // obj ref
-                    refs.push(function() {
-                    });
+                    (function(ret, i, o) {
+                        refs.push(function() {
+                            ret[i] = objs[o[i]];
+                        });
+                    })(ret, i, o)
                 } else {
                     ret[i] = dec(o[i]);
                 }
@@ -188,6 +190,9 @@ console.log('primitive');
 };
 for (i = 0; i < arg.length; i++) {
     objs[arg[i][0]] = dec(arg[i][1]);
+}
+for (i = 0; i < refs.length; i++) {
+    refs[i]();
 }
 ret = objs['0'];
 /*console.log('ret:'+ret);
