@@ -108,6 +108,23 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     }
                 }
             }
+            // Special case for eq and neq with unsigned integer types.
+            // If either side of the eq/neq is unsigned, then ensure that both sides are unsigned
+            if (e.Op == BinaryOp.Equal || e.Op == BinaryOp.NotEqual) {
+                if (e.Left.Type.IsUnsignedInteger()) {
+                    if (!e.Right.Type.IsUnsignedInteger()) {
+                        return new ExprBinary(ctx, e.Op, e.Type, e.Left, new ExprConv(ctx, e.Right, e.Left.Type, false));
+                    }
+                } else if (e.Right.Type.IsUnsignedInteger()) {
+                    if (!e.Left.Type.IsUnsignedInteger()) {
+                        return new ExprBinary(ctx, e.Op, e.Type, new ExprConv(ctx, e.Left, e.Right.Type, false), e.Right);
+                    }
+                }
+            }
+            //if (e.Op == BinaryOp.Equal || e.Op==BinaryOp.NotEqual)
+            //    if (e.Left.IsLiteralInt32() && e.Right.Type.IsUInt32()) {
+            //        return ctx.ExprGen.Equal(
+            //    }
             return base.VisitBinary(e);
         }
 

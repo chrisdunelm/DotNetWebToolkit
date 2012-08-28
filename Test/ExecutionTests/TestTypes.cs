@@ -23,6 +23,15 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        static UInt32 GetLargeUInt32() {
+            return UInt32.MaxValue;
+        }
+        [Test]
+        public void TestUInt32CompareLargeToLiteral() {
+            Func<bool> f = () => GetLargeUInt32() == 0xffffffff;
+            this.Test(f, true);
+        }
+
     }
 
 }
