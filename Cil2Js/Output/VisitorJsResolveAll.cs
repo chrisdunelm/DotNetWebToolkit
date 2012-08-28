@@ -121,10 +121,21 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     }
                 }
             }
-            //if (e.Op == BinaryOp.Equal || e.Op==BinaryOp.NotEqual)
-            //    if (e.Left.IsLiteralInt32() && e.Right.Type.IsUInt32()) {
-            //        return ctx.ExprGen.Equal(
-            //    }
+            // Special case for unsigned <, <=, >, >=
+            // Force conversions to unsigned if either side is signed
+            if (e.Op == BinaryOp.LessThan_Un || e.Op == BinaryOp.LessThanOrEqual_Un ||
+                e.Op == BinaryOp.GreaterThan_Un || e.Op == BinaryOp.GreaterThanOrEqual_Un) {
+                Expr newLeft = null, newRight = null;
+                if (!e.Left.Type.IsUnsignedInteger()) {
+                    newLeft = new ExprConv(ctx, e.Left, e.Left.Type.UnsignedEquivilent(ctx.TypeSystem), false);
+                }
+                if (!e.Right.Type.IsUnsignedInteger()) {
+                    newRight = new ExprConv(ctx, e.Right, e.Right.Type.UnsignedEquivilent(ctx.TypeSystem), false);
+                }
+                if (newLeft != null || newRight != null) {
+                    return new ExprBinary(ctx, e.Op, e.Type, newLeft ?? e.Left, newRight ?? e.Right);
+                }
+            }
             return base.VisitBinary(e);
         }
 
