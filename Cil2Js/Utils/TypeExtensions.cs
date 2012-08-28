@@ -196,6 +196,22 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return type.IsByte() || type.IsUInt16() || type.IsUInt32() || type.IsUInt64();
         }
 
+        public static TypeReference UnsignedEquivilent(this TypeReference type, TypeSystem ts) {
+            if (type.IsSByte()) {
+                return ts.Byte;
+            }
+            if (type.IsInt16()) {
+                return ts.UInt16;
+            }
+            if (type.IsInt32()) {
+                return ts.UInt32;
+            }
+            if (type.IsInt64()) {
+                return ts.UInt64;
+            }
+            throw new InvalidOperationException("Cannot handle type: " + type);
+        }
+
         public static bool IsNonPrimitiveValueType(this TypeReference type) {
             return type.IsValueType && !type.IsPrimitive;
         }
