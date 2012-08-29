@@ -83,8 +83,18 @@ enc = function(o) {
     if (!type) {
         if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
             return encObj(o);
-            //return ret;
         } else { // string or unboxed primitive
+            if (typeof(o) === 'number') {
+                if (isNaN(o)) {
+                    return [0];
+                }
+                if (o === Number.NEGATIVE_INFINITY) {
+                    return [-1];
+                }
+                if (o === Number.POSITIVE_INFINITY) {
+                    return [1];
+                }
+            }
             return o;
         }
     } else if (type.typeDataIsArray) { // array
@@ -99,7 +109,7 @@ enc = function(o) {
         }
         return [type.typeDataJsName, ret];
     } else if (type.typeDataIsPrimitive) { // boxed primitive, supports 64-bit numbers without any special code
-        return [type.typeDataJsName, o.v];
+        return [type.typeDataJsName, enc(o.v)];
     } else { // object, boxed value-type
         if (type.typeDataIsValueType) {
             o = o.v;
@@ -137,7 +147,9 @@ throw xx;
             var decTyped = ctx.Local(ctx.Object, "decTyped");
             var ret = ctx.Local(ctx.Object, "ret");
             var o = ctx.Local(ctx.Object, "o");
+            var oArray = ctx.Local(ctx.Object, "oArray");
             var i = ctx.Local(ctx.Int32, "i");
+            var isObject = ctx.Local(ctx.Boolean, "isObject");
             var typeDataIsArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("typeDataIsPrimitive");
             var js = @"
 objs = {};
@@ -149,13 +161,23 @@ dec = function(o) {
     }
     var isObject = false;
     if (o._ !== undefined) {
-        if (o._ && o._.typeDataIsArray) { // Array
+        if (o['']) { // Array
 console.log('array');
-            var ret = new Array(o.length);
+            var oArray = o[''];
+            var ret = new Array(oArray.length);
             ret._ = $$[o._];
             // TODO: Set $
-            for (var i = 0; i < o.length; i++) {
-                ret[i] = dec(o[i]);
+            for (var i = 0; i < oArray.length; i++) {
+                if (oArray[i] && oArray[i].length === 1 && typeof(oArray[i][0]) === 'string') {
+                    // obj ref
+                    (function(ret, i, o) {
+                        refs.push(function() {
+                            ret[i] = objs[oArray[i]];
+                        });
+                    })(ret, i, o);
+                } else {
+                    ret[i] = dec(oArray[i]);
+                }
             }
         } else { // Object or boxed struct
 console.log('obj/bvt');
@@ -164,8 +186,16 @@ console.log('obj/bvt');
     } else if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
 console.log('unboxed vt');
         isObject = true;
+    } else if (o instanceof Array && o.length === 1) { // Special Single/Double
+console.log('special: [' + o[0] + ']');
+        switch (o[0]) {
+        case 0: ret = NaN; break;
+        case 1: ret = Number.POSITIVE_INFINITY; break;
+        case -1: ret = Number.NEGATIVE_INFINITY; break;
+        default: throw 'Unrecognised special: ' + o[0];
+        }
     } else { // unboxed primitive or null
-console.log('primitive');
+console.log('primitive: ' + o);
         ret = o;
     }
     if (isObject) {
@@ -173,7 +203,7 @@ console.log('primitive');
         // TODO: Set $ = hash id
         for (var i in o) {
             if (i !== '_') {
-                if (o[i] && o[i].length === 1) {
+                if (o[i] && o[i].length === 1 && typeof(o[i][0]) === 'string') {
                     // obj ref
                     (function(ret, i, o) {
                         refs.push(function() {
@@ -195,16 +225,9 @@ for (i = 0; i < refs.length; i++) {
     refs[i]();
 }
 ret = objs['0'];
-/*console.log('ret:'+ret);
-console.log('ret._:'+ret._);
-console.log('ret._.$$TypeName:'+ret._.$$TypeName);
-console.log('ret.v.a:'+ret.v.a);
-console.log('ret.v.b:'+ret.v.b);
-console.log('ret.v.c:'+ret.v.c);
-console.log('ret.v.d:'+ret.v.d);*/
 return ret;
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, dec, type, decTyped, ret, o, i, typeDataIsArray);
+            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, dec, type, decTyped, ret, o, oArray, i, isObject, typeDataIsArray);
             return stmt;
         }
 

@@ -65,6 +65,7 @@
     <Compile Include="BrowserTests\TestImage.cs" />
     <Compile Include="BrowserTests\TestRecvXmlHttpRequest.cs" />
     <Compile Include="BrowserTests\TestSendXmlHttpRequest.cs" />
+    <Compile Include="BrowserTests\TestXhrObjectEncoding.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestDataView.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestFloat32Array.cs" />
     <Compile Include="BrowserTests\TypedArrays\TestFloat64Array.cs" />

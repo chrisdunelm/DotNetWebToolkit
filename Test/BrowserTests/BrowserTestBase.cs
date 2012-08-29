@@ -67,11 +67,15 @@ namespace Test.BrowserTests {
 " + js + @"
 window.onload = function() {
     window.onerror = function(msg, url, line) {
-        var _done = document.createElement('div');
-        _done.setAttribute('id', '__done__');
-        _done.innerText = 'onerror:' + msg;
-        document.body.appendChild(_done);
-        return true;
+        if (!document.getElementById('__done__')) {
+            var _done = document.createElement('div');
+            _done.setAttribute('id', '__done__');
+            _done.innerText = 'onerror:' + msg;
+            document.body.appendChild(_done);
+            return false;
+        } else {
+            return true;
+        }
     };
     try {
         main();

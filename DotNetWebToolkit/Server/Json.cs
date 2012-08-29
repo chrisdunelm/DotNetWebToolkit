@@ -39,18 +39,31 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.DateTime:
                     // objects + structs
                     if (isRoot || type.IsValueType) {
-                        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                        var qFieldNamesValues =
-                            from field in fields
-                            let jsName = this.typeMap.GetFieldName(type, field)
-                            where jsName != null
-                            let value = field.GetValue(o)
-                            select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
-                        var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
-                        if (!type.IsValueType) {
-                            retDict.Add("_", this.typeMap.GetTypeName(type));
+                        if (type.IsArray) {
+                            var oArray = (Array)o;
+                            var elType = type.GetElementType();
+                            var retArray = new object[oArray.Length];
+                            for (int i = 0; i < oArray.Length; i++) {
+                                retArray[i] = enc(oArray.GetValue(i), !elType.IsValueType, false);
+                            }
+                            ret = new Dictionary<string, object>{
+                                { "_", this.typeMap.GetTypeName(type) },
+                                { "", retArray }
+                            };
+                        } else {
+                            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                            var qFieldNamesValues =
+                                from field in fields
+                                let jsName = this.typeMap.GetFieldName(type, field)
+                                where jsName != null
+                                let value = field.GetValue(o)
+                                select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
+                            var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
+                            if (!type.IsValueType) {
+                                retDict.Add("_", this.typeMap.GetTypeName(type));
+                            }
+                            ret = retDict;
                         }
-                        ret = retDict;
                     } else {
                         string objId;
                         if (!objIds.TryGetValue(o, out objId)) {
@@ -58,12 +71,41 @@ namespace DotNetWebToolkit.Server {
                             objId = (++id).ToString();
                             objIds.Add(o, objId);
                         }
-                        ret = objId;
+                        ret = new object[] { objId };
                     }
                     break;
                 case TypeCode.Boolean:
+                case TypeCode.SByte:
+                case TypeCode.Int16:
                 case TypeCode.Int32:
+                case TypeCode.Byte:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
                     ret = o;
+                    break;
+                case TypeCode.Single:
+                    var oSingle = (Single)o;
+                    if (Single.IsNaN(oSingle)) {
+                        ret = new object[] { 0 };
+                    } else if (Single.IsNegativeInfinity(oSingle)) {
+                        ret = new object[] { -1 };
+                    } else if (Single.IsPositiveInfinity(oSingle)) {
+                        ret = new object[] { 1 };
+                    } else {
+                        ret = o;
+                    }
+                    break;
+                case TypeCode.Double:
+                    var oDouble = (Double)o;
+                    if (Double.IsNaN(oDouble)) {
+                        ret = new object[] { 0 };
+                    } else if (Double.IsNegativeInfinity(oDouble)) {
+                        ret = new object[] { -1 };
+                    } else if (Double.IsPositiveInfinity(oDouble)) {
+                        ret = new object[] { 1 };
+                    } else {
+                        ret = o;
+                    }
                     break;
                 case TypeCode.Char:
                     ret = (int)(char)o;
@@ -73,6 +115,13 @@ namespace DotNetWebToolkit.Server {
                     ret = new object[] {
                         i64 >> 32,
                         i64 & 0xffffffff
+                    };
+                    break;
+                case TypeCode.UInt64:
+                    var ui64 = (UInt64)o;
+                    ret = new object[]{
+                        ui64 >> 32,
+                        ui64 & 0xffffffff
                     };
                     break;
                 default:
@@ -168,8 +217,30 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.Byte:
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
+                    return Convert.ChangeType(o, type);
                 case TypeCode.Single:
+                    var oSingle = o as object[];
+                    if (oSingle != null) {
+                        var special = (int)oSingle[0];
+                        switch (special) {
+                        case 0: return Single.NaN;
+                        case 1: return Single.PositiveInfinity;
+                        case -1: return Single.NegativeInfinity;
+                        default: throw new InvalidOperationException("Unrecognised special: " + special);
+                        }
+                    }
+                    return Convert.ChangeType(o, type);
                 case TypeCode.Double:
+                    var oDouble = o as object[];
+                    if (oDouble != null) {
+                        var special = (int)oDouble[0];
+                        switch (special) {
+                        case 0: return Double.NaN;
+                        case 1: return Double.PositiveInfinity;
+                        case -1: return Double.NegativeInfinity;
+                        default: throw new InvalidOperationException("Unrecognised special: " + special);
+                        }
+                    }
                     return Convert.ChangeType(o, type);
                 case TypeCode.Object:
                 case TypeCode.DateTime:
