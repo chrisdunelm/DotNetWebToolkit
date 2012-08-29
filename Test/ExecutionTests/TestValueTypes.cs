@@ -111,6 +111,27 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        struct StructsInObject {
+            public object a, b;
+        }
+        private static StructsInObject CreateStructsInObject(int a) {
+            return new StructsInObject {
+                a = new StructsInObject {
+                    a = a,
+                    b = a
+                },
+                b = a
+            };
+        }
+        [Test]
+        public void TestStructsInObject() {
+            Func<int, int> f = a => {
+                var o = CreateStructsInObject(a);
+                return (int)((StructsInObject)o.a).a + (int)((StructsInObject)o.a).b + (int)o.b;
+            };
+            this.Test(f);
+        }
+
     }
 
 }

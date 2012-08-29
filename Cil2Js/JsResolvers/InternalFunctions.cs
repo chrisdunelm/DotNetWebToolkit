@@ -173,8 +173,8 @@ throw callCtorEx
                         var dc = ValueTypeDeepCopyIfRequired(fieldType, () => fieldAccess);
                         return (dc ?? fieldAccess).Named("v" + i);
                     }).ToArray();
-                    var js = "return {" + copy + "}";
-                    return new StmtJsExplicit(ctx, js, fieldNames.Concat(fieldValues));
+                    var js = "return o._ ? o : {" + copy + "}";
+                    return new StmtJsExplicit(ctx, js, fieldNames.Concat(fieldValues).Concat(o));
                 }
             }
         }
