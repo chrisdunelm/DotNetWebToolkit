@@ -112,11 +112,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             // If either side of the eq/neq is unsigned, then ensure that both sides are unsigned
             if (e.Op == BinaryOp.Equal || e.Op == BinaryOp.NotEqual) {
                 if (e.Left.Type.IsUnsignedInteger()) {
-                    if (!e.Right.Type.IsUnsignedInteger()) {
+                    if (e.Right.Type.IsSignedInteger()) {
                         return new ExprBinary(ctx, e.Op, e.Type, e.Left, new ExprConv(ctx, e.Right, e.Left.Type, false));
                     }
                 } else if (e.Right.Type.IsUnsignedInteger()) {
-                    if (!e.Left.Type.IsUnsignedInteger()) {
+                    if (e.Left.Type.IsSignedInteger()) {
                         return new ExprBinary(ctx, e.Op, e.Type, new ExprConv(ctx, e.Left, e.Right.Type, false), e.Right);
                     }
                 }
@@ -126,10 +126,10 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             if (e.Op == BinaryOp.LessThan_Un || e.Op == BinaryOp.LessThanOrEqual_Un ||
                 e.Op == BinaryOp.GreaterThan_Un || e.Op == BinaryOp.GreaterThanOrEqual_Un) {
                 Expr newLeft = null, newRight = null;
-                if (!e.Left.Type.IsUnsignedInteger()) {
+                if (e.Left.Type.IsSignedInteger()) {
                     newLeft = new ExprConv(ctx, e.Left, e.Left.Type.UnsignedEquivilent(ctx.TypeSystem), false);
                 }
-                if (!e.Right.Type.IsUnsignedInteger()) {
+                if (e.Right.Type.IsSignedInteger()) {
                     newRight = new ExprConv(ctx, e.Right, e.Right.Type.UnsignedEquivilent(ctx.TypeSystem), false);
                 }
                 if (newLeft != null || newRight != null) {
@@ -142,7 +142,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         protected override ICode VisitBox(ExprBox e) {
             var ctx = e.Ctx;
             var expr = (Expr)this.Visit(e.Expr);
-            if (e.Type.IsUnsignedInteger() && expr.Type.IsInteger() && !expr.Type.IsUnsignedInteger()) {
+            if (e.Type.IsUnsignedInteger() && expr.Type.IsSignedInteger()) {
                 expr = new ExprConv(ctx, expr, e.Type, false);
             }
             if (!e.Type.IsValueType) {
@@ -216,7 +216,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var target = (ExprVar)this.Visit(s.Target);
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
-            } else if (target.Type.IsUnsignedInteger() && expr.Type.IsInteger() && !expr.Type.IsUnsignedInteger()) {
+            } else if (target.Type.IsUnsignedInteger() && expr.Type.IsSignedInteger()) {
                 expr = new ExprConv(ctx, expr, expr.Type.UnsignedEquivilent(ctx.TypeSystem), false);
             }
             if (expr != s.Expr || target != s.Target) {
@@ -232,7 +232,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var target = (ExprVar)this.Visit(e.Target);
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
-            } else if (target.Type.IsUnsignedInteger() && expr.Type.IsInteger() && !expr.Type.IsUnsignedInteger()) {
+            } else if (target.Type.IsUnsignedInteger() && expr.Type.IsSignedInteger()) {
                 expr = new ExprConv(ctx, expr, expr.Type.UnsignedEquivilent(ctx.TypeSystem), false);
             }
             if (expr != e.Expr || target != e.Target) {
