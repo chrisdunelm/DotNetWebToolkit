@@ -49,9 +49,10 @@ namespace Test.ExecutionTests {
                 var sb = new StringBuilder();
                 sb.Append("abcd");
                 sb.Length++;
-                return sb.ToString();
+                // Selenium or chromebuilder doesn't like returning \0 chars in a string, so replace it
+                return sb.ToString().Replace('\0', '.');
             };
-            this.Test(f, "abcd\u0000");
+            this.Test(f,"abcd.");
         }
 
     }
