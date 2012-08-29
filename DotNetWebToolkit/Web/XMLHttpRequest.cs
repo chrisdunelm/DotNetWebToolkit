@@ -105,28 +105,5 @@ namespace DotNetWebToolkit.Web {
 
     }
 
-    public class XmlHttpRequest2<TSend, TRecv> {
-
-        public XmlHttpRequest2(string url, Action<TRecv> onRecv) {
-            this.url = url;
-            this.onRecv = onRecv;
-        }
-
-        private string url;
-        private Action<TRecv> onRecv;
-
-        public void Send(TSend obj) {
-            var xhr = new XMLHttpRequest();
-            xhr.Open("POST", this.url);
-            xhr.OnReadyStateChange = () => {
-                if (xhr.ReadyState == XMLHttpRequestReadyState.Done) {
-                    var data = xhr.RecvJson<TRecv>();
-                    this.onRecv(data);
-                }
-            };
-            xhr.SendJson(obj);
-        }
-
-    }
 
 }
