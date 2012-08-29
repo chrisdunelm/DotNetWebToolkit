@@ -256,6 +256,7 @@ namespace Test.ExecutionTests {
 var r;
 try {
     r = main(" + jsArgs + @");
+    console.log(r);
 } catch (e) {
     return {exception:[e._.$$TypeNamespace, e._.$$TypeName, e.$$_message]};
 }
@@ -269,20 +270,11 @@ if (typeof r === 'number') {
     if (r === Number.NEGATIVE_INFINITY) {
         return '-Infinity';
     }
+    return r.toString();
 }
 return r;
 ";
-                    object jsResult = null;
-                    //for (int j = 0; j < 5; j++) {
-                    //    try {
-                            jsResult = chrome.ExecuteScript(js + jsCall);
-                    //        break;
-                    //    } catch (WebDriverException) {
-                    //        if (i == 4) {
-                    //            throw;
-                    //        }
-                    //    }
-                    //}
+                    var jsResult = chrome.ExecuteScript(js + jsCall);
                     if (jsResult != null && jsResult is Dictionary<string, object>) {
                         // Exception
                         Assert.That(runResults[i].Item1, Is.Null, "JS threw exception, but exception not expected");
@@ -313,7 +305,7 @@ return r;
                                 case "NaN": jsResult = Single.NaN; break;
                                 case "+Infinity": jsResult = Single.PositiveInfinity; break;
                                 case "-Infinity": jsResult = Single.NegativeInfinity; break;
-                                default: jsResult = Convert.ToSingle(jsResult); break;
+                                default: jsResult = Single.Parse(jsResult as string); break;
                                 }
                                 break;
                             case TypeCode.Double:
@@ -321,7 +313,11 @@ return r;
                                 case "NaN": jsResult = Double.NaN; break;
                                 case "+Infinity": jsResult = Double.PositiveInfinity; break;
                                 case "-Infinity": jsResult = Double.NegativeInfinity; break;
+                                default: jsResult = Double.Parse(jsResult as string); break;
                                 }
+                                break;
+                            case TypeCode.Char:
+                                jsResult = (char)int.Parse(jsResult as string);
                                 break;
                             default:
                                 jsResult = Convert.ChangeType(jsResult, d.Method.ReturnType);
