@@ -674,7 +674,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 let type = typeName.Key.LoadType()
                 where type != null
                 select new { type, typeName.Value };
-            var typeMap = qTypeMap.ToDictionary(x => x.type, x => x.Value);
+            var ttt = qTypeMap.ToArray();
+            var typeMap = ttt.ToDictionary(x => x.type, x => x.Value);
             var jsTypeMap = new JsonTypeMap(typeMap, fieldMap);
             return new JsResult(jsStr, jsTypeMap);
         }

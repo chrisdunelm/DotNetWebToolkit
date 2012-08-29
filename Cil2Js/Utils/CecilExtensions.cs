@@ -639,35 +639,25 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return fullName + ", " + tDef.Module.Assembly.FullName;
         }
 
-        //static CecilExtensions() {
-        //    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-        //}
-
-        //public static string SourceDirectory = null;
-
-        //static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-        //    if (SourceDirectory == null) {
-        //        return null;
-        //    }
-        //    var assemblyName = args.Name.Split(',')[0];
-        //    var fn = Path.Combine(SourceDirectory, assemblyName + ".dll");
-        //    var assembly = Assembly.LoadFrom(fn);
-        //    return assembly;
-        //}
-
         public static Type LoadType(this TypeReference tRef) {
             // TODO: Must rework to remove exception
             try {
                 var name = tRef.Resolve().AssemblyQualifiedName();
                 var type = Type.GetType(name);
                 if (tRef.IsArray) {
-                    tRef = tRef.ElementType();
+                    int arrayCount = 0;
+                    while (tRef.IsArray) {
+                        tRef = tRef.ElementType();
+                        arrayCount++;
+                    }
                     if (tRef.IsGenericInstance) {
                         var tRefGen = (GenericInstanceType)tRef;
                         var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
                         type = type.MakeGenericType(tArgs);
                     }
-                    type = type.MakeArrayType();
+                    for (int i = 0; i < arrayCount; i++) {
+                        type = type.MakeArrayType();
+                    }
                     return type;
                 }
                 if (tRef.IsGenericInstance) {
