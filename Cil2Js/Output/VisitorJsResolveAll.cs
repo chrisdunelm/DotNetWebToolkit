@@ -140,26 +140,30 @@ namespace DotNetWebToolkit.Cil2Js.Output {
         }
 
         protected override ICode VisitBox(ExprBox e) {
+            var ctx = e.Ctx;
+            var expr = (Expr)this.Visit(e.Expr);
+            if (e.Type.IsUnsignedInteger() && !expr.Type.IsUnsignedInteger()) {
+                expr = new ExprConv(ctx, expr, e.Type, false);
+            }
             if (!e.Type.IsValueType) {
                 // For ref-types 'box' does nothing
                 return this.Visit(e.Expr);
             }
-            var ctx = e.Ctx;
             var eType = new ExprJsTypeVarName(ctx, e.Type);
             if (e.Type.IsNullable()) {
-                var exprIsVar = e.Expr.IsVar();
+                var exprIsVar = expr.IsVar();
                 var innerType = e.Type.GetNullableInnerType();
                 var temp = exprIsVar ? null : new ExprVarLocal(ctx, e.Type);
-                var box = new ExprBox(ctx, temp ?? e.Expr, innerType).Named("box");
+                var box = new ExprBox(ctx, temp ?? expr, innerType).Named("box");
                 var nullableJs = exprIsVar ? "(expr !== null ? box : null)" : "((temp = expr) !== null ? box : null)";
-                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp.Named("temp"), e.Expr.Named("expr"), box);
+                var nullableExpr = new ExprJsExplicit(ctx, nullableJs, innerType, temp.Named("temp"), expr.Named("expr"), box);
                 return nullableExpr;
             } else {
-                var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(e.Expr));
-                var int2bool = e.Type.IsBoolean() && e.Expr.Type.IsInteger() ? "!!" : "";
+                var deepCopyExpr = InternalFunctions.ValueTypeDeepCopyIfRequired(e.Type, () => (Expr)this.Visit(expr));
+                var int2bool = e.Type.IsBoolean() && expr.Type.IsInteger() ? "!!" : "";
                 var js = "{v:" + int2bool + "expr,_:type}";
-                var expr = new ExprJsExplicit(ctx, js, e.Type, (deepCopyExpr ?? e.Expr).Named("expr"), eType.Named("type"));
-                return expr;
+                var ret = new ExprJsExplicit(ctx, js, e.Type, (deepCopyExpr ?? expr).Named("expr"), eType.Named("type"));
+                return ret;
             }
         }
 
@@ -212,6 +216,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var target = (ExprVar)this.Visit(s.Target);
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
+            } else if (target.Type.IsUnsignedInteger() && !expr.Type.IsUnsignedInteger()) {
+                expr = new ExprConv(ctx, expr, expr.Type.UnsignedEquivilent(ctx.TypeSystem), false);
             }
             if (expr != s.Expr || target != s.Target) {
                 return new StmtAssignment(ctx, target, expr);
@@ -226,6 +232,8 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             var target = (ExprVar)this.Visit(e.Target);
             if (target.Type.IsBoolean() && expr.Type.IsInteger()) {
                 expr = new ExprJsExplicit(ctx, "!!expr", ctx.Boolean, expr.Named("expr"));
+            } else if (target.Type.IsUnsignedInteger() && !expr.Type.IsUnsignedInteger()) {
+                expr = new ExprConv(ctx, expr, expr.Type.UnsignedEquivilent(ctx.TypeSystem), false);
             }
             if (expr != e.Expr || target != e.Target) {
                 return new ExprAssignment(ctx, target, expr);
