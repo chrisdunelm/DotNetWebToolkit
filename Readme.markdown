@@ -3,7 +3,7 @@ Dot Net Web Toolkit
 
 *(Apologies, but this document is somewhat out of date. It will be updated soon)*
 
-Dot Net Web Toolkit will be a toolkit for building web projects entirely in .NET languages *(C#/F#/VB,/...)* within Visual Studio 2011+
+Dot Net Web Toolkit will be a toolkit for building web projects entirely in .NET languages *(C#/F#/VB,/...)* within Visual Studio 11
 
 The compiled code is converted to JavaScript that will run on all modern web browsers.
 
@@ -37,6 +37,7 @@ Currently Dot Net Web Toolkit provides:
 
 * ***Cil2Js***: A [CIL][1] *(.NET bytecode)* to JavaScript converter
 * ***DotNetWebToolkit***: Provides APIs available with the web browser
+* ***Cil2JsCon***: A console application that can transcode .NET librarys (dlls) to JavaScript
 
 *Cil2JS*
 --------
@@ -52,19 +53,33 @@ public static int Factorial(int i) {
 is compiled, then transcoded to JavaScript:
 
 ```JavaScript
-var main = function(a) {
-    var b = 0, c = 0;
-    if ((!a)) {
-        b = 1;
-    } else {
-        c = main((a - 1));
-        b = (a * c);
-    }
-    return b;
-}
-```
+(function(){
+    "use strict";
+    
+    // System.Int32 Test.Program::Factorial(System.Int32)
+    var d = function(a) {
+        var b = 0, c = 0;
+        if ((!a)) {
+            b = 1;
+        } else {
+            c = d((a - 1));
+            b = (a * c);
+        }
+        return b;
+    };
+    
+    // Interface name map
+    // a = VTable
+    
+    // Exports
+    window['Test'] = {
+        'Program': {
+            'Factorial': d
+        }
+    };
 
-*(note that the method passed to be transcoded is currently always renamed 'main')*
+})();
+```
 
 Many .NET features and types can be used, but the following are currently not implemented:
 
@@ -75,7 +90,6 @@ Many .NET features and types can be used, but the following are currently not im
 The following also requires improving:
 
 * The JavaScript produced is not optimal. In fact, some of it is terrible.
-* All JavaScript functions are currently in the global namespace.
 * Some CIL cannot be transcode.
 
 *DotNetWebToolkit*
@@ -130,41 +144,89 @@ static void Main(string[] args) {
 The static method ***Transcoder***.*ToJs()* converts the passed method to JavaScript, including all called methods:
 
 ```JavaScript
-var main = function(a, c) {
-    var d = 0, b = 0, f = 0;
-    if ((!c)) {
-        d = e(a);
-        b = d;
-    } else {
-        f = g(a);
-        b = f;
-    }
-    return b;
-}
+(function(){
+    "use strict";
+    
+    // System.Int32 Test.Program::FactorialOrFibonacci(System.Int32,System.Boolean)
+    var h = function(a, c) {
+        var d = 0, b = 0, f = 0;
+        if ((!c)) {
+            d = e(a);
+            b = d;
+        } else {
+            f = g(a);
+            b = f;
+        }
+        return b;
+    };
+    
+    // System.Int32 Test.Program::Fibonacci(System.Int32)
+    var e = function(a) {
+        var b = 0, c = 0, d = 0;
+        if ((a <= 1)) {
+            b = 1;
+        } else {
+            c = e((a - 1));
+            d = e((a - 2));
+            b = (c + d);
+        }
+        return b;
+    };
+    
+    // System.Int32 Test.Program::Factorial(System.Int32)
+    var g = function(a) {
+        var b = 0, c = 0;
+        if ((!a)) {
+            b = 1;
+        } else {
+            c = g((a - 1));
+            b = (a * c);
+        }
+        return b;
+    };
+    
+    // Interface name map
+    // a = VTable
+    
+    // Exports
+    window['Test'] = {
+        'Program': {
+            'FactorialOrFibonacci': h
+        }
+    };
 
-var g = function(a) {
-    var b = 0, c = 0;
-    if ((!a)) {
-        b = 1;
-    } else {
-        c = g((a - 1));
-        b = (a * c);
-    }
-    return b;
-}
+})();
+```
 
-var e = function(a) {
-    var b = 0, c = 0, d = 0;
-    if ((a <= 1)) {
-        b = 1;
-    } else {
-        c = e((a - 1));
-        d = e((a - 2));
-        b = (c + d);
-    }
-    return b;
+*Cil2JsCon*
+-----------
+
+This console application allows a .NET library to be transcoded to JavaScript. It accepts the following arguments:
+
+* --in &lt;input .dll path&gt;: The .NET library that requires transcoding
+* --out &lt;output .js path&gt;: The output JavaScript. This will be overwritten if it already exists
+* --v: Verbose output, shows every step of the transcoding process. Can produce a lot of output
+
+Running *Cil2JsCon* with no arguments will show a summary of these options.
+
+The library being transcoded must mark entry point classes with the *JsExportAttribute* attribute. This will cause all public methods in the class to be mapped into the JavaScript global namespace. Currently, only static classes (and therefore only static methods) are supported:
+
+```C#
+namespace MyNameSpace {
+	[JsExport]
+	public static class Entry {
+		public static void Start(string s) {
+			...
+		}
+	}
 }
 ```
+
+will be accessible in JavaScript as:
+```JavaScript
+MyNameSpace.Entry.Start("...")
+```
+Any number of classes and methods may be exported.
 
 How it works
 ============
