@@ -44,6 +44,7 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 todo.Enqueue(method);
             }
             Action<MethodReference> addTodo = m => {
+                var mResolved = m.FullResolve(m.DeclaringType, m);
                 if (m.ContainsGenericParameters()) {
                     throw new Exception("Cannot add todo method with generic parameters");
                 }

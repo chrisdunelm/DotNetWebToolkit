@@ -610,38 +610,122 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestMaxInt32() {
-            Func<int> f = () => {
-                var a = new[] { 1, 3, 2 };
-                return a.Max();
-            };
+            Func<Int32> f = () => (new Int32[] { 1, 3, 2 }).Max();
             this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxInt32Nullable() {
+            Func<Int32> f = () => (new Int32?[] { null, 3, null, 4 }).Max().Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestMaxInt32NullableNull() {
+            Func<bool> f = () => (new Int32?[] { null, null, null, null }).Max().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestMaxInt32Func() {
+            Func<Int32> f = () => (new Int32[] { 1, 3, 2 }).Max(x => x * 2);
+            this.Test(f, 6);
+        }
+
+        [Test]
+        public void TestMaxInt32FuncNullable() {
+            Func<bool, bool, Int32, Int32, Int32> f = (ab, bb, a, b) => (new Int32?[] { ab ? a : (Int32?)null, bb ? b : (Int32?)null }).Max(x => x * 2) ?? -1;
+            this.Test(f);
         }
 
         [Test]
         public void TestMaxInt64() {
-            Func<long> f = () => {
-                var a = new long[] { 1, 3, 2 };
-                return a.Max();
-            };
+            Func<Int64> f = () => (new Int64[] { 1, 3, 2 }).Max();
             this.Test(f, 3);
         }
 
         [Test]
-        public void TestMaxFloat() {
-            Func<float> f = () => {
-                var a = new float[] { 1, 3, 2 };
-                return a.Max();
-            };
+        public void TestMaxInt64Nullable() {
+            Func<Int64> f = () => (new Int64?[] { null, 3, null, 4 }).Max().Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestMaxInt64NullableNull() {
+            Func<bool> f = () => (new Int64?[] { null, null, null, null }).Max().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestMaxInt64Func() {
+            Func<long> f = () => (new Int32[] { 1, 3, 2 }).Max(x => (Int64)x * 2L);
+            this.Test(f, 6);
+        }
+
+        [Test]
+        public void TestMaxInt64FuncNullable() {
+            Func<bool, bool, Int64, Int64, Int64> f = (ab, bb, a, b) => (new Int64?[] { ab ? a : (Int64?)null, bb ? b : (Int64?)null }).Max(x => x * 2L) ?? -1L;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestMaxSingle() {
+            Func<Single> f = () => (new Single[] { 1, 3, 2 }).Max();
             this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxSingleNullable() {
+            Func<Single> f = () => (new Single?[] { null, 3, null, 4 }).Max().Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestMaxSingleNullableNull() {
+            Func<bool> f = () => (new Single?[] { null, null, null, null }).Max().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestMaxSingleFunc() {
+            Func<Single> f = () => (new Int32[] { 1, 3, 2 }).Max(x => (Single)x * 1.5f);
+            this.Test(f, 4.5f);
+        }
+
+        [Test]
+        public void TestMaxSingleFuncNullable() {
+            Func<bool, bool, Single, Single, Single> f = (ab, bb, a, b) => (new Single?[] { ab ? a : (Single?)null, bb ? b : (Single?)null }).Max(x => x * 2L) ?? -1L;
+            this.Test(f);
         }
 
         [Test]
         public void TestMaxDouble() {
-            Func<double> f = () => {
-                var a = new double[] { 1, 3, 2 };
-                return a.Max();
-            };
+            Func<Double> f = () => (new Double[] { 1, 3, 2 }).Max();
             this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMaxDoubleNullable() {
+            Func<Double> f = () => (new Double?[] { null, 3, null, 4 }).Max().Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestMaxDoubleNullableNull() {
+            Func<bool> f = () => (new Double?[] { null, null, null, null }).Max().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestMaxDoubleFunc() {
+            Func<Double> f = () => (new Double[] { 1, 3, 2 }).Max(x => x * 2.5f);
+            this.Test(f, 7.5);
+        }
+
+        [Test]
+        public void TestMaxDoubleFuncNullable() {
+            Func<bool, bool, Double, Double, Double> f = (ab, bb, a, b) => (new Double?[] { ab ? a : (Double?)null, bb ? b : (Double?)null }).Max(x => x * 2L) ?? -1L;
+            this.Test(f);
         }
 
         #endregion
@@ -650,38 +734,50 @@ namespace Test.ExecutionTests {
 
         [Test]
         public void TestMinInt32() {
-            Func<int> f = () => {
-                var a = new[] { 3, 1, 2 };
-                return a.Min();
-            };
+            Func<Int32> f = () => (new Int32[] { 3, 1, 2 }).Min();
             this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinInt32Func() {
+            Func<Int32> f = () => (new Int32[] { 3, 1, 2 }).Min(x => x * 2);
+            this.Test(f, 2);
         }
 
         [Test]
         public void TestMinInt64() {
-            Func<long> f = () => {
-                var a = new long[] { 3, 1, 2 };
-                return a.Min();
-            };
+            Func<Int64> f = () => (new Int64[] { 3, 1, 2 }).Min();
             this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinInt64Func() {
+            Func<Int64> f = () => (new Int64[] { 3, 1, 2 }).Min(x => x * 2L);
+            this.Test(f, 2);
         }
 
         [Test]
         public void TestMinSingle() {
-            Func<float> f = () => {
-                var a = new float[] { 3, 1, 2 };
-                return a.Min();
-            };
+            Func<Single> f = () => (new Single[] { 3, 1, 2 }).Min();
             this.Test(f, 1);
         }
 
         [Test]
+        public void TestMinSingleFunc() {
+            Func<Single> f = () => (new Single[] { 3, 1, 2 }).Min(x => x * 2f);
+            this.Test(f, 2);
+        }
+
+        [Test]
         public void TestMinDouble() {
-            Func<double> f = () => {
-                var a = new double[] { 3, 1, 2 };
-                return a.Min();
-            };
+            Func<Double> f = () => (new Double[] { 3, 1, 2 }).Min();
             this.Test(f, 1);
+        }
+
+        [Test]
+        public void TestMinDoubleFunc() {
+            Func<Double> f = () => (new Double[] { 3, 1, 2 }).Min(x => x * 2d);
+            this.Test(f, 2);
         }
 
         #endregion

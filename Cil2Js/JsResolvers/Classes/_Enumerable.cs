@@ -714,8 +714,8 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         #region Max
 
-        public static int Max(IEnumerable<int> source) {
-            int max = 0;
+        public static Int32 Max(IEnumerable<Int32> source) {
+            Int32 max = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -733,8 +733,26 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static long Max(IEnumerable<long> source) {
-            long max = 0;
+        public static Int32? Max(IEnumerable<Int32?> source) {
+            Int32? max = null;
+            foreach (var item in source) {
+                if (max == null || (max != null && item != null && item.Value > max.Value)) {
+                    max = item;
+                }
+            }
+            return max;
+        }
+
+        public static Int32 Max<T>(IEnumerable<T> source, Func<T, Int32> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Int32? Max<T>(IEnumerable<T> source, Func<T, Int32?> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Int64 Max(IEnumerable<Int64> source) {
+            Int64 max = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -752,15 +770,33 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static float Max(IEnumerable<float> source) {
-            float max = 0;
+        public static Int64? Max(IEnumerable<Int64?> source) {
+            Int64? max = null;
+            foreach (var item in source) {
+                if (max == null || (max != null && item != null && item.Value > max.Value)) {
+                    max = item;
+                }
+            }
+            return max;
+        }
+
+        public static Int64 Max<T>(IEnumerable<T> source, Func<T, Int64> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Int64? Max<T>(IEnumerable<T> source, Func<T, Int64?> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Single Max(IEnumerable<Single> source) {
+            Single max = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
                     max = item;
                     any = true;
                 } else {
-                    if (item > max || float.IsNaN(max)) {
+                    if (item > max || System.Single.IsNaN(max)) {
                         max = item;
                     }
                 }
@@ -771,15 +807,33 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static double Max(IEnumerable<double> source) {
-            double max = 0;
+        public static Single? Max(IEnumerable<Single?> source) {
+            Single? max = null;
+            foreach (var item in source) {
+                if (max == null || (max != null && item != null && item.Value > max.Value)) {
+                    max = item;
+                }
+            }
+            return max;
+        }
+
+        public static Single Max<T>(IEnumerable<T> source, Func<T, Single> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Single? Max<T>(IEnumerable<T> source, Func<T, Single?> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Double Max(IEnumerable<Double> source) {
+            Double max = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
                     max = item;
                     any = true;
                 } else {
-                    if (item > max || double.IsNaN(max)) {
+                    if (item > max || Double.IsNaN(max)) {
                         max = item;
                     }
                 }
@@ -788,14 +842,32 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 return max;
             }
             throw new InvalidOperationException();
+        }
+
+        public static Double? Max(IEnumerable<Double?> source) {
+            Double? max = null;
+            foreach (var item in source) {
+                if (max == null || (max != null && item != null && item.Value > max.Value)) {
+                    max = item;
+                }
+            }
+            return max;
+        }
+
+        public static Double Max<T>(IEnumerable<T> source, Func<T, Double> selector) {
+            return source.Select(selector).Max();
+        }
+
+        public static Double? Max<T>(IEnumerable<T> source, Func<T, Double?> selector) {
+            return source.Select(selector).Max();
         }
 
         #endregion
 
         #region Min
 
-        public static int Min(IEnumerable<int> source) {
-            int min = 0;
+        public static Int32 Min(IEnumerable<Int32> source) {
+            Int32 min = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -813,8 +885,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static long Min(IEnumerable<long> source) {
-            long min = 0;
+        public static Int32 Min<T>(IEnumerable<T> source, Func<T, Int32> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Int64 Min(IEnumerable<Int64> source) {
+            Int64 min = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -832,8 +908,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static float Min(IEnumerable<float> source) {
-            float min = 0;
+        public static Int64 Min<T>(IEnumerable<T> source, Func<T, Int64> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Single Min(IEnumerable<Single> source) {
+            Single min = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -851,8 +931,12 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
-        public static double Min(IEnumerable<double> source) {
-            double min = 0;
+        public static Single Min<T>(IEnumerable<T> source, Func<T, Single> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Double Min(IEnumerable<Double> source) {
+            Double min = 0;
             bool any = false;
             foreach (var item in source) {
                 if (!any) {
@@ -868,6 +952,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 return min;
             }
             throw new InvalidOperationException();
+        }
+
+        public static Double Min<T>(IEnumerable<T> source, Func<T, Double> selector) {
+            return source.Select(selector).Min();
         }
 
         #endregion

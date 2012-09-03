@@ -185,7 +185,7 @@ throw callCtorEx
             if (type.ContainsGenericParameters()) {
                 throw new ArgumentException("Cannot have open generic parameters in type");
             }
-            if (type.IsNonPrimitiveValueType()) {
+            if (type.IsNonPrimitiveValueType() && (!type.IsNullable() || type.GetNullableInnerType().IsNonPrimitiveValueType())) {
                 var expr = fnExpr();
                 var ctx = expr.Ctx;
                 var dcGenDef = ((Func<object, object>)DeepCopyValueType).Method.GetGenericMethodDefinition();
