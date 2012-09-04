@@ -162,7 +162,6 @@ dec = function(o) {
     var isObject = false;
     if (o._ !== undefined) {
         if (o['']) { // Array
-console.log('array');
             var oArray = o[''];
             var ret = new Array(oArray.length);
             ret._ = $$[o._];
@@ -180,14 +179,11 @@ console.log('array');
                 }
             }
         } else { // Object or boxed struct
-console.log('obj/bvt');
             isObject = true;
         }
     } else if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
-console.log('unboxed vt');
         isObject = true;
     } else if (o instanceof Array && o.length === 1) { // Special Single/Double
-console.log('special: [' + o[0] + ']');
         switch (o[0]) {
         case 0: ret = NaN; break;
         case 1: ret = Number.POSITIVE_INFINITY; break;
@@ -195,7 +191,6 @@ console.log('special: [' + o[0] + ']');
         default: throw 'Unrecognised special: ' + o[0];
         }
     } else { // unboxed primitive or null
-console.log('primitive: ' + o);
         ret = o;
     }
     if (isObject) {
