@@ -11,6 +11,16 @@ namespace Test.ExecutionTests {
     [TestFixture]
     public class TestLinq : ExecutionTestBase {
 
+        #region As
+
+        [Test]
+        public void TestAsEnumerable() {
+            Func<int, int> f = a => (new[] { a }).AsEnumerable().First();
+            this.Test(f);
+        }
+
+        #endregion
+
         #region Aggregate
 
         [Test]
@@ -105,6 +115,130 @@ namespace Test.ExecutionTests {
                 return a.All(x => x == 1 || x == 2);
             };
             this.Test(f, false);
+        }
+
+        #endregion
+
+        #region Average
+
+        [Test]
+        public void TestAverageInt32() {
+            Func<Double> f = () => (new Int32[] { 1, 3, 2 }).Average();
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageInt32Func() {
+            Func<Double> f = () => (new Int32[] { 1, 3, 2 }).Average(x => x * 2);
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageInt32Nullable() {
+            Func<Double> f = () => (new Int32?[] { 1, null, null, 3 }).Average().Value;
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageInt32NullableNull() {
+            Func<bool> f = () => (new Int32?[] { null, null }).Average().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAverageInt32NullableFunc() {
+            Func<Double> f = () => (new Int32?[] { 1, null, null, 3 }).Average(x => x * 2).Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageInt64() {
+            Func<Double> f = () => (new Int64[] { 1, 3, 2 }).Average();
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageInt64Func() {
+            Func<Double> f = () => (new Int64[] { 1, 3, 2 }).Average(x => x * 2);
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageInt64Nullable() {
+            Func<Double> f = () => (new Int64?[] { 1, null, null, 3 }).Average().Value;
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageInt64NullableNull() {
+            Func<bool> f = () => (new Int64?[] { null, null }).Average().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAverageInt64NullableFunc() {
+            Func<Double> f = () => (new Int64?[] { 1, null, null, 3 }).Average(x => x * 2).Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageSingle() {
+            Func<Single> f = () => (new Single[] { 1, 3, 2 }).Average();
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageSingleFunc() {
+            Func<Single> f = () => (new Single[] { 1, 3, 2 }).Average(x => x * 2);
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageSingleNullable() {
+            Func<Single> f = () => (new Single?[] { 1, null, null, 3 }).Average().Value;
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageSingleNullableNull() {
+            Func<bool> f = () => (new Single?[] { null, null }).Average().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAverageSingleNullableFunc() {
+            Func<Single> f = () => (new Single?[] { 1, null, null, 3 }).Average(x => x * 2).Value;
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageDouble() {
+            Func<Double> f = () => (new Double[] { 1, 3, 2 }).Average();
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageDoubleFunc() {
+            Func<Double> f = () => (new Double[] { 1, 3, 2 }).Average(x => x * 2);
+            this.Test(f, 4);
+        }
+
+        [Test]
+        public void TestAverageDoubleNullable() {
+            Func<Double> f = () => (new Double?[] { 1, null, null, 3 }).Average().Value;
+            this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestAverageDoubleNullableNull() {
+            Func<bool> f = () => (new Double?[] { null, null }).Average().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
+        public void TestAverageDoubleNullableFunc() {
+            Func<Double> f = () => (new Double?[] { 1, null, null, 3 }).Average(x => x * 2).Value;
+            this.Test(f, 4);
         }
 
         #endregion

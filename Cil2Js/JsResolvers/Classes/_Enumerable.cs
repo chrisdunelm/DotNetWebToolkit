@@ -176,6 +176,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
     static class _Enumerable {
 
+        #region As
+
+        public static IEnumerable<T> AsEnumerable<T>(IEnumerable<T> source) {
+            return source;
+        }
+
+        #endregion
+
         #region Aggregate
 
         public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func) {
@@ -241,6 +249,154 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
                 }
             }
             return true;
+        }
+
+        #endregion
+
+        #region Average
+
+        public static Double Average(IEnumerable<Int32> source) {
+            Int64 total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                total += item;
+                count++;
+            }
+            if (count == 0) {
+                throw new InvalidOperationException();
+            }
+            return (Double)total / (Double)count;
+        }
+
+        public static Double Average<T>(IEnumerable<T> source, Func<T, Int32> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Double? Average(IEnumerable<Int32?> source) {
+            Int64 total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                if (item != null) {
+                    total += item.Value;
+                    count++;
+                }
+            }
+            if (count == 0) {
+                return null;
+            }
+            return (Double)total / (Double)count;
+        }
+
+        public static Double? Average<T>(IEnumerable<T> source, Func<T, Int32?> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Double Average(IEnumerable<Int64> source) {
+            Int64 total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                total += item;
+                count++;
+            }
+            if (count == 0) {
+                throw new InvalidOperationException();
+            }
+            return (Double)total / (Double)count;
+        }
+
+        public static Double Average<T>(IEnumerable<T> source, Func<T, Int64> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Double? Average(IEnumerable<Int64?> source) {
+            Int64 total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                if (item != null) {
+                    total += item.Value;
+                    count++;
+                }
+            }
+            if (count == 0) {
+                return null;
+            }
+            return (Double)total / (Double)count;
+        }
+
+        public static Double? Average<T>(IEnumerable<T> source, Func<T, Int64?> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Single Average(IEnumerable<Single> source) {
+            Double total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                total += item;
+                count++;
+            }
+            if (count == 0) {
+                throw new InvalidOperationException();
+            }
+            return (Single)(total / (Double)count);
+        }
+
+        public static Single Average<T>(IEnumerable<T> source, Func<T, Single> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Single? Average(IEnumerable<Single?> source) {
+            Double total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                if (item != null) {
+                    total += item.Value;
+                    count++;
+                }
+            }
+            if (count == 0) {
+                return null;
+            }
+            return (Single)(total / (Double)count);
+        }
+
+        public static Single? Average<T>(IEnumerable<T> source, Func<T, Single?> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Double Average(IEnumerable<Double> source) {
+            Double total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                total += item;
+                count++;
+            }
+            if (count == 0) {
+                throw new InvalidOperationException();
+            }
+            return total / (Double)count;
+        }
+
+        public static Double Average<T>(IEnumerable<T> source, Func<T, Double> selector) {
+            return source.Select(selector).Average();
+        }
+
+        public static Double? Average(IEnumerable<Double?> source) {
+            Double total = 0;
+            Int32 count = 0;
+            foreach (var item in source) {
+                if (item != null) {
+                    total += item.Value;
+                    count++;
+                }
+            }
+            if (count == 0) {
+                return null;
+            }
+            return total / (Double)count;
+        }
+
+        public static Double? Average<T>(IEnumerable<T> source, Func<T, Double?> selector) {
+            return source.Select(selector).Average();
         }
 
         #endregion
