@@ -15,6 +15,13 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
 
         }
 
+        [Js(".ctor", typeof(void), typeof(char[]))]
+        public static Stmt ctorCharArray(Ctx ctx) {
+            // TODO: This works, but the JS ctor has an extra 'return' statement at the end, which is never executed
+            var chars = ctx.MethodParameter(0, "chars");
+            return new StmtJsExplicit(ctx, "return String.fromCharCode.apply(null, chars);", chars);
+        }
+
         [Js(".ctor", typeof(void), typeof(char), typeof(int))]
         public static Stmt ctorCharRepeatCount(Ctx ctx) {
             // TODO: This works, but the JS ctor has an extra 'return' statement at the end, which is never executed

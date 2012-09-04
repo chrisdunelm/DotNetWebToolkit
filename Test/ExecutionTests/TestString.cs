@@ -18,6 +18,18 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestCtorCharArray() {
+            Func<char, char, char, string> f = (a, b, c) => new string(new[] { a, b, c });
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestCtorCharRepeatCount() {
+            Func<char, int, string> f = (a, b) => new string(a, b % 20);
+            this.Test(f);
+        }
+
+        [Test]
         public void TestEquality() {
             Func<string, string, bool> f = (a, b) => a == b;
             Func<int, int, bool> g = (a, b) => {
