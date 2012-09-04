@@ -862,6 +862,30 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return source.Select(selector).Max();
         }
 
+        public static T Max<T>(IEnumerable<T> source) {
+            var comparer = Comparer<T>.Default;
+            var first = true;
+            var max = default(T);
+            foreach (var item in source) {
+                if (first) {
+                    max = item;
+                    first = false;
+                } else {
+                    if (comparer.Compare(item, max) > 0) {
+                        max = item;
+                    }
+                }
+            }
+            if (first) {
+                throw new InvalidOperationException();
+            }
+            return max;
+        }
+
+        public static TResult Max<T, TResult>(IEnumerable<T> source, Func<T, TResult> selector) {
+            return source.Select(selector).Max();
+        }
+
         #endregion
 
         #region Min
@@ -1011,6 +1035,30 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         }
 
         public static Double? Min<T>(IEnumerable<T> source, Func<T, Double?> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static T Min<T>(IEnumerable<T> source) {
+            var comparer = Comparer<T>.Default;
+            var first = true;
+            var max = default(T);
+            foreach (var item in source) {
+                if (first) {
+                    max = item;
+                    first = false;
+                } else {
+                    if (comparer.Compare(item, max) < 0) {
+                        max = item;
+                    }
+                }
+            }
+            if (first) {
+                throw new InvalidOperationException();
+            }
+            return max;
+        }
+
+        public static TResult Min<T, TResult>(IEnumerable<T> source, Func<T, TResult> selector) {
             return source.Select(selector).Min();
         }
 

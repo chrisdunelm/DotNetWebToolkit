@@ -728,6 +728,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        public void TestMaxTString() {
+            Func<string, string, string, string> f = (a, b, c) => (new[] { a, b, c }).Max();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestMaxTFuncString() {
+            Func<string, string, string, string> f = (a, b, c) => (new[] { a, b, c }).Max(x => new string(x.Reverse().ToArray()));
+            this.Test(f);
+        }
+
         #endregion
 
         #region Min
@@ -849,6 +861,18 @@ namespace Test.ExecutionTests {
         [Test]
         public void TestMinDoubleFuncNullable() {
             Func<bool, bool, Double, Double, Double> f = (ab, bb, a, b) => (new Double?[] { ab ? a : (Double?)null, bb ? b : (Double?)null }).Min(x => x * 2L) ?? -1L;
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestMinTString() {
+            Func<string, string, string, string> f = (a, b, c) => (new[] { a, b, c }).Min();
+            this.Test(f);
+        }
+
+        [Test]
+        public void TestMinTFuncString() {
+            Func<string, string, string, string> f = (a, b, c) => (new[] { a, b, c }).Min(x => new string(x.Reverse().ToArray()));
             this.Test(f);
         }
 
