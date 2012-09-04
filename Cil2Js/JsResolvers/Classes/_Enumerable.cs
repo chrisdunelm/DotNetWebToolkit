@@ -885,7 +885,21 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
+        public static Int32? Min(IEnumerable<Int32?> source) {
+            Int32? min = null;
+            foreach (var item in source) {
+                if (min == null || (min != null && item != null && item.Value < min.Value)) {
+                    min = item;
+                }
+            }
+            return min;
+        }
+
         public static Int32 Min<T>(IEnumerable<T> source, Func<T, Int32> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Int32? Min<T>(IEnumerable<T> source, Func<T, Int32?> selector) {
             return source.Select(selector).Min();
         }
 
@@ -908,7 +922,21 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
+        public static Int64? Min(IEnumerable<Int64?> source) {
+            Int64? min = null;
+            foreach (var item in source) {
+                if (min == null || (min != null && item != null && item.Value < min.Value)) {
+                    min = item;
+                }
+            }
+            return min;
+        }
+
         public static Int64 Min<T>(IEnumerable<T> source, Func<T, Int64> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Int64? Min<T>(IEnumerable<T> source, Func<T, Int64?> selector) {
             return source.Select(selector).Min();
         }
 
@@ -931,7 +959,21 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
+        public static Single? Min(IEnumerable<Single?> source) {
+            Single? min = null;
+            foreach (var item in source) {
+                if (min == null || (min != null && item != null && item.Value < min.Value)) {
+                    min = item;
+                }
+            }
+            return min;
+        }
+
         public static Single Min<T>(IEnumerable<T> source, Func<T, Single> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Single? Min<T>(IEnumerable<T> source, Func<T, Single?> selector) {
             return source.Select(selector).Min();
         }
 
@@ -954,7 +996,21 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             throw new InvalidOperationException();
         }
 
+        public static Double? Min(IEnumerable<Double?> source) {
+            Double? min = null;
+            foreach (var item in source) {
+                if (min == null || (min != null && item != null && item.Value < min.Value)) {
+                    min = item;
+                }
+            }
+            return min;
+        }
+
         public static Double Min<T>(IEnumerable<T> source, Func<T, Double> selector) {
+            return source.Select(selector).Min();
+        }
+
+        public static Double? Min<T>(IEnumerable<T> source, Func<T, Double?> selector) {
             return source.Select(selector).Min();
         }
 

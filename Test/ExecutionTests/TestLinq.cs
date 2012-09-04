@@ -739,9 +739,27 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestMinInt32Nullable() {
+            Func<Int32> f = () => (new Int32?[] { null, 3, null, 4 }).Min().Value;
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMinInt32NullableNull() {
+            Func<bool> f = () => (new Int32?[] { null, null, null, null }).Min().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
         public void TestMinInt32Func() {
             Func<Int32> f = () => (new Int32[] { 3, 1, 2 }).Min(x => x * 2);
             this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestMinInt32FuncNullable() {
+            Func<bool, bool, Int32, Int32, Int32> f = (ab, bb, a, b) => (new Int32?[] { ab ? a : (Int32?)null, bb ? b : (Int32?)null }).Min(x => x * 2) ?? -1;
+            this.Test(f);
         }
 
         [Test]
@@ -751,9 +769,27 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestMinInt64Nullable() {
+            Func<Int64> f = () => (new Int64?[] { null, 3, null, 4 }).Min().Value;
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMinInt64NullableNull() {
+            Func<bool> f = () => (new Int64?[] { null, null, null, null }).Min().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
         public void TestMinInt64Func() {
             Func<Int64> f = () => (new Int64[] { 3, 1, 2 }).Min(x => x * 2L);
             this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestMinInt64FuncNullable() {
+            Func<bool, bool, Int64, Int64, Int64> f = (ab, bb, a, b) => (new Int64?[] { ab ? a : (Int64?)null, bb ? b : (Int64?)null }).Min(x => x * 2L) ?? -1L;
+            this.Test(f);
         }
 
         [Test]
@@ -763,9 +799,27 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestMinSingleNullable() {
+            Func<Single> f = () => (new Single?[] { null, 3, null, 4 }).Min().Value;
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMinSingleNullableNull() {
+            Func<bool> f = () => (new Single?[] { null, null, null, null }).Min().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
         public void TestMinSingleFunc() {
             Func<Single> f = () => (new Single[] { 3, 1, 2 }).Min(x => x * 2f);
             this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestMinSingleFuncNullable() {
+            Func<bool, bool, Single, Single, Single> f = (ab, bb, a, b) => (new Single?[] { ab ? a : (Single?)null, bb ? b : (Single?)null }).Min(x => x * 2L) ?? -1L;
+            this.Test(f);
         }
 
         [Test]
@@ -775,9 +829,27 @@ namespace Test.ExecutionTests {
         }
 
         [Test]
+        public void TestMinDoubleNullable() {
+            Func<Double> f = () => (new Double?[] { null, 3, null, 4 }).Min().Value;
+            this.Test(f, 3);
+        }
+
+        [Test]
+        public void TestMinDoubleNullableNull() {
+            Func<bool> f = () => (new Double?[] { null, null, null, null }).Min().HasValue;
+            this.Test(f, false);
+        }
+
+        [Test]
         public void TestMinDoubleFunc() {
             Func<Double> f = () => (new Double[] { 3, 1, 2 }).Min(x => x * 2d);
             this.Test(f, 2);
+        }
+
+        [Test]
+        public void TestMinDoubleFuncNullable() {
+            Func<bool, bool, Double, Double, Double> f = (ab, bb, a, b) => (new Double?[] { ab ? a : (Double?)null, bb ? b : (Double?)null }).Min(x => x * 2L) ?? -1L;
+            this.Test(f);
         }
 
         #endregion
