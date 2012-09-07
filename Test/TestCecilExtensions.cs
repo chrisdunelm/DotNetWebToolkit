@@ -81,6 +81,50 @@ namespace Test {
             gmT.Parameters.Add(gm.Parameters[0]);
         }
 
+        class AQN0<T> {
+            public class AQN1<S> {
+                public class AQN2 {
+                    public class AQN3<U, V> {
+                    }
+                }
+            }
+        }
+        private static IEnumerable<Type> CreateTypes() {
+            var o = new { i = 34, s = "abc" };
+            yield return o.GetType();
+            var a = new[] { o };
+            yield return a.GetType();
+            var l = a.ToList();
+            yield return l.GetType();
+        }
+        [Test]
+        public void TestAssemblyQualifiedName() {
+            var testTypes = new[] {
+                typeof(Int32),
+                typeof(Int32[]),
+                typeof(Int32[][]),
+                typeof(List<Int32>),
+                typeof(List<List<Int32>>),
+                typeof(List<Dictionary<int,string>>),
+                typeof(Dictionary<List<Int32>,Dictionary<string,string>>),
+                typeof(AQN0<Int32>.AQN1<string>),
+                typeof(AQN0<Int32[][][]>.AQN1<string[]>[][]),
+                typeof(AQN0<AQN0<string>.AQN1<AQN0<long>.AQN1<AQN0<char>>>>.AQN1<AQN0<int>>),
+                typeof(AQN0<AQN0<string[][]>.AQN1<AQN0<long[]>.AQN1<AQN0<char>[][]>>>.AQN1<AQN0<int>[]>[][][][][]),
+                typeof(AQN0<int>.AQN1<string>.AQN2.AQN3<char,long>),
+            };
+            testTypes = testTypes.Concat(CreateTypes()).ToArray();
+
+            var module = ModuleDefinition.ReadModule(Assembly.GetExecutingAssembly().Location);
+
+            foreach (var type in testTypes) {
+                var cecilType = module.Import(type);
+                var name = type.AssemblyQualifiedName;
+                var cecilName = cecilType.AssemblyQualifiedName();
+                Assert.That(cecilName, Is.EqualTo(name));
+            }
+        }
+
     }
 
 }

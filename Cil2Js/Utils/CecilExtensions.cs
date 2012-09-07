@@ -634,37 +634,43 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             return nType;
         }
 
-        public static string AssemblyQualifiedName(this TypeDefinition tDef) {
-            var fullName = tDef.FullName.Replace('/', '+');
-            return fullName + ", " + tDef.Module.Assembly.FullName;
+        private static string FullName(this TypeReference tRef) {
+            if (tRef.IsArray) {
+                var elementType = ((ArrayType)tRef).ElementType;
+                return elementType.FullName() + "[]";
+            }
+            if (tRef.IsGenericInstance) {
+                var tGen = (GenericInstanceType)tRef;
+                var genAssemblyQualifiedNames = tGen.GenericArguments.Select(x => "[" + x.AssemblyQualifiedName() + "]").ToArray();
+                var defFullName = tRef.Resolve().FullName.Replace('/', '+');
+                var ret = string.Format("{0}[{1}]", defFullName, string.Join(",", genAssemblyQualifiedNames));
+                return ret;
+            }
+            return tRef.FullName.Replace('/', '+');
+        }
+
+        public static string AssemblyQualifiedName(this TypeReference tRef) {
+            var fullName = tRef.FullName();
+            var assemblyName = ((Func<string>)(() => {
+                switch (tRef.Scope.MetadataScopeType) {
+                case MetadataScopeType.AssemblyNameReference:
+                    return ((AssemblyNameReference)tRef.Scope).FullName;
+                case MetadataScopeType.ModuleDefinition:
+                    return ((ModuleDefinition)tRef.Scope).Assembly.FullName;
+                case MetadataScopeType.ModuleReference:
+                    throw new InvalidOperationException("ModuleReference not handled");
+                default:
+                    throw new InvalidOperationException();
+                }
+            }))();
+            var assemblyQualifiedName = fullName + ", " + assemblyName;
+            return assemblyQualifiedName;
         }
 
         public static Type LoadType(this TypeReference tRef) {
-            // TODO: Must rework to remove exception
             try {
-                var name = tRef.Resolve().AssemblyQualifiedName();
+                var name = tRef.AssemblyQualifiedName();
                 var type = Type.GetType(name);
-                if (tRef.IsArray) {
-                    int arrayCount = 0;
-                    while (tRef.IsArray) {
-                        tRef = tRef.ElementType();
-                        arrayCount++;
-                    }
-                    if (tRef.IsGenericInstance) {
-                        var tRefGen = (GenericInstanceType)tRef;
-                        var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
-                        type = type.MakeGenericType(tArgs);
-                    }
-                    for (int i = 0; i < arrayCount; i++) {
-                        type = type.MakeArrayType();
-                    }
-                    return type;
-                }
-                if (tRef.IsGenericInstance) {
-                    var tRefGen = (GenericInstanceType)tRef;
-                    var tArgs = tRefGen.GenericArguments.Select(x => x.LoadType()).ToArray();
-                    type = type.MakeGenericType(tArgs);
-                }
                 return type;
             } catch (TypeLoadException) {
                 return null;
