@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -8,6 +9,12 @@ using System.Web.Script.Serialization;
 
 namespace DotNetWebToolkit.Server {
     public class Json {
+
+        public static Json FromFile(string path) {
+            var s = File.ReadAllText(path);
+            var typeMap = JsonTypeMap.FromString(s);
+            return new Json(typeMap);
+        }
 
         public Json(JsonTypeMap typeMap) {
             this.typeMap = typeMap;

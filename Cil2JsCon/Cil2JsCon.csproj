@@ -58,6 +58,10 @@
       <Project>{1bc431ab-58c6-4d60-95c2-885fdd784ce0}</Project>
       <Name>Cil2Js</Name>
     </ProjectReference>
+    <ProjectReference Include="..\DotNetWebToolkit\DotNetWebToolkit.csproj">
+      <Project>{1f3e8e8c-0806-42aa-872b-78f5231f490f}</Project>
+      <Name>DotNetWebToolkit</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

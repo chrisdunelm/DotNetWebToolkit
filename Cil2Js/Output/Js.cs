@@ -665,13 +665,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             //Console.WriteLine(jsStr);
             var qFieldMap =
                 from fieldName in fieldNames
-                let declType = fieldName.Key.DeclaringType.LoadType()
+                let declType = fieldName.Key.DeclaringType.AssemblyQualifiedName()
                 where declType != null
                 group fieldName by declType;
             var fieldMap = qFieldMap.ToDictionary(x => x.Key, x => x.ToDictionary(y => y.Key.Name, y => y.Value));
             var qTypeMap =
                 from typeName in typeNames
-                let type = typeName.Key.LoadType()
+                let type = typeName.Key.AssemblyQualifiedName()
                 where type != null
                 select new { type, typeName.Value };
             var ttt = qTypeMap.ToArray();

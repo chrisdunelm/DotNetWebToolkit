@@ -44,9 +44,10 @@ namespace Cil2JsCon {
             }
 
             var jsResult = Transcoder.ToJs(inFilename, verbose);
-            var js = jsResult.Js;
+            var typeMapString = jsResult.TypeMap.ToString();
             try {
-                File.WriteAllText(outFilename, js, Encoding.UTF8);
+                File.WriteAllText(outFilename, jsResult.Js, Encoding.UTF8);
+                File.WriteAllText(outFilename + ".typemap", typeMapString);
             } catch (Exception e) {
                 Console.WriteLine("Error:");
                 Console.WriteLine(e);
