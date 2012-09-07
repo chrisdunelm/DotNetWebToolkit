@@ -663,6 +663,41 @@ namespace Test.BrowserTests {
             JsRecvTest(GenArrayOfVarious, () => JsRecvJs<object[]>(CheckArrayOfVarious));
         }
 
+        class GenericObjects {
+            public class Inner<T> {
+                public T t;
+            }
+            public Inner<int> i;
+            public Inner<string> s;
+            public Inner<Inner<long>> ll;
+            public Inner<Inner<Inner<char>>> ccc;
+        }
+        private static GenericObjects GenGenericObjects() {
+            return new GenericObjects {
+                i = new GenericObjects.Inner<int> { t = 44 },
+                s = new GenericObjects.Inner<string> { t = "abc" },
+                ll = new GenericObjects.Inner<GenericObjects.Inner<long>> {
+                    t = new GenericObjects.Inner<long> { t = -44 },
+                },
+                ccc = new GenericObjects.Inner<GenericObjects.Inner<GenericObjects.Inner<char>>> {
+                    t = new GenericObjects.Inner<GenericObjects.Inner<char>> {
+                        t = new GenericObjects.Inner<char> { t = 'Z' },
+                    },
+                },
+            };
+        }
+        private static bool CheckGenericObjects(GenericObjects v) {
+            return v.i.t == 44 && v.s.t == "abc" && v.ll.t.t == -44 && v.ccc.t.t.t == 'Z';
+        }
+        [Test]
+        public void TestJsSendGenericObjects() {
+            JsSendTest<GenericObjects>(CheckGenericObjects, () => JsSendJs(GenGenericObjects));
+        }
+        [Test]
+        public void TestJsRecvGenericObjects() {
+            JsRecvTest(GenGenericObjects, () => JsRecvJs<GenericObjects>(CheckGenericObjects));
+        }
+
     }
 
 }
