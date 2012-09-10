@@ -665,9 +665,11 @@ namespace DotNetWebToolkit.Cil2Js.Output {
             //Console.WriteLine(jsStr);
             var qFieldMap =
                 from fieldName in fieldNames
-                let declType = fieldName.Key.DeclaringType.AssemblyQualifiedName()
+                let declType = fieldName.Key.DeclaringType
+                let declTypeMapped = JsResolver.TypeMapReverse(declType) ?? declType
+                let declTypeName = declTypeMapped.AssemblyQualifiedName()
                 where declType != null
-                group fieldName by declType;
+                group fieldName by declTypeName;
             var fieldMap = qFieldMap.ToDictionary(x => x.Key, x => x.ToDictionary(y => y.Key.Name, y => y.Value));
             var qTypeMap =
                 from typeName in typeNames
