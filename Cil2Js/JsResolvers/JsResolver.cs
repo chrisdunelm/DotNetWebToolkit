@@ -37,13 +37,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var customType = thisModule.Import(m.Value).Resolve();
                 addWithNested(bclType, customType);
             }
+            cReverseMap = cMap.ToDictionary(x => x.Value, x => x.Key);
         }
 
         private static Type T(string typeName) {
             return Type.GetType(typeName);
         }
 
-        private static Dictionary<TypeDefinition, TypeDefinition> cMap;
+        private static Dictionary<TypeDefinition, TypeDefinition> cMap, cReverseMap;
 
         private static string JsCase(string s) {
             return char.ToLowerInvariant(s[0]) + s.Substring(1);
@@ -422,6 +423,10 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
 
         public static TypeReference TypeMap(TypeReference tRef) {
             return PerformMapping(cMap, tRef);
+        }
+
+        public static TypeReference TypeMapReverse(TypeReference tRef) {
+            return PerformMapping(cReverseMap, tRef);
         }
 
     }
