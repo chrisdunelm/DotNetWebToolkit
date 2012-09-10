@@ -41,12 +41,16 @@ namespace DotNetWebToolkit.Server {
         }
 
         public string GetFieldName(Type type, FieldInfo field) {
+            return this.GetFieldName(type, field.Name);
+        }
+
+        public string GetFieldName(Type type, string fieldName) {
             Dictionary<string, string> fields;
             if (!this.fieldNames.TryGetValue(type.AssemblyQualifiedName, out fields)) {
                 return null;
             }
             string ret;
-            fields.TryGetValue(field.Name, out ret);
+            fields.TryGetValue(fieldName, out ret);
             return ret;
         }
 

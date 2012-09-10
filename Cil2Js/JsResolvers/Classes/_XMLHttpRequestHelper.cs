@@ -171,9 +171,9 @@ dec = function(o) {
                     // obj ref
                     (function(ret, i, o) {
                         refs.push(function() {
-                            ret[i] = objs[oArray[i]];
+                            ret[i] = objs[o[i]];
                         });
-                    })(ret, i, o);
+                    })(ret, i, oArray);
                 } else {
                     ret[i] = dec(oArray[i]);
                 }
@@ -194,7 +194,7 @@ dec = function(o) {
         ret = o;
     }
     if (isObject) {
-        var ret = { '_': o._ ? $$[o._] : null };
+        var ret = o._ ? { '_': $$[o._] } : { };
         // TODO: Set $ = hash id
         for (var i in o) {
             if (i !== '_') {

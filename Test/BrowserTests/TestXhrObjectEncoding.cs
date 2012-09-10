@@ -643,7 +643,7 @@ namespace Test.BrowserTests {
             }
             var a1 = (char[])v[1];
             var a2 = (char[])v[4];
-            if (a1[0] != 'X' || a1[1] != 'Y' || a2[0] != 'X' || a2[1]!='Y') {
+            if (a1[0] != 'X' || a1[1] != 'Y' || a2[0] != 'X' || a2[1] != 'Y') {
                 return false;
             }
             if (((ArrayOfVariousClass)v[2]).i != 99 || ((ArrayOfVariousClass)v[5]).i != 99) {
@@ -697,6 +697,22 @@ namespace Test.BrowserTests {
         public void TestJsRecvGenericObjects() {
             JsRecvTest(GenGenericObjects, () => JsRecvJs<GenericObjects>(CheckGenericObjects));
         }
+
+        private static List<Int32> GenListInt32() {
+            return new List<int> { 1, 2, 3, 4, 5 };
+        }
+        private static bool CheckListInt32(List<Int32> v) {
+            return v.SequenceEqual(new[] { 1, 2, 3, 4, 5 });
+        }
+        [Test]
+        public void TestJsSendListInt32() {
+            JsSendTest<List<Int32>>(CheckListInt32, () => JsSendJs(GenListInt32));
+        }
+        [Test]
+        public void TestJsRecvListInt32() {
+            JsRecvTest(GenListInt32, () => JsRecvJs<List<Int32>>(CheckListInt32));
+        }
+
 
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,6 +22,55 @@ namespace DotNetWebToolkit.Server {
         }
 
         private JsonTypeMap typeMap;
+
+        interface CustomTypeCodec {
+            bool IsType(Type type);
+            int Id { get; }
+            object Encode(object o, Type type, JsonTypeMap typeMap, Func<object, bool, object> enc);
+            object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd);
+        }
+
+        class CustomListCodec : CustomTypeCodec {
+            public bool IsType(Type type) {
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
+            }
+
+            public int Id { get { return 1; } }
+
+            public object Encode(object o, Type type, JsonTypeMap typeMap, Func<object, bool, object> enc) {
+                var oList = (IList)o;
+                var listElementType = type.GetGenericArguments()[0];
+                var innerArray = (Array)Activator.CreateInstance(listElementType.MakeArrayType(), oList.Count);
+                int index = 0;
+                foreach (var element in oList) {
+                    innerArray.SetValue(element, index++);
+                }
+                var innerArrayEnc = enc(innerArray, false);
+                var jsTypeName = typeMap.GetTypeName(type);
+                var jsFieldName = typeMap.GetFieldName(type, "array");
+                var ret = new Dictionary<string, object> {
+                    { "_", jsTypeName },
+                    { jsFieldName, innerArrayEnc }
+                };
+                return ret;
+            }
+
+            public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd) {
+                var elementsId = (string)((object[])((object[])((object[])o)[1])[1])[0];
+                var retList = (IList)Activator.CreateInstance(type);
+                fnAdd(objs => {
+                    var elements = (Array)objs[elementsId];
+                    foreach (var element in elements) {
+                        retList.Add(element);
+                    }
+                });
+                return retList;
+            }
+        }
+
+        private static CustomTypeCodec[] customTypeCodecs = {
+                                                                new CustomListCodec(),
+                                                            };
 
         public string Encode(object obj) {
             var todo = new Queue<object>();
@@ -46,30 +96,40 @@ namespace DotNetWebToolkit.Server {
                 case TypeCode.DateTime:
                     // objects + structs
                     if (isRoot || type.IsValueType) {
-                        if (type.IsArray) {
-                            var oArray = (Array)o;
-                            var elType = type.GetElementType();
-                            var retArray = new object[oArray.Length];
-                            for (int i = 0; i < oArray.Length; i++) {
-                                retArray[i] = enc(oArray.GetValue(i), !elType.IsValueType, false);
+                        ret = null;
+                        foreach (var customTypeCodec in customTypeCodecs) {
+                            if (customTypeCodec.IsType(type)) {
+                                ret = customTypeCodec.Encode(o, type, this.typeMap, (toEnc, inObject2) => enc(toEnc, inObject2, false));
+                                break;
                             }
-                            ret = new Dictionary<string, object>{
-                                { "_", this.typeMap.GetTypeName(type) },
-                                { "", retArray }
-                            };
-                        } else {
-                            var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                            var qFieldNamesValues =
-                                from field in fields
-                                let jsName = this.typeMap.GetFieldName(type, field)
-                                where jsName != null
-                                let value = field.GetValue(o)
-                                select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
-                            var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
-                            if (!type.IsValueType) {
-                                retDict.Add("_", this.typeMap.GetTypeName(type));
+                        }
+                        if (ret == null) {
+                            if (type.IsArray) {
+                                var oArray = (Array)o;
+                                var elType = type.GetElementType();
+                                var retArray = new object[oArray.Length];
+                                for (int i = 0; i < oArray.Length; i++) {
+                                    retArray[i] = enc(oArray.GetValue(i), !elType.IsValueType, false);
+                                }
+                                ret = new Dictionary<string, object>{
+                                    { "_", this.typeMap.GetTypeName(type) },
+                                    { "__", 0 },
+                                    { "", retArray },
+                                };
+                            } else {
+                                var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                                var qFieldNamesValues =
+                                    from field in fields
+                                    let jsName = this.typeMap.GetFieldName(type, field)
+                                    where jsName != null
+                                    let value = field.GetValue(o)
+                                    select new { jsName, value = enc(value, !field.FieldType.IsValueType, false) };
+                                var retDict = qFieldNamesValues.ToDictionary(x => x.jsName, x => x.value);
+                                if (!type.IsValueType) {
+                                    retDict.Add("_", this.typeMap.GetTypeName(type));
+                                }
+                                ret = retDict;
                             }
-                            ret = retDict;
                         }
                     } else {
                         string objId;
@@ -168,6 +228,7 @@ namespace DotNetWebToolkit.Server {
             var objs = new Dictionary<string, object>();
             var refs = new List<Tuple<object, FieldInfo, string>>();
             var arrayRefs = new List<Tuple<Array, int, string>>();
+            var fnRefs = new List<Action<Dictionary<string, object>>>();
             Func<Type, object, object> jDecodeAny = null;
             Func<object, string> getIfObjRef = o => {
                 var oArray = o as object[];
@@ -269,6 +330,12 @@ namespace DotNetWebToolkit.Server {
                     var oArray = (object[])o;
                     var jsTypeName = (string)oArray[0];
                     var type = this.typeMap.GetTypeByName(jsTypeName);
+                    foreach (var customTypeCodec in customTypeCodecs) {
+                        if (customTypeCodec.IsType(type)) {
+                            var ret = customTypeCodec.Decode(o, type, this.typeMap, fn => fnRefs.Add(fn));
+                            return ret;
+                        }
+                    }
                     if (type.IsValueType) { // value-type
                         return jDecodeValueType(type, oArray[1]);
                     } else if (type.IsArray) { // array
@@ -307,6 +374,9 @@ namespace DotNetWebToolkit.Server {
             }
             foreach (var r in arrayRefs) {
                 r.Item1.SetValue(objs[r.Item3], r.Item2);
+            }
+            foreach (var r in fnRefs) {
+                r(objs);
             }
             var toRet = (T)objs["0"];
             return toRet;
