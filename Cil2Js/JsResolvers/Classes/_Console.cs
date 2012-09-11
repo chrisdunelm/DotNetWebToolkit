@@ -15,6 +15,14 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             return new ExprJsResolvedMethod(ctx, ctx.Void, null, "console.log", call.Args);
         }
 
+        public static void WriteLine(Int32 v) {
+            Console.WriteLine(v.ToString());
+        }
+
+        public static void WriteLine(Int64 v) {
+            Console.WriteLine(v.ToString());
+        }
+
         public static void WriteLine(string format, object arg0) {
             Console.WriteLine(string.Format(format, arg0));
         }
