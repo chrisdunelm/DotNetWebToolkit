@@ -37,7 +37,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers {
                 var customType = thisModule.Import(m.Value).Resolve();
                 addWithNested(bclType, customType);
             }
-            cReverseMap = cMap.ToDictionary(x => x.Value, x => x.Key);
+            cReverseMap = cMap.ToDictionary(x => x.Value, x => x.Key, (IEqualityComparer<TypeDefinition>)TypeExtensions.TypeRefEqComparerInstance);
         }
 
         private static Type T(string typeName) {
