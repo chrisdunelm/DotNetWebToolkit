@@ -24,6 +24,18 @@ namespace Test.ExecutionTests {
             this.Test(f);
         }
 
+        [Test]
+        [Ignore("Generic type names not quite correct yet")]
+        public void TestGetTypeToString() {
+            Func<string> f = () => {
+                var ll = new List<List<object>> {
+                    new List<object> { "abc" }
+                };
+                return ll[0].GetType().ToString();
+            };
+            this.Test(f);
+        }
+
     }
 
 }
