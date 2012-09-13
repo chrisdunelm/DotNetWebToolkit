@@ -77,6 +77,7 @@ namespace DotNetWebToolkit.Web {
             xmlHttpRequest.Send(data);
         }
 
+        [JsReturnTypeDeepUse]
         public static T RecvJson<T>(this XMLHttpRequest xmlHttpRequest) {
             return (T)XMLHttpRequestHelper.Decode(Window.Json.Parse(xmlHttpRequest.ResponseText));
         }

@@ -663,6 +663,23 @@ namespace Test.BrowserTests {
             JsRecvTest(GenArrayOfVarious, () => JsRecvJs<object[]>(CheckArrayOfVarious));
         }
 
+        private static Int32[][] GenArrayThenEnumerate() {
+            return new[]{
+                new Int32[] { 3, 3, 3 }
+            };
+        }
+        private static bool CheckArrayThenEnumerate(Int32[][] v) {
+            return v.Length == 1 && v[0].Length == 3 && v[0].All(x => x == 3);
+        }
+        [Test]
+        public void TestJsSendArrayThenEnumerate() {
+            JsSendTest<Int32[][]>(CheckArrayThenEnumerate, () => JsSendJs(GenArrayThenEnumerate));
+        }
+        [Test]
+        public void TestJsRecvArrayThenEnumerate() {
+            JsRecvTest(GenArrayThenEnumerate, () => JsRecvJs<Int32[][]>(CheckArrayThenEnumerate));
+        }
+
         class GenericObjects {
             public class Inner<T> {
                 public T t;
@@ -713,6 +730,33 @@ namespace Test.BrowserTests {
             JsRecvTest(GenListInt32, () => JsRecvJs<List<Int32>>(CheckListInt32));
         }
 
+        private static List<List<object>> GenListOfListsObjects() {
+            return new List<List<object>> {
+                null,
+                new List<object>(),
+                new List<object> { null, null },
+                new List<object> { "abc", 1, true, -4L },
+            };
+        }
+        private static bool CheckListOfListsObjects(List<List<object>> v) {
+            return v.Count == 4 &&
+                v[0] == null &&
+                v[1].Count == 0 &&
+                v[2].Count == 2 && v[2].All(x => x == null) &&
+                v[3].Count == 4 &&
+                (string)v[3][0] == "abc" &&
+                (int)v[3][1] == 1 &&
+                (bool)v[3][2] == true &&
+                (long)v[3][3] == -4L;
+        }
+        [Test]
+        public void TestJsSendListOfListsObjects() {
+            JsSendTest<List<List<object>>>(CheckListOfListsObjects, () => JsSendJs(GenListOfListsObjects));
+        }
+        [Test]
+        public void TestJsRecvListOfListsObects() {
+            JsRecvTest(GenListOfListsObjects, () => JsRecvJs<List<List<object>>>(CheckListOfListsObjects));
+        }
 
     }
 
