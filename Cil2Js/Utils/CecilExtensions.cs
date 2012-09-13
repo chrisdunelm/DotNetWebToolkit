@@ -472,6 +472,24 @@ namespace DotNetWebToolkit.Cil2Js.Utils {
             } while (t != null);
         }
 
+        public static IEnumerable<TypeReference> EnumThisAllContainedTypes(this TypeReference type) {
+            yield return type;
+            if (type.IsArray) {
+                var elementType = ((ArrayType)type).ElementType;
+                foreach (var t in elementType.EnumThisAllContainedTypes()) {
+                    yield return t;
+                }
+            }
+            if (type.IsGenericInstance) {
+                var gen = (GenericInstanceType)type;
+                foreach (var genParam in gen.GenericArguments) {
+                    foreach (var t in genParam.EnumThisAllContainedTypes()) {
+                        yield return t;
+                    }
+                }
+            }
+        }
+
         public static IEnumerable<MethodReference> EnumResolvedMethods(this TypeReference type, params MethodReference[] baseMethods) {
             return type.EnumResolvedMethods((IEnumerable<MethodReference>)baseMethods);
         }

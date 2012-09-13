@@ -170,6 +170,13 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 foreach (var type in types) {
                     typesSeen[type] = typesSeen.ValueOrDefault(type) + 1;
                 }
+                if (mDef.GetCustomAttribute<JsReturnTypeDeepUseAttribute>(true) != null) {
+                    var retType = mDef.ReturnType.FullResolve(ctx);
+                    var retTypes = retType.EnumThisAllContainedTypes().ToArray();
+                    foreach (var type in retTypes) {
+                        typesSeen[type] = typesSeen.ValueOrDefault(type) + 1;
+                    }
+                }
 
                 var calledMethods = new List<ICall>();
                 var calls = VisitorFindCalls.V(ast);
