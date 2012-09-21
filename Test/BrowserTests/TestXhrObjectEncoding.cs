@@ -62,7 +62,7 @@ namespace Test.BrowserTests {
 
 
         private static bool GenBoolTrue() { return true; }
-        private static bool CheckBoolTrue(bool o) { return o == true; }
+        private static bool CheckBoolTrue(bool v) { return v == true; }
         [Test]
         public void TestJsSendBoolTrue() {
             JsSendTest<bool>(CheckBoolTrue, () => JsSendJs(GenBoolTrue));
@@ -73,7 +73,7 @@ namespace Test.BrowserTests {
         }
 
         private static bool GenBoolFalse() { return false; }
-        private static bool CheckBoolFalse(bool o) { return o == false; }
+        private static bool CheckBoolFalse(bool v) { return v == false; }
         [Test]
         public void TestJsSendBoolFalse() {
             JsSendTest<bool>(CheckBoolFalse, () => JsSendJs(GenBoolFalse));
@@ -756,6 +756,49 @@ namespace Test.BrowserTests {
         [Test]
         public void TestJsRecvListOfListsObects() {
             JsRecvTest(GenListOfListsObjects, () => JsRecvJs<List<List<object>>>(CheckListOfListsObjects));
+        }
+
+        private static Dictionary<string, int> GenDictStringInt32() {
+            return new Dictionary<string, int> {
+                { "one", 1 },
+                { "two", 2 },
+                { "three", 3 },
+            };
+        }
+        private static bool CheckDictStringInt32(Dictionary<string, int> v) {
+            return v.Count == 3 && v["one"] == 1 && v["two"] == 2 && v["three"] == 3;
+        }
+        [Test]
+        public void TestJsSendDictStringInt32() {
+            JsSendTest<Dictionary<string, int>>(CheckDictStringInt32, () => JsSendJs(GenDictStringInt32));
+        }
+        [Test]
+        public void TestJsRecvDictStringInt32() {
+            JsRecvTest(GenDictStringInt32, () => JsRecvJs<Dictionary<string, int>>(CheckDictStringInt32));
+        }
+
+        private static Dictionary<string, Dictionary<int, long>> GenDictOfDicts() {
+            return new Dictionary<string, Dictionary<int, long>> {
+                { "a", new Dictionary<int, long> {{1, -1L}, {2, -2L}} },
+                { "b", null },
+                { "c", new Dictionary<int, long> {{3, -3L}, {4, -4L}} },
+            };
+        }
+        private static bool CheckDictOfDicts(Dictionary<string, Dictionary<int, long>> v) {
+            return v["b"] == null &&
+                v["a"][1] == -1L && v["a"][2] == -2L &&
+                v["c"][3] == -3L && v["c"][4] == -4L &&
+                v.Count == 3 &&
+                v["a"].Count == 2 &&
+                v["c"].Count == 2;
+        }
+        [Test]
+        public void TestJsSendDictOfDicts() {
+            JsSendTest<Dictionary<string, Dictionary<int, long>>>(CheckDictOfDicts, () => JsSendJs(GenDictOfDicts));
+        }
+        [Test]
+        public void TestJsRecvDictOfDicts() {
+            JsRecvTest(GenDictOfDicts, () => JsRecvJs<Dictionary<string, Dictionary<int, long>>>(CheckDictOfDicts));
         }
 
     }

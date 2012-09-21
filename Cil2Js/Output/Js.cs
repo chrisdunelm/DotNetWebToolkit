@@ -175,6 +175,20 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     var retTypes = retType.EnumThisAllContainedTypes().ToArray();
                     foreach (var type in retTypes) {
                         typesSeen[type] = typesSeen.ValueOrDefault(type) + 1;
+                        if (type.IsGenericInstance && type.Resolve().FullName == "System.Collections.Generic.Dictionary`2") {
+                            // HACK - ensure no-arg ctor is present. JSON needs it
+                            var ctor = type.EnumResolvedMethods().First(x => x.Name == ".ctor" && !x.HasParameters);
+                            if (!methodsSeen.ContainsKey(ctor)) {
+                                methodsSeen.Add(ctor, 1);
+                                addTodo(ctor);
+                            }
+                            // HACK - ensure Add(key, value) method present. JSON need sit
+                            var mAdd = type.EnumResolvedMethods().First(x => x.Name == "Add");
+                            if (!methodsSeen.ContainsKey(mAdd)) {
+                                methodsSeen.Add(mAdd, 1);
+                                addTodo(mAdd);
+                            }
+                        }
                     }
                 }
 
@@ -521,6 +535,18 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 js.AppendFormat(", {0}:{1}", typeDataNames[TypeData.IsInterface], tDef.IsInterface ? "true" : "false");
                 var assignableTo = typesSeenOrdered.Where(x => unmappedType.IsAssignableTo(x)).Where(x => !x.IsSame(unmappedType)).ToArray();
                 js.AppendFormat(", {0}:[{1}]", typeDataNames[TypeData.AssignableTo], string.Join(", ", assignableTo.Select(x => typeNames[x])));
+                if (tDef.FullName == "System.Collections.Generic.Dictionary`2") {
+                    var typeGen = (GenericInstanceType)type;
+                    var dict = tDef.Module.Import(typeof(DotNetWebToolkit.Cil2Js.JsResolvers.Classes._Dictionary<,>));
+                    var dictGen = dict.MakeGeneric(typeGen.GenericArguments[0], typeGen.GenericArguments[1]);
+                    var jsSlotsName = fieldNames[dictGen.EnumResolvedFields().First(x => x.Name == "slots")];
+                    var slot = dictGen.Resolve().NestedTypes.First(x => x.Name == "Slot");
+                    var slotGen = slot.MakeGeneric(typeGen.GenericArguments[0], typeGen.GenericArguments[1]);
+                    var jsHashCodeName = fieldNames[slotGen.EnumResolvedFields().First(x => x.Name == "hashCode")];
+                    var jskeyName = fieldNames[slotGen.EnumResolvedFields().First(x => x.Name == "key")];
+                    var jsValueName = fieldNames[slotGen.EnumResolvedFields().First(x => x.Name == "value")];
+                    js.AppendFormat(", {0}:['{1}','{2}','{3}','{4}']", typeDataNames[TypeData.IsDictionary], jsSlotsName, jsHashCodeName, jskeyName, jsValueName);
+                }
                 if (!tDef.IsInterface) {
                     if (!tDef.IsAbstract) {
                         // Virtual method table, only needed on concrete types
@@ -615,6 +641,27 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                 }
                 js.Length--;
                 js.Append("};");
+                var typesDicts = typesSeenOrdered
+                    .Where(x => x.IsGenericInstance && x.Resolve().FullName == "System.Collections.Generic.Dictionary`2")
+                    .ToArray();
+                if (typesDicts.Any()) {
+                    jsNewLine();
+                    js.Append("// json dictionary ctors");
+                    jsNewLine();
+                    // TODO: Auto-name or get rid of this
+                    js.Append("var $d = {");
+                    foreach (var type in typesDicts) {
+                        var keyName = typeNames[type.GetGenericArgument(0)];
+                        var valueName = typeNames[type.GetGenericArgument(1)];
+                        var ctor = type.EnumResolvedMethods().First(x => x.Name == ".ctor" && !x.HasParameters);
+                        var ctorName = methodNames[ctor];
+                        var mAdd = type.EnumResolvedMethods().First(x => x.Name == "Add");
+                        var mAddName = methodNames[mAdd];
+                        js.AppendFormat("'{0}{1}':[{2},{3}],", keyName, valueName, ctorName, mAddName);
+                    }
+                    js.Length--;
+                    js.Append("};");
+                }
             }
 
             jsNewLine();

@@ -23,19 +23,16 @@ namespace DotNetWebToolkit.Server {
 
         private JsonTypeMap typeMap;
 
-        interface CustomTypeCodec {
+        interface ICustomTypeCodec {
             bool IsType(Type type);
-            int Id { get; }
             object Encode(object o, Type type, JsonTypeMap typeMap, Func<object, bool, object> enc);
-            object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd);
+            object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd, Func<object, Type, object> fnDecode);
         }
 
-        class CustomListCodec : CustomTypeCodec {
+        class CustomListCodec : ICustomTypeCodec {
             public bool IsType(Type type) {
                 return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
             }
-
-            public int Id { get { return 1; } }
 
             public object Encode(object o, Type type, JsonTypeMap typeMap, Func<object, bool, object> enc) {
                 var oList = (IList)o;
@@ -55,21 +52,69 @@ namespace DotNetWebToolkit.Server {
                 return ret;
             }
 
-            public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd) {
-                var elementsId = (string)((object[])((object[])((object[])o)[1])[1])[0];
+            public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd, Func<object, Type, object> fnDecode) {
+                var elementsId = (string)((object[])((Dictionary<string, object>)o).Where(x => x.Key != "_").First().Value)[0];
                 var retList = (IList)Activator.CreateInstance(type);
+                // Done is this slightly convoluted way, as the element Array must be fully populated
+                // before the elements are added to the list.
                 fnAdd(objs => {
-                    var elements = (Array)objs[elementsId];
-                    foreach (var element in elements) {
-                        retList.Add(element);
-                    }
+                    fnAdd(objs2 => {
+                        var elements = (Array)objs2[elementsId];
+                        foreach (var element in elements) {
+                            retList.Add(element);
+                        }
+                    });
                 });
                 return retList;
             }
         }
 
-        private static CustomTypeCodec[] customTypeCodecs = {
+        class CustomDictionaryCodec : ICustomTypeCodec {
+
+            public bool IsType(Type type) {
+                return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>);
+            }
+
+            public object Encode(object o, Type type, JsonTypeMap typeMap, Func<object, bool, object> enc) {
+                var oDict = (IDictionary)o;
+                var jsTypeName = typeMap.GetTypeName(type);
+                var comparerObj = type.InvokeMember("Comparer", BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty, null, o, new object[0]);
+                var comparer = enc(comparerObj, false);
+                var keys = new List<object>(oDict.Count);
+                var values = new List<object>(oDict.Count);
+                foreach (DictionaryEntry entry in oDict) {
+                    var key = enc(entry.Key, false);
+                    var value = enc(entry.Value, false);
+                    keys.Add(key);
+                    values.Add(value);
+                }
+                var ret = new Dictionary<string, object> {
+                    { "_", jsTypeName },
+                    { "__", 2 },
+                    { "a", keys },
+                    { "b", values },
+                    { "c", comparer },
+                    { "d", typeMap.GetTypeName(type.GetGenericArguments()[0]) + typeMap.GetTypeName(type.GetGenericArguments()[1]) },
+                };
+                return ret;
+            }
+
+            public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd, Func<object, Type, object> fnDecode) {
+                var retDict = (IDictionary)Activator.CreateInstance(type);
+                var entries = (object[])o;
+                fnAdd(objs => {
+                    for (int i = 1; i < entries.Length; i++) {
+
+                    }
+                });
+                return retDict;
+            }
+
+        }
+
+        private static ICustomTypeCodec[] customTypeCodecs = {
                                                                 new CustomListCodec(),
+                                                                new CustomDictionaryCodec(),
                                                             };
 
         public string Encode(object obj) {
@@ -222,164 +267,156 @@ namespace DotNetWebToolkit.Server {
             return Decode<T>(s);
         }
 
+        private static bool IsNullable(Type type) {
+            return type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        }
+
+        private static Type NullableType(Type type) {
+            return IsNullable(type) ? type.GetGenericArguments()[0] : null;
+        }
+
+        class DecodeRef {
+            public DecodeRef(string id) { this.id = id; }
+            public string id;
+        }
+
         public T Decode<T>(string s) {
-            JavaScriptSerializer jsonSerializer = new JavaScriptSerializer();
-            var json = jsonSerializer.Deserialize<object[]>(s);
+            var jsonSerializer = new JavaScriptSerializer();
+            var json = jsonSerializer.Deserialize<object[][]>(s);
             var objs = new Dictionary<string, object>();
-            var refs = new List<Tuple<object, FieldInfo, string>>();
-            var arrayRefs = new List<Tuple<Array, int, string>>();
-            var fnRefs = new List<Action<Dictionary<string, object>>>();
-            Func<Type, object, object> jDecodeAny = null;
-            Func<object, string> getIfObjRef = o => {
-                var oArray = o as object[];
-                if (oArray != null) {
-                    if (oArray.Length == 1) {
-                        return (string)oArray[0];
-                    }
-                }
-                return null;
-            };
-            Func<Type, object[], object> createObj = (type, fields) => {
-                var obj = Activator.CreateInstance(type, true);
-                for (int i = 0; i < fields.Length; i += 2) {
-                    var fieldInfo = this.typeMap.GetFieldByName(type, (string)fields[i]);
-                    var fieldType = fieldInfo.FieldType;
-                    var refId = getIfObjRef(fields[i + 1]);
-                    if (refId != null) {
-                        refs.Add(Tuple.Create(obj, fieldInfo, refId));
-                    } else {
-                        object v = jDecodeAny(fieldType, fields[i + 1]);
-                        fieldInfo.SetValue(obj, v);
-                    }
-                }
-                return obj;
-            };
-            Func<Type, object, object> jDecodeValueType = (type, o) => {
-                bool isNullable = false;
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>)) {
-                    isNullable = true;
-                    type = type.GetGenericArguments()[0];
-                }
-                if (isNullable && o == null) {
-                    return null;
-                }
-                var typeCode = Type.GetTypeCode(type);
-                switch (typeCode) {
-                case TypeCode.Boolean: return (bool)o;
-                case TypeCode.Char: return (char)(int)o;
-                case TypeCode.Int64:
-                    var oi64Array = (object[])o;
-                    var i64hi = Convert.ToUInt64(oi64Array[0]);
-                    var i64lo = Convert.ToUInt64(oi64Array[1]);
-                    var i64 = (i64hi << 32) | i64lo;
-                    return (Int64)i64;
-                case TypeCode.UInt64:
-                    var oui64Array = (object[])o;
-                    var ui64hi = Convert.ToUInt64(oui64Array[0]);
-                    var ui64lo = Convert.ToUInt64(oui64Array[1]);
-                    var ui64 = (ui64hi << 32) | ui64lo;
-                    return ui64;
-                case TypeCode.SByte:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Byte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                    return Convert.ChangeType(o, type);
-                case TypeCode.Single:
-                    var oSingle = o as object[];
-                    if (oSingle != null) {
-                        var special = (int)oSingle[0];
-                        switch (special) {
-                        case 0: return Single.NaN;
-                        case 1: return Single.PositiveInfinity;
-                        case -1: return Single.NegativeInfinity;
-                        default: throw new InvalidOperationException("Unrecognised special: " + special);
-                        }
-                    }
-                    return Convert.ChangeType(o, type);
-                case TypeCode.Double:
-                    var oDouble = o as object[];
-                    if (oDouble != null) {
-                        var special = (int)oDouble[0];
-                        switch (special) {
-                        case 0: return Double.NaN;
-                        case 1: return Double.PositiveInfinity;
-                        case -1: return Double.NegativeInfinity;
-                        default: throw new InvalidOperationException("Unrecognised special: " + special);
-                        }
-                    }
-                    return Convert.ChangeType(o, type);
-                case TypeCode.Object:
-                case TypeCode.DateTime:
-                    var fields = (object[])o;
-                    return createObj(type, fields);
-                default:
-                    throw new InvalidOperationException("Cannot handle: " + typeCode);
-                }
-            };
-            Func<object, object> jDecode = null;
-            jDecode = o => {
+            var refs = new List<Action>();
+            Func<object, Type, object> decode = null;
+            decode = (o, type) => {
                 if (o == null) {
                     return null;
                 }
-                var oStr = o as string;
-                if (oStr != null) {
-                    return oStr;
-                } else {
+                if (o is object[]) {
                     var oArray = (object[])o;
-                    var jsTypeName = (string)oArray[0];
-                    var type = this.typeMap.GetTypeByName(jsTypeName);
-                    foreach (var customTypeCodec in customTypeCodecs) {
-                        if (customTypeCodec.IsType(type)) {
-                            var ret = customTypeCodec.Decode(o, type, this.typeMap, fn => fnRefs.Add(fn));
-                            return ret;
-                        }
+                    if (oArray.Length == 1 && oArray[0] is string) {
+                        return new DecodeRef((string)((object[])o)[0]);
                     }
-                    if (type.IsValueType) { // value-type
-                        return jDecodeValueType(type, oArray[1]);
-                    } else if (type.IsArray) { // array
-                        var elementType = type.GetElementType();
-                        var elements = (object[])oArray[1];
-                        var array = (Array)Activator.CreateInstance(type, elements.Length);
-                        for (int i = 0; i < elements.Length; i++) {
-                            var refId = getIfObjRef(elements[i]);
-                            if (refId != null) {
-                                arrayRefs.Add(Tuple.Create(array, i, refId));
-                            } else {
-                                object v = jDecodeAny(elementType, elements[i]);
-                                array.SetValue(v, i);
+                }
+                type = NullableType(type) ?? type;
+                if (type != null && type.IsValueType) {
+                    var typeCode = Type.GetTypeCode(type);
+                    switch (typeCode) {
+                    case TypeCode.Boolean:
+                    case TypeCode.Byte:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.SByte:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.Char:
+                        return Convert.ChangeType(o, type);
+                    case TypeCode.Int64:
+                        var i64o = (object[])o;
+                        var i64Hi = Convert.ToUInt64(i64o[0]);
+                        var i64Lo = Convert.ToUInt64(i64o[1]);
+                        return (Int64)((i64Hi << 32) | i64Lo);
+                    case TypeCode.UInt64:
+                        var u64o = (object[])o;
+                        var u64Hi = Convert.ToUInt64(u64o[0]);
+                        var u64Lo = Convert.ToUInt64(u64o[1]);
+                        return (u64Hi << 32) | u64Lo;
+                    case TypeCode.Single:
+                        if (o.GetType().IsArray) {
+                            switch ((int)((object[])o)[0]) {
+                                case 0: return Single.NaN;
+                                case -1: return Single.NegativeInfinity;
+                                case 1: return Single.PositiveInfinity;
+                                default: throw new InvalidOperationException("Unrecognised special Single");
                             }
                         }
-                        return array;
-                    } else { // object
-                        var fields = (object[])oArray[1];
-                        return createObj(type, fields);
+                        return Convert.ToSingle(o);
+                    case TypeCode.Double:
+                        if (o.GetType().IsArray) {
+                            switch ((int)((object[])o)[0]) {
+                            case 0: return Double.NaN;
+                            case -1: return Double.NegativeInfinity;
+                            case 1: return Double.PositiveInfinity;
+                            default: throw new InvalidOperationException("Unrecognised special Single");
+                            }
+                        }
+                        return Convert.ToDouble(o);
+                    case TypeCode.Object:
+                        var oDictValueType = (Dictionary<string, object>)o;
+                        var ret = Activator.CreateInstance(type, true);
+                        foreach (var field in oDictValueType) {
+                            var fieldInfo = this.typeMap.GetFieldByName(type, field.Key);
+                            var fieldValue = decode(field.Value, fieldInfo.FieldType);
+                            if (fieldValue is DecodeRef) {
+                                var refId = ((DecodeRef)fieldValue).id;
+                                refs.Add(() => fieldInfo.SetValue(ret, objs[refId]));
+                            } else {
+                                fieldInfo.SetValue(ret, fieldValue);
+                            }
+                        }
+                        return ret;
+                    default:
+                        throw new InvalidOperationException("Cannot handle value-type: " + type);
                     }
                 }
-            };
-            jDecodeAny = (type, o) => {
-                if (type != null && type.IsValueType) {
-                    return jDecodeValueType(type, o);
+                if (o is string) {
+                    return o;
+                }
+                var oDict = (Dictionary<string, object>)o;
+                if (oDict.ContainsKey("_")) {
+                    var jsTypeName = (string)oDict["_"];
+                    type = this.typeMap.GetTypeByName(jsTypeName);
+                }
+                if (type.IsValueType) {
+                    return decode(oDict["v"], type);
+                }
+                if (type.IsArray) {
+                    var elementType = type.GetElementType();
+                    var elements = ((object[])oDict["v"]).Select(x => decode(x, elementType)).ToArray();
+                    var ret = (Array)Activator.CreateInstance(type, elements.Length);
+                    for (int i = 0; i < elements.Length; i++) {
+                        var item = elements[i];
+                        if (item is DecodeRef) {
+                            var refId = ((DecodeRef)item).id;
+                            var iCopy = i;
+                            refs.Add(() => ret.SetValue(objs[refId], iCopy));
+                        } else {
+                            ret.SetValue(item, i);
+                        }
+                    }
+                    return ret;
                 } else {
-                    return jDecode(o);
+                    foreach (var customTypeCodec in customTypeCodecs) {
+                        if (customTypeCodec.IsType(type)) {
+                            var custom = customTypeCodec.Decode(o, type, this.typeMap, fn => refs.Add(() => fn(objs)), decode);
+                            return custom;
+                        }
+                    }
+                    var ret = Activator.CreateInstance(type, true);
+                    foreach (var field in oDict.Where(x => x.Key != "_")) {
+                        var fieldInfo = this.typeMap.GetFieldByName(type, field.Key);
+                        var fieldValue = decode(field.Value, fieldInfo.FieldType);
+                        if (fieldValue is DecodeRef) {
+                            var refId = ((DecodeRef)fieldValue).id;
+                            refs.Add(() => fieldInfo.SetValue(ret, objs[refId]));
+                        } else {
+                            fieldInfo.SetValue(ret, fieldValue);
+                        }
+                    }
+                    return ret;
                 }
             };
-            foreach (var obj in json.Cast<object[]>()) {
-                var objId = (string)obj[0];
-                objs[objId] = jDecode(obj[1]);
+            foreach (var objJson in json) {
+                var objId = (string)objJson[0];
+                var obj = decode(objJson[1], null);
+                objs.Add(objId, obj);
             }
-            foreach (var r in refs) {
-                r.Item2.SetValue(r.Item1, objs[r.Item3]);
+
+            // List can expand, so cannot be done in a foreach loop
+            for (int i = 0; i < refs.Count; i++) {
+                refs[i]();
             }
-            foreach (var r in arrayRefs) {
-                r.Item1.SetValue(objs[r.Item3], r.Item2);
-            }
-            foreach (var r in fnRefs) {
-                r(objs);
-            }
-            var toRet = (T)objs["0"];
-            return toRet;
+
+            var obj0 = (T)objs["0"];
+            return obj0;
         }
 
     }

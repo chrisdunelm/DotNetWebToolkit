@@ -15,76 +15,38 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
         [Js]
         public static Stmt Encode(Ctx ctx) {
             var arg = ctx.MethodParameter(0, "arg");
+            var id = ctx.Local(ctx.Int32, "id");
             var todo = ctx.Local(ctx.Object, "todo");
             var todoOfs = ctx.Local(ctx.Int32, "todoOfs");
-            var id = ctx.Local(ctx.Int32, "id");
-            var json = ctx.Local(ctx.Object, "json");
-            var obj = ctx.Local(ctx.Object, "obj");
-            var type = ctx.Local(ctx.Type, "type");
-            var jsonObj = ctx.Local(ctx.Object, "jsonObj");
-            var field = ctx.Local(ctx.Object, "field");
-            var fieldKey = ctx.Local(ctx.String, "fieldKey");
-            var typeDataIsArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("typeDataIsArray");
-            var typeDataIsPrimitive = new ExprJsTypeData(ctx, TypeData.IsPrimitive).Named("typeDataIsPrimitive");
-            var typeDataIsValueType = new ExprJsTypeData(ctx, TypeData.IsValueType).Named("typeDataIsValueType");
-            var typeDataJsName = new ExprJsTypeData(ctx, TypeData.JsName).Named("typeDataJsName");
-            var stringType = new ExprJsTypeVarName(ctx, ctx.String).Named("stringType");
-            var isObjRef = ctx.Local(ctx.Object, "isObjRef");
             var enc = ctx.Local(ctx.Object, "enc");
-            var encObj = ctx.Local(ctx.Object, "encObj");
+            var obj = ctx.Local(ctx.Object, "obj");
+            var json = ctx.Local(ctx.Object, "json");
+            var jsonPart = ctx.Local(ctx.Object, "jsonPart");
             var o = ctx.Local(ctx.Object, "o");
-            var ret = ctx.Local(ctx.Object, "ret");
+            var type = ctx.Local(ctx.Type, "type");
+            var oKey = ctx.Local(ctx.String, "oKey");
+            var isRoot = ctx.Local(ctx.Boolean, "isRoot");
             var i = ctx.Local(ctx.Int32, "i");
-            var key = ctx.Local(ctx.String, "key");
-            var oKey = ctx.Local(ctx.Object, "oKey");
-            var c = ctx.Local(ctx.Char, "c");
+            var isArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("isArray");
+            var jsName = new ExprJsTypeData(ctx, TypeData.JsName).Named("jsName");
+            var ret = ctx.Local(ctx.Object, "ret");
+            // Value-types will be boxed on entry
             var js = @"
 try {
 id = 0;
-if (arg && typeof(arg) == 'object') {
+if (arg && arg._) {
     arg.$$ = '0';
 }
 todo = [arg];
 todoOfs = 0;
-json = [];
-isObjRef = function(o) {
-    if (o === null || o === undefined) {
-        return false;
-    }
-    if (typeof(o) === 'object' && o._ && !o._.typeDataIsValueType) {
-        if (!o.$$) {
-            o.$$ = (++id).toString();
-            todo.push(o);
-        }
-        return true;
-    }
-    return false;
-};
-encObj = function(o) {
-    var ret = [];
-    for (var key in o) {
-        var c = key.charAt(0);
-        if (c !== '_' && c !== '$' && o.hasOwnProperty(key)) {
-            var oKey = o[key];
-            if (isObjRef(oKey)) {
-                ret.push(key, [oKey.$$]);
-            } else {
-                ret.push(key, enc(oKey));
-            }
-        }
-    }
-    return ret;
-};
-enc = function(o) {
+enc = function(o, isRoot) {
     if (o === null || o === undefined) {
         return null;
     }
     var type = o._;
-    if (!type) {
-        if (typeof(o) === 'object' && !(o instanceof Array)) { // unboxed value-type
-            return encObj(o);
-        } else { // string or unboxed primitive
-            if (typeof(o) === 'number') {
+    if (!type) { // Unboxed value-type/primitive
+        if (typeof(o) !== 'object' || o instanceof Array) { // primitive number, boolean, string, 64-bit number (array)
+            if (typeof(o) === 'number') { // Number
                 if (isNaN(o)) {
                     return [0];
                 }
@@ -96,44 +58,58 @@ enc = function(o) {
                 }
             }
             return o;
-        }
-    } else if (type.typeDataIsArray) { // array
-        var ret = new Array(o.length);
-        for (var i = 0; i < o.length; i++) {
-            var oKey = o[i];
-            if (isObjRef(oKey)) {
-                ret[i] = [oKey.$$];
-            } else {
-                ret[i] = enc(o[i]);
+        } else {
+            // Non-primitive value-type
+            var ret = {};
+            for (var oKey in o) {
+                ret[oKey] = enc(o[oKey]);
             }
+            return ret;
         }
-        return [type.typeDataJsName, ret];
-    } else if (type.typeDataIsPrimitive) { // boxed primitive, supports 64-bit numbers without any special code
-        return [type.typeDataJsName, enc(o.v)];
-    } else { // object, boxed value-type
-        if (type.typeDataIsValueType) {
-            o = o.v;
+    }
+    if (isRoot) {
+        // Direct object encoding required
+        if (type && type.isArray) {
+            var ret = { '_': type.jsName, 'v': [] };
+            for (var i=0; i<o.length; i++) {
+                ret.v.push(enc(o[i]));
+            }
+            return ret;
+        } else {
+            var ret = { '_': type.jsName };
+            for (var oKey in o) {
+                if (oKey.charAt(0) !== '_' && oKey.charAt(0) !== '$') {
+                    ret[oKey] = enc(o[oKey]);
+                }
+            }
+            return ret;
         }
-        return [type.typeDataJsName, encObj(o)];
+    } else {
+        if (!o.$$) {
+            o.$$ = (++id).toString();
+            todo.push(o);
+        }
+        return [o.$$];
     }
 };
+json = [];
 while (todo.length > todoOfs) {
     obj = todo[todoOfs++];
-    json.push([(obj && typeof(obj) == 'object' && obj.$$) ? obj.$$ : '0', enc(obj)]);
+    jsonPart = enc(obj, true);
+    json.push([(obj && obj.$$) || '0', jsonPart]);
 }
-for (todoOfs = 0; todoOfs < todo.length; todoOfs++) {
-    obj = todo[todoOfs];
-    if (obj && typeof(obj) == 'object') {
-        delete todo[todoOfs].$$;
+for (i = 0; i<todo.length; i++) {
+    if (todo[i] && todo[i].$$) {
+        delete todo[i].$$;
     }
 }
 return json;
-} catch (xx) {
-console.log('EX:'+xx);
-throw xx;
+} catch (eeee) {
+console.log('Ex: ' + eeee);
+throw eeee;
 }
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, todo, todoOfs, id, json, obj, type, jsonObj, field, fieldKey, typeDataIsArray, typeDataIsPrimitive, typeDataIsValueType, typeDataJsName, stringType, isObjRef, enc, encObj, o, ret, i, key, oKey, c);
+            var stmt = new StmtJsExplicit(ctx, js, arg, id, todo, todoOfs, enc, obj, json, jsonPart, o, type, oKey, isRoot, i, isArray, ret, jsName);
             return stmt;
         }
 
@@ -142,18 +118,30 @@ throw xx;
             var arg = ctx.MethodParameter(0, "arg");
             var objs = ctx.Local(ctx.Object, "objs");
             var refs = ctx.Local(ctx.Object, "refs");
+            var needDefer = ctx.Local(ctx.Object, "needDefer");
+            var defer = ctx.Local(ctx.Object, "defer");
             var dec = ctx.Local(ctx.Object, "dec");
             var type = ctx.Local(ctx.Type, "type");
-            var decTyped = ctx.Local(ctx.Object, "decTyped");
             var ret = ctx.Local(ctx.Object, "ret");
             var o = ctx.Local(ctx.Object, "o");
             var oArray = ctx.Local(ctx.Object, "oArray");
             var i = ctx.Local(ctx.Int32, "i");
             var isObject = ctx.Local(ctx.Boolean, "isObject");
-            var typeDataIsArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("typeDataIsPrimitive");
             var js = @"
 objs = {};
 refs = [];
+needDefer = function(o) {
+    return !!(o && o instanceof Array &&  o.length === 1 && typeof(o[0]) === 'string');
+};
+defer = function(ret, i, o) {
+    if (needDefer(o[i])) {
+        refs.push(function() {
+            ret[i] = objs[o[i][0]];
+        });
+    } else {
+        ret[i] = dec(o[i]);
+    }
+};
 dec = function(o) {
     var ret, i;
     if (o == null) {
@@ -161,22 +149,28 @@ dec = function(o) {
     }
     var isObject = false;
     if (o._ !== undefined) {
-        if (o['']) { // Array
+        if (o.__ === 2) { // Dictionary
+            ret = $d[o.d][0]({ _: $$[o._] });
+            for (var i = 0; i < o.a.length; i++) {
+                var kVal = o.a[i];
+                var vVal = o.b[i];
+                var kRef = needDefer(kVal);
+                var vRef = needDefer(vVal);
+                (function(kRef, kVal, vRef, vVal, o, ret) {
+                    refs.push(function() {
+                        if (kRef) kVal = objs[kVal[0]];
+                        if (vRef) vVal = objs[vVal[0]];
+                        $d[o.d][1](ret, kVal, vVal);
+                    });
+                })(kRef, kVal, vRef, vVal, o, ret);
+            }
+        } else if (o['']) { // Array
             var oArray = o[''];
             var ret = new Array(oArray.length);
             ret._ = $$[o._];
             // TODO: Set $
             for (var i = 0; i < oArray.length; i++) {
-                if (oArray[i] && oArray[i].length === 1 && typeof(oArray[i][0]) === 'string') {
-                    // obj ref
-                    (function(ret, i, o) {
-                        refs.push(function() {
-                            ret[i] = objs[o[i]];
-                        });
-                    })(ret, i, oArray);
-                } else {
-                    ret[i] = dec(oArray[i]);
-                }
+                defer(ret, i, oArray)
             }
         } else { // Object or boxed struct
             isObject = true;
@@ -198,16 +192,7 @@ dec = function(o) {
         // TODO: Set $ = hash id
         for (var i in o) {
             if (i !== '_') {
-                if (o[i] && o[i].length === 1 && typeof(o[i][0]) === 'string') {
-                    // obj ref
-                    (function(ret, i, o) {
-                        refs.push(function() {
-                            ret[i] = objs[o[i]];
-                        });
-                    })(ret, i, o)
-                } else {
-                    ret[i] = dec(o[i]);
-                }
+                defer(ret, i, o);
             }
         }
     }
@@ -222,7 +207,7 @@ for (i = 0; i < refs.length; i++) {
 ret = objs['0'];
 return ret;
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, dec, type, decTyped, ret, o, oArray, i, isObject, typeDataIsArray);
+            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, needDefer, defer, dec, type, ret, o, oArray, i, isObject);
             return stmt;
         }
 
