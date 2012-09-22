@@ -55,7 +55,7 @@ namespace DotNetWebToolkit.Server {
             public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd, Func<object, Type, object> fnDecode) {
                 var elementsId = (string)((object[])((Dictionary<string, object>)o).Where(x => x.Key != "_").First().Value)[0];
                 var retList = (IList)Activator.CreateInstance(type);
-                // Done is this slightly convoluted way, as the element Array must be fully populated
+                // Done in this slightly convoluted way, as the element Array must be fully populated
                 // before the elements are added to the list.
                 fnAdd(objs => {
                     fnAdd(objs2 => {
@@ -94,19 +94,33 @@ namespace DotNetWebToolkit.Server {
                     { "a", keys },
                     { "b", values },
                     { "c", comparer },
-                    { "d", typeMap.GetTypeName(type.GetGenericArguments()[0]) + typeMap.GetTypeName(type.GetGenericArguments()[1]) },
+                    { "d", typeMap.GetTypeName(type) },
                 };
                 return ret;
             }
 
             public object Decode(object o, Type type, JsonTypeMap typeMap, Action<Action<Dictionary<string, object>>> fnAdd, Func<object, Type, object> fnDecode) {
                 var retDict = (IDictionary)Activator.CreateInstance(type);
-                var entries = (object[])o;
-                fnAdd(objs => {
-                    for (int i = 1; i < entries.Length; i++) {
-
+                var keyType = type.GetGenericArguments()[0];
+                var valueType = type.GetGenericArguments()[1];
+                var entries = (object[])((Dictionary<string, object>)o)["v"];
+                for (int i = 0; i < entries.Length; i += 2) {
+                    var key = fnDecode(entries[i], keyType);
+                    var value = fnDecode(entries[i + 1], valueType);
+                    if (key is DecodeRef || value is DecodeRef) {
+                        fnAdd(objs => {
+                            if (key is DecodeRef) {
+                                key = objs[((DecodeRef)key).id];
+                            }
+                            if (value is DecodeRef) {
+                                value = objs[((DecodeRef)value).id];
+                            }
+                            retDict.Add(key, value);
+                        });
+                    } else {
+                        retDict.Add(key, value);
                     }
-                });
+                }
                 return retDict;
             }
 
@@ -322,10 +336,10 @@ namespace DotNetWebToolkit.Server {
                     case TypeCode.Single:
                         if (o.GetType().IsArray) {
                             switch ((int)((object[])o)[0]) {
-                                case 0: return Single.NaN;
-                                case -1: return Single.NegativeInfinity;
-                                case 1: return Single.PositiveInfinity;
-                                default: throw new InvalidOperationException("Unrecognised special Single");
+                            case 0: return Single.NaN;
+                            case -1: return Single.NegativeInfinity;
+                            case 1: return Single.PositiveInfinity;
+                            default: throw new InvalidOperationException("Unrecognised special Single");
                             }
                         }
                         return Convert.ToSingle(o);

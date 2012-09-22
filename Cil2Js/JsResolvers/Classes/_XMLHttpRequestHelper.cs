@@ -29,6 +29,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var i = ctx.Local(ctx.Int32, "i");
             var isArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("isArray");
             var jsName = new ExprJsTypeData(ctx, TypeData.JsName).Named("jsName");
+            var jsIsDict = new ExprJsTypeData(ctx, TypeData.IsDictionary).Named("jsIsDict");
             var ret = ctx.Local(ctx.Object, "ret");
             // Value-types will be boxed on entry
             var js = @"
@@ -69,6 +70,16 @@ enc = function(o, isRoot) {
     }
     if (isRoot) {
         // Direct object encoding required
+        if (type.jsIsDict) {
+            var ret = { '_': type.jsName, 'v': [] };
+            var slots = o[type.jsIsDict[0]];
+            for (var i=0; i<slots.length; i++) {
+                if (slots[i] && slots[i][type.jsIsDict[1]] >= 0) {
+                    ret.v.push(enc(slots[i][type.jsIsDict[2]]), enc(slots[i][type.jsIsDict[3]]));
+                }
+            }
+            return ret;
+        }
         if (type && type.isArray) {
             var ret = { '_': type.jsName, 'v': [] };
             for (var i=0; i<o.length; i++) {
@@ -109,7 +120,7 @@ console.log('Ex: ' + eeee);
 throw eeee;
 }
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, id, todo, todoOfs, enc, obj, json, jsonPart, o, type, oKey, isRoot, i, isArray, ret, jsName);
+            var stmt = new StmtJsExplicit(ctx, js, arg, id, todo, todoOfs, enc, obj, json, jsonPart, o, type, oKey, isRoot, i, isArray, ret, jsName, jsIsDict);
             return stmt;
         }
 

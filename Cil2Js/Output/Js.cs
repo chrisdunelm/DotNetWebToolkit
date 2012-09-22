@@ -646,20 +646,26 @@ namespace DotNetWebToolkit.Cil2Js.Output {
                     .ToArray();
                 if (typesDicts.Any()) {
                     jsNewLine();
-                    js.Append("// json dictionary ctors");
+                    js.Append("// json dictionary info");
                     jsNewLine();
                     // TODO: Auto-name or get rid of this
                     js.Append("var $d = {");
+                    var any = false;
                     foreach (var type in typesDicts) {
-                        var keyName = typeNames[type.GetGenericArgument(0)];
-                        var valueName = typeNames[type.GetGenericArgument(1)];
+                        var typeName = typeNames[type];
                         var ctor = type.EnumResolvedMethods().First(x => x.Name == ".ctor" && !x.HasParameters);
-                        var ctorName = methodNames[ctor];
                         var mAdd = type.EnumResolvedMethods().First(x => x.Name == "Add");
-                        var mAddName = methodNames[mAdd];
-                        js.AppendFormat("'{0}{1}':[{2},{3}],", keyName, valueName, ctorName, mAddName);
+                        // If dict not involved in JSON, these methods may not be present
+                        if (methodNames.ContainsKey(ctor) && methodNames.ContainsKey(mAdd)) {
+                            var ctorName = methodNames[ctor];
+                            var mAddName = methodNames[mAdd];
+                            js.AppendFormat("'{0}':[{1},{2}],", typeName, ctorName, mAddName);
+                            any = true;
+                        }
                     }
-                    js.Length--;
+                    if (any) {
+                        js.Length--;
+                    }
                     js.Append("};");
                 }
             }
