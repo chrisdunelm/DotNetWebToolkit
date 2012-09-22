@@ -30,6 +30,7 @@ namespace DotNetWebToolkit.Cil2Js.JsResolvers.Classes {
             var isArray = new ExprJsTypeData(ctx, TypeData.IsArray).Named("isArray");
             var jsName = new ExprJsTypeData(ctx, TypeData.JsName).Named("jsName");
             var jsIsDict = new ExprJsTypeData(ctx, TypeData.IsDictionary).Named("jsIsDict");
+            var slots = ctx.Local(ctx.Object, "slots");
             var ret = ctx.Local(ctx.Object, "ret");
             // Value-types will be boxed on entry
             var js = @"
@@ -120,7 +121,7 @@ console.log('Ex: ' + eeee);
 throw eeee;
 }
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, id, todo, todoOfs, enc, obj, json, jsonPart, o, type, oKey, isRoot, i, isArray, ret, jsName, jsIsDict);
+            var stmt = new StmtJsExplicit(ctx, js, arg, id, todo, todoOfs, enc, obj, json, jsonPart, o, type, oKey, isRoot, i, isArray, ret, jsName, jsIsDict, slots);
             return stmt;
         }
 
@@ -138,6 +139,10 @@ throw eeee;
             var oArray = ctx.Local(ctx.Object, "oArray");
             var i = ctx.Local(ctx.Int32, "i");
             var isObject = ctx.Local(ctx.Boolean, "isObject");
+            var kVal = ctx.Local(ctx.Object, "kVal");
+            var vVal = ctx.Local(ctx.Object, "vVal");
+            var kRef = ctx.Local(ctx.Boolean, "kRef");
+            var vRef = ctx.Local(ctx.Boolean, "vRef");
             var js = @"
 objs = {};
 refs = [];
@@ -218,7 +223,7 @@ for (i = 0; i < refs.length; i++) {
 ret = objs['0'];
 return ret;
 ";
-            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, needDefer, defer, dec, type, ret, o, oArray, i, isObject);
+            var stmt = new StmtJsExplicit(ctx, js, arg, objs, refs, needDefer, defer, dec, type, ret, o, oArray, i, isObject, kVal, vVal, kRef, vRef);
             return stmt;
         }
 
